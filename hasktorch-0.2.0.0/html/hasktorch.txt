@@ -898,6 +898,21 @@ instance (Torch.NN.Parameterized' f, Torch.NN.Parameterized' g) => Torch.NN.Para
 instance (Torch.NN.Parameterized' f, Torch.NN.Parameterized' g) => Torch.NN.Parameterized' (f GHC.Generics.:*: g)
 instance Torch.NN.Parameterized' f => Torch.NN.Parameterized' (GHC.Generics.M1 i t f)
 
+module Torch.Random
+mkGenerator :: Device -> Word64 -> IO Generator
+data Generator
+randn :: [Int] -> TensorOptions -> Generator -> (Tensor, Generator)
+randn' :: [Int] -> Generator -> (Tensor, Generator)
+rand :: [Int] -> TensorOptions -> Generator -> (Tensor, Generator)
+rand' :: [Int] -> Generator -> (Tensor, Generator)
+randint :: Int -> Int -> [Int] -> TensorOptions -> Generator -> (Tensor, Generator)
+randint' :: Int -> Int -> [Int] -> Generator -> (Tensor, Generator)
+normal :: Double -> Double -> [Int] -> TensorOptions -> Generator -> (Tensor, Generator)
+normal' :: Double -> Double -> [Int] -> Generator -> (Tensor, Generator)
+instance GHC.Show.Show Torch.Random.Generator
+instance GHC.Classes.Eq Torch.Random.Generator
+instance GHC.Show.Show (GHC.Conc.Sync.TVar (GHC.Maybe.Maybe (GHC.ForeignPtr.ForeignPtr ATen.Type.Generator)))
+
 module Torch
 
 module Torch.Typed
