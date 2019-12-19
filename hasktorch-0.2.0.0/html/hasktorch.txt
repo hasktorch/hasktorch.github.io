@@ -30,14 +30,32 @@ instance Torch.Internal.Class.CppTuple6 (GHC.ForeignPtr.ForeignPtr Torch.Interna
 
 module Torch.DType
 data DType
+
+-- | Bool
 Bool :: DType
+
+-- | Byte
 UInt8 :: DType
+
+-- | Char
 Int8 :: DType
+
+-- | Short
 Int16 :: DType
+
+-- | Int
 Int32 :: DType
+
+-- | Long
 Int64 :: DType
+
+-- | Half
 Half :: DType
+
+-- | Float
 Float :: DType
+
+-- | Double
 Double :: DType
 isIntegral :: DType -> Bool
 instance GHC.Show.Show Torch.DType.DType
@@ -1453,10 +1471,10 @@ type family UnsupportedDTypeForDevice (deviceType :: DeviceType) (dtype :: DType
 type family StandardFloatingPointDTypeValidation (device :: (DeviceType, Nat)) (dtype :: DType) :: Constraint
 
 module Torch.Typed.Tensor
-class KnownShape shape
+class KnownShape (shape :: [Nat])
 shapeVal :: KnownShape shape => [Int]
 getFiniteI :: Finite n -> Int
-class KnownDType dtype
+class KnownDType (dtype :: DType)
 dtypeVal :: KnownDType dtype => DType
 type family ComputeDType (dtype' :: dtype) :: DType
 class KnownDevice (device :: (DeviceType, Nat))
@@ -1566,8 +1584,12 @@ instance (GHC.TypeNats.KnownNat h, Torch.Typed.Tensor.KnownShape t) => Torch.Typ
 instance Torch.Internal.Class.Castable (Torch.HList.HList l) [Torch.Tensor.ATenTensor] => Torch.Internal.Class.Castable (Torch.HList.HList l) (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.TensorList)
 
 module Torch.Typed.Serialize
-save :: forall tensors. Castable (HList tensors) (ForeignPtr TensorList) => HList tensors -> FilePath -> IO ()
-load :: forall tensors. Castable (HList tensors) (ForeignPtr TensorList) => FilePath -> IO (HList tensors)
+
+-- | save list of tensors to file
+save :: forall tensors. Castable (HList tensors) [ATenTensor] => HList tensors -> FilePath -> IO ()
+
+-- | load list of tensors from file
+load :: forall tensors. Castable (HList tensors) [ATenTensor] => FilePath -> IO (HList tensors)
 
 module Torch.Typed.Factories
 zeros :: forall shape dtype device. TensorOptions shape dtype device => Tensor device dtype shape
@@ -2505,6 +2527,10 @@ type family Det (shape :: [Nat]) :: [Nat]
 --   &amp;&amp;&amp; shape $ det (ones :: CPUTensor 'D.Float '[3,2,2])
 --   (Float,[3])
 det :: forall shape dtype device. Tensor device dtype shape -> Tensor device dtype (Det shape)
+type family DotDTypeIsValid (device :: (DeviceType, Nat)) (dtype :: DType) :: Constraint
+
+-- | dot product Note that this function does not broadcast.
+dot :: forall size dtype device. DotDTypeIsValid device dtype => Tensor device dtype '[size] -> Tensor device dtype '[size] -> Tensor device dtype '[]
 class KnownMaybeNat (n :: Maybe Nat)
 maybeNatVal :: KnownMaybeNat n => Maybe Integer
 type family PaddingIdxCheck (idx :: Maybe Nat) (numEmbeds :: Nat) :: Constraint
@@ -2582,8 +2608,9 @@ isFloatingPoint :: forall shape dtype device. Tensor device dtype shape -> Bool
 -- | is complex
 isComplex :: forall shape dtype device. Tensor device dtype shape -> Bool
 
--- | is non-zero
-isNonZero :: forall shape dtype device. Tensor device dtype shape -> Bool
+-- | is non-zero this operation is only defined for tensors with shape '[]
+--   or '[1]
+isNonZero :: forall shape dtype device. Numel shape ~ 1 => Tensor device dtype shape -> Bool
 
 -- | is same size TODO: this can be decided statically
 isSameSize :: forall shape shape' dtype device. Tensor device dtype shape -> Tensor device dtype shape' -> Bool
@@ -3554,11 +3581,14 @@ instance GHC.Show.Show (Torch.Typed.NN.Recurrent.Cell.LSTM.LSTMCellSpec inputDim
 instance (Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Tensor.KnownDType dtype, GHC.TypeNats.KnownNat inputDim, GHC.TypeNats.KnownNat hiddenDim, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.Cell.LSTM.LSTMCellSpec inputDim hiddenDim dtype device) (Torch.Typed.NN.Recurrent.Cell.LSTM.LSTMCell inputDim hiddenDim dtype device)
 
 module Torch.Typed.Autograd
-type family GradR (parameters :: [a]) (dtype :: DType) (device :: (DeviceType, Nat)) :: [a]
+class HasGrad a b | a -> b
 
 -- | calculate gradients of a zero-dimensional tensor with respect to a
 --   list of parameters
-grad :: forall dtype device parameters gradients tensors. (gradients ~ GradR parameters dtype device, tensors ~ gradients, HMap' ToDependent parameters tensors, Castable (HList gradients) [ATenTensor]) => Tensor device dtype '[] -> HList parameters -> HList gradients
+grad :: forall dtype device. HasGrad a b => Tensor device dtype '[] -> a -> b
+instance Torch.Typed.Autograd.HasGrad (Torch.Typed.Parameter.Parameter dtype device shape) (Torch.Typed.Tensor.Tensor dtype device shape)
+instance Torch.Typed.Autograd.HasGrad (Torch.HList.HList '[]) (Torch.HList.HList '[])
+instance (Torch.Typed.Autograd.HasGrad a b, Torch.Typed.Autograd.HasGrad (Torch.HList.HList as) (Torch.HList.HList bs), Torch.Internal.Class.Castable (Torch.HList.HList (b : bs)) [Torch.Tensor.ATenTensor]) => Torch.Typed.Autograd.HasGrad (Torch.HList.HList (a : as)) (Torch.HList.HList (b : bs))
 
 module Torch.Typed.Optim
 type LearningRate device dtype = Tensor device dtype '[]
@@ -3567,7 +3597,7 @@ data ZerosLike
 ZerosLike :: ZerosLike
 class Optimizer optim gradients tensors dtype device
 step :: Optimizer optim gradients tensors dtype device => LearningRate device dtype -> HList gradients -> HList tensors -> optim -> (HList tensors, optim)
-runStep :: forall model optim parameters gradients tensors dtype device. (Parameterized model parameters, gradients ~ GradR parameters dtype device, tensors ~ gradients, HMap' ToDependent parameters tensors, Castable (HList gradients) [ATenTensor], Optimizer optim gradients tensors dtype device, HMapM' IO MakeIndependent tensors parameters) => model -> optim -> Loss device dtype -> LearningRate device dtype -> IO (model, optim)
+runStep :: forall model optim parameters gradients tensors dtype device. (Parameterized model parameters, HasGrad (HList parameters) (HList gradients), tensors ~ gradients, HMap' ToDependent parameters tensors, Castable (HList gradients) [ATenTensor], Optimizer optim gradients tensors dtype device, HMapM' IO MakeIndependent tensors parameters) => model -> optim -> Loss device dtype -> LearningRate device dtype -> IO (model, optim)
 
 -- | Dummy state representation for GD Optimizer
 data GD
