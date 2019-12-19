@@ -8,7 +8,82 @@
 @package hasktorch
 @version 0.2.0.0
 
-module Data.HList
+module Torch.Backend
+data Backend
+CPU :: Backend
+CUDA :: Backend
+HIP :: Backend
+SparseCPU :: Backend
+SparseCUDA :: Backend
+MSNPU :: Backend
+XLA :: Backend
+instance GHC.Show.Show Torch.Backend.Backend
+instance GHC.Classes.Eq Torch.Backend.Backend
+instance Torch.Internal.Class.Castable Torch.Backend.Backend Torch.Internal.Type.Backend
+
+module Torch.Cast
+instance Torch.Internal.Class.CppTuple2 (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.IntArray)
+instance Torch.Internal.Class.CppTuple3 (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.IntArray)
+instance Torch.Internal.Class.CppTuple4 (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.IntArray)
+instance Torch.Internal.Class.CppTuple5 (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.IntArray)
+instance Torch.Internal.Class.CppTuple6 (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.IntArray)
+
+module Torch.DType
+data DType
+Bool :: DType
+UInt8 :: DType
+Int8 :: DType
+Int16 :: DType
+Int32 :: DType
+Int64 :: DType
+Half :: DType
+Float :: DType
+Double :: DType
+isIntegral :: DType -> Bool
+instance GHC.Show.Show Torch.DType.DType
+instance GHC.Classes.Eq Torch.DType.DType
+instance Data.Reflection.Reifies GHC.Types.Bool Torch.DType.DType
+instance Data.Reflection.Reifies 'Torch.DType.Bool Torch.DType.DType
+instance Data.Reflection.Reifies GHC.Word.Word8 Torch.DType.DType
+instance Data.Reflection.Reifies GHC.Int.Int8 Torch.DType.DType
+instance Data.Reflection.Reifies 'Torch.DType.Int8 Torch.DType.DType
+instance Data.Reflection.Reifies GHC.Int.Int16 Torch.DType.DType
+instance Data.Reflection.Reifies 'Torch.DType.Int16 Torch.DType.DType
+instance Data.Reflection.Reifies GHC.Int.Int32 Torch.DType.DType
+instance Data.Reflection.Reifies 'Torch.DType.Int32 Torch.DType.DType
+instance Data.Reflection.Reifies GHC.Types.Int Torch.DType.DType
+instance Data.Reflection.Reifies GHC.Int.Int64 Torch.DType.DType
+instance Data.Reflection.Reifies 'Torch.DType.Int64 Torch.DType.DType
+instance Data.Reflection.Reifies GHC.Types.Float Torch.DType.DType
+instance Data.Reflection.Reifies 'Torch.DType.Float Torch.DType.DType
+instance Data.Reflection.Reifies GHC.Types.Double Torch.DType.DType
+instance Data.Reflection.Reifies 'Torch.DType.Double Torch.DType.DType
+instance Torch.Internal.Class.Castable Torch.DType.DType Torch.Internal.Type.ScalarType
+
+module Torch.Device
+data DeviceType
+CPU :: DeviceType
+CUDA :: DeviceType
+data Device
+Device :: DeviceType -> Int16 -> Device
+[deviceType] :: Device -> DeviceType
+[deviceIndex] :: Device -> Int16
+instance GHC.Show.Show Torch.Device.Device
+instance GHC.Classes.Ord Torch.Device.Device
+instance GHC.Classes.Eq Torch.Device.Device
+instance GHC.Show.Show Torch.Device.DeviceType
+instance GHC.Classes.Ord Torch.Device.DeviceType
+instance GHC.Classes.Eq Torch.Device.DeviceType
+instance Torch.Internal.Class.Castable Torch.Device.DeviceType Torch.Internal.Type.DeviceType
+
+module Torch.Dimname
+newtype Dimname
+Dimname :: ForeignPtr Dimname -> Dimname
+instance Data.String.IsString Torch.Dimname.Dimname
+instance Torch.Internal.Class.Castable Torch.Dimname.Dimname (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Dimname)
+instance Torch.Internal.Class.Castable [Torch.Dimname.Dimname] (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.DimnameList)
+
+module Torch.HList
 type family ListLength (l :: [a]) :: Nat
 data family HList (l :: [Type])
 pattern (:.) :: forall x (xs :: [Type]). () => () => x -> HList xs -> HList (x : xs)
@@ -83,129 +158,54 @@ class HCartesianProduct xs ys zs | xs ys -> zs
 hCartesianProduct :: HCartesianProduct xs ys zs => HList xs -> HList ys -> HList zs
 class HAttach x ys zs | x ys -> zs
 hattach :: HAttach x ys zs => x -> HList ys -> HList zs
-instance Data.HList.HAttach x '[] '[]
-instance Data.HList.HAttach x ys xys => Data.HList.HAttach x (y : ys) ((x, y) : xys)
-instance (Data.HList.HCartesianProduct xs ys zs, Data.HList.HAttach x ys xys, Data.HList.HAppendFD xys zs zs') => Data.HList.HCartesianProduct (x : xs) ys zs'
-instance Data.HList.HCartesianProduct '[] ys '[]
-instance Data.HList.HZipWith3 f '[] '[] '[] '[]
-instance (Data.HList.Apply' f (a, b, c) d, Data.HList.HZipWith3 f as bs cs ds) => Data.HList.HZipWith3 f (a : as) (b : bs) (c : cs) (d : ds)
-instance Data.HList.HZipList3 '[] '[] '[] '[]
-instance ((a, b, c) Data.Type.Equality.~ d, Data.HList.HZipList3 as bs cs ds) => Data.HList.HZipList3 (a : as) (b : bs) (c : cs) (d : ds)
-instance Data.HList.HZipWith f '[] '[] '[]
-instance (Data.HList.Apply' f (x, y) z, Data.HList.HZipWith f xs ys zs) => Data.HList.HZipWith f (x : xs) (y : ys) (z : zs)
-instance Data.HList.HZipList '[] '[] '[]
-instance ((x, y) Data.Type.Equality.~ z, Data.HList.HZipList xs ys zs) => Data.HList.HZipList (x : xs) (y : ys) (z : zs)
-instance (Data.HList.HConcatFD as bs, Data.HList.HAppendFD a bs cs) => Data.HList.HConcatFD (Data.HList.HList a : as) cs
-instance Data.HList.HAppendFD '[] b b
-instance Data.HList.HAppendFD as bs cs => Data.HList.HAppendFD (a : as) bs (a : cs)
-instance Data.HList.HConcatFD '[] '[]
-instance Data.HList.HReplicate' 0 e '[]
-instance (Data.HList.HReplicate' (n GHC.TypeNats.- 1) e es, e Data.Type.Equality.~ e', 1 GHC.TypeNats.<= n) => Data.HList.HReplicate' n e (e' : es)
-instance (GHC.Base.Monad m, Data.HList.HUnfoldM m f res xs, Data.HList.Apply f s res, res Data.Type.Equality.~ Data.HList.HUnfoldMRes m s xs) => Data.HList.HUnfoldM m f (m (Data.HList.HJust (x, s))) (x : xs)
-instance GHC.Base.Monad m => Data.HList.HUnfoldM m f (m Data.HList.HNothing) '[]
-instance (Data.HList.Apply f s res, Data.HList.HUnfold f res xs, res Data.Type.Equality.~ Data.HList.HUnfoldRes s xs) => Data.HList.HUnfold f (Data.HList.HJust (x, s)) (x : xs)
-instance Data.HList.HUnfold f Data.HList.HNothing '[]
-instance GHC.Base.Monad m => Data.HList.HFoldrM' m f acc '[]
-instance (GHC.Base.Monad m, Data.HList.Apply f x (Control.Arrow.Kleisli m acc acc), Data.HList.HFoldrM' m f acc xs) => Data.HList.HFoldrM' m f acc (x : xs)
-instance GHC.Base.Monad m => Data.HList.HFoldrM m f acc '[]
-instance (GHC.Base.Monad m, Data.HList.Apply f x (acc -> m acc), Data.HList.HFoldrM m f acc xs) => Data.HList.HFoldrM m f acc (x : xs)
-instance Data.HList.HFoldr f acc '[]
-instance (Data.HList.Apply f x (acc -> acc), Data.HList.HFoldr f acc xs) => Data.HList.HFoldr f acc (x : xs)
-instance GHC.Base.Applicative f => Data.HList.HSequence f '[] '[]
-instance (GHC.Base.Applicative g, Data.HList.HSequence f xs ys, y Data.Type.Equality.~ x, f Data.Type.Equality.~ g) => Data.HList.HSequence g (f x : xs) (y : ys)
-instance GHC.Base.Monad m => Data.HList.HMapM' m f '[] '[]
-instance (GHC.Base.Monad m, Data.HList.Apply' f x (m y), Data.HList.HMapM' m f xs ys) => Data.HList.HMapM' m f (x : xs) (y : ys)
-instance GHC.Base.Monad m => Data.HList.HMapM m f '[] '[]
-instance (GHC.Base.Monad m, Data.HList.Apply f x (m y), Data.HList.HMapM m f xs ys) => Data.HList.HMapM m f (x : xs) (y : ys)
-instance Data.HList.HMap' f '[] '[]
-instance (Data.HList.Apply' f x y, Data.HList.HMap' f xs ys) => Data.HList.HMap' f (x : xs) (y : ys)
-instance Data.HList.HMap f '[] '[]
-instance (Data.HList.Apply f x y, Data.HList.HMap f xs ys) => Data.HList.HMap f (x : xs) (y : ys)
-instance Data.HList.Apply' Data.HList.Snd (a, b) b
-instance Data.HList.Apply' Data.HList.Fst (a, b) a
-instance GHC.Show.Show (Data.HList.HList '[])
-instance (GHC.Show.Show e, GHC.Show.Show (Data.HList.HList l)) => GHC.Show.Show (Data.HList.HList (e : l))
-instance GHC.Classes.Eq (Data.HList.HList '[])
-instance (GHC.Classes.Eq x, GHC.Classes.Eq (Data.HList.HList xs)) => GHC.Classes.Eq (Data.HList.HList (x : xs))
-instance GHC.Base.Semigroup (Data.HList.HList '[])
-instance (GHC.Base.Semigroup a, GHC.Base.Semigroup (Data.HList.HList as)) => GHC.Base.Semigroup (Data.HList.HList (a : as))
-instance GHC.Base.Monoid (Data.HList.HList '[])
-instance (GHC.Base.Monoid a, GHC.Base.Monoid (Data.HList.HList as)) => GHC.Base.Monoid (Data.HList.HList (a : as))
-
-module Torch.Backend
-data Backend
-CPU :: Backend
-CUDA :: Backend
-HIP :: Backend
-SparseCPU :: Backend
-SparseCUDA :: Backend
-MSNPU :: Backend
-XLA :: Backend
-instance GHC.Show.Show Torch.Backend.Backend
-instance GHC.Classes.Eq Torch.Backend.Backend
-instance ATen.Class.Castable Torch.Backend.Backend ATen.Type.Backend
-
-module Torch.Cast
-instance ATen.Class.CppTuple2 (GHC.ForeignPtr.ForeignPtr ATen.Type.IntArray)
-instance ATen.Class.CppTuple3 (GHC.ForeignPtr.ForeignPtr ATen.Type.IntArray)
-instance ATen.Class.CppTuple4 (GHC.ForeignPtr.ForeignPtr ATen.Type.IntArray)
-instance ATen.Class.CppTuple5 (GHC.ForeignPtr.ForeignPtr ATen.Type.IntArray)
-instance ATen.Class.CppTuple6 (GHC.ForeignPtr.ForeignPtr ATen.Type.IntArray)
-
-module Torch.DType
-data DType
-Bool :: DType
-UInt8 :: DType
-Int8 :: DType
-Int16 :: DType
-Int32 :: DType
-Int64 :: DType
-Half :: DType
-Float :: DType
-Double :: DType
-isIntegral :: DType -> Bool
-instance GHC.Show.Show Torch.DType.DType
-instance GHC.Classes.Eq Torch.DType.DType
-instance Data.Reflection.Reifies GHC.Types.Bool Torch.DType.DType
-instance Data.Reflection.Reifies 'Torch.DType.Bool Torch.DType.DType
-instance Data.Reflection.Reifies GHC.Word.Word8 Torch.DType.DType
-instance Data.Reflection.Reifies GHC.Int.Int8 Torch.DType.DType
-instance Data.Reflection.Reifies 'Torch.DType.Int8 Torch.DType.DType
-instance Data.Reflection.Reifies GHC.Int.Int16 Torch.DType.DType
-instance Data.Reflection.Reifies 'Torch.DType.Int16 Torch.DType.DType
-instance Data.Reflection.Reifies GHC.Int.Int32 Torch.DType.DType
-instance Data.Reflection.Reifies 'Torch.DType.Int32 Torch.DType.DType
-instance Data.Reflection.Reifies GHC.Types.Int Torch.DType.DType
-instance Data.Reflection.Reifies GHC.Int.Int64 Torch.DType.DType
-instance Data.Reflection.Reifies 'Torch.DType.Int64 Torch.DType.DType
-instance Data.Reflection.Reifies GHC.Types.Float Torch.DType.DType
-instance Data.Reflection.Reifies 'Torch.DType.Float Torch.DType.DType
-instance Data.Reflection.Reifies GHC.Types.Double Torch.DType.DType
-instance Data.Reflection.Reifies 'Torch.DType.Double Torch.DType.DType
-instance ATen.Class.Castable Torch.DType.DType ATen.Type.ScalarType
-
-module Torch.Device
-data DeviceType
-CPU :: DeviceType
-CUDA :: DeviceType
-data Device
-Device :: DeviceType -> Int16 -> Device
-[deviceType] :: Device -> DeviceType
-[deviceIndex] :: Device -> Int16
-instance GHC.Show.Show Torch.Device.Device
-instance GHC.Classes.Ord Torch.Device.Device
-instance GHC.Classes.Eq Torch.Device.Device
-instance GHC.Show.Show Torch.Device.DeviceType
-instance GHC.Classes.Ord Torch.Device.DeviceType
-instance GHC.Classes.Eq Torch.Device.DeviceType
-instance ATen.Class.Castable Torch.Device.DeviceType ATen.Type.DeviceType
-
-module Torch.Dimname
-newtype Dimname
-Dimname :: ForeignPtr Dimname -> Dimname
-instance Data.String.IsString Torch.Dimname.Dimname
-instance ATen.Class.Castable Torch.Dimname.Dimname (GHC.ForeignPtr.ForeignPtr ATen.Type.Dimname)
-instance ATen.Class.Castable [Torch.Dimname.Dimname] (GHC.ForeignPtr.ForeignPtr ATen.Type.DimnameList)
+instance Torch.HList.HAttach x '[] '[]
+instance Torch.HList.HAttach x ys xys => Torch.HList.HAttach x (y : ys) ((x, y) : xys)
+instance (Torch.HList.HCartesianProduct xs ys zs, Torch.HList.HAttach x ys xys, Torch.HList.HAppendFD xys zs zs') => Torch.HList.HCartesianProduct (x : xs) ys zs'
+instance Torch.HList.HCartesianProduct '[] ys '[]
+instance Torch.HList.HZipWith3 f '[] '[] '[] '[]
+instance (Torch.HList.Apply' f (a, b, c) d, Torch.HList.HZipWith3 f as bs cs ds) => Torch.HList.HZipWith3 f (a : as) (b : bs) (c : cs) (d : ds)
+instance Torch.HList.HZipList3 '[] '[] '[] '[]
+instance ((a, b, c) Data.Type.Equality.~ d, Torch.HList.HZipList3 as bs cs ds) => Torch.HList.HZipList3 (a : as) (b : bs) (c : cs) (d : ds)
+instance Torch.HList.HZipWith f '[] '[] '[]
+instance (Torch.HList.Apply' f (x, y) z, Torch.HList.HZipWith f xs ys zs) => Torch.HList.HZipWith f (x : xs) (y : ys) (z : zs)
+instance Torch.HList.HZipList '[] '[] '[]
+instance ((x, y) Data.Type.Equality.~ z, Torch.HList.HZipList xs ys zs) => Torch.HList.HZipList (x : xs) (y : ys) (z : zs)
+instance (Torch.HList.HConcatFD as bs, Torch.HList.HAppendFD a bs cs) => Torch.HList.HConcatFD (Torch.HList.HList a : as) cs
+instance Torch.HList.HAppendFD '[] b b
+instance Torch.HList.HAppendFD as bs cs => Torch.HList.HAppendFD (a : as) bs (a : cs)
+instance Torch.HList.HConcatFD '[] '[]
+instance Torch.HList.HReplicate' 0 e '[]
+instance (Torch.HList.HReplicate' (n GHC.TypeNats.- 1) e es, e Data.Type.Equality.~ e', 1 GHC.TypeNats.<= n) => Torch.HList.HReplicate' n e (e' : es)
+instance (GHC.Base.Monad m, Torch.HList.HUnfoldM m f res xs, Torch.HList.Apply f s res, res Data.Type.Equality.~ Torch.HList.HUnfoldMRes m s xs) => Torch.HList.HUnfoldM m f (m (Torch.HList.HJust (x, s))) (x : xs)
+instance GHC.Base.Monad m => Torch.HList.HUnfoldM m f (m Torch.HList.HNothing) '[]
+instance (Torch.HList.Apply f s res, Torch.HList.HUnfold f res xs, res Data.Type.Equality.~ Torch.HList.HUnfoldRes s xs) => Torch.HList.HUnfold f (Torch.HList.HJust (x, s)) (x : xs)
+instance Torch.HList.HUnfold f Torch.HList.HNothing '[]
+instance GHC.Base.Monad m => Torch.HList.HFoldrM' m f acc '[]
+instance (GHC.Base.Monad m, Torch.HList.Apply f x (Control.Arrow.Kleisli m acc acc), Torch.HList.HFoldrM' m f acc xs) => Torch.HList.HFoldrM' m f acc (x : xs)
+instance GHC.Base.Monad m => Torch.HList.HFoldrM m f acc '[]
+instance (GHC.Base.Monad m, Torch.HList.Apply f x (acc -> m acc), Torch.HList.HFoldrM m f acc xs) => Torch.HList.HFoldrM m f acc (x : xs)
+instance Torch.HList.HFoldr f acc '[]
+instance (Torch.HList.Apply f x (acc -> acc), Torch.HList.HFoldr f acc xs) => Torch.HList.HFoldr f acc (x : xs)
+instance GHC.Base.Applicative f => Torch.HList.HSequence f '[] '[]
+instance (GHC.Base.Applicative g, Torch.HList.HSequence f xs ys, y Data.Type.Equality.~ x, f Data.Type.Equality.~ g) => Torch.HList.HSequence g (f x : xs) (y : ys)
+instance GHC.Base.Monad m => Torch.HList.HMapM' m f '[] '[]
+instance (GHC.Base.Monad m, Torch.HList.Apply' f x (m y), Torch.HList.HMapM' m f xs ys) => Torch.HList.HMapM' m f (x : xs) (y : ys)
+instance GHC.Base.Monad m => Torch.HList.HMapM m f '[] '[]
+instance (GHC.Base.Monad m, Torch.HList.Apply f x (m y), Torch.HList.HMapM m f xs ys) => Torch.HList.HMapM m f (x : xs) (y : ys)
+instance Torch.HList.HMap' f '[] '[]
+instance (Torch.HList.Apply' f x y, Torch.HList.HMap' f xs ys) => Torch.HList.HMap' f (x : xs) (y : ys)
+instance Torch.HList.HMap f '[] '[]
+instance (Torch.HList.Apply f x y, Torch.HList.HMap f xs ys) => Torch.HList.HMap f (x : xs) (y : ys)
+instance Torch.HList.Apply' Torch.HList.Snd (a, b) b
+instance Torch.HList.Apply' Torch.HList.Fst (a, b) a
+instance GHC.Show.Show (Torch.HList.HList '[])
+instance (GHC.Show.Show e, GHC.Show.Show (Torch.HList.HList l)) => GHC.Show.Show (Torch.HList.HList (e : l))
+instance GHC.Classes.Eq (Torch.HList.HList '[])
+instance (GHC.Classes.Eq x, GHC.Classes.Eq (Torch.HList.HList xs)) => GHC.Classes.Eq (Torch.HList.HList (x : xs))
+instance GHC.Base.Semigroup (Torch.HList.HList '[])
+instance (GHC.Base.Semigroup a, GHC.Base.Semigroup (Torch.HList.HList as)) => GHC.Base.Semigroup (Torch.HList.HList (a : as))
+instance GHC.Base.Monoid (Torch.HList.HList '[])
+instance (GHC.Base.Monoid a, GHC.Base.Monoid (Torch.HList.HList as)) => GHC.Base.Monoid (Torch.HList.HList (a : as))
 
 module Torch.Layout
 data Layout
@@ -214,16 +214,16 @@ Sparse :: Layout
 Mkldnn :: Layout
 instance GHC.Show.Show Torch.Layout.Layout
 instance GHC.Classes.Eq Torch.Layout.Layout
-instance ATen.Class.Castable Torch.Layout.Layout ATen.Type.Layout
+instance Torch.Internal.Class.Castable Torch.Layout.Layout Torch.Internal.Type.Layout
 
 module Torch.Scalar
 class (Castable a (ForeignPtr Scalar)) => Scalar a
 instance Torch.Scalar.Scalar GHC.Types.Float
 instance Torch.Scalar.Scalar GHC.Types.Double
 instance Torch.Scalar.Scalar GHC.Types.Int
-instance ATen.Class.Castable GHC.Types.Float (GHC.ForeignPtr.ForeignPtr ATen.Type.Scalar)
-instance ATen.Class.Castable GHC.Types.Double (GHC.ForeignPtr.ForeignPtr ATen.Type.Scalar)
-instance ATen.Class.Castable GHC.Types.Int (GHC.ForeignPtr.ForeignPtr ATen.Type.Scalar)
+instance Torch.Internal.Class.Castable GHC.Types.Float (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Scalar)
+instance Torch.Internal.Class.Castable GHC.Types.Double (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Scalar)
+instance Torch.Internal.Class.Castable GHC.Types.Int (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Scalar)
 
 module Torch.TensorOptions
 type ATenTensorOptions = ForeignPtr TensorOptions
@@ -234,7 +234,7 @@ withDType :: DType -> TensorOptions -> TensorOptions
 withDevice :: Device -> TensorOptions -> TensorOptions
 withLayout :: Layout -> TensorOptions -> TensorOptions
 instance GHC.Show.Show Torch.TensorOptions.TensorOptions
-instance ATen.Class.Castable Torch.TensorOptions.TensorOptions Torch.TensorOptions.ATenTensorOptions
+instance Torch.Internal.Class.Castable Torch.TensorOptions.TensorOptions Torch.TensorOptions.ATenTensorOptions
 
 module Torch.Tensor
 type ATenTensor = ForeignPtr Tensor
@@ -282,9 +282,9 @@ instance Torch.Tensor.TensorIndex ()
 instance (Torch.Tensor.TensorIndex a, Torch.Tensor.TensorIndex b) => Torch.Tensor.TensorIndex (a, b)
 instance (Torch.Tensor.TensorIndex a, Torch.Tensor.TensorIndex b, Torch.Tensor.TensorIndex c) => Torch.Tensor.TensorIndex (a, b, c)
 instance (Torch.Tensor.TensorIndex a, Torch.Tensor.TensorIndex b, Torch.Tensor.TensorIndex c, Torch.Tensor.TensorIndex d) => Torch.Tensor.TensorIndex (a, b, c, d)
-instance ATen.Class.Castable Torch.Tensor.Tensor Torch.Tensor.ATenTensor
+instance Torch.Internal.Class.Castable Torch.Tensor.Tensor Torch.Tensor.ATenTensor
 instance GHC.Show.Show Torch.Tensor.Tensor
-instance ATen.Class.Castable [Torch.Tensor.Tensor] (GHC.ForeignPtr.ForeignPtr ATen.Type.TensorList)
+instance Torch.Internal.Class.Castable [Torch.Tensor.Tensor] (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.TensorList)
 
 module Torch.TensorFactories
 type FactoryType = ForeignPtr IntArray -> ForeignPtr TensorOptions -> IO (ForeignPtr Tensor)
@@ -336,7 +336,7 @@ module Torch.Serialize
 save :: [Tensor] -> FilePath -> IO ()
 load :: FilePath -> IO [Tensor]
 
-module Torch.Functions.Native
+module Torch.Functional.Internal
 align_tensors :: [Tensor] -> [Tensor]
 dropout :: Tensor -> Double -> Bool -> Tensor
 feature_dropout :: Tensor -> Double -> Bool -> Tensor
@@ -769,7 +769,7 @@ col2im_backward :: Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int
 im2col :: Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Tensor
 im2col_backward :: Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Tensor
 
-module Torch.Functions
+module Torch.Functional
 data KeepDim
 KeepDim :: KeepDim
 RemoveDim :: KeepDim
@@ -1287,13 +1287,13 @@ col2im :: Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int
 col2im_backward :: Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Tensor
 im2col :: Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Tensor
 im2col_backward :: Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Tensor
-instance GHC.Show.Show Torch.Functions.KeepDim
-instance GHC.Classes.Eq Torch.Functions.KeepDim
-instance GHC.Show.Show Torch.Functions.Reduction
-instance GHC.Classes.Eq Torch.Functions.Reduction
-instance GHC.Show.Show Torch.Functions.Tri
-instance GHC.Classes.Eq Torch.Functions.Tri
-instance ATen.Class.Castable Torch.Functions.Reduction GHC.Int.Int64
+instance GHC.Show.Show Torch.Functional.KeepDim
+instance GHC.Classes.Eq Torch.Functional.KeepDim
+instance GHC.Show.Show Torch.Functional.Reduction
+instance GHC.Classes.Eq Torch.Functional.Reduction
+instance GHC.Show.Show Torch.Functional.Tri
+instance GHC.Classes.Eq Torch.Functional.Tri
+instance Torch.Internal.Class.Castable Torch.Functional.Reduction GHC.Int.Int64
 instance GHC.Num.Num Torch.Tensor.Tensor
 instance GHC.Real.Fractional Torch.Tensor.Tensor
 
@@ -1405,7 +1405,7 @@ normal :: Double -> Double -> [Int] -> TensorOptions -> Generator -> (Tensor, Ge
 normal' :: Double -> Double -> [Int] -> Generator -> (Tensor, Generator)
 instance GHC.Show.Show Torch.Random.Generator
 instance GHC.Classes.Eq Torch.Random.Generator
-instance GHC.Show.Show (GHC.Conc.Sync.TVar (GHC.Maybe.Maybe (GHC.ForeignPtr.ForeignPtr ATen.Type.Generator)))
+instance GHC.Show.Show (GHC.Conc.Sync.TVar (GHC.Maybe.Maybe (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Generator)))
 
 module Torch
 
@@ -1538,18 +1538,18 @@ device :: forall device dtype shape. TensorOptions shape dtype device => Tensor 
 toInt :: Tensor device dtype shape -> Int
 toFloat :: forall device. Tensor device  'Float '[] -> Float
 toDouble :: forall device. Tensor device  'Double '[] -> Double
-instance Data.HList.Apply Torch.Typed.Tensor.TensorListUnfold [Torch.Tensor.ATenTensor] (GHC.Types.IO Data.HList.HNothing)
-instance ATen.Class.Castable x Torch.Tensor.ATenTensor => Data.HList.Apply Torch.Typed.Tensor.TensorListUnfold [Torch.Tensor.ATenTensor] (GHC.Types.IO (Data.HList.HJust (x, [Torch.Tensor.ATenTensor])))
-instance (Data.HList.HFoldrM GHC.Types.IO Torch.Typed.Tensor.TensorListFold [Torch.Tensor.ATenTensor] l, Data.HList.Apply Torch.Typed.Tensor.TensorListUnfold [Torch.Tensor.ATenTensor] res, Data.HList.HUnfoldM GHC.Types.IO Torch.Typed.Tensor.TensorListUnfold res l, res Data.Type.Equality.~ Data.HList.HUnfoldMRes GHC.Types.IO [Torch.Tensor.ATenTensor] l) => ATen.Class.Castable (Data.HList.HList l) [Torch.Tensor.ATenTensor]
-instance ATen.Class.Castable x Torch.Tensor.ATenTensor => Data.HList.Apply Torch.Typed.Tensor.TensorListFold x ([Torch.Tensor.ATenTensor] -> GHC.Types.IO [Torch.Tensor.ATenTensor])
+instance Torch.HList.Apply Torch.Typed.Tensor.TensorListUnfold [Torch.Tensor.ATenTensor] (GHC.Types.IO Torch.HList.HNothing)
+instance Torch.Internal.Class.Castable x Torch.Tensor.ATenTensor => Torch.HList.Apply Torch.Typed.Tensor.TensorListUnfold [Torch.Tensor.ATenTensor] (GHC.Types.IO (Torch.HList.HJust (x, [Torch.Tensor.ATenTensor])))
+instance (Torch.HList.HFoldrM GHC.Types.IO Torch.Typed.Tensor.TensorListFold [Torch.Tensor.ATenTensor] l, Torch.HList.Apply Torch.Typed.Tensor.TensorListUnfold [Torch.Tensor.ATenTensor] res, Torch.HList.HUnfoldM GHC.Types.IO Torch.Typed.Tensor.TensorListUnfold res l, res Data.Type.Equality.~ Torch.HList.HUnfoldMRes GHC.Types.IO [Torch.Tensor.ATenTensor] l) => Torch.Internal.Class.Castable (Torch.HList.HList l) [Torch.Tensor.ATenTensor]
+instance Torch.Internal.Class.Castable x Torch.Tensor.ATenTensor => Torch.HList.Apply Torch.Typed.Tensor.TensorListFold x ([Torch.Tensor.ATenTensor] -> GHC.Types.IO [Torch.Tensor.ATenTensor])
 instance (Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device) => Torch.Typed.Tensor.TensorOptions '[] dtype device
 instance (GHC.TypeNats.KnownNat h, Torch.Typed.Tensor.TensorOptions t dtype device) => Torch.Typed.Tensor.TensorOptions (h : t) dtype device
 instance (Torch.Tensor.TensorLike [Torch.Typed.Tensor.ComputeItemType (Torch.Typed.Tensor.ComputeHaskellType dtype) shape], Torch.Typed.Tensor.KnownShape shape) => GHC.Exts.IsList (GHC.Maybe.Maybe (Torch.Typed.Tensor.Tensor '( 'Torch.Device.CPU, 0) dtype shape))
 instance GHC.Num.Num (Torch.Typed.Tensor.Tensor device dtype shape)
 instance GHC.Real.Fractional (Torch.Typed.Tensor.Tensor device dtype shape)
 instance GHC.Show.Show (Torch.Typed.Tensor.Tensor device dtype shape)
-instance ATen.Class.Castable (Torch.Typed.Tensor.Tensor device dtype shape) Torch.Tensor.ATenTensor
-instance ATen.Class.Castable [Torch.Typed.Tensor.Tensor device dtype shape] (GHC.ForeignPtr.ForeignPtr ATen.Type.TensorList)
+instance Torch.Internal.Class.Castable (Torch.Typed.Tensor.Tensor device dtype shape) Torch.Tensor.ATenTensor
+instance Torch.Internal.Class.Castable [Torch.Typed.Tensor.Tensor device dtype shape] (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.TensorList)
 instance GHC.TypeNats.KnownNat n => Torch.Typed.Tensor.KnownDevice '( 'Torch.Device.CPU, n)
 instance GHC.TypeNats.KnownNat n => Torch.Typed.Tensor.KnownDevice '( 'Torch.Device.CUDA, n)
 instance Torch.Typed.Tensor.KnownDType 'Torch.DType.Bool
@@ -1563,7 +1563,7 @@ instance Torch.Typed.Tensor.KnownDType 'Torch.DType.Float
 instance Torch.Typed.Tensor.KnownDType 'Torch.DType.Double
 instance Torch.Typed.Tensor.KnownShape '[]
 instance (GHC.TypeNats.KnownNat h, Torch.Typed.Tensor.KnownShape t) => Torch.Typed.Tensor.KnownShape (h : t)
-instance ATen.Class.Castable (Data.HList.HList l) [Torch.Tensor.ATenTensor] => ATen.Class.Castable (Data.HList.HList l) (GHC.ForeignPtr.ForeignPtr ATen.Type.TensorList)
+instance Torch.Internal.Class.Castable (Torch.HList.HList l) [Torch.Tensor.ATenTensor] => Torch.Internal.Class.Castable (Torch.HList.HList l) (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.TensorList)
 
 module Torch.Typed.Serialize
 save :: forall tensors. Castable (HList tensors) (ForeignPtr TensorList) => HList tensors -> FilePath -> IO ()
@@ -1586,7 +1586,7 @@ randint :: forall shape dtype device. (TensorOptions shape dtype device, RandDTy
 linspace :: forall steps device start end. (Scalar start, Scalar end, KnownNat steps, TensorOptions '[steps]  'Float device) => start -> end -> Tensor device  'Float '[steps]
 eyeSquare :: forall n dtype device. (KnownNat n, TensorOptions '[n, n] dtype device) => Tensor device dtype '[n, n]
 
-module Torch.Typed.Native
+module Torch.Typed.Functional
 type family SumDType (dtype :: DType) :: DType
 type family SumDTypeIsValid (device :: (DeviceType, Nat)) (dtype :: DType) :: Constraint
 
@@ -3228,25 +3228,25 @@ avgPool2d :: forall kernelSize stride padding channelSize inputSize0 inputSize1 
 --   '[1,3,4,5,6]) &gt;&gt;&gt; shape t [1,3,4,5,6] &gt;&gt;&gt; :t t t ::
 --   Tensor '( 'D.CPU, 0) 'D.Float '[1, 3, 4, 5, 6]
 avgPool3d :: forall kernelSize stride padding channelSize inputSize0 inputSize1 inputSize2 batchSize outputSize0 outputSize1 outputSize2 dtype device. (All KnownNat '[Fst3 kernelSize, Snd3 kernelSize, Trd3 kernelSize, Fst3 stride, Snd3 stride, Trd3 stride, Fst3 padding, Snd3 padding, Trd3 padding, channelSize, inputSize0, inputSize1, inputSize2, batchSize], ConvSideCheck inputSize0 (Fst3 kernelSize) (Fst3 stride) (Fst3 padding) outputSize0, ConvSideCheck inputSize1 (Snd3 kernelSize) (Snd3 stride) (Snd3 padding) outputSize1, ConvSideCheck inputSize2 (Trd3 kernelSize) (Trd3 stride) (Trd3 padding) outputSize2) => Tensor device dtype '[batchSize, channelSize, inputSize0, inputSize1, inputSize2] -> Tensor device dtype '[batchSize, channelSize, outputSize0, outputSize1, outputSize2]
-instance GHC.Generics.Generic Torch.Typed.Native.RNNShapeOrder
-instance GHC.Show.Show Torch.Typed.Native.RNNShapeOrder
-instance GHC.Generics.Generic Torch.Typed.Native.RNNDirectionality
-instance GHC.Show.Show Torch.Typed.Native.RNNDirectionality
-instance Torch.Typed.Native.KnownRNNShapeOrder 'Torch.Typed.Native.BatchFirst
-instance Torch.Typed.Native.KnownRNNShapeOrder 'Torch.Typed.Native.SequenceFirst
-instance Torch.Typed.Native.KnownRNNDirectionality 'Torch.Typed.Native.Bidirectional
-instance Torch.Typed.Native.KnownRNNDirectionality 'Torch.Typed.Native.Unidirectional
-instance GHC.TypeNats.KnownNat n => Torch.Typed.Native.KnownMaybeNat ('GHC.Maybe.Just n)
-instance Torch.Typed.Native.KnownMaybeNat 'GHC.Maybe.Nothing
-instance Torch.Typed.Native.KnownKeepOrDropDim 'Torch.Typed.Native.KeepDim
-instance Torch.Typed.Native.KnownKeepOrDropDim 'Torch.Typed.Native.DropDim
-instance Torch.Typed.Native.KnownReducedSVD 'Torch.Typed.Native.ThinSVD
-instance Torch.Typed.Native.KnownReducedSVD 'Torch.Typed.Native.FullSVD
-instance Torch.Typed.Native.KnownEigenVectors 'Torch.Typed.Native.EnableEigenVectors
-instance Torch.Typed.Native.KnownEigenVectors 'Torch.Typed.Native.DisableEigenVectors
-instance Torch.Typed.Native.KnownReduction 'Torch.Functions.ReduceNone
-instance Torch.Typed.Native.KnownReduction 'Torch.Functions.ReduceMean
-instance Torch.Typed.Native.KnownReduction 'Torch.Functions.ReduceSum
+instance GHC.Generics.Generic Torch.Typed.Functional.RNNShapeOrder
+instance GHC.Show.Show Torch.Typed.Functional.RNNShapeOrder
+instance GHC.Generics.Generic Torch.Typed.Functional.RNNDirectionality
+instance GHC.Show.Show Torch.Typed.Functional.RNNDirectionality
+instance Torch.Typed.Functional.KnownRNNShapeOrder 'Torch.Typed.Functional.BatchFirst
+instance Torch.Typed.Functional.KnownRNNShapeOrder 'Torch.Typed.Functional.SequenceFirst
+instance Torch.Typed.Functional.KnownRNNDirectionality 'Torch.Typed.Functional.Bidirectional
+instance Torch.Typed.Functional.KnownRNNDirectionality 'Torch.Typed.Functional.Unidirectional
+instance GHC.TypeNats.KnownNat n => Torch.Typed.Functional.KnownMaybeNat ('GHC.Maybe.Just n)
+instance Torch.Typed.Functional.KnownMaybeNat 'GHC.Maybe.Nothing
+instance Torch.Typed.Functional.KnownKeepOrDropDim 'Torch.Typed.Functional.KeepDim
+instance Torch.Typed.Functional.KnownKeepOrDropDim 'Torch.Typed.Functional.DropDim
+instance Torch.Typed.Functional.KnownReducedSVD 'Torch.Typed.Functional.ThinSVD
+instance Torch.Typed.Functional.KnownReducedSVD 'Torch.Typed.Functional.FullSVD
+instance Torch.Typed.Functional.KnownEigenVectors 'Torch.Typed.Functional.EnableEigenVectors
+instance Torch.Typed.Functional.KnownEigenVectors 'Torch.Typed.Functional.DisableEigenVectors
+instance Torch.Typed.Functional.KnownReduction 'Torch.Functional.ReduceNone
+instance Torch.Typed.Functional.KnownReduction 'Torch.Functional.ReduceMean
+instance Torch.Typed.Functional.KnownReduction 'Torch.Functional.ReduceSum
 
 module Torch.Typed.Parameter
 newtype Parameter (device :: (DeviceType, Nat)) (dtype :: DType) (shape :: [Nat])
@@ -3265,20 +3265,20 @@ gFlattenParameters :: GParameterized f as => f a -> HList as
 gReplaceParameters :: GParameterized f as => f a -> HList as -> f a
 instance GHC.Show.Show (Torch.Typed.Parameter.Parameter device dtype shape)
 instance (GHC.Generics.Generic f, Torch.Typed.Parameter.GParameterized (GHC.Generics.Rep f) as) => Torch.Typed.Parameter.Parameterized f as
-instance (Torch.Typed.Parameter.GParameterized l as, Torch.Typed.Parameter.GParameterized r bs, Data.HList.HAppendFD as bs cs, cs Data.Type.Equality.~ (as Data.HList.++ bs)) => Torch.Typed.Parameter.GParameterized (l GHC.Generics.:*: r) cs
+instance (Torch.Typed.Parameter.GParameterized l as, Torch.Typed.Parameter.GParameterized r bs, Torch.HList.HAppendFD as bs cs, cs Data.Type.Equality.~ (as Torch.HList.++ bs)) => Torch.Typed.Parameter.GParameterized (l GHC.Generics.:*: r) cs
 instance Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.Tensor.Tensor device dtype shape)) '[]
 instance Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.Parameter.Parameter device dtype shape)) '[Torch.Typed.Parameter.Parameter device dtype shape]
 instance Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R GHC.Types.Double) '[]
 instance (GHC.Generics.Generic f, Torch.Typed.Parameter.GParameterized (GHC.Generics.Rep f) as) => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 i f) as
 instance Torch.Typed.Parameter.GParameterized f as => Torch.Typed.Parameter.GParameterized (GHC.Generics.M1 i t f) as
 instance Torch.Typed.Parameter.GParameterized GHC.Generics.U1 '[]
-instance Data.HList.Apply' Torch.Typed.Parameter.MakeIndependent (Torch.Typed.Tensor.Tensor device dtype shape) (GHC.Types.IO (Torch.Typed.Parameter.Parameter device dtype shape))
-instance Data.HList.Apply' Torch.Typed.Parameter.ToDependent (Torch.Typed.Parameter.Parameter device dtype shape) (Torch.Typed.Tensor.Tensor device dtype shape)
+instance Torch.HList.Apply' Torch.Typed.Parameter.MakeIndependent (Torch.Typed.Tensor.Tensor device dtype shape) (GHC.Types.IO (Torch.Typed.Parameter.Parameter device dtype shape))
+instance Torch.HList.Apply' Torch.Typed.Parameter.ToDependent (Torch.Typed.Parameter.Parameter device dtype shape) (Torch.Typed.Tensor.Tensor device dtype shape)
 instance Torch.NN.Parameterized (Torch.Typed.Parameter.Parameter device dtype shape)
-instance Torch.NN.Parameterized (Data.HList.HList '[])
-instance (Torch.NN.Parameterized x, Torch.NN.Parameterized (Data.HList.HList xs)) => Torch.NN.Parameterized (Data.HList.HList (x : xs))
-instance Torch.NN.Randomizable (Data.HList.HList '[]) (Data.HList.HList '[])
-instance (Torch.NN.Randomizable xSpec x, Torch.NN.Randomizable (Data.HList.HList xsSpec) (Data.HList.HList xs)) => Torch.NN.Randomizable (Data.HList.HList (xSpec : xsSpec)) (Data.HList.HList (x : xs))
+instance Torch.NN.Parameterized (Torch.HList.HList '[])
+instance (Torch.NN.Parameterized x, Torch.NN.Parameterized (Torch.HList.HList xs)) => Torch.NN.Parameterized (Torch.HList.HList (x : xs))
+instance Torch.NN.Randomizable (Torch.HList.HList '[]) (Torch.HList.HList '[])
+instance (Torch.NN.Randomizable xSpec x, Torch.NN.Randomizable (Torch.HList.HList xsSpec) (Torch.HList.HList xs)) => Torch.NN.Randomizable (Torch.HList.HList (xSpec : xsSpec)) (Torch.HList.HList (x : xs))
 
 module Torch.Typed.NN
 data LinearSpec (inputFeatures :: Nat) (outputFeatures :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
@@ -3499,17 +3499,17 @@ instance GHC.Show.Show (Torch.Typed.NN.Recurrent.LSTM.LSTMWithInitSpec inputSize
 instance GHC.Show.Show (Torch.Typed.NN.Recurrent.LSTM.LSTMWithInit inputSize hiddenSize numLayers directionality initialization dtype device)
 instance GHC.Generics.Generic (Torch.Typed.NN.Recurrent.LSTM.LSTMWithInit inputSize hiddenSize numLayers directionality 'Torch.Typed.NN.Recurrent.LSTM.ConstantInitialization dtype device)
 instance GHC.Generics.Generic (Torch.Typed.NN.Recurrent.LSTM.LSTMWithInit inputSize hiddenSize numLayers directionality 'Torch.Typed.NN.Recurrent.LSTM.LearnedInitialization dtype device)
-instance (GHC.TypeNats.KnownNat hiddenSize, GHC.TypeNats.KnownNat numLayers, GHC.TypeNats.KnownNat (Torch.Typed.Native.NumberOfDirections directionality), Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMSpec inputSize hiddenSize numLayers directionality dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTM inputSize hiddenSize numLayers directionality dtype device)) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMWithInitSpec inputSize hiddenSize numLayers directionality 'Torch.Typed.NN.Recurrent.LSTM.ConstantInitialization dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTMWithInit inputSize hiddenSize numLayers directionality 'Torch.Typed.NN.Recurrent.LSTM.ConstantInitialization dtype device)
-instance (GHC.TypeNats.KnownNat hiddenSize, GHC.TypeNats.KnownNat numLayers, GHC.TypeNats.KnownNat (Torch.Typed.Native.NumberOfDirections directionality), Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMSpec inputSize hiddenSize numLayers directionality dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTM inputSize hiddenSize numLayers directionality dtype device)) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMWithInitSpec inputSize hiddenSize numLayers directionality 'Torch.Typed.NN.Recurrent.LSTM.LearnedInitialization dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTMWithInit inputSize hiddenSize numLayers directionality 'Torch.Typed.NN.Recurrent.LSTM.LearnedInitialization dtype device)
-instance (Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, GHC.TypeNats.KnownNat inputSize, GHC.TypeNats.KnownNat hiddenSize, GHC.TypeNats.KnownNat (Torch.Typed.Native.NumberOfDirections directionality), Torch.Typed.Factories.RandDTypeIsValid device dtype, Torch.Typed.NN.Recurrent.LSTM.HasSampleLSTMLayerStack numLayers directionality) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMSpec inputSize hiddenSize numLayers directionality dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTM inputSize hiddenSize numLayers directionality dtype device)
+instance (GHC.TypeNats.KnownNat hiddenSize, GHC.TypeNats.KnownNat numLayers, GHC.TypeNats.KnownNat (Torch.Typed.Functional.NumberOfDirections directionality), Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMSpec inputSize hiddenSize numLayers directionality dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTM inputSize hiddenSize numLayers directionality dtype device)) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMWithInitSpec inputSize hiddenSize numLayers directionality 'Torch.Typed.NN.Recurrent.LSTM.ConstantInitialization dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTMWithInit inputSize hiddenSize numLayers directionality 'Torch.Typed.NN.Recurrent.LSTM.ConstantInitialization dtype device)
+instance (GHC.TypeNats.KnownNat hiddenSize, GHC.TypeNats.KnownNat numLayers, GHC.TypeNats.KnownNat (Torch.Typed.Functional.NumberOfDirections directionality), Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMSpec inputSize hiddenSize numLayers directionality dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTM inputSize hiddenSize numLayers directionality dtype device)) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMWithInitSpec inputSize hiddenSize numLayers directionality 'Torch.Typed.NN.Recurrent.LSTM.LearnedInitialization dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTMWithInit inputSize hiddenSize numLayers directionality 'Torch.Typed.NN.Recurrent.LSTM.LearnedInitialization dtype device)
+instance (Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, GHC.TypeNats.KnownNat inputSize, GHC.TypeNats.KnownNat hiddenSize, GHC.TypeNats.KnownNat (Torch.Typed.Functional.NumberOfDirections directionality), Torch.Typed.Factories.RandDTypeIsValid device dtype, Torch.Typed.NN.Recurrent.LSTM.HasSampleLSTMLayerStack numLayers directionality) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMSpec inputSize hiddenSize numLayers directionality dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTM inputSize hiddenSize numLayers directionality dtype device)
 instance Torch.Typed.NN.Recurrent.LSTM.HasSampleLSTMLayer directionality => Torch.Typed.NN.Recurrent.LSTM.HasSampleLSTMLayerStack 1 directionality
 instance (2 GHC.TypeNats.<= numLayers, Torch.Typed.NN.Recurrent.LSTM.HasSampleLSTMLayerStack (numLayers GHC.TypeNats.- 1) directionality, Torch.Typed.NN.Recurrent.LSTM.HasSampleLSTMLayer directionality) => Torch.Typed.NN.Recurrent.LSTM.HasSampleLSTMLayerStack numLayers directionality
-instance Torch.Typed.NN.Recurrent.LSTM.HasSampleLSTMLayer 'Torch.Typed.Native.Unidirectional
-instance Torch.Typed.NN.Recurrent.LSTM.HasSampleLSTMLayer 'Torch.Typed.Native.Bidirectional
+instance Torch.Typed.NN.Recurrent.LSTM.HasSampleLSTMLayer 'Torch.Typed.Functional.Unidirectional
+instance Torch.Typed.NN.Recurrent.LSTM.HasSampleLSTMLayer 'Torch.Typed.Functional.Bidirectional
 instance Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayer inputSize hiddenSize directionality dtype device)) parameters => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerStack inputSize hiddenSize 1 directionality dtype device)) parameters
-instance (2 GHC.TypeNats.<= numLayers, Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerStack inputSize hiddenSize (numLayers GHC.TypeNats.- 1) directionality dtype device)) parameters, Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayer (hiddenSize GHC.TypeNats.* Torch.Typed.Native.NumberOfDirections directionality) hiddenSize directionality dtype device)) parameters', Data.HList.HAppendFD parameters parameters' parameters'', parameters'' Data.Type.Equality.~ (parameters Data.HList.++ parameters')) => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerStack inputSize hiddenSize numLayers directionality dtype device)) parameters''
-instance (wiShape Data.Type.Equality.~ Torch.Typed.Native.LSTMWIShape hiddenSize inputSize, whShape Data.Type.Equality.~ Torch.Typed.Native.LSTMWHShape hiddenSize inputSize, biShape Data.Type.Equality.~ Torch.Typed.Native.LSTMBIShape hiddenSize inputSize, bhShape Data.Type.Equality.~ Torch.Typed.Native.LSTMBHShape hiddenSize inputSize, parameters Data.Type.Equality.~ '[Torch.Typed.Parameter.Parameter device dtype wiShape, Torch.Typed.Parameter.Parameter device dtype whShape, Torch.Typed.Parameter.Parameter device dtype biShape, Torch.Typed.Parameter.Parameter device dtype bhShape]) => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayer inputSize hiddenSize 'Torch.Typed.Native.Unidirectional dtype device)) parameters
-instance (wiShape Data.Type.Equality.~ Torch.Typed.Native.LSTMWIShape hiddenSize inputSize, whShape Data.Type.Equality.~ Torch.Typed.Native.LSTMWHShape hiddenSize inputSize, biShape Data.Type.Equality.~ Torch.Typed.Native.LSTMBIShape hiddenSize inputSize, bhShape Data.Type.Equality.~ Torch.Typed.Native.LSTMBHShape hiddenSize inputSize, parameters Data.Type.Equality.~ '[Torch.Typed.Parameter.Parameter device dtype wiShape, Torch.Typed.Parameter.Parameter device dtype whShape, Torch.Typed.Parameter.Parameter device dtype biShape, Torch.Typed.Parameter.Parameter device dtype bhShape, Torch.Typed.Parameter.Parameter device dtype wiShape, Torch.Typed.Parameter.Parameter device dtype whShape, Torch.Typed.Parameter.Parameter device dtype biShape, Torch.Typed.Parameter.Parameter device dtype bhShape]) => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayer inputSize hiddenSize 'Torch.Typed.Native.Bidirectional dtype device)) parameters
+instance (2 GHC.TypeNats.<= numLayers, Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerStack inputSize hiddenSize (numLayers GHC.TypeNats.- 1) directionality dtype device)) parameters, Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayer (hiddenSize GHC.TypeNats.* Torch.Typed.Functional.NumberOfDirections directionality) hiddenSize directionality dtype device)) parameters', Torch.HList.HAppendFD parameters parameters' parameters'', parameters'' Data.Type.Equality.~ (parameters Torch.HList.++ parameters')) => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerStack inputSize hiddenSize numLayers directionality dtype device)) parameters''
+instance (wiShape Data.Type.Equality.~ Torch.Typed.Functional.LSTMWIShape hiddenSize inputSize, whShape Data.Type.Equality.~ Torch.Typed.Functional.LSTMWHShape hiddenSize inputSize, biShape Data.Type.Equality.~ Torch.Typed.Functional.LSTMBIShape hiddenSize inputSize, bhShape Data.Type.Equality.~ Torch.Typed.Functional.LSTMBHShape hiddenSize inputSize, parameters Data.Type.Equality.~ '[Torch.Typed.Parameter.Parameter device dtype wiShape, Torch.Typed.Parameter.Parameter device dtype whShape, Torch.Typed.Parameter.Parameter device dtype biShape, Torch.Typed.Parameter.Parameter device dtype bhShape]) => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayer inputSize hiddenSize 'Torch.Typed.Functional.Unidirectional dtype device)) parameters
+instance (wiShape Data.Type.Equality.~ Torch.Typed.Functional.LSTMWIShape hiddenSize inputSize, whShape Data.Type.Equality.~ Torch.Typed.Functional.LSTMWHShape hiddenSize inputSize, biShape Data.Type.Equality.~ Torch.Typed.Functional.LSTMBIShape hiddenSize inputSize, bhShape Data.Type.Equality.~ Torch.Typed.Functional.LSTMBHShape hiddenSize inputSize, parameters Data.Type.Equality.~ '[Torch.Typed.Parameter.Parameter device dtype wiShape, Torch.Typed.Parameter.Parameter device dtype whShape, Torch.Typed.Parameter.Parameter device dtype biShape, Torch.Typed.Parameter.Parameter device dtype bhShape, Torch.Typed.Parameter.Parameter device dtype wiShape, Torch.Typed.Parameter.Parameter device dtype whShape, Torch.Typed.Parameter.Parameter device dtype biShape, Torch.Typed.Parameter.Parameter device dtype bhShape]) => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayer inputSize hiddenSize 'Torch.Typed.Functional.Bidirectional dtype device)) parameters
 
 module Torch.Typed.NN.Recurrent.Cell.LSTM
 
@@ -3611,13 +3611,13 @@ AdamParameterUpdate :: Float -> LearningRate device dtype -> AdamParameterUpdate
 
 -- | Adam step
 adam :: forall gradients tensors momenta adamStep dtype device. (HZipWith AdamMomentum1Update momenta gradients momenta, HZipWith AdamMomentum2Update momenta gradients momenta, HMap' AdamBiasAdjustment momenta momenta, HZipWith3 (AdamParameterUpdate device dtype) tensors momenta momenta tensors) => LearningRate device dtype -> HList gradients -> HList tensors -> Adam momenta -> (HList tensors, Adam momenta)
-instance (parameter Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, momentum Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, shape Data.Type.Equality.~ Torch.Typed.Tensor.Broadcast '[] shape, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype, Torch.Typed.Aux.StandardFloatingPointDTypeValidation device dtype) => Data.HList.Apply' (Torch.Typed.Optim.AdamParameterUpdate device dtype) (parameter, momentum, momentum) parameter
-instance (Data.HList.HZipWith Torch.Typed.Optim.AdamMomentum1Update momenta gradients momenta, Data.HList.HZipWith Torch.Typed.Optim.AdamMomentum2Update momenta gradients momenta, Data.HList.HMap' Torch.Typed.Optim.AdamBiasAdjustment momenta momenta, Data.HList.HZipWith3 (Torch.Typed.Optim.AdamParameterUpdate device dtype) tensors momenta momenta tensors) => Torch.Typed.Optim.Optimizer (Torch.Typed.Optim.Adam momenta) gradients tensors dtype device
-instance (momentum Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape) => Data.HList.Apply' Torch.Typed.Optim.AdamBiasAdjustment momentum momentum
-instance (gradient Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, momentum2 Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, shape Data.Type.Equality.~ Torch.Typed.Tensor.Broadcast shape shape, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype) => Data.HList.Apply' Torch.Typed.Optim.AdamMomentum2Update (momentum2, gradient) momentum2
-instance (gradient Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, momentum1 Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape) => Data.HList.Apply' Torch.Typed.Optim.AdamMomentum1Update (momentum1, gradient) momentum1
-instance (parameter Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, gradient Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, momentum Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, shape Data.Type.Equality.~ Torch.Typed.Tensor.Broadcast '[] shape, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype) => Data.HList.Apply' (Torch.Typed.Optim.GDMStep device dtype) (parameter, gradient, momentum) (parameter, momentum)
-instance (Data.HList.HZipWith3 (Torch.Typed.Optim.GDMStep device dtype) tensors gradients momenta gdmStep, Data.HList.HMap' Data.HList.Fst gdmStep tensors, Data.HList.HMap' Data.HList.Snd gdmStep momenta) => Torch.Typed.Optim.Optimizer (Torch.Typed.Optim.GDM momenta) gradients tensors dtype device
-instance (parameter Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, gradient Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, shape Data.Type.Equality.~ Torch.Typed.Tensor.Broadcast '[] shape, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype) => Data.HList.Apply' (Torch.Typed.Optim.GDStep device dtype) (parameter, gradient) parameter
-instance Data.HList.HZipWith (Torch.Typed.Optim.GDStep device dtype) tensors gradients tensors => Torch.Typed.Optim.Optimizer Torch.Typed.Optim.GD gradients tensors dtype device
-instance (parameter Data.Type.Equality.~ Torch.Typed.Parameter.Parameter device dtype shape, momentum Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, Torch.Typed.Tensor.TensorOptions shape dtype device) => Data.HList.Apply' Torch.Typed.Optim.ZerosLike parameter momentum
+instance (parameter Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, momentum Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, shape Data.Type.Equality.~ Torch.Typed.Tensor.Broadcast '[] shape, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype, Torch.Typed.Aux.StandardFloatingPointDTypeValidation device dtype) => Torch.HList.Apply' (Torch.Typed.Optim.AdamParameterUpdate device dtype) (parameter, momentum, momentum) parameter
+instance (Torch.HList.HZipWith Torch.Typed.Optim.AdamMomentum1Update momenta gradients momenta, Torch.HList.HZipWith Torch.Typed.Optim.AdamMomentum2Update momenta gradients momenta, Torch.HList.HMap' Torch.Typed.Optim.AdamBiasAdjustment momenta momenta, Torch.HList.HZipWith3 (Torch.Typed.Optim.AdamParameterUpdate device dtype) tensors momenta momenta tensors) => Torch.Typed.Optim.Optimizer (Torch.Typed.Optim.Adam momenta) gradients tensors dtype device
+instance (momentum Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape) => Torch.HList.Apply' Torch.Typed.Optim.AdamBiasAdjustment momentum momentum
+instance (gradient Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, momentum2 Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, shape Data.Type.Equality.~ Torch.Typed.Tensor.Broadcast shape shape, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype) => Torch.HList.Apply' Torch.Typed.Optim.AdamMomentum2Update (momentum2, gradient) momentum2
+instance (gradient Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, momentum1 Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape) => Torch.HList.Apply' Torch.Typed.Optim.AdamMomentum1Update (momentum1, gradient) momentum1
+instance (parameter Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, gradient Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, momentum Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, shape Data.Type.Equality.~ Torch.Typed.Tensor.Broadcast '[] shape, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype) => Torch.HList.Apply' (Torch.Typed.Optim.GDMStep device dtype) (parameter, gradient, momentum) (parameter, momentum)
+instance (Torch.HList.HZipWith3 (Torch.Typed.Optim.GDMStep device dtype) tensors gradients momenta gdmStep, Torch.HList.HMap' Torch.HList.Fst gdmStep tensors, Torch.HList.HMap' Torch.HList.Snd gdmStep momenta) => Torch.Typed.Optim.Optimizer (Torch.Typed.Optim.GDM momenta) gradients tensors dtype device
+instance (parameter Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, gradient Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, shape Data.Type.Equality.~ Torch.Typed.Tensor.Broadcast '[] shape, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype) => Torch.HList.Apply' (Torch.Typed.Optim.GDStep device dtype) (parameter, gradient) parameter
+instance Torch.HList.HZipWith (Torch.Typed.Optim.GDStep device dtype) tensors gradients tensors => Torch.Typed.Optim.Optimizer Torch.Typed.Optim.GD gradients tensors dtype device
+instance (parameter Data.Type.Equality.~ Torch.Typed.Parameter.Parameter device dtype shape, momentum Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, Torch.Typed.Tensor.TensorOptions shape dtype device) => Torch.HList.Apply' Torch.Typed.Optim.ZerosLike parameter momentum
