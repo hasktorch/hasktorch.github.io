@@ -808,6 +808,9 @@ Upper :: Tri
 Lower :: Tri
 kOne :: ForeignPtr Scalar
 isUpper :: Tri -> Bool
+mean :: Tensor -> Tensor
+std :: Tensor -> Tensor
+var :: Tensor -> Tensor
 sumAll :: Tensor -> Tensor
 abs :: Tensor -> Tensor
 keepdim :: KeepDim -> Bool
@@ -1400,7 +1403,6 @@ Linear :: Parameter -> Parameter -> Linear
 [weight] :: Linear -> Parameter
 [bias] :: Linear -> Parameter
 linear :: Linear -> Tensor -> Tensor
-sgd :: Tensor -> [Parameter] -> [Tensor] -> [Tensor]
 instance GHC.Generics.Generic Torch.NN.Linear
 instance GHC.Show.Show Torch.NN.Linear
 instance GHC.Classes.Eq Torch.NN.LinearSpec
@@ -1417,6 +1419,55 @@ instance Torch.NN.Parameterized' GHC.Generics.U1
 instance (Torch.NN.Parameterized' f, Torch.NN.Parameterized' g) => Torch.NN.Parameterized' (f GHC.Generics.:+: g)
 instance (Torch.NN.Parameterized' f, Torch.NN.Parameterized' g) => Torch.NN.Parameterized' (f GHC.Generics.:*: g)
 instance Torch.NN.Parameterized' f => Torch.NN.Parameterized' (GHC.Generics.M1 i t f)
+
+module Torch.Optim
+type LearningRate = Tensor
+type Loss = Tensor
+newtype Gradients
+Gradients :: [Tensor] -> Gradients
+grad' :: Tensor -> [IndependentTensor] -> Gradients
+class Optimizer o
+step :: Optimizer o => LearningRate -> Gradients -> [Tensor] -> o -> ([Tensor], o)
+
+-- | run a single iteration of an optimizer, returning new parameters and
+--   updated optimizer state
+runStep :: (Parameterized p, Optimizer o) => p -> o -> Loss -> LearningRate -> IO ([Parameter], o)
+data GD
+GD :: GD
+
+-- | Stateless gradient descent step
+gd :: LearningRate -> Gradients -> [Tensor] -> [Tensor]
+
+-- | Gradient descent step with a dummy state variable
+gd' :: LearningRate -> Gradients -> [Tensor] -> GD -> ([Tensor], GD)
+sgd :: LearningRate -> [Parameter] -> [Tensor] -> [Tensor]
+data GDM
+GDM :: Float -> [Tensor] -> GDM
+[beta] :: GDM -> Float
+[momentum] :: GDM -> [Tensor]
+gdm :: LearningRate -> Gradients -> [Tensor] -> GDM -> ([Tensor], GDM)
+
+-- | State representation for Adam Optimizer
+data Adam
+Adam :: Float -> Float -> [Tensor] -> [Tensor] -> Int -> Adam
+[beta1] :: Adam -> Float
+[beta2] :: Adam -> Float
+[m1] :: Adam -> [Tensor]
+[m2] :: Adam -> [Tensor]
+[iter] :: Adam -> Int
+
+-- | Adam step
+adam :: LearningRate -> Gradients -> [Tensor] -> Adam -> ([Tensor], Adam)
+
+-- | syntactic sugar for looping with foldM
+foldLoop :: a -> Int -> (a -> Int -> IO a) -> IO a
+instance GHC.Show.Show Torch.Optim.Adam
+instance GHC.Show.Show Torch.Optim.GDM
+instance GHC.Show.Show Torch.Optim.GD
+instance GHC.Show.Show Torch.Optim.Gradients
+instance Torch.Optim.Optimizer Torch.Optim.Adam
+instance Torch.Optim.Optimizer Torch.Optim.GDM
+instance Torch.Optim.Optimizer Torch.Optim.GD
 
 module Torch.Random
 mkGenerator :: Device -> Word64 -> IO Generator
