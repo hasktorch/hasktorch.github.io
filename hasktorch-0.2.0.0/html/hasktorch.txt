@@ -307,6 +307,7 @@ instance (Torch.Tensor.TensorIndex a, Torch.Tensor.TensorIndex b, Torch.Tensor.T
 instance Torch.Internal.Class.Castable Torch.Tensor.Tensor Torch.Tensor.ATenTensor
 instance GHC.Show.Show Torch.Tensor.Tensor
 instance Torch.Internal.Class.Castable [Torch.Tensor.Tensor] (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.TensorList)
+instance Torch.Internal.Class.Castable [Torch.Tensor.Tensor] (GHC.ForeignPtr.ForeignPtr (Torch.Internal.Type.C10List Torch.Internal.Type.Tensor))
 
 module Torch.TensorFactories
 type FactoryType = ForeignPtr IntArray -> ForeignPtr TensorOptions -> IO (ForeignPtr Tensor)
@@ -1468,6 +1469,58 @@ instance GHC.Show.Show Torch.Optim.Gradients
 instance Torch.Optim.Optimizer Torch.Optim.Adam
 instance Torch.Optim.Optimizer Torch.Optim.GDM
 instance Torch.Optim.Optimizer Torch.Optim.GD
+
+module Torch.Script
+newtype Module
+UnsafeModule :: ForeignPtr Module -> Module
+type RawIValue = ForeignPtr IValue
+newtype Blob
+UnsafeBlob :: ForeignPtr (C10Ptr Blob) -> Blob
+newtype Object
+UnsafeObject :: ForeignPtr (C10Ptr IVObject) -> Object
+newtype Future
+UnsafeFuture :: ForeignPtr (C10Ptr IVFuture) -> Future
+newtype Capsule
+UnsafeCapsule :: ForeignPtr (C10Ptr Capsule) -> Capsule
+data IValue
+IVNone :: IValue
+IVTensor :: Tensor -> IValue
+IVDouble :: Double -> IValue
+IVInt :: Int64 -> IValue
+IVBool :: Bool -> IValue
+IVTuple :: [IValue] -> IValue
+IVIntList :: [Int64] -> IValue
+IVDoubleList :: [Double] -> IValue
+IVBoolList :: [Bool] -> IValue
+IVString :: String -> IValue
+IVTensorList :: [Tensor] -> IValue
+IVBlob :: IValue
+IVGenericList :: [IValue] -> IValue
+IVGenericDict :: [(IValue, IValue)] -> IValue
+IVFuture :: IValue
+IVDevice :: IValue
+IVObject :: IValue
+IVUninitialized :: IValue
+IVCapsule :: IValue
+newModule :: String -> IO Module
+save :: Module -> FilePath -> IO ()
+load :: FilePath -> IO Module
+forward' :: Module -> [RawIValue] -> IO RawIValue
+forward :: Module -> [IValue] -> IO IValue
+register_parameter :: Module -> String -> Tensor -> Bool -> IO ()
+register_module :: Module -> String -> Module -> IO ()
+train :: Module -> Bool -> IO ()
+run_method :: Module -> String -> [IValue] -> IO IValue
+run_method1 :: Module -> String -> IValue -> IO IValue
+define :: Module -> String -> IO ()
+instance GHC.Show.Show Torch.Script.IValue
+instance Torch.Internal.Class.Castable [Torch.Script.IValue] [Torch.Script.RawIValue]
+instance Torch.Internal.Class.Castable Torch.Script.IValue Torch.Script.RawIValue
+instance GHC.Show.Show Torch.Script.Capsule
+instance GHC.Show.Show Torch.Script.Future
+instance GHC.Show.Show Torch.Script.Object
+instance GHC.Show.Show Torch.Script.Blob
+instance Torch.Internal.Class.Castable Torch.Script.Module (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Module)
 
 module Torch.Random
 mkGenerator :: Device -> Word64 -> IO Generator
@@ -4846,3 +4899,11 @@ instance (Torch.HList.HZipWith3 (Torch.Typed.Optim.GDMStep device dtype) tensors
 instance (parameter Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, gradient Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, shape Data.Type.Equality.~ Torch.Typed.Tensor.Broadcast '[] shape, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype) => Torch.HList.Apply' (Torch.Typed.Optim.GDStep device dtype) (parameter, gradient) parameter
 instance Torch.HList.HZipWith (Torch.Typed.Optim.GDStep device dtype) tensors gradients tensors => Torch.Typed.Optim.Optimizer Torch.Typed.Optim.GD gradients tensors dtype device
 instance (parameter Data.Type.Equality.~ Torch.Typed.Parameter.Parameter device dtype shape, momentum Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, Torch.Typed.Tensor.TensorOptions shape dtype device) => Torch.HList.Apply' Torch.Typed.Optim.ZerosLike parameter momentum
+
+module Torch.Utils.Image
+readImage :: FilePath -> IO (Either String Tensor)
+writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
+writeBitmap :: FilePath -> Tensor -> IO ()
+writePng :: FilePath -> Tensor -> IO ()
+hwc2chw :: Tensor -> Tensor
+chw2hwc :: Tensor -> Tensor
