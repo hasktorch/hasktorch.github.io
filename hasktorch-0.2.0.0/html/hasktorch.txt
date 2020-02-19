@@ -322,12 +322,12 @@ ones :: [Int] -> TensorOptions -> Tensor
 onesLike :: Tensor -> Tensor
 onesLike' :: Tensor -> Tensor
 zeros :: [Int] -> TensorOptions -> Tensor
-rand :: [Int] -> TensorOptions -> IO Tensor
-randn :: [Int] -> TensorOptions -> IO Tensor
-randint :: Int -> Int -> [Int] -> TensorOptions -> IO Tensor
-randnLike :: Tensor -> IO Tensor
+randIO :: [Int] -> TensorOptions -> IO Tensor
+randnIO :: [Int] -> TensorOptions -> IO Tensor
+randintIO :: Int -> Int -> [Int] -> TensorOptions -> IO Tensor
+randnLikeIO :: Tensor -> IO Tensor
+randLikeIO :: Tensor -> TensorOptions -> IO Tensor
 fullLike :: Tensor -> Float -> TensorOptions -> IO Tensor
-randLike :: Tensor -> TensorOptions -> IO Tensor
 onesWithDimnames :: [(Int, Dimname)] -> TensorOptions -> Tensor
 zerosWithDimnames :: [(Int, Dimname)] -> TensorOptions -> Tensor
 randWithDimnames :: [(Int, Dimname)] -> TensorOptions -> IO Tensor
@@ -340,10 +340,10 @@ full :: Scalar a => [Int] -> a -> TensorOptions -> Tensor
 sparseCooTensor :: Tensor -> Tensor -> [Int] -> TensorOptions -> Tensor
 ones' :: [Int] -> Tensor
 zeros' :: [Int] -> Tensor
-rand' :: [Int] -> IO Tensor
-randn' :: [Int] -> IO Tensor
-randint' :: Int -> Int -> [Int] -> IO Tensor
-randLike' :: Tensor -> IO Tensor
+randIO' :: [Int] -> IO Tensor
+randnIO' :: [Int] -> IO Tensor
+randintIO' :: Int -> Int -> [Int] -> IO Tensor
+randLikeIO' :: Tensor -> IO Tensor
 onesWithDimnames' :: [(Int, Dimname)] -> Tensor
 zerosWithDimnames' :: [(Int, Dimname)] -> Tensor
 randWithDimnames' :: [(Int, Dimname)] -> IO Tensor
@@ -839,10 +839,11 @@ relu :: Tensor -> Tensor
 selu :: Tensor -> Tensor
 sigmoid :: Tensor -> Tensor
 sin :: Tensor -> Tensor
-sinh :: Tensor -> Tensor
 cos :: Tensor -> Tensor
-sqrt :: Tensor -> Tensor
+sinh :: Tensor -> Tensor
+cosh :: Tensor -> Tensor
 tanh :: Tensor -> Tensor
+sqrt :: Tensor -> Tensor
 gt :: Tensor -> Tensor -> Tensor
 (>.) :: Tensor -> Tensor -> Tensor
 lt :: Tensor -> Tensor -> Tensor
@@ -864,7 +865,6 @@ binary_cross_entropy_loss :: Tensor -> Tensor -> Tensor -> Reduction -> Tensor
 binary_cross_entropy_loss' :: Tensor -> Tensor -> Tensor
 mse_loss :: Tensor -> Tensor -> Tensor
 nllLoss' :: Tensor -> Tensor -> Tensor
-conv2d :: Tensor -> Tensor -> Tensor -> (Int, Int) -> (Int, Int) -> Tensor
 maxPool2d :: Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Tensor
 softmax :: Int -> Tensor -> Tensor
 logSoftmax :: Int -> Tensor -> Tensor
@@ -874,6 +874,25 @@ eig :: Tensor -> Bool -> (Tensor, Tensor)
 svd :: Tensor -> Bool -> Bool -> (Tensor, Tensor, Tensor)
 cholesky :: Tensor -> Tri -> Tensor
 cholesky_solve :: Tensor -> Tensor -> Tri -> Tensor
+dropout :: Double -> Bool -> Tensor -> IO Tensor
+featureDropout :: Double -> Bool -> Tensor -> IO Tensor
+alphaDropout :: Double -> Bool -> Tensor -> IO Tensor
+featureAlphaDropout :: Double -> Bool -> Tensor -> IO Tensor
+avgPool1d :: Int -> Int -> Int -> Bool -> Bool -> Tensor -> Tensor
+avgPool1d' :: Int -> Int -> Int -> Tensor -> Tensor
+adaptiveAvgPool1d :: Int -> Tensor -> Tensor
+bitwiseNot :: Tensor -> Tensor
+cat :: Int -> [Tensor] -> Tensor
+chunk :: Int -> Int -> Tensor -> [Tensor]
+clamp :: Float -> Float -> Tensor -> Tensor
+clampMax :: Float -> Tensor -> Tensor
+clampMin :: Float -> Tensor -> Tensor
+cudnnIsAcceptable :: Tensor -> Bool
+constantPadNd1d :: [Int] -> Float -> Tensor -> Tensor
+conv1d :: Tensor -> Tensor -> Int -> Int -> Int -> Int -> Tensor -> Tensor
+conv1d' :: Tensor -> Tensor -> Int -> Int -> Tensor -> Tensor
+conv2d :: Tensor -> Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Int -> Tensor -> Tensor
+conv2d' :: Tensor -> Tensor -> (Int, Int) -> (Int, Int) -> Tensor -> Tensor
 solve :: Tensor -> Tensor -> (Tensor, Tensor)
 cholesky_inverse :: Tensor -> Tri -> Tensor
 geqrf :: Tensor -> (Tensor, Tensor)
@@ -887,436 +906,20 @@ any :: Tensor -> Bool
 all' :: Tensor -> Int -> Bool -> Tensor
 any' :: Tensor -> Int -> Bool -> Tensor
 permute :: Tensor -> [Int] -> Tensor
-align_tensors :: [Tensor] -> [Tensor]
-dropout :: Tensor -> Double -> Bool -> Tensor
-feature_dropout :: Tensor -> Double -> Bool -> Tensor
-alpha_dropout :: Tensor -> Double -> Bool -> Tensor
-feature_alpha_dropout :: Tensor -> Double -> Bool -> Tensor
-angle :: Tensor -> Tensor
-real :: Tensor -> Tensor
-imag :: Tensor -> Tensor
-conj :: Tensor -> Tensor
-acos :: Tensor -> Tensor
-avg_pool1d :: Tensor -> Int -> Int -> Int -> Bool -> Bool -> Tensor
-adaptive_avg_pool1d :: Tensor -> Int -> Tensor
-adaptive_max_pool1d :: Tensor -> Int -> (Tensor, Tensor)
 addmv :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor
 addr :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor
-affine_grid_generator :: Tensor -> [Int] -> Bool -> Tensor
-affine_grid_generator_backward :: Tensor -> [Int] -> Bool -> Tensor
-allWithDimname :: Tensor -> Dimname -> Bool -> Tensor
 allclose :: Tensor -> Tensor -> Double -> Double -> Bool -> Bool
-anyWithDimname :: Tensor -> Dimname -> Bool -> Tensor
 argmin :: Tensor -> Int -> Bool -> Tensor
-as_strided :: Tensor -> [Int] -> [Int] -> Int -> Tensor
+baddbmm :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor
+bmm :: Tensor -> Tensor -> Tensor
+acos :: Tensor -> Tensor
 asin :: Tensor -> Tensor
 atan :: Tensor -> Tensor
-baddbmm :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor
-batch_norm :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Bool -> Double -> Double -> Bool -> Tensor
-bilinear :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor
-binary_cross_entropy_with_logits :: Tensor -> Tensor -> Tensor -> Tensor -> Int -> Tensor
-binary_cross_entropy_with_logits_backward :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Int -> Tensor
-bincount :: Tensor -> Tensor -> Int -> Tensor
-bitwise_not :: Tensor -> Tensor
-logical_not :: Tensor -> Tensor
-logical_xor :: Tensor -> Tensor -> Tensor
-bmm :: Tensor -> Tensor -> Tensor
-broadcast_tensors :: [Tensor] -> [Tensor]
-catWithDimname :: [Tensor] -> Dimname -> Tensor
-chain_matmul :: [Tensor] -> Tensor
-chunk :: Tensor -> Int -> Int -> [Tensor]
-clamp :: Tensor -> Float -> Float -> Tensor
-clamp_max :: Tensor -> Float -> Tensor
-clamp_min :: Tensor -> Float -> Tensor
-cudnn_is_acceptable :: Tensor -> Bool
-constant_pad_nd :: Tensor -> [Int] -> Float -> Tensor
-convolution :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Bool -> [Int] -> Int -> Tensor
-convolution_overrideable :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Bool -> [Int] -> Int -> Tensor
-convolution_backward_overrideable :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Bool -> [Int] -> Int -> (Bool, Bool, Bool) -> (Tensor, Tensor, Tensor)
-conv1d :: Tensor -> Tensor -> Tensor -> Int -> Int -> Int -> Int -> Tensor
-conv3d :: Tensor -> Tensor -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Int -> Tensor
-conv_tbc :: Tensor -> Tensor -> Tensor -> Int -> Tensor
-conv_tbc_backward :: Tensor -> Tensor -> Tensor -> Tensor -> Int -> (Tensor, Tensor, Tensor)
-conv_transpose1d :: Tensor -> Tensor -> Tensor -> Int -> Int -> Int -> Int -> Int -> Tensor
-cosh :: Tensor -> Tensor
-cosine_embedding_loss :: Tensor -> Tensor -> Tensor -> Double -> Int -> Tensor
-cudnn_affine_grid_generator :: Tensor -> Int -> Int -> Int -> Int -> Tensor
-cudnn_affine_grid_generator_backward :: Tensor -> Int -> Int -> Int -> Int -> Tensor
-cudnn_batch_norm :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Bool -> Double -> Double -> (Tensor, Tensor, Tensor, Tensor)
-cudnn_batch_norm_backward :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Double -> Tensor -> (Tensor, Tensor, Tensor)
-cudnn_convolution :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> Tensor
-cudnn_convolution_backward_input :: [Int] -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> Tensor
-cudnn_convolution_backward :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> (Bool, Bool, Bool) -> (Tensor, Tensor, Tensor)
-cudnn_convolution_backward_bias :: Tensor -> Tensor
-cudnn_convolution_backward_weight :: [Int] -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> Tensor
-cudnn_convolution_transpose :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> Tensor
-cudnn_convolution_transpose_backward :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> (Bool, Bool, Bool) -> (Tensor, Tensor, Tensor)
-cudnn_convolution_transpose_backward_bias :: Tensor -> Tensor
-cudnn_convolution_transpose_backward_input :: Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> Tensor
-cudnn_convolution_transpose_backward_weight :: [Int] -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> Tensor
-cudnn_grid_sampler :: Tensor -> Tensor -> Tensor
-cudnn_grid_sampler_backward :: Tensor -> Tensor -> Tensor -> (Tensor, Tensor)
-cumsum :: Tensor -> Dimname -> DType -> Tensor
-cumprod :: Tensor -> Dimname -> DType -> Tensor
-det :: Tensor -> Tensor
-diag_embed :: Tensor -> Int -> Int -> Int -> Tensor
-diagflat :: Tensor -> Int -> Tensor
-diagonal :: Tensor -> Int -> Int -> Int -> Tensor
 dot :: Tensor -> Tensor -> Tensor
-einsum :: String -> [Tensor] -> Tensor
-embedding :: Tensor -> Tensor -> Int -> Bool -> Bool -> Tensor
-embedding_backward :: Tensor -> Tensor -> Int -> Int -> Bool -> Bool -> Tensor
-embedding_dense_backward :: Tensor -> Tensor -> Int -> Int -> Bool -> Tensor
-embedding_sparse_backward :: Tensor -> Tensor -> Int -> Int -> Bool -> Tensor
-embedding_bag :: Tensor -> Tensor -> Tensor -> Bool -> Int -> Bool -> Tensor -> (Tensor, Tensor, Tensor, Tensor)
-empty_like :: Tensor -> Tensor
-erfc :: Tensor -> Tensor
-expm1 :: Tensor -> Tensor
-flatten :: Tensor -> Int -> Int -> Tensor
-frac :: Tensor -> Tensor
-full_like :: Tensor -> Float -> Tensor
-grid_sampler :: Tensor -> Tensor -> Int -> Int -> Bool -> Tensor
-grid_sampler_2d :: Tensor -> Tensor -> Int -> Int -> Bool -> Tensor
-grid_sampler_2d_backward :: Tensor -> Tensor -> Tensor -> Int -> Int -> Bool -> (Tensor, Tensor)
-grid_sampler_3d :: Tensor -> Tensor -> Int -> Int -> Bool -> Tensor
-grid_sampler_3d_backward :: Tensor -> Tensor -> Tensor -> Int -> Int -> Bool -> (Tensor, Tensor)
-hinge_embedding_loss :: Tensor -> Tensor -> Double -> Int -> Tensor
-ger :: Tensor -> Tensor -> Tensor
-group_norm :: Tensor -> Int -> Tensor -> Tensor -> Double -> Bool -> Tensor
-fft :: Tensor -> Int -> Bool -> Tensor
-ifft :: Tensor -> Int -> Bool -> Tensor
-rfft :: Tensor -> Int -> Bool -> Bool -> Tensor
-irfft :: Tensor -> Int -> Bool -> Bool -> [Int] -> Tensor
-index :: Tensor -> [Tensor] -> Tensor
-indexCopy :: Tensor -> Int -> Tensor -> Tensor -> Tensor
-indexCopyWithDimname :: Tensor -> Dimname -> Tensor -> Tensor -> Tensor
-index_put :: Tensor -> [Tensor] -> Tensor -> Bool -> Tensor
-instance_norm :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Bool -> Double -> Double -> Bool -> Tensor
-isclose :: Tensor -> Tensor -> Double -> Double -> Bool -> Tensor
-isnan :: Tensor -> Tensor
-is_distributed :: Tensor -> Bool
-is_floating_point :: Tensor -> Bool
-is_complex :: Tensor -> Bool
-is_nonzero :: Tensor -> Bool
-is_same_size :: Tensor -> Tensor -> Bool
-is_signed :: Tensor -> Bool
-kl_div :: Tensor -> Tensor -> Int -> Tensor
-kl_div_backward :: Tensor -> Tensor -> Tensor -> Int -> Tensor
-kthvalue :: Tensor -> Int -> Int -> Bool -> (Tensor, Tensor)
-kthvalueWithDimname :: Tensor -> Int -> Dimname -> Bool -> (Tensor, Tensor)
-layer_norm :: Tensor -> [Int] -> Tensor -> Tensor -> Double -> Bool -> Tensor
-native_layer_norm :: Tensor -> Tensor -> Tensor -> Int -> Int -> Double -> (Tensor, Tensor, Tensor)
-native_layer_norm_backward :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Int -> Int -> (Bool, Bool, Bool) -> (Tensor, Tensor, Tensor)
-mkldnn_linear :: Tensor -> Tensor -> Tensor -> Tensor
-fbgemm_linear_int8_weight_fp32_activation :: Tensor -> Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor -> Tensor
-fbgemm_linear_int8_weight :: Tensor -> Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor -> Tensor
-fbgemm_linear_quantize_weight :: Tensor -> (Tensor, Tensor, Double, Int)
-fbgemm_pack_gemm_matrix_fp16 :: Tensor -> Tensor
-fbgemm_linear_fp16_weight_fp32_activation :: Tensor -> Tensor -> Tensor -> Tensor
-fbgemm_linear_fp16_weight :: Tensor -> Tensor -> Tensor -> Tensor
-log :: Tensor -> Tensor
-logdet :: Tensor -> Tensor
-logSoftmaxWithDimname :: Tensor -> Dimname -> DType -> Tensor
-logsumexp :: Tensor -> Int -> Bool -> Tensor
-logsumexpWithDimnameList :: Tensor -> [Dimname] -> Bool -> Tensor
-margin_ranking_loss :: Tensor -> Tensor -> Tensor -> Double -> Int -> Tensor
-matrix_power :: Tensor -> Int -> Tensor
-maxValues :: Tensor -> Int -> Bool -> Tensor
-maxWithDimname :: Tensor -> Dimname -> Bool -> (Tensor, Tensor)
-maxValuesWithDimnames :: Tensor -> [Dimname] -> Bool -> Tensor
-max_pool1d_with_indices :: Tensor -> Int -> Int -> Int -> Int -> Bool -> (Tensor, Tensor)
-max_pool1d :: Tensor -> Int -> Int -> Int -> Int -> Bool -> Tensor
-max_pool2d :: Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Bool -> Tensor
-mkldnn_max_pool2d :: Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Bool -> Tensor
-quantized_max_pool2d :: Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Bool -> Tensor
-max_pool3d :: Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Bool -> Tensor
-meanWithDimnames :: Tensor -> [Dimname] -> Bool -> DType -> Tensor
-medianWithDimname :: Tensor -> Dimname -> Bool -> (Tensor, Tensor)
-minValues :: Tensor -> Int -> Bool -> Tensor
-minWithDimname :: Tensor -> Dimname -> Bool -> (Tensor, Tensor)
-minValuesWithDimnames :: Tensor -> [Dimname] -> Bool -> Tensor
-mkldnn_convolution :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Tensor
-mkldnn_convolution_backward_input :: [Int] -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Tensor
-mkldnn_convolution_backward_weights :: [Int] -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Bool -> (Tensor, Tensor)
-mkldnn_convolution_backward :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> (Bool, Bool, Bool) -> (Tensor, Tensor, Tensor)
-miopen_batch_norm :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Bool -> Double -> Double -> (Tensor, Tensor, Tensor)
-miopen_batch_norm_backward :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Double -> (Tensor, Tensor, Tensor)
-miopen_convolution :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> Tensor
-miopen_convolution_backward_input :: [Int] -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> Tensor
-miopen_convolution_backward :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> (Bool, Bool, Bool) -> (Tensor, Tensor, Tensor)
-miopen_convolution_backward_bias :: Tensor -> Tensor
-miopen_convolution_backward_weight :: [Int] -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> Tensor
-miopen_convolution_transpose :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> Tensor
-miopen_convolution_transpose_backward :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> (Bool, Bool, Bool) -> (Tensor, Tensor, Tensor)
-miopen_convolution_transpose_backward_input :: Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> Tensor
-miopen_convolution_transpose_backward_weight :: [Int] -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> Tensor
-miopen_depthwise_convolution :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> Tensor
-miopen_depthwise_convolution_backward_input :: [Int] -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> Tensor
-miopen_depthwise_convolution_backward :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> (Bool, Bool, Bool) -> (Tensor, Tensor, Tensor)
-miopen_depthwise_convolution_backward_weight :: [Int] -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> Tensor
-miopen_rnn :: Tensor -> [Tensor] -> Int -> Tensor -> Tensor -> Int -> Int -> Int -> Bool -> Double -> Bool -> Bool -> [Int] -> Tensor -> (Tensor, Tensor, Tensor, Tensor, Tensor)
-miopen_rnn_backward :: Tensor -> [Tensor] -> Int -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Int -> Int -> Int -> Bool -> Double -> Bool -> Bool -> [Int] -> Tensor -> Tensor -> (Bool, Bool, Bool, Bool) -> (Tensor, Tensor, Tensor, [Tensor])
-mm :: Tensor -> Tensor -> Tensor
-mode :: Tensor -> Int -> Bool -> (Tensor, Tensor)
-modeWithDimname :: Tensor -> Dimname -> Bool -> (Tensor, Tensor)
-mv :: Tensor -> Tensor -> Tensor
-mvlgamma :: Tensor -> Int -> Tensor
-narrow :: Tensor -> Int -> Int -> Int -> Tensor
-native_batch_norm :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Bool -> Double -> Double -> (Tensor, Tensor, Tensor)
-batch_norm_stats :: Tensor -> Double -> (Tensor, Tensor)
-batch_norm_elemt :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Double -> Tensor
-batch_norm_gather_stats :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Double -> Double -> Int -> (Tensor, Tensor)
-batch_norm_gather_stats_with_counts :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Double -> Double -> [Int] -> (Tensor, Tensor)
-native_batch_norm_backward :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Bool -> Double -> (Bool, Bool, Bool) -> (Tensor, Tensor, Tensor)
-batch_norm_backward_reduce :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Bool -> Bool -> Bool -> (Tensor, Tensor, Tensor, Tensor)
-batch_norm_backward_elemt :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor
-batch_norm_update_stats :: Tensor -> Tensor -> Tensor -> Double -> (Tensor, Tensor)
-ones_like :: Tensor -> Tensor
-pairwise_distance :: Tensor -> Tensor -> Double -> Double -> Bool -> Tensor
-cdist :: Tensor -> Tensor -> Double -> Tensor
-pdist :: Tensor -> Double -> Tensor
-cosine_similarity :: Tensor -> Tensor -> Int -> Double -> Tensor
-pixel_shuffle :: Tensor -> Int -> Tensor
-pinverse :: Tensor -> Double -> Tensor
-poisson_nll_loss :: Tensor -> Tensor -> Bool -> Bool -> Double -> Int -> Tensor
-rand_like :: Tensor -> Tensor
-randn_like :: Tensor -> Tensor
-reciprocal :: Tensor -> Tensor
-neg :: Tensor -> Tensor
-round :: Tensor -> Tensor
-prelu :: Tensor -> Tensor -> Tensor
-prelu_backward :: Tensor -> Tensor -> Tensor -> (Tensor, Tensor)
-gelu :: Tensor -> Tensor
-gelu_backward :: Tensor -> Tensor -> Tensor
-hardshrink :: Tensor -> Float -> Tensor
-hardshrink_backward :: Tensor -> Tensor -> Float -> Tensor
-rsqrt :: Tensor -> Tensor
-selectWithDimname :: Tensor -> Dimname -> Int -> Tensor
-celu :: Tensor -> Float -> Tensor
-sizeWithDimname :: Tensor -> Dimname -> Int
-slice :: Tensor -> Int -> Int -> Int -> Int -> Tensor
-slogdet :: Tensor -> (Tensor, Tensor)
-smm :: Tensor -> Tensor -> Tensor
-softmaxWithDimname :: Tensor -> Dimname -> DType -> Tensor
-split :: Tensor -> Int -> Int -> [Tensor]
-split_with_sizes :: Tensor -> [Int] -> Int -> [Tensor]
-squeezeWithDimname :: Tensor -> Dimname -> Tensor
-sspaddmm :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor
-stack :: [Tensor] -> Int -> Tensor
-stft :: Tensor -> Int -> Int -> Int -> Tensor -> Bool -> Bool -> Tensor
-stride :: Tensor -> Int -> Int
-strideWithDimname :: Tensor -> Dimname -> Int
-sumWithDimnames :: Tensor -> [Dimname] -> Bool -> DType -> Tensor
-stdMeanWithDimnames :: Tensor -> [Dimname] -> Bool -> Bool -> (Tensor, Tensor)
-stdWithDimnames :: Tensor -> [Dimname] -> Bool -> Bool -> Tensor
-prodWithDimnames :: Tensor -> Dimname -> Bool -> DType -> Tensor
-t :: Tensor -> Tensor
-tan :: Tensor -> Tensor
-tensordot :: Tensor -> Tensor -> [Int] -> [Int] -> Tensor
-threshold :: Tensor -> Float -> Float -> Tensor
-threshold_backward :: Tensor -> Tensor -> Float -> Tensor
-transposeWithDimname :: Tensor -> Dimname -> Dimname -> Tensor
-one_hot :: Tensor -> Int -> Tensor
-flip :: Tensor -> [Int] -> Tensor
-roll :: Tensor -> Int -> Int -> Tensor
-rot90 :: Tensor -> Int -> [Int] -> Tensor
-triplet_margin_loss :: Tensor -> Tensor -> Tensor -> Double -> Double -> Double -> Bool -> Int -> Tensor
-trunc :: Tensor -> Tensor
-unique_dim :: Tensor -> Int -> Bool -> Bool -> Bool -> (Tensor, Tensor, Tensor)
-unique_consecutive :: Tensor -> Bool -> Bool -> Int -> (Tensor, Tensor, Tensor)
-unique_dim_consecutive :: Tensor -> Int -> Bool -> Bool -> (Tensor, Tensor, Tensor)
-unsqueeze :: Tensor -> Int -> Tensor
-varWithDimnames :: Tensor -> [Dimname] -> Bool -> Bool -> Tensor
-varMeanWithDimnames :: Tensor -> [Dimname] -> Bool -> Bool -> (Tensor, Tensor)
-where' :: Tensor -> Tensor -> Tensor -> Tensor
-norm_except_dim :: Tensor -> Int -> Int -> Tensor
-zeros_like :: Tensor -> Tensor
-native_norm :: Tensor -> Float -> Tensor
-clone :: Tensor -> Tensor
-addmm :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor
-to_dense_backward :: Tensor -> Tensor -> Tensor
-hspmm :: Tensor -> Tensor -> Tensor
-unbind :: Tensor -> Int -> [Tensor]
-unbindWithDimname :: Tensor -> Dimname -> [Tensor]
-mkldnn_reorder_conv2d_weight :: Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Int -> Tensor
-to_mkldnn_backward :: Tensor -> Tensor -> Tensor
-quantize_per_tensor :: Tensor -> Double -> Int -> DType -> Tensor
-quantize_per_channel :: Tensor -> Tensor -> Tensor -> Int -> DType -> Tensor
-dequantize :: Tensor -> Tensor
-q_scale :: Tensor -> Double
-q_zero_point :: Tensor -> Int
-q_per_channel_scales :: Tensor -> Tensor
-q_per_channel_zero_points :: Tensor -> Tensor
-q_per_channel_axis :: Tensor -> Int
-int_repr :: Tensor -> Tensor
-fake_quantize_per_tensor_affine :: Tensor -> Double -> Int -> Int -> Int -> Tensor
-fake_quantize_per_tensor_affine_backward :: Tensor -> Tensor -> Double -> Int -> Int -> Int -> Tensor
-fake_quantize_per_channel_affine :: Tensor -> Tensor -> Tensor -> Int -> Int -> Int -> Tensor
-fake_quantize_per_channel_affine_backward :: Tensor -> Tensor -> Tensor -> Tensor -> Int -> Int -> Int -> Tensor
-meshgrid :: [Tensor] -> [Tensor]
-cartesian_prod :: [Tensor] -> Tensor
-combinations :: Tensor -> Int -> Bool -> Tensor
-can_cast :: DType -> DType -> Bool
-promote_types :: DType -> DType -> DType
-lstm_cell :: Tensor -> [Tensor] -> Tensor -> Tensor -> Tensor -> Tensor -> (Tensor, Tensor)
-gru_cell :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor
-rnn_tanh_cell :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor
-rnn_relu_cell :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor
-quantized_lstm_cell :: Tensor -> [Tensor] -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Float -> Float -> Float -> Float -> (Tensor, Tensor)
-quantized_gru_cell :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Float -> Float -> Float -> Float -> Tensor
-quantized_rnn_relu_cell :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Float -> Float -> Float -> Float -> Tensor
-quantized_rnn_tanh_cell :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Float -> Float -> Float -> Float -> Tensor
-masked_scatter :: Tensor -> Tensor -> Tensor -> Tensor
-indexAdd :: Tensor -> Int -> Tensor -> Tensor -> Tensor
-indexAddWithDimname :: Tensor -> Dimname -> Tensor -> Tensor -> Tensor
-scatterAdd :: Tensor -> Int -> Tensor -> Tensor -> Tensor
-scatterAddWithDimname :: Tensor -> Dimname -> Tensor -> Tensor -> Tensor
-addbmm :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor
-cross :: Tensor -> Tensor -> Int -> Tensor
-triu :: Tensor -> Int -> Tensor
-tril :: Tensor -> Int -> Tensor
-trace :: Tensor -> Tensor
-take :: Tensor -> Tensor -> Tensor
-indexSelect :: Tensor -> Int -> Tensor -> Tensor
-indexSelectWithDimname :: Tensor -> Dimname -> Tensor -> Tensor
-masked_select :: Tensor -> Tensor -> Tensor
-nonzero :: Tensor -> Tensor
-nonzero_numpy :: Tensor -> [Tensor]
-gather :: Tensor -> Int -> Tensor -> Bool -> Tensor
-gatherWithDimname :: Tensor -> Dimname -> Tensor -> Bool -> Tensor
-addcmul :: Tensor -> Tensor -> Tensor -> Float -> Tensor
-addcdiv :: Tensor -> Tensor -> Tensor -> Float -> Tensor
 lstsq :: Tensor -> Tensor -> (Tensor, Tensor)
-triangular_solve :: Tensor -> Tensor -> Bool -> Bool -> Bool -> (Tensor, Tensor)
-qr :: Tensor -> Bool -> (Tensor, Tensor)
-ormqr :: Tensor -> Tensor -> Tensor -> Bool -> Bool -> Tensor
-lu_solve :: Tensor -> Tensor -> Tensor -> Tensor
-lgamma :: Tensor -> Tensor
-digamma :: Tensor -> Tensor
-polygamma :: Int -> Tensor -> Tensor
-erfinv :: Tensor -> Tensor
-dist :: Tensor -> Tensor -> Float -> Tensor
-atan2 :: Tensor -> Tensor -> Tensor
-histc :: Tensor -> Int -> Float -> Float -> Tensor
-minAll :: Tensor -> Tensor
-maxAll :: Tensor -> Tensor
-medianAll :: Tensor -> Tensor
-sort :: Tensor -> Int -> Bool -> (Tensor, Tensor)
-sortWithDimname :: Tensor -> Dimname -> Bool -> (Tensor, Tensor)
-argsort :: Tensor -> Int -> Bool -> Tensor
-argsortWithDimname :: Tensor -> Dimname -> Bool -> Tensor
-topk :: Tensor -> Int -> Int -> Bool -> Bool -> (Tensor, Tensor)
-renorm :: Tensor -> Float -> Int -> Float -> Tensor
-equal :: Tensor -> Tensor -> Bool
-alias :: Tensor -> Tensor
-binary_cross_entropy :: Tensor -> Tensor -> Tensor -> Int -> Tensor
-binary_cross_entropy_backward :: Tensor -> Tensor -> Tensor -> Tensor -> Int -> Tensor
-mse_loss_backward :: Tensor -> Tensor -> Tensor -> Int -> Tensor
-l1_loss :: Tensor -> Tensor -> Int -> Tensor
-l1_loss_backward :: Tensor -> Tensor -> Tensor -> Int -> Tensor
-multi_margin_loss :: Tensor -> Tensor -> Float -> Float -> Tensor -> Int -> Tensor
-multi_margin_loss_backward :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor -> Int -> Tensor
-multilabel_margin_loss :: Tensor -> Tensor -> Int -> Tensor
-multilabel_margin_loss_forward :: Tensor -> Tensor -> Int -> (Tensor, Tensor)
-multilabel_margin_loss_backward :: Tensor -> Tensor -> Tensor -> Int -> Tensor -> Tensor
-nll_loss :: Tensor -> Tensor -> Tensor -> Int -> Int -> Tensor
-nll_loss_forward :: Tensor -> Tensor -> Tensor -> Int -> Int -> (Tensor, Tensor)
-nll_loss_backward :: Tensor -> Tensor -> Tensor -> Tensor -> Int -> Int -> Tensor -> Tensor
-nll_loss2d :: Tensor -> Tensor -> Tensor -> Int -> Int -> Tensor
-nll_loss2d_forward :: Tensor -> Tensor -> Tensor -> Int -> Int -> (Tensor, Tensor)
-nll_loss2d_backward :: Tensor -> Tensor -> Tensor -> Tensor -> Int -> Int -> Tensor -> Tensor
-smooth_l1_loss :: Tensor -> Tensor -> Int -> Tensor
-smooth_l1_loss_backward :: Tensor -> Tensor -> Tensor -> Int -> Tensor
-soft_margin_loss :: Tensor -> Tensor -> Int -> Tensor
-soft_margin_loss_backward :: Tensor -> Tensor -> Tensor -> Int -> Tensor
-elu :: Tensor -> Float -> Float -> Float -> Tensor
-elu_backward :: Tensor -> Float -> Float -> Float -> Tensor -> Tensor
-glu :: Tensor -> Int -> Tensor
-glu_backward :: Tensor -> Tensor -> Int -> Tensor
-hardtanh :: Tensor -> Float -> Float -> Tensor
-hardtanh_backward :: Tensor -> Tensor -> Float -> Float -> Tensor
-leaky_relu :: Tensor -> Float -> Tensor
-leaky_relu_backward :: Tensor -> Tensor -> Float -> Tensor
-log_sigmoid :: Tensor -> Tensor
-log_sigmoid_forward :: Tensor -> (Tensor, Tensor)
-log_sigmoid_backward :: Tensor -> Tensor -> Tensor -> Tensor
-rrelu_with_noise_backward :: Tensor -> Tensor -> Tensor -> Float -> Float -> Bool -> Tensor
-softplus :: Tensor -> Float -> Float -> Tensor
-softplus_backward :: Tensor -> Tensor -> Float -> Float -> Tensor -> Tensor
-softshrink :: Tensor -> Float -> Tensor
-softshrink_backward :: Tensor -> Tensor -> Float -> Tensor
-adaptive_avg_pool2d :: Tensor -> (Int, Int) -> Tensor
-mkldnn_adaptive_avg_pool2d :: Tensor -> (Int, Int) -> Tensor
-adaptive_avg_pool3d :: Tensor -> (Int, Int, Int) -> Tensor
-adaptive_avg_pool3d_backward :: Tensor -> Tensor -> Tensor
-adaptive_max_pool2d :: Tensor -> (Int, Int) -> (Tensor, Tensor)
-adaptive_max_pool2d_backward :: Tensor -> Tensor -> Tensor -> Tensor
-adaptive_max_pool3d :: Tensor -> (Int, Int, Int) -> (Tensor, Tensor)
-adaptive_max_pool3d_backward :: Tensor -> Tensor -> Tensor -> Tensor
-avg_pool2d :: Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Bool -> Bool -> Int -> Tensor
-avg_pool2d_backward :: Tensor -> Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Bool -> Bool -> Int -> Tensor
-avg_pool3d :: Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Bool -> Bool -> Int -> Tensor
-avg_pool3d_backward :: Tensor -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Bool -> Bool -> Int -> Tensor
-fractional_max_pool2d :: Tensor -> (Int, Int) -> (Int, Int) -> Tensor -> (Tensor, Tensor)
-fractional_max_pool2d_backward :: Tensor -> Tensor -> (Int, Int) -> (Int, Int) -> Tensor -> Tensor
-fractional_max_pool3d :: Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> Tensor -> (Tensor, Tensor)
-fractional_max_pool3d_backward :: Tensor -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> Tensor -> Tensor
-max_pool2d_with_indices :: Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Bool -> (Tensor, Tensor)
-max_pool2d_with_indices_backward :: Tensor -> Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Bool -> Tensor -> Tensor
-max_pool3d_with_indices :: Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Bool -> (Tensor, Tensor)
-max_pool3d_with_indices_backward :: Tensor -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Bool -> Tensor -> Tensor
-max_unpool2d :: Tensor -> Tensor -> (Int, Int) -> Tensor
-max_unpool2d_backward :: Tensor -> Tensor -> Tensor -> (Int, Int) -> Tensor
-max_unpool3d :: Tensor -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Tensor
-max_unpool3d_backward :: Tensor -> Tensor -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Tensor
-reflection_pad1d :: Tensor -> (Int, Int) -> Tensor
-reflection_pad1d_backward :: Tensor -> Tensor -> (Int, Int) -> Tensor
-reflection_pad2d :: Tensor -> (Int, Int, Int, Int) -> Tensor
-reflection_pad2d_backward :: Tensor -> Tensor -> (Int, Int, Int, Int) -> Tensor
-replication_pad1d :: Tensor -> (Int, Int) -> Tensor
-replication_pad1d_backward :: Tensor -> Tensor -> (Int, Int) -> Tensor
-replication_pad2d :: Tensor -> (Int, Int, Int, Int) -> Tensor
-replication_pad2d_backward :: Tensor -> Tensor -> (Int, Int, Int, Int) -> Tensor
-replication_pad3d :: Tensor -> (Int, Int, Int, Int, Int, Int) -> Tensor
-replication_pad3d_backward :: Tensor -> Tensor -> (Int, Int, Int, Int, Int, Int) -> Tensor
-upsample_linear1d :: Tensor -> Int -> Bool -> Tensor
-upsample_linear1d_backward :: Tensor -> Int -> (Int, Int, Int) -> Bool -> Tensor
-upsample_bilinear2d :: Tensor -> (Int, Int) -> Bool -> Tensor
-upsample_bilinear2d_backward :: Tensor -> (Int, Int) -> (Int, Int, Int, Int) -> Bool -> Tensor
-upsample_bicubic2d :: Tensor -> (Int, Int) -> Bool -> Tensor
-upsample_bicubic2d_backward :: Tensor -> (Int, Int) -> (Int, Int, Int, Int) -> Bool -> Tensor
-upsample_trilinear3d :: Tensor -> (Int, Int, Int) -> Bool -> Tensor
-upsample_trilinear3d_backward :: Tensor -> (Int, Int, Int) -> (Int, Int, Int, Int, Int) -> Bool -> Tensor
-upsample_nearest1d :: Tensor -> Int -> Tensor
-upsample_nearest1d_backward :: Tensor -> Int -> (Int, Int, Int) -> Tensor
-upsample_nearest2d :: Tensor -> (Int, Int) -> Tensor
-upsample_nearest2d_backward :: Tensor -> (Int, Int) -> (Int, Int, Int, Int) -> Tensor
-upsample_nearest3d :: Tensor -> (Int, Int, Int) -> Tensor
-upsample_nearest3d_backward :: Tensor -> (Int, Int, Int) -> (Int, Int, Int, Int, Int) -> Tensor
-sigmoid_backward :: Tensor -> Tensor -> Tensor
-tanh_backward :: Tensor -> Tensor -> Tensor
-slow_conv_transpose2d :: Tensor -> Tensor -> (Int, Int) -> Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Tensor
-slow_conv_transpose2d_backward :: Tensor -> Tensor -> Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Tensor -> Tensor -> (Bool, Bool, Bool) -> (Tensor, Tensor, Tensor)
-slow_conv_transpose3d :: Tensor -> Tensor -> (Int, Int, Int) -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Tensor
-slow_conv_transpose3d_backward :: Tensor -> Tensor -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Tensor -> Tensor -> (Bool, Bool, Bool) -> (Tensor, Tensor, Tensor)
-thnn_conv2d :: Tensor -> Tensor -> (Int, Int) -> Tensor -> (Int, Int) -> (Int, Int) -> Tensor
-thnn_conv2d_forward :: Tensor -> Tensor -> (Int, Int) -> Tensor -> (Int, Int) -> (Int, Int) -> (Tensor, Tensor, Tensor)
-thnn_conv2d_backward :: Tensor -> Tensor -> Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Tensor -> Tensor -> (Bool, Bool, Bool) -> (Tensor, Tensor, Tensor)
-thnn_conv_depthwise2d :: Tensor -> Tensor -> (Int, Int) -> Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Tensor
-thnn_conv_depthwise2d_forward :: Tensor -> Tensor -> (Int, Int) -> Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Tensor
-thnn_conv_depthwise2d_backward :: Tensor -> Tensor -> Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Bool, Bool) -> (Tensor, Tensor)
-slow_conv3d :: Tensor -> Tensor -> (Int, Int, Int) -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> Tensor
-slow_conv3d_forward :: Tensor -> Tensor -> (Int, Int, Int) -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Tensor, Tensor, Tensor)
-slow_conv3d_backward :: Tensor -> Tensor -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Tensor -> Tensor -> (Bool, Bool, Bool) -> (Tensor, Tensor, Tensor)
-slow_conv_dilated2d :: Tensor -> Tensor -> (Int, Int) -> Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Tensor
-slow_conv_dilated2d_backward :: Tensor -> Tensor -> Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Bool, Bool, Bool) -> (Tensor, Tensor, Tensor)
-slow_conv_dilated3d :: Tensor -> Tensor -> (Int, Int, Int) -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Tensor
-slow_conv_dilated3d_backward :: Tensor -> Tensor -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> (Bool, Bool, Bool) -> (Tensor, Tensor, Tensor)
-col2im :: Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Tensor
-col2im_backward :: Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Tensor
-im2col :: Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Tensor
-im2col_backward :: Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Tensor
-isfinite :: Tensor -> Tensor
+mv :: Tensor -> Tensor -> Tensor
+slice :: Tensor -> Int -> Int -> Int -> Int -> Tensor
+sumWithDimnames :: Tensor -> [Dimname] -> Bool -> DType -> Tensor
 instance GHC.Show.Show Torch.Functional.KeepDim
 instance GHC.Classes.Eq Torch.Functional.KeepDim
 instance GHC.Show.Show Torch.Functional.Reduction
@@ -1721,6 +1324,7 @@ load :: forall tensors. Castable (HList tensors) [ATenTensor] => FilePath -> IO 
 
 module Torch.Typed.Factories
 zeros :: forall shape dtype device. TensorOptions shape dtype device => Tensor device dtype shape
+full :: forall shape dtype device a. (TensorOptions shape dtype device, Scalar a) => a -> Tensor device dtype shape
 ones :: forall shape dtype device. TensorOptions shape dtype device => Tensor device dtype shape
 type family RandDTypeIsValid (device :: (DeviceType, Nat)) (dtype :: DType) :: Constraint
 rand :: forall shape dtype device. (TensorOptions shape dtype device, RandDTypeIsValid device dtype) => IO (Tensor device dtype shape)
@@ -1830,41 +1434,41 @@ max :: forall shape dtype device. (AggregationDTypeIsValid device dtype, AllDims
 --   </pre>
 median :: forall shape dtype device. (AggregationDTypeIsValid device dtype, AllDimsPositive shape) => Tensor device dtype shape -> Tensor device dtype '[]
 
--- | cadd TODO: what dtypes is this defined for? TODO: what scalar types is
---   this defined for?
+-- | addScalar TODO: what dtypes is this defined for? TODO: what scalar
+--   types is this defined for?
 --   
 --   <pre>
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ cadd 1 (ones :: CPUTensor 'D.Float '[2,2])
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ addScalar 1 (ones :: CPUTensor 'D.Float '[2,2])
 --   (Float,[2,2])
 --   </pre>
-cadd :: forall a shape dtype device. Scalar a => a -> Tensor device dtype shape -> Tensor device dtype shape
+addScalar :: forall a shape dtype device. Scalar a => a -> Tensor device dtype shape -> Tensor device dtype shape
 
--- | csub TODO: what dtypes is this defined for? TODO: what scalar types is
---   this defined for?
+-- | subScalar TODO: what dtypes is this defined for? TODO: what scalar
+--   types is this defined for?
 --   
 --   <pre>
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ csub 1 (ones :: CPUTensor 'D.Float '[2,2])
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ subScalar 1 (ones :: CPUTensor 'D.Float '[2,2])
 --   (Float,[2,2])
 --   </pre>
-csub :: forall a shape dtype device. Scalar a => a -> Tensor device dtype shape -> Tensor device dtype shape
+subScalar :: forall a shape dtype device. Scalar a => a -> Tensor device dtype shape -> Tensor device dtype shape
 
--- | cmul TODO: what dtypes is this defined for? TODO: what scalar types is
---   this defined for?
+-- | mulScalar TODO: what dtypes is this defined for? TODO: what scalar
+--   types is this defined for?
 --   
 --   <pre>
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ cmul 2 (ones :: CPUTensor 'D.Float '[2,2])
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ mulScalar 2 (ones :: CPUTensor 'D.Float '[2,2])
 --   (Float,[2,2])
 --   </pre>
-cmul :: forall a shape dtype device. Scalar a => a -> Tensor device dtype shape -> Tensor device dtype shape
+mulScalar :: forall a shape dtype device. Scalar a => a -> Tensor device dtype shape -> Tensor device dtype shape
 
--- | cdiv TODO: what dtypes is this defined for? TODO: what scalar types is
---   this defined for?
+-- | divScalar TODO: what dtypes is this defined for? TODO: what scalar
+--   types is this defined for?
 --   
 --   <pre>
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ cdiv 2 (ones :: CPUTensor 'D.Float '[2,2])
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ divScalar 2 (ones :: CPUTensor 'D.Float '[2,2])
 --   (Float,[2,2])
 --   </pre>
-cdiv :: forall a shape dtype device. Scalar a => a -> Tensor device dtype shape -> Tensor device dtype shape
+divScalar :: forall a shape dtype device. Scalar a => a -> Tensor device dtype shape -> Tensor device dtype shape
 
 -- | erf
 --   
@@ -4900,6 +4504,24 @@ instance (parameter Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype 
 instance Torch.HList.HZipWith (Torch.Typed.Optim.GDStep device dtype) tensors gradients tensors => Torch.Typed.Optim.Optimizer Torch.Typed.Optim.GD gradients tensors dtype device
 instance (parameter Data.Type.Equality.~ Torch.Typed.Parameter.Parameter device dtype shape, momentum Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, Torch.Typed.Tensor.TensorOptions shape dtype device) => Torch.HList.Apply' Torch.Typed.Optim.ZerosLike parameter momentum
 
+module Torch.Typed.Vision
+data MnistData
+MnistData :: ByteString -> ByteString -> MnistData
+[images] :: MnistData -> ByteString
+[labels] :: MnistData -> ByteString
+type Rows = 28
+type Cols = 28
+type DataDim = Rows * Cols
+type ClassDim = 10
+getLabels :: forall n. KnownNat n => MnistData -> [Int] -> CPUTensor  'Int64 '[n]
+getLabel :: MnistData -> Int -> Int
+getImage :: MnistData -> Int -> CPUTensor  'Float '[DataDim]
+getImages' :: forall n. KnownNat n => MnistData -> [Int] -> CPUTensor  'Float '[n, DataDim]
+getImages :: forall n. KnownNat n => MnistData -> [Int] -> CPUTensor  'Float '[n, DataDim]
+length :: MnistData -> Int
+decompressFile :: String -> String -> IO ByteString
+initMnist :: String -> IO (MnistData, MnistData)
+
 module Torch.Utils.Image
 readImage :: FilePath -> IO (Either String Tensor)
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
@@ -4907,3 +4529,10 @@ writeBitmap :: FilePath -> Tensor -> IO ()
 writePng :: FilePath -> Tensor -> IO ()
 hwc2chw :: Tensor -> Tensor
 chw2hwc :: Tensor -> Tensor
+
+module Torch.Vision
+getLabels' :: Int -> MnistData -> [Int] -> Tensor
+getImages' :: Int -> Int -> MnistData -> [Int] -> IO Tensor
+grayScale10 :: [Char]
+grayScale70 :: [Char]
+dispImage :: Tensor -> IO ()
