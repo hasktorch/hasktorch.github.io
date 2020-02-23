@@ -818,41 +818,40 @@ Lower :: Tri
 kOne :: ForeignPtr Scalar
 isUpper :: Tri -> Bool
 
--- | mean Returns the mean value of all elements in the input tensor.
+-- | Returns the mean value of all elements in the input tensor.
 mean :: Tensor -> Tensor
 
--- | std Returns the standard deviation of all elements in the input
---   tensor.
+-- | Returns the standard deviation of all elements in the input tensor.
 std :: Tensor -> Tensor
 
--- | var Returns the variance of all elements in the input tensor.
+-- | Returns the variance of all elements in the input tensor.
 var :: Tensor -> Tensor
 
--- | sumAll Returns the sum of all elements in the input tensor.
+-- | Returns the sum of all elements in the input tensor.
 sumAll :: Tensor -> Tensor
 
--- | abs Computes the element-wise absolute value of the given input
---   tensor.
+-- | Computes the element-wise absolute value of the given input tensor.
 abs :: Tensor -> Tensor
 
--- | frac Computes the fractional portion of each element in input. out_i =
+-- | Computes the fractional portion of each element in input. out_i =
 --   input_i - (floor . abs) input_i * (sign input_i)
 frac :: Tensor -> Tensor
 keepdim :: KeepDim -> Bool
 
--- | argmax Returns the indices of the maximum value of all elements in the
---   input tensor.
+-- | Returns the indices of the maximum value of all elements in the input
+--   tensor.
 argmax :: Dim -> KeepDim -> Tensor -> Tensor
 
--- | add Each element of the tensor other added to each element of the
---   tensor input. The resulting tensor is returned.
+-- | Each element of the tensor other added to each element of the tensor
+--   input. The resulting tensor is returned.
 add :: Tensor -> Tensor -> Tensor
 
--- | mul Multiplies each element of the input input with the scalar other
---   and returns a new resulting tensor.
+-- | Multiplies each element of the tensor other to each element of the
+--   input tensor and returns a new resulting tensor.
 mul :: Tensor -> Tensor -> Tensor
 
--- | sub
+-- | Element wise subtraction of other tensor from input tensor and returns
+--   a new resulting tensor
 sub :: Tensor -> Tensor -> Tensor
 
 -- | ceil
@@ -870,23 +869,23 @@ max :: Tensor -> Tensor
 -- | median
 median :: Tensor -> Tensor
 
--- | addScalar Adds each element of the input input with the scalar and
---   returns a new resulting tensor.
+-- | Adds each element of the input input with the scalar and returns a new
+--   resulting tensor.
 addScalar :: Scalar a => Tensor -> a -> Tensor
 
--- | subScalar Subtracts each element of the input input with the scalar
---   and returns a new resulting tensor.
+-- | Subtracts each element of the input input with the scalar and returns
+--   a new resulting tensor.
 subScalar :: Scalar a => Tensor -> a -> Tensor
 
--- | mulScalar Multiplies each element of the input input with the scalar
---   and returns a new resulting tensor.
+-- | Multiplies each element of the input input with the scalar and returns
+--   a new resulting tensor.
 mulScalar :: Scalar a => Tensor -> a -> Tensor
 
--- | divScalar Divides each element of the input input with the scalar and
---   returns a new resulting tensor.
+-- | Divides each element of the input input with the scalar and returns a
+--   new resulting tensor.
 divScalar :: Scalar a => Tensor -> a -> Tensor
 
--- | matmul Matrix product of two tensors.
+-- | Matrix product of two tensors.
 --   
 --   The behavior depends on the dimensionality of the tensors as follows:
 --   
@@ -910,221 +909,265 @@ divScalar :: Scalar a => Tensor -> a -> Tensor
 --   p)(j×k×n×p) tensor.
 matmul :: Tensor -> Tensor -> Tensor
 
--- | erf Computes the error function of each element
+-- | Computes the error function of each element
 erf :: Tensor -> Tensor
 
--- | exp Returns a new tensor with the exponential of the elements of the
---   input tensor input.
+-- | Returns a new tensor with the exponential of the elements of the input
+--   tensor input.
 exp :: Tensor -> Tensor
 
--- | log1p Returns a new tensor with the natural logarithm of (1 + input).
+-- | Returns a new tensor with the natural logarithm of (1 + input).
 log1p :: Tensor -> Tensor
 
--- | log2 Returns a new tensor with the logarithm to the base 2 of the
---   elements of input.
+-- | Returns a new tensor with the logarithm to the base 2 of the elements
+--   of input.
 log2 :: Tensor -> Tensor
 
--- | log10 Returns a new tensor with the logarithm to the base 10 of the
---   elements of input.
+-- | Returns a new tensor with the logarithm to the base 10 of the elements
+--   of input.
 log10 :: Tensor -> Tensor
 
--- | pow Takes the power of each element in input with exponent and returns
---   a tensor with the result.
+-- | Takes the power of each element in input with exponent and returns a
+--   tensor with the result.
 pow :: Scalar a => Tensor -> a -> Tensor
 
--- | powt Takes the power of each element in input with exponent and
---   returns a tensor with the result. Exponent is a tensor with the same
---   number of elements as input.
+-- | Takes the power of each element in input with exponent and returns a
+--   tensor with the result. Exponent is a tensor with the same number of
+--   elements as input.
 powt :: Tensor -> Tensor -> Tensor
 
--- | relu Applies the rectified linear unit function element-wise.
+-- | Applies the rectified linear unit function element-wise.
 relu :: Tensor -> Tensor
 
--- | selu Applies element-wise, text{SELU}(x) = scale * (max(0,x) + min(0,
---   alpha * (exp(x) - 1)))SELU(x)=scale∗(max(0,x)+min(0,α∗(exp(x)−1))) ,
---   with
+-- | Applies element-wise, text{SELU}(x) = scale * (max(0,x) + min(0, alpha
+--   * (exp(x) - 1)))SELU(x)=scale∗(max(0,x)+min(0,α∗(exp(x)−1))) , with
 --   alpha=1.6732632423543772848170429916717α=1.6732632423543772848170429916717
 --   and
 --   scale=1.0507009873554804934193349852946scale=1.0507009873554804934193349852946
 --   .
 selu :: Tensor -> Tensor
 
--- | celu Applies element-wise, text{CELU}(x) = max(0,x) + min(0, alpha *
+-- | Applies element-wise, text{CELU}(x) = max(0,x) + min(0, alpha *
 --   (exp(x<i>alpha) - 1))CELU(x)=max(0,x)+min(0,α∗(exp(x</i>α)−1)) .
 celu :: Float -> Tensor -> Tensor
 
--- | sigmoid Applies the element-wise function sigmoid.
+-- | Applies the element-wise function sigmoid.
 sigmoid :: Tensor -> Tensor
 
--- | softmax Applies a softmax function. It is applied to all slices along
---   dim, and will re-scale them so that the elements lie in the range [0,
---   1] and sum to 1.
+-- | Applies a softmax function. It is applied to all slices along dim, and
+--   will re-scale them so that the elements lie in the range [0, 1] and
+--   sum to 1.
 softmax :: Int -> Tensor -> Tensor
 
--- | logSoftmax Applies a softmax followed by a logarithm. While
---   mathematically equivalent to log(softmax(x)), doing these two
---   operations separately is slower, and numerically unstable. This
---   function uses an alternative formulation to compute the output and
---   gradient correctly.
+-- | Applies a softmax followed by a logarithm. While mathematically
+--   equivalent to log(softmax(x)), doing these two operations separately
+--   is slower, and numerically unstable. This function uses an alternative
+--   formulation to compute the output and gradient correctly.
 logSoftmax :: Int -> Tensor -> Tensor
 
--- | threshold Thresholds each element of the input Tensor.
+-- | Thresholds each element of the input Tensor.
 threshold :: Float -> Float -> Tensor -> Tensor
 
--- | sin Returns a new tensor with the sine of the elements of input.
+-- | Returns a new tensor with the sine of the elements of input.
 sin :: Tensor -> Tensor
 
--- | cos Returns a new tensor with the cos of the elements of input.
+-- | Returns a new tensor with the cos of the elements of input.
 cos :: Tensor -> Tensor
 
--- | tan Returns a new tensor with the tangent of the elements of input.
+-- | Returns a new tensor with the tangent of the elements of input.
 tan :: Tensor -> Tensor
 
--- | sinh Returns a new tensor with the hyperbolic sine of the elements of
+-- | Returns a new tensor with the hyperbolic sine of the elements of
 --   input.
 sinh :: Tensor -> Tensor
 
--- | cosh Returns a new tensor with the hyperbolic cosine of the elements
---   of input.
+-- | Returns a new tensor with the hyperbolic cosine of the elements of
+--   input.
 cosh :: Tensor -> Tensor
 
--- | tanh Returns a new tensor with the hyperbolic tangent of the elements
---   of input.
+-- | Returns a new tensor with the hyperbolic tangent of the elements of
+--   input.
 tanh :: Tensor -> Tensor
 
--- | sqrt Returns a new tensor with the square-root of the elements of
---   input.
+-- | Returns a new tensor with the square-root of the elements of input.
 sqrt :: Tensor -> Tensor
 
--- | gt Computes input &gt; other element-wise. The second argument can be
---   a number or a tensor whose shape is broadcastable with the first
+-- | Computes input &gt; other element-wise. The second argument can be a
+--   number or a tensor whose shape is broadcastable with the first
 --   argument.
 gt :: Tensor -> Tensor -> Tensor
 (>.) :: Tensor -> Tensor -> Tensor
 
--- | lt Computes input &lt; other element-wise. The second argument can be
---   a number or a tensor whose shape is broadcastable with the first
+-- | Computes input &lt; other element-wise. The second argument can be a
+--   number or a tensor whose shape is broadcastable with the first
 --   argument.
 lt :: Tensor -> Tensor -> Tensor
 (<.) :: Tensor -> Tensor -> Tensor
 
--- | ge Computes input &gt;= other element-wise. The second argument can be
---   a number or a tensor whose shape is broadcastable with the first
+-- | Computes input &gt;= other element-wise. The second argument can be a
+--   number or a tensor whose shape is broadcastable with the first
 --   argument.
 ge :: Tensor -> Tensor -> Tensor
 (>=.) :: Tensor -> Tensor -> Tensor
 
--- | le Computes input &lt;= other element-wise. The second argument can be
---   a number or a tensor whose shape is broadcastable with the first
+-- | Computes input &lt;= other element-wise. The second argument can be a
+--   number or a tensor whose shape is broadcastable with the first
 --   argument.
 le :: Tensor -> Tensor -> Tensor
 (<=.) :: Tensor -> Tensor -> Tensor
 
--- | eq Computes input == other element-wise. The second argument can be a
+-- | Computes input == other element-wise. The second argument can be a
 --   number or a tensor whose shape is broadcastable with the first
 --   argument.
 eq :: Tensor -> Tensor -> Tensor
 (==.) :: Tensor -> Tensor -> Tensor
 
--- | ne Computes input /= other element-wise. The second argument can be a
+-- | Computes input /= other element-wise. The second argument can be a
 --   number or a tensor whose shape is broadcastable with the first
 --   argument.
 ne :: Tensor -> Tensor -> Tensor
 (/=.) :: Tensor -> Tensor -> Tensor
 
--- | toDType
+-- | Casting to given <tt>Dtype</tt>, where <tt>Dtype</tt> is an object
+--   that represents the data type of a tensor in hasktorch.
 toDType :: DType -> Tensor -> Tensor
 
 -- | squeezeAll
 squeezeAll :: Tensor -> Tensor
 
--- | binaryCrossEntropyLoss Function that measures the Binary Cross Entropy
---   between the target and the output.
+-- | Function that measures the Binary Cross Entropy between the target and
+--   the output.
 binaryCrossEntropyLoss :: Tensor -> Tensor -> Tensor -> Reduction -> Tensor
 
--- | binaryCrossEntropyLoss' BCE with weights defaulted to 1.0 &amp;
---   reduction defaulted to ReduceMean
+-- | Binary Cross Entropy with weights defaulted to 1.0 &amp; reduction
+--   defaulted to ReduceMean
 binaryCrossEntropyLoss' :: Tensor -> Tensor -> Tensor
 
--- | mse_loss
+-- | Creates a criterion that measures the mean squared error (squared L2
+--   norm) between each element in the <tt>input</tt> and <tt>target</tt>.
 mseLoss :: Tensor -> Tensor -> Tensor
 
--- | nllLoss
+-- | The negative log likelihood loss.
 nllLoss' :: Tensor -> Tensor -> Tensor
 
--- | adaptiveMaxPool1d Applies a 1D adaptive max pooling over an input
---   signal composed of several input planes.
+-- | Applies a 1D adaptive max pooling over an input signal composed of
+--   several input planes.
 adaptiveMaxPool1d :: Int -> Tensor -> (Tensor, Tensor)
 
--- | adaptiveMaxPool2d Applies a 2D adaptive max pooling over an input
---   signal composed of several input planes.
+-- | Applies a 2D adaptive max pooling over an input signal composed of
+--   several input planes.
 adaptiveMaxPool2d :: (Int, Int) -> Tensor -> (Tensor, Tensor)
 
 -- | maxPool1dWithIndices
 maxPool1dWithIndices :: Int -> Int -> Int -> Int -> Bool -> Tensor -> (Tensor, Tensor)
 
--- | maxPool1d Applies a 1D max pooling over an input signal composed of
---   several input planes.
+-- | Applies a 1D max pooling over an input signal composed of several
+--   input planes.
 maxPool1d :: Int -> Int -> Int -> Int -> Bool -> Tensor -> Tensor
 
--- | maxPool2d Applies a 2D max pooling over an input signal composed of
---   several input planes.
+-- | Applies a 2D max pooling over an input signal composed of several
+--   input planes.
 maxPool2d :: (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Bool -> Tensor -> Tensor
 
--- | maxPool3d Applies a 3D max pooling over an input signal composed of
---   several input planes.
+-- | Applies a 3D max pooling over an input signal composed of several
+--   input planes.
 maxPool3d :: (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Bool -> Tensor -> Tensor
+
+-- | Takes the inverse of the square matrix input. <tt>input</tt> can be
+--   batches of 2D square tensors, in which case this function would return
+--   a tensor composed of individual inverses.
 inverse :: Tensor -> Tensor
+
+-- | This function returns eigenvalues and eigenvectors of a real symmetric
+--   matrix input or a batch of real symmetric matrices, represented by a
+--   namedtuple (eigenvalues, eigenvectors).
 symeig :: Tensor -> Bool -> Tri -> (Tensor, Tensor)
+
+-- | Computes the eigenvalues and eigenvectors of a real square matrix
 eig :: Tensor -> Bool -> (Tensor, Tensor)
+
+-- | This function returns a namedtuple (U, S, V) which is the singular
+--   value decomposition of a input real matrix or batches of real matrices
+--   input such that input = U * diag(S) * V^T
 svd :: Tensor -> Bool -> Bool -> (Tensor, Tensor, Tensor)
+
+-- | Computes the Cholesky decomposition of a symmetric positive-definite
+--   matrix AA or for batches of symmetric positive-definite matrices.
 cholesky :: Tensor -> Tri -> Tensor
+
+-- | Solves a linear system of equations with a positive semidefinite
+--   matrix to be inverted given its Cholesky factor matrix uu .
 choleskySolve :: Tensor -> Tensor -> Tri -> Tensor
 
--- | dropout During training, randomly zeroes some of the elements of the
---   input tensor with probability p using samples from a Bernoulli
---   distribution.
+-- | During training, randomly zeroes some of the elements of the input
+--   tensor with probability p using samples from a Bernoulli distribution.
 dropout :: Double -> Bool -> Tensor -> IO Tensor
 featureDropout :: Double -> Bool -> Tensor -> IO Tensor
 
--- | alphaDropout Applies alpha dropout to the input.
+-- | Applies alpha dropout to the input.
 alphaDropout :: Double -> Bool -> Tensor -> IO Tensor
 featureAlphaDropout :: Double -> Bool -> Tensor -> IO Tensor
 
--- | avgPool1d Applies a 1D average pooling over an input signal composed
---   of several input planes.
+-- | Applies a 1D average pooling over an input signal composed of several
+--   input planes.
 avgPool1d :: Int -> Int -> Int -> Bool -> Bool -> Tensor -> Tensor
 avgPool1d' :: Int -> Int -> Int -> Tensor -> Tensor
 
--- | adaptiveAvgPool1d Applies a 1D adaptive average pooling over an input
---   signal composed of several input planes.
+-- | Applies a 1D adaptive average pooling over an input signal composed of
+--   several input planes.
 adaptiveAvgPool1d :: Int -> Tensor -> Tensor
 
--- | adaptiveAvgPool2d Applies a 2D adaptive average pooling over an input
---   signal composed of several input planes.
+-- | Applies a 2D adaptive average pooling over an input signal composed of
+--   several input planes.
 adaptiveAvgPool2d :: Tensor -> (Int, Int) -> Tensor
 
--- | adaptiveAvgPool3d Applies a 3D adaptive average pooling over an input
---   signal composed of several input planes.
+-- | Applies a 3D adaptive average pooling over an input signal composed of
+--   several input planes.
 adaptiveAvgPool3d :: Tensor -> (Int, Int, Int) -> Tensor
+
+-- | Computes the bitwise NOT of the given input tensor. The input tensor
+--   must be of integral or Boolean types. For bool tensors, it computes
+--   the logical NOT.
 bitwiseNot :: Tensor -> Tensor
+
+-- | Concatenates the given sequence of seq tensors in the given dimension.
+--   All tensors must either have the same shape (except in the
+--   concatenating dimension) or be empty.
 cat :: Int -> [Tensor] -> Tensor
+
+-- | Splits a tensor into a specific number of chunks. Last chunk will be
+--   smaller if the tensor size along the given dimension dim is not
+--   divisible by chunks.
 chunk :: Int -> Int -> Tensor -> [Tensor]
+
+-- | Clamp all elements in input into the range [ min, max ] and return a
+--   resulting tensor.
 clamp :: Float -> Float -> Tensor -> Tensor
+
+-- | Clamps all elements in input to be smaller or equal max.
 clampMax :: Float -> Tensor -> Tensor
+
+-- | Clamps all elements in input to be larger or equal min.
 clampMin :: Float -> Tensor -> Tensor
 cudnnIsAcceptable :: Tensor -> Bool
+
+-- | Pads the input tensor boundaries with a constant value.
 constantPadNd1d :: [Int] -> Float -> Tensor -> Tensor
 
--- | conv1d Applies a 1D convolution over an input signal composed of
---   several input planes.
+-- | Applies a 1D convolution over an input signal composed of several
+--   input planes.
 conv1d :: Tensor -> Tensor -> Int -> Int -> Int -> Int -> Tensor -> Tensor
 conv1d' :: Tensor -> Tensor -> Int -> Int -> Tensor -> Tensor
 
--- | conv2d Applies a 2D convolution over an input signal composed of
---   several input planes.
+-- | Applies a 2D convolution over an input signal composed of several
+--   input planes.
 conv2d :: Tensor -> Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Int -> Tensor -> Tensor
 conv2d' :: Tensor -> Tensor -> (Int, Int) -> (Int, Int) -> Tensor -> Tensor
+
+-- | This function returns the solution to the system of linear equations
+--   represented by AX = BAX=B and the LU factorization of A, in order as a
+--   namedtuple solution, LU. LU contains L and U factors for LU
+--   factorization of A
 solve :: Tensor -> Tensor -> (Tensor, Tensor)
 
 -- | Solves a linear system of equations with a positive semidefinite
@@ -1137,43 +1180,48 @@ choleskyInverse :: Tensor -> Tri -> Tensor
 geqrf :: Tensor -> (Tensor, Tensor)
 
 -- | Computes the orthogonal matrix Q of a QR factorization, from the
---   (input, input2) tuple returned by torch.geqrf(). This directly calls
---   the underlying LAPACK function ?orgqr. See LAPACK documentation for
---   orgqr for further details.
+--   <tt>(input, input2)</tt> tuple returned by <a>geqrf</a> function. This
+--   directly calls the underlying LAPACK function <tt>?orgqr</tt>. See
+--   LAPACK documentation for <tt>orgqr</tt> for further details.
 orgqr :: Tensor -> Tensor -> Tensor
+
+-- | Returns a new tensor with the signs of the elements of <tt>input</tt>
 sign :: Tensor -> Tensor
+
+-- | Returns a tensor that is a transposed version of <tt>input</tt>. The
+--   given dimensions <tt>dim0</tt> and <tt>dim1</tt> are swapped.
 transpose :: Tensor -> Int -> Int -> Tensor
+
+-- | transpose special case for a 2D tensor
 transpose2D :: Tensor -> Tensor
 
--- | diag | Returns a tensor with the elements of input as the diagonal. |
---   The second argument controls which diagonal to consider: If Int = 0,
---   it is the main diagonal. If Int &gt; 0, it is above the main diagonal.
---   If Int &lt; 0, it is below the main diagonal.
+-- | Returns a tensor with the elements of input as the diagonal. | The
+--   second argument controls which diagonal to consider: If Int = 0, it is
+--   the main diagonal. If Int &gt; 0, it is above the main diagonal. If
+--   Int &lt; 0, it is below the main diagonal.
 diag :: Tensor -> Int -> Tensor
 
--- | all Returns True if all elements in the tensor are True, False
---   otherwise.
+-- | Returns True if all elements in the tensor are True, False otherwise.
 all :: Tensor -> Bool
 
--- | any Returns True if any elements in the tensor are True, False
---   otherwise.
+-- | Returns True if any elements in the tensor are True, False otherwise.
 any :: Tensor -> Bool
 
--- | all' Returns True if all elements in each row of the tensor in the
---   given dimension dim are True, False otherwise. If keepdim is True, the
+-- | Returns True if all elements in each row of the tensor in the given
+--   dimension dim are True, False otherwise. If keepdim is True, the
 --   output tensor is of the same size as input except in the dimension dim
 --   where it is of size 1. Otherwise, dim is squeezed, resulting in the
 --   output tensor having 1 fewer dimension than input.
 all' :: Tensor -> Int -> Bool -> Tensor
 
--- | any' Returns True if any elements in each row of the tensor in the
---   given dimension dim are True, False otherwise. If keepdim is True, the
+-- | Returns True if any elements in each row of the tensor in the given
+--   dimension dim are True, False otherwise. If keepdim is True, the
 --   output tensor is of the same size as input except in the dimension dim
 --   where it is of size 1. Otherwise, dim is squeezed, resulting in the
 --   output tensor having 1 fewer dimension than input.
 any' :: Tensor -> Int -> Bool -> Tensor
 
--- | permute Permute the dimensions of this tensor.
+-- | Permute the dimensions of this tensor.
 permute :: Tensor -> [Int] -> Tensor
 addmv :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor
 addr :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor
