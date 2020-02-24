@@ -270,18 +270,41 @@ module Torch.Tensor
 type ATenTensor = ForeignPtr Tensor
 newtype Tensor
 Unsafe :: ATenTensor -> Tensor
+
+-- | Returns the total number of elements in the input tensor.
 numel :: Tensor -> Int
 size :: Tensor -> Int -> Int
+
+-- | Returns the shape of the tensor
 shape :: Tensor -> [Int]
+
+-- | Returns the dimensions of the input tensor
 dim :: Tensor -> Int
+
+-- | Returns the device on which the tensor is currently allocated
 device :: Tensor -> Device
+
+-- | Returns the data type of the input tensor
 dtype :: Tensor -> DType
 toDouble :: Tensor -> Double
 toInt :: Tensor -> Int
+
+-- | Casts the input tensor to the given data type
 toType :: DType -> Tensor -> Tensor
+
+-- | Casts the input tensor to given device
 toDevice :: Device -> Tensor -> Tensor
+
+-- | Slices the input tensor along the selected dimension at the given
+--   index.
 select :: Tensor -> Int -> Int -> Tensor
+
+-- | Returns a new tensor which indexes the input tensor along dimension
+--   dim using the entries in index which is a LongTensor.
 indexSelect :: Tensor -> Int -> Tensor -> Tensor
+
+-- | Returns a tensor with the same data and number of elements as input,
+--   but with the specified shape.
 reshape :: [Int] -> Tensor -> Tensor
 toSparse :: Tensor -> Tensor
 toDense :: Tensor -> Tensor
