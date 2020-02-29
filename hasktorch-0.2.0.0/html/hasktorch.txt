@@ -349,25 +349,59 @@ mkFactoryWithDimnames :: FactoryTypeWithDimnames -> [(Int, Dimname)] -> TensorOp
 mkFactoryUnsafeWithDimnames :: FactoryTypeWithDimnames -> [(Int, Dimname)] -> TensorOptions -> Tensor
 mkDefaultFactory :: ([Int] -> TensorOptions -> a) -> [Int] -> a
 mkDefaultFactoryWithDimnames :: ([(Int, Dimname)] -> TensorOptions -> a) -> [(Int, Dimname)] -> a
+
+-- | Returns a tensor filled with the scalar value 1, with the shape
+--   defined by the variable argument size.
 ones :: [Int] -> TensorOptions -> Tensor
+
+-- | Returns a tensor filled with the scalar value 1, with the same size as
+--   input tensor
 onesLike :: Tensor -> Tensor
 onesLike' :: Tensor -> Tensor
+
+-- | Returns a tensor filled with the scalar value 0, with the shape
+--   defined by the variable argument size.
 zeros :: [Int] -> TensorOptions -> Tensor
+
+-- | Returns a tensor filled with random numbers from a uniform
+--   distribution on the interval [0,1)
 randIO :: [Int] -> TensorOptions -> IO Tensor
+
+-- | Returns a tensor filled with random numbers from a standard normal
+--   distribution.
 randnIO :: [Int] -> TensorOptions -> IO Tensor
+
+-- | Returns a tensor filled with random integers generated uniformly
+--   between low (inclusive) and high (exclusive).
 randintIO :: Int -> Int -> [Int] -> TensorOptions -> IO Tensor
+
+-- | Returns a tensor with the same size as input that is filled with
+--   random numbers from standard normal distribution.
 randnLikeIO :: Tensor -> IO Tensor
+
+-- | Returns a tensor with the same size as input that is filled with
+--   random numbers from a uniform distribution on the interval [0,1).
 randLikeIO :: Tensor -> TensorOptions -> IO Tensor
 fullLike :: Tensor -> Float -> TensorOptions -> IO Tensor
 onesWithDimnames :: [(Int, Dimname)] -> TensorOptions -> Tensor
 zerosWithDimnames :: [(Int, Dimname)] -> TensorOptions -> Tensor
 randWithDimnames :: [(Int, Dimname)] -> TensorOptions -> IO Tensor
 randnWithDimnames :: [(Int, Dimname)] -> TensorOptions -> IO Tensor
+
+-- | Returns a one-dimensional tensor of steps equally spaced points
+--   between start and end.
 linspace :: (Scalar a, Scalar b) => a -> b -> Int -> TensorOptions -> Tensor
 logspace :: (Scalar a, Scalar b) => a -> b -> Int -> Double -> TensorOptions -> Tensor
 eyeSquare :: Int -> TensorOptions -> Tensor
+
+-- | Returns a 2-D tensor with ones on the diagonal and zeros elsewhere.
 eye :: Int -> Int -> TensorOptions -> Tensor
+
+-- | Returns a tensor of given size filled with fill_value.
 full :: Scalar a => [Int] -> a -> TensorOptions -> Tensor
+
+-- | Constructs a sparse tensors in COO(rdinate) format with non-zero
+--   elements at the given indices with the given values.
 sparseCooTensor :: Tensor -> Tensor -> [Int] -> TensorOptions -> Tensor
 ones' :: [Int] -> Tensor
 zeros' :: [Int] -> Tensor
