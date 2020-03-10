@@ -1549,6 +1549,7 @@ type family ReverseImpl (l :: [a]) (acc :: [a]) :: [a]
 type Reverse l = ReverseImpl l '[]
 type family ExtractDim (dim :: Nat) (shape :: [Nat]) :: Maybe Nat
 type family ReplaceDim (dim :: Nat) (shape :: [Nat]) (n :: Nat) :: Maybe [Nat]
+type family If c t e
 type family IsAtLeast (n :: Nat) (m :: Nat) (cmp :: Ordering) :: Constraint
 type (>=) (n :: Nat) (m :: Nat) = (IsAtLeast n m (CmpNat n m), KnownNat (n - m))
 type family CmpDType (dtype :: DType) (dtype' :: DType) :: Ordering
@@ -3995,6 +3996,25 @@ medianDim :: forall d shape dtype device. KnownNat d => Tensor device dtype shap
 --   (Tensor Float [1,2] [[ 3.0000   ,  1.0000   ]],Tensor Int64 [1,2] [[ 1,  0]])
 --   </pre>
 median' :: forall dim keepOrDropDim shape dtype device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim) => Tensor device dtype shape -> (Tensor device dtype (ConditionalDropDimension shape dim keepOrDropDim), Tensor device  'Int64 (ConditionalDropDimension shape dim keepOrDropDim))
+type family TopKCheck (k :: Nat) (shape :: [Nat]) (dim :: Nat) (satd :: Maybe Nat) (result :: Maybe a) :: a
+type TopK k shape dim = TopKCheck k shape dim (ExtractDim dim shape) (ReplaceDim dim shape k)
+type family TopKDeviceAndDTypeCheck dtype (device :: (DeviceType, Nat)) :: Constraint
+
+-- | Returns the k largest (if largest is <a>True</a>) elements of the
+--   given input tensor along a given dimension.
+--   
+--   <pre>
+--   &gt;&gt;&gt; topk @3 @1 True True (ones :: CPUTensor 'D.Float '[2,3])
+--   (Tensor Float [2,3] [[ 1.0000   ,  1.0000   ,  1.0000   ],
+--                       [ 1.0000   ,  1.0000   ,  1.0000   ]],Tensor Int64 [2,3] [[ 0,  1,  2],
+--                       [ 0,  1,  2]])
+--   
+--   &gt;&gt;&gt; topk @0 @1 True True (ones :: CPUTensor 'D.Float '[2,3])
+--   (Tensor Float [2,0] [[],
+--                       []],Tensor Int64 [2,0] [[],
+--                       []])
+--   </pre>
+topk :: forall k dim shape dtype device. (KnownNat k, KnownNat dim, All KnownNat shape, TopKDeviceAndDTypeCheck dtype device) => Bool -> Bool -> Tensor device dtype shape -> (Tensor device dtype (TopK k shape dim), Tensor device  'Int64 (TopK k shape dim))
 
 -- | L1 loss TODO: probably only defined for floating point tensors, or
 --   maybe numeric type is lifted?
@@ -4246,6 +4266,35 @@ avgPool2d :: forall kernelSize stride padding channelSize inputSize0 inputSize1 
 --   t :: Tensor '( 'D.CPU, 0) 'D.Float '[1, 3, 4, 5, 6]
 --   </pre>
 avgPool3d :: forall kernelSize stride padding channelSize inputSize0 inputSize1 inputSize2 batchSize outputSize0 outputSize1 outputSize2 dtype device. (All KnownNat '[Fst3 kernelSize, Snd3 kernelSize, Trd3 kernelSize, Fst3 stride, Snd3 stride, Trd3 stride, Fst3 padding, Snd3 padding, Trd3 padding, channelSize, inputSize0, inputSize1, inputSize2, batchSize], ConvSideCheck inputSize0 (Fst3 kernelSize) (Fst3 stride) (Fst3 padding) outputSize0, ConvSideCheck inputSize1 (Snd3 kernelSize) (Snd3 stride) (Snd3 padding) outputSize1, ConvSideCheck inputSize2 (Trd3 kernelSize) (Trd3 stride) (Trd3 padding) outputSize2) => Tensor device dtype '[batchSize, channelSize, inputSize0, inputSize1, inputSize2] -> Tensor device dtype '[batchSize, channelSize, outputSize0, outputSize1, outputSize2]
+type family Upsample2dCheck shape h w
+type Upsample2d shape h w = Upsample2dCheck shape h w
+
+-- | Applies a 2D bilinear upsampling to an input signal composed of
+--   several input channels.
+--   
+--   <pre>
+--   &gt;&gt;&gt; upsample_bilinear2d @3 @5 False (ones :: CPUTensor 'D.Float '[2,3,2,2])
+--   Tensor Float [2,3,3,5]
+--   </pre>
+upsample_bilinear2d :: forall w h shape dtype device. (KnownNat h, KnownNat w, All KnownNat shape) => Bool -> Tensor device dtype shape -> Tensor device dtype (Upsample2d shape h w)
+
+-- | Applies a 2D bicubic upsampling to an input signal composed of several
+--   input channels.
+--   
+--   <pre>
+--   &gt;&gt;&gt; upsample_bicubic2d @3 @5 False (ones :: CPUTensor 'D.Float '[2,3,2,2])
+--   Tensor Float [2,3,3,5]
+--   </pre>
+upsample_bicubic2d :: forall w h shape dtype device. (KnownNat h, KnownNat w, All KnownNat shape) => Bool -> Tensor device dtype shape -> Tensor device dtype (Upsample2d shape h w)
+
+-- | Applies a 2D bicubic upsampling to an input signal composed of several
+--   input channels.
+--   
+--   <pre>
+--   &gt;&gt;&gt; upsample_nearest2d @3 @5 (ones :: CPUTensor 'D.Float '[2,3,2,2])
+--   Tensor Float [2,3,3,5]
+--   </pre>
+upsample_nearest2d :: forall w h shape dtype device. (KnownNat h, KnownNat w, All KnownNat shape) => Tensor device dtype shape -> Tensor device dtype (Upsample2d shape h w)
 instance GHC.Generics.Generic Torch.Typed.Functional.RNNShapeOrder
 instance GHC.Show.Show Torch.Typed.Functional.RNNShapeOrder
 instance GHC.Generics.Generic Torch.Typed.Functional.RNNDirectionality
