@@ -3853,6 +3853,14 @@ type GRUR inputSize hiddenSize numLayers directionality dtype device = GRUR' (GR
 -- | gru Parameters for this ATen function are non-trivially provided. See
 --   the <a>GRU</a> module for doctests.
 gru :: forall shapeOrder directionality numLayers seqLen batchSize inputSize outputSize hiddenSize inputShape outputShape hcShape tensorParameters dtype device. (KnownNat numLayers, KnownRNNShapeOrder shapeOrder, KnownRNNDirectionality directionality, outputSize ~ (hiddenSize * NumberOfDirections directionality), inputShape ~ RNNShape shapeOrder seqLen batchSize inputSize, outputShape ~ RNNShape shapeOrder seqLen batchSize outputSize, hcShape ~ '[numLayers * NumberOfDirections directionality, batchSize, hiddenSize], tensorParameters ~ GRUR inputSize hiddenSize numLayers directionality dtype device, Castable (HList tensorParameters) [ATenTensor]) => HList tensorParameters -> Double -> Bool -> Tensor device dtype hcShape -> Tensor device dtype inputShape -> (Tensor device dtype outputShape, Tensor device dtype hcShape)
+
+-- | gruCell
+--   
+--   <pre>
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ gruCell (ones :: CPUTensor 'D.Float '[9,2]) (ones :: CPUTensor 'D.Float '[9,3]) (ones :: CPUTensor 'D.Float '[9]) (ones :: CPUTensor 'D.Float '[9]) (ones :: CPUTensor 'D.Float '[2,3]) (ones :: CPUTensor 'D.Float '[2,2])
+--   (Float,[2,3])
+--   </pre>
+gruCell :: forall inputSize hiddenSize batchSize dtype device. Tensor device dtype '[3 * hiddenSize, inputSize] -> Tensor device dtype '[3 * hiddenSize, hiddenSize] -> Tensor device dtype '[3 * hiddenSize] -> Tensor device dtype '[3 * hiddenSize] -> Tensor device dtype '[batchSize, hiddenSize] -> Tensor device dtype '[batchSize, inputSize] -> Tensor device dtype '[batchSize, hiddenSize]
 type family MatrixOrMatrixBatch (shape :: [Nat]) :: [Nat]
 
 -- | triu TODO: triu is not implemented for D.Bool, or maybe numeric type
@@ -4894,6 +4902,48 @@ instance GHC.Classes.Eq (Torch.Typed.NN.Recurrent.Cell.LSTM.LSTMCellSpec inputDi
 instance GHC.Show.Show (Torch.Typed.NN.Recurrent.Cell.LSTM.LSTMCellSpec inputDim hiddenDim dtype device)
 instance (Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Tensor.KnownDType dtype, GHC.TypeNats.KnownNat inputDim, GHC.TypeNats.KnownNat hiddenDim, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.Cell.LSTM.LSTMCellSpec inputDim hiddenDim dtype device) (Torch.Typed.NN.Recurrent.Cell.LSTM.LSTMCell inputDim hiddenDim dtype device)
 
+module Torch.Typed.NN.Recurrent.Cell.GRU
+
+-- | A specification for a gated recurrent unit (GRU) cell.
+data GRUCellSpec (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+
+-- | Weights and biases are drawn from the standard normal distibution
+--   (having mean 0 and variance 1)
+GRUCellSpec :: GRUCellSpec
+
+-- | A gated recurrent unit (GRU) cell.
+data GRUCell (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+GRUCell :: Parameter device dtype '[3 * hiddenDim, inputDim] -> Parameter device dtype '[3 * hiddenDim, hiddenDim] -> Parameter device dtype '[3 * hiddenDim] -> Parameter device dtype '[3 * hiddenDim] -> GRUCell
+
+-- | input-to-hidden weights
+[gruCell_w_ih] :: GRUCell -> Parameter device dtype '[3 * hiddenDim, inputDim]
+
+-- | hidden-to-hidden weights
+[gruCell_w_hh] :: GRUCell -> Parameter device dtype '[3 * hiddenDim, hiddenDim]
+
+-- | input-to-hidden bias
+[gruCell_b_ih] :: GRUCell -> Parameter device dtype '[3 * hiddenDim]
+
+-- | hidden-to-hidden bias
+[gruCell_b_hh] :: GRUCell -> Parameter device dtype '[3 * hiddenDim]
+
+-- | A single recurrent step of a <a>GRUCell</a>
+forwardStep :: forall inputDim hiddenDim batchSize dtype device. (KnownDType dtype, KnownNat inputDim, KnownNat hiddenDim, KnownNat batchSize) => GRUCell inputDim hiddenDim dtype device -> Tensor device dtype '[batchSize, hiddenDim] -> Tensor device dtype '[batchSize, inputDim] -> Tensor device dtype '[batchSize, hiddenDim]
+
+-- | foldl' for lists of tensors unsing a <a>GRUCell</a>
+forward :: forall inputDim hiddenDim batchSize dtype device. (KnownDType dtype, KnownNat inputDim, KnownNat hiddenDim, KnownNat batchSize) => GRUCell inputDim hiddenDim dtype device -> Tensor device dtype '[batchSize, hiddenDim] -> [Tensor device dtype '[batchSize, inputDim]] -> Tensor device dtype '[batchSize, hiddenDim]
+
+-- | scanl' for lists of tensors unsing a <a>GRUCell</a>
+forwardScan :: forall inputDim hiddenDim batchSize dtype device. (KnownDType dtype, KnownNat inputDim, KnownNat hiddenDim, KnownNat batchSize) => GRUCell inputDim hiddenDim dtype device -> Tensor device dtype '[batchSize, hiddenDim] -> [Tensor device dtype '[batchSize, inputDim]] -> [Tensor device dtype '[batchSize, hiddenDim]]
+instance GHC.Generics.Generic (Torch.Typed.NN.Recurrent.Cell.GRU.GRUCell inputDim hiddenDim dtype device)
+instance GHC.Enum.Bounded (Torch.Typed.NN.Recurrent.Cell.GRU.GRUCellSpec inputDim hiddenDim dtype device)
+instance GHC.Enum.Enum (Torch.Typed.NN.Recurrent.Cell.GRU.GRUCellSpec inputDim hiddenDim dtype device)
+instance GHC.Generics.Generic (Torch.Typed.NN.Recurrent.Cell.GRU.GRUCellSpec inputDim hiddenDim dtype device)
+instance GHC.Classes.Ord (Torch.Typed.NN.Recurrent.Cell.GRU.GRUCellSpec inputDim hiddenDim dtype device)
+instance GHC.Classes.Eq (Torch.Typed.NN.Recurrent.Cell.GRU.GRUCellSpec inputDim hiddenDim dtype device)
+instance GHC.Show.Show (Torch.Typed.NN.Recurrent.Cell.GRU.GRUCellSpec inputDim hiddenDim dtype device)
+instance (Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Tensor.KnownDType dtype, GHC.TypeNats.KnownNat inputDim, GHC.TypeNats.KnownNat hiddenDim, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.Cell.GRU.GRUCellSpec inputDim hiddenDim dtype device) (Torch.Typed.NN.Recurrent.Cell.GRU.GRUCell inputDim hiddenDim dtype device)
+
 module Torch.Typed.DType
 class HasToDType dtype' dtype f g | dtype' dtype f -> g, dtype' dtype g -> f
 toDType :: HasToDType dtype' dtype f g => f -> g
@@ -5030,8 +5080,8 @@ grayScale70 :: [Char]
 dispImage :: Tensor -> IO ()
 readImage :: FilePath -> IO (Either String Tensor)
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679484847 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679484872 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679486425 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679486450 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
