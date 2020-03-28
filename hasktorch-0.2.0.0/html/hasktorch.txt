@@ -1265,14 +1265,14 @@ any :: Tensor -> Bool
 --   output tensor is of the same size as input except in the dimension dim
 --   where it is of size 1. Otherwise, dim is squeezed, resulting in the
 --   output tensor having 1 fewer dimension than input.
-all' :: Tensor -> Int -> Bool -> Tensor
+allDim :: Tensor -> Int -> Bool -> Tensor
 
 -- | Returns True if any elements in each row of the tensor in the given
 --   dimension dim are True, False otherwise. If keepdim is True, the
 --   output tensor is of the same size as input except in the dimension dim
 --   where it is of size 1. Otherwise, dim is squeezed, resulting in the
 --   output tensor having 1 fewer dimension than input.
-any' :: Tensor -> Int -> Bool -> Tensor
+anyDim :: Tensor -> Int -> Bool -> Tensor
 
 -- | Permute the dimensions of this tensor.
 permute :: Tensor -> [Int] -> Tensor
@@ -2436,7 +2436,7 @@ class KnownKeepOrDropDim keepOrDropDim
 keepOrDropDimVal :: KnownKeepOrDropDim keepOrDropDim => Bool
 type family ConditionalDropDimension (shape :: [Nat]) (dim :: Nat) (keepOrDropDim :: KeepOrDropDim) :: [Nat]
 
--- | all' See
+-- | allDim See
 --   <a>https://pytorch.org/docs/stable/tensors.html#torch.BoolTensor.all</a>.
 --   
 --   <pre>
@@ -2444,27 +2444,27 @@ type family ConditionalDropDimension (shape :: [Nat]) (dim :: Nat) (keepOrDropDi
 --   </pre>
 --   
 --   <pre>
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [Bool]) $ all' @1 @DropDim t
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [Bool]) $ allDim @1 @DropDim t
 --   (Bool,([4],[True,False,True,True]))
 --   </pre>
 --   
 --   <pre>
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [[Bool]]) $ all' @1 @KeepDim t
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [[Bool]]) $ allDim @1 @KeepDim t
 --   (Bool,([4,1],[[True],[False],[True],[True]]))
 --   </pre>
 --   
 --   <pre>
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [Bool]) $ all' @0 @DropDim t
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [Bool]) $ allDim @0 @DropDim t
 --   (Bool,([2],[True,False]))
 --   </pre>
 --   
 --   <pre>
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [[Bool]]) $ all' @0 @KeepDim t
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [[Bool]]) $ allDim @0 @KeepDim t
 --   (Bool,([1,2],[[True,False]]))
 --   </pre>
-all' :: forall dim keepOrDropDim shape' shape device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim, shape' ~ ConditionalDropDimension shape dim keepOrDropDim) => Tensor device  'Bool shape -> Tensor device  'Bool shape'
+allDim :: forall dim keepOrDropDim shape' shape device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim, shape' ~ ConditionalDropDimension shape dim keepOrDropDim) => Tensor device  'Bool shape -> Tensor device  'Bool shape'
 
--- | any' See
+-- | anyDim See
 --   <a>https://pytorch.org/docs/stable/tensors.html#torch.BoolTensor.any</a>.
 --   
 --   <pre>
@@ -2472,25 +2472,25 @@ all' :: forall dim keepOrDropDim shape' shape device. (KnownNat dim, KnownKeepOr
 --   </pre>
 --   
 --   <pre>
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [Bool]) $ any' @1 @DropDim t
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [Bool]) $ anyDim @1 @DropDim t
 --   (Bool,([4],[True,True,True,True]))
 --   </pre>
 --   
 --   <pre>
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [[Bool]]) $ any' @1 @KeepDim t
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [[Bool]]) $ anyDim @1 @KeepDim t
 --   (Bool,([4,1],[[True],[True],[True],[True]]))
 --   </pre>
 --   
 --   <pre>
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [Bool]) $ any' @0 @DropDim t
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [Bool]) $ anyDim @0 @DropDim t
 --   (Bool,([2],[True,True]))
 --   </pre>
 --   
 --   <pre>
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [[Bool]]) $ any' @0 @KeepDim t
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [[Bool]]) $ anyDim @0 @KeepDim t
 --   (Bool,([1,2],[[True,True]]))
 --   </pre>
-any' :: forall dim keepOrDropDim shape' shape device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim, shape' ~ ConditionalDropDimension shape dim keepOrDropDim) => Tensor device  'Bool shape -> Tensor device  'Bool shape'
+anyDim :: forall dim keepOrDropDim shape' shape device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim, shape' ~ ConditionalDropDimension shape dim keepOrDropDim) => Tensor device  'Bool shape -> Tensor device  'Bool shape'
 
 -- | dropout TODO: probably only defined for floating point tensors, or
 --   maybe numeric type is lifted? TODO: get rid of IO by exposing the RNG
