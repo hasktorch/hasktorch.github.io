@@ -423,10 +423,6 @@ eye' :: Int -> Int -> Tensor
 full' :: Scalar a => [Int] -> a -> Tensor
 sparseCooTensor' :: Tensor -> Tensor -> [Int] -> Tensor
 
-module Torch.Serialize
-save :: [Tensor] -> FilePath -> IO ()
-load :: FilePath -> IO [Tensor]
-
 module Torch.Functional.Internal
 align_tensors :: [Tensor] -> [Tensor]
 dropout :: Tensor -> Double -> Bool -> Tensor
@@ -1403,6 +1399,12 @@ instance Torch.NN.Parameterized' GHC.Generics.U1
 instance (Torch.NN.Parameterized' f, Torch.NN.Parameterized' g) => Torch.NN.Parameterized' (f GHC.Generics.:+: g)
 instance (Torch.NN.Parameterized' f, Torch.NN.Parameterized' g) => Torch.NN.Parameterized' (f GHC.Generics.:*: g)
 instance Torch.NN.Parameterized' f => Torch.NN.Parameterized' (GHC.Generics.M1 i t f)
+
+module Torch.Serialize
+save :: [Tensor] -> FilePath -> IO ()
+load :: FilePath -> IO [Tensor]
+saveParams :: Parameterized f => f -> FilePath -> IO ()
+loadParams :: Parameterized b => b -> FilePath -> IO b
 
 module Torch.Optim
 type LearningRate = Tensor
@@ -5089,8 +5091,8 @@ grayScale70 :: [Char]
 dispImage :: Tensor -> IO ()
 readImage :: FilePath -> IO (Either String Tensor)
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679486654 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679486679 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679486750 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679486775 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
