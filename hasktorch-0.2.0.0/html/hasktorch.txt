@@ -995,6 +995,14 @@ powt :: Tensor -> Tensor -> Tensor
 -- | Applies the rectified linear unit function element-wise.
 relu :: Tensor -> Tensor
 
+-- | Applies Exponential linear unit function element-wise, with alpha
+--   input, &lt;math&gt;
+elu :: Scalar s => s -> Tensor -> Tensor
+
+-- | Applies exponential linear unit function element wise with default
+--   alpha value = 1
+elu' :: Tensor -> Tensor
+
 -- | Applies element-wise, &lt;math&gt; , with
 --   α=1.6732632423543772848170429916717 and
 --   scale=1.0507009873554804934193349852946.
@@ -4171,7 +4179,7 @@ softMarginLoss :: forall reduction shape dtype device. KnownReduction reduction 
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ elu 0.1 0.1 0.3 (ones :: CPUTensor 'D.Float '[3,2])
 --   (Float,[3,2])
 --   </pre>
-elu :: forall shape dtype device. Float -> Float -> Float -> Tensor device dtype shape -> Tensor device dtype shape
+elu :: forall shape dtype a device. (Scalar a, StandardFloatingPointDTypeValidation device dtype) => a -> a -> a -> Tensor device dtype shape -> Tensor device dtype shape
 
 -- | glu -- &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ glu (ones ::
 --   CPUTensor 'D.Float '[3,2]) 1 -- (Float,[3,1]) -- &gt;&gt;&gt; dtype
@@ -5091,8 +5099,8 @@ grayScale70 :: [Char]
 dispImage :: Tensor -> IO ()
 readImage :: FilePath -> IO (Either String Tensor)
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679486750 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679486775 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679486949 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679486974 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
