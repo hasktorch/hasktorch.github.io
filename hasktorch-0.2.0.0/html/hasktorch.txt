@@ -927,19 +927,19 @@ median :: Tensor -> Tensor
 
 -- | Adds each element of the input input with the scalar and returns a new
 --   resulting tensor.
-addScalar :: Scalar a => Tensor -> a -> Tensor
+addScalar :: Scalar a => a -> Tensor -> Tensor
 
 -- | Subtracts each element of the input input with the scalar and returns
 --   a new resulting tensor.
-subScalar :: Scalar a => Tensor -> a -> Tensor
+subScalar :: Scalar a => a -> Tensor -> Tensor
 
 -- | Multiplies each element of the input input with the scalar and returns
 --   a new resulting tensor.
-mulScalar :: Scalar a => Tensor -> a -> Tensor
+mulScalar :: Scalar a => a -> Tensor -> Tensor
 
 -- | Divides each element of the input input with the scalar and returns a
 --   new resulting tensor.
-divScalar :: Scalar a => Tensor -> a -> Tensor
+divScalar :: Scalar a => a -> Tensor -> Tensor
 
 -- | Matrix product of two tensors.
 --   
@@ -985,7 +985,7 @@ log10 :: Tensor -> Tensor
 
 -- | Takes the power of each element in input with exponent and returns a
 --   tensor with the result.
-pow :: Scalar a => Tensor -> a -> Tensor
+pow :: Scalar a => a -> Tensor -> Tensor
 
 -- | Takes the power of each element in input with exponent and returns a
 --   tensor with the result. Exponent is a tensor with the same number of
@@ -1097,7 +1097,7 @@ squeezeAll :: Tensor -> Tensor
 
 -- | Function that measures the Binary Cross Entropy between the target and
 --   the output.
-binaryCrossEntropyLoss :: Tensor -> Tensor -> Tensor -> Reduction -> Tensor
+binaryCrossEntropyLoss :: Reduction -> Tensor -> Tensor -> Tensor -> Tensor
 
 -- | Binary Cross Entropy with weights defaulted to 1.0 &amp; reduction
 --   defaulted to ReduceMean
@@ -1141,23 +1141,23 @@ inverse :: Tensor -> Tensor
 -- | This function returns eigenvalues and eigenvectors of a real symmetric
 --   matrix input or a batch of real symmetric matrices, represented by a
 --   namedtuple (eigenvalues, eigenvectors).
-symeig :: Tensor -> Bool -> Tri -> (Tensor, Tensor)
+symeig :: Bool -> Tri -> Tensor -> (Tensor, Tensor)
 
 -- | Computes the eigenvalues and eigenvectors of a real square matrix
-eig :: Tensor -> Bool -> (Tensor, Tensor)
+eig :: Bool -> Tensor -> (Tensor, Tensor)
 
 -- | This function returns a namedtuple (U, S, V) which is the singular
 --   value decomposition of a input real matrix or batches of real matrices
 --   input such that input = U * diag(S) * V^T
-svd :: Tensor -> Bool -> Bool -> (Tensor, Tensor, Tensor)
+svd :: Bool -> Bool -> Tensor -> (Tensor, Tensor, Tensor)
 
 -- | Computes the Cholesky decomposition of a symmetric positive-definite
 --   matrix AA or for batches of symmetric positive-definite matrices.
-cholesky :: Tensor -> Tri -> Tensor
+cholesky :: Tri -> Tensor -> Tensor
 
 -- | Solves a linear system of equations with a positive semidefinite
 --   matrix to be inverted given its Cholesky factor matrix uu .
-choleskySolve :: Tensor -> Tensor -> Tri -> Tensor
+choleskySolve :: Tri -> Tensor -> Tensor -> Tensor
 
 -- | During training, randomly zeroes some of the elements of the input
 --   tensor with probability p using samples from a Bernoulli distribution.
@@ -1179,11 +1179,11 @@ adaptiveAvgPool1d :: Int -> Tensor -> Tensor
 
 -- | Applies a 2D adaptive average pooling over an input signal composed of
 --   several input planes.
-adaptiveAvgPool2d :: Tensor -> (Int, Int) -> Tensor
+adaptiveAvgPool2d :: (Int, Int) -> Tensor -> Tensor
 
 -- | Applies a 3D adaptive average pooling over an input signal composed of
 --   several input planes.
-adaptiveAvgPool3d :: Tensor -> (Int, Int, Int) -> Tensor
+adaptiveAvgPool3d :: (Int, Int, Int) -> Tensor -> Tensor
 
 -- | Computes the bitwise NOT of the given input tensor. The input tensor
 --   must be of integral or Boolean types. For bool tensors, it computes
@@ -1232,7 +1232,7 @@ solve :: Tensor -> Tensor -> (Tensor, Tensor)
 
 -- | Solves a linear system of equations with a positive semidefinite
 --   matrix to be inverted given its Cholesky factor matrix uu .
-choleskyInverse :: Tensor -> Tri -> Tensor
+choleskyInverse :: Tri -> Tensor -> Tensor
 
 -- | This is a low-level function for calling LAPACK directly. This
 --   function returns a namedtuple (a, tau) as defined in LAPACK
@@ -1250,7 +1250,7 @@ sign :: Tensor -> Tensor
 
 -- | Returns a tensor that is a transposed version of <tt>input</tt>. The
 --   given dimensions <tt>dim0</tt> and <tt>dim1</tt> are swapped.
-transpose :: Tensor -> Int -> Int -> Tensor
+transpose :: Int -> Int -> Tensor -> Tensor
 
 -- | transpose special case for a 2D tensor
 transpose2D :: Tensor -> Tensor
@@ -1259,7 +1259,7 @@ transpose2D :: Tensor -> Tensor
 --   second argument controls which diagonal to consider: If Int = 0, it is
 --   the main diagonal. If Int &gt; 0, it is above the main diagonal. If
 --   Int &lt; 0, it is below the main diagonal.
-diag :: Tensor -> Int -> Tensor
+diag :: Int -> Tensor -> Tensor
 
 -- | Returns True if all elements in the tensor are True, False otherwise.
 all :: Tensor -> Bool
@@ -1272,17 +1272,17 @@ any :: Tensor -> Bool
 --   output tensor is of the same size as input except in the dimension dim
 --   where it is of size 1. Otherwise, dim is squeezed, resulting in the
 --   output tensor having 1 fewer dimension than input.
-allDim :: Tensor -> Int -> Bool -> Tensor
+allDim :: Int -> Bool -> Tensor -> Tensor
 
 -- | Returns True if any elements in each row of the tensor in the given
 --   dimension dim are True, False otherwise. If keepdim is True, the
 --   output tensor is of the same size as input except in the dimension dim
 --   where it is of size 1. Otherwise, dim is squeezed, resulting in the
 --   output tensor having 1 fewer dimension than input.
-anyDim :: Tensor -> Int -> Bool -> Tensor
+anyDim :: Int -> Bool -> Tensor -> Tensor
 
 -- | Permute the dimensions of this tensor.
-permute :: Tensor -> [Int] -> Tensor
+permute :: [Int] -> Tensor -> Tensor
 
 -- | expand TODO: figure out what the <tt>implicit</tt> boolean value does
 expand :: Tensor -> Bool -> [Int] -> Tensor
@@ -5099,8 +5099,8 @@ grayScale70 :: [Char]
 dispImage :: Tensor -> IO ()
 readImage :: FilePath -> IO (Either String Tensor)
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679486949 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679486974 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679487032 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679487057 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
