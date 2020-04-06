@@ -429,6 +429,7 @@ dropout :: Tensor -> Double -> Bool -> Tensor
 feature_dropout :: Tensor -> Double -> Bool -> Tensor
 alpha_dropout :: Tensor -> Double -> Bool -> Tensor
 feature_alpha_dropout :: Tensor -> Double -> Bool -> Tensor
+abs :: Tensor -> Tensor
 angle :: Tensor -> Tensor
 real :: Tensor -> Tensor
 imag :: Tensor -> Tensor
@@ -437,12 +438,16 @@ acos :: Tensor -> Tensor
 avg_pool1d :: Tensor -> Int -> Int -> Int -> Bool -> Bool -> Tensor
 adaptive_avg_pool1d :: Tensor -> Int -> Tensor
 adaptive_max_pool1d :: Tensor -> Int -> (Tensor, Tensor)
+add :: Tensor -> Tensor -> Float -> Tensor
+addScalar :: Tensor -> Float -> Float -> Tensor
 addmv :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor
 addr :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor
 affine_grid_generator :: Tensor -> [Int] -> Bool -> Tensor
 affine_grid_generator_backward :: Tensor -> [Int] -> Bool -> Tensor
+allDim :: Tensor -> Int -> Bool -> Tensor
 allWithDimname :: Tensor -> Dimname -> Bool -> Tensor
 allclose :: Tensor -> Tensor -> Double -> Double -> Bool -> Bool
+anyDim :: Tensor -> Int -> Bool -> Tensor
 anyWithDimname :: Tensor -> Dimname -> Bool -> Tensor
 argmax :: Tensor -> Int -> Bool -> Tensor
 argmin :: Tensor -> Int -> Bool -> Tensor
@@ -460,7 +465,9 @@ logical_not :: Tensor -> Tensor
 logical_xor :: Tensor -> Tensor -> Tensor
 bmm :: Tensor -> Tensor -> Tensor
 broadcast_tensors :: [Tensor] -> [Tensor]
+cat :: [Tensor] -> Int -> Tensor
 catWithDimname :: [Tensor] -> Dimname -> Tensor
+ceil :: Tensor -> Tensor
 chain_matmul :: [Tensor] -> Tensor
 chunk :: Tensor -> Int -> Int -> [Tensor]
 clamp :: Tensor -> Float -> Float -> Tensor
@@ -472,10 +479,14 @@ convolution :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Bool -> 
 convolution_overrideable :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Bool -> [Int] -> Int -> Tensor
 convolution_backward_overrideable :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Bool -> [Int] -> Int -> (Bool, Bool, Bool) -> (Tensor, Tensor, Tensor)
 conv1d :: Tensor -> Tensor -> Tensor -> Int -> Int -> Int -> Int -> Tensor
+conv2d :: Tensor -> Tensor -> Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Int -> Tensor
 conv3d :: Tensor -> Tensor -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Int -> Tensor
 conv_tbc :: Tensor -> Tensor -> Tensor -> Int -> Tensor
 conv_tbc_backward :: Tensor -> Tensor -> Tensor -> Tensor -> Int -> (Tensor, Tensor, Tensor)
 conv_transpose1d :: Tensor -> Tensor -> Tensor -> Int -> Int -> Int -> Int -> Int -> Tensor
+conv_transpose2d :: Tensor -> Tensor -> Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Int -> (Int, Int) -> Tensor
+conv_transpose3d :: Tensor -> Tensor -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Int -> (Int, Int, Int) -> Tensor
+cos :: Tensor -> Tensor
 cosh :: Tensor -> Tensor
 cosine_embedding_loss :: Tensor -> Tensor -> Tensor -> Double -> Int -> Tensor
 cudnn_affine_grid_generator :: Tensor -> Int -> Int -> Int -> Int -> Tensor
@@ -494,12 +505,18 @@ cudnn_convolution_transpose_backward_input :: Tensor -> Tensor -> [Int] -> [Int]
 cudnn_convolution_transpose_backward_weight :: [Int] -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> Tensor
 cudnn_grid_sampler :: Tensor -> Tensor -> Tensor
 cudnn_grid_sampler_backward :: Tensor -> Tensor -> Tensor -> (Tensor, Tensor)
-cumsum :: Tensor -> Dimname -> DType -> Tensor
-cumprod :: Tensor -> Dimname -> DType -> Tensor
+cumsum :: Tensor -> Int -> DType -> Tensor
+cumsumWithDimname :: Tensor -> Dimname -> DType -> Tensor
+cumprod :: Tensor -> Int -> DType -> Tensor
+cumprodWithDimname :: Tensor -> Dimname -> DType -> Tensor
+ctcLoss' :: Tensor -> Tensor -> [Int] -> [Int] -> Int -> Int -> Bool -> Tensor
+ctcLoss :: Tensor -> Tensor -> Tensor -> Tensor -> Int -> Int -> Bool -> Tensor
 det :: Tensor -> Tensor
 diag_embed :: Tensor -> Int -> Int -> Int -> Tensor
 diagflat :: Tensor -> Int -> Tensor
 diagonal :: Tensor -> Int -> Int -> Int -> Tensor
+div :: Tensor -> Tensor -> Tensor
+divScalar :: Tensor -> Float -> Tensor
 dot :: Tensor -> Tensor -> Tensor
 einsum :: String -> [Tensor] -> Tensor
 embedding :: Tensor -> Tensor -> Int -> Bool -> Bool -> Tensor
@@ -507,12 +524,18 @@ embedding_backward :: Tensor -> Tensor -> Int -> Int -> Bool -> Bool -> Tensor
 embedding_dense_backward :: Tensor -> Tensor -> Int -> Int -> Bool -> Tensor
 embedding_sparse_backward :: Tensor -> Tensor -> Int -> Int -> Bool -> Tensor
 embedding_bag :: Tensor -> Tensor -> Tensor -> Bool -> Int -> Bool -> Tensor -> (Tensor, Tensor, Tensor, Tensor)
-empty_like :: Tensor -> Tensor
+emptyLikeWithMemoryFormat :: Tensor -> MemoryFormat -> Tensor
+erf :: Tensor -> Tensor
 erfc :: Tensor -> Tensor
+exp :: Tensor -> Tensor
 expm1 :: Tensor -> Tensor
 flatten :: Tensor -> Int -> Int -> Tensor
+flattenTo :: Tensor -> Int -> Int -> Dimname -> Tensor
+flattenToWithDimname :: Tensor -> Dimname -> Dimname -> Dimname -> Tensor
+flattenToWithDimnames :: Tensor -> [Dimname] -> Dimname -> Tensor
+floor :: Tensor -> Tensor
 frac :: Tensor -> Tensor
-full_like :: Tensor -> Float -> Tensor
+fullLikeWithMemoryFormat :: Tensor -> Float -> MemoryFormat -> Tensor
 grid_sampler :: Tensor -> Tensor -> Int -> Int -> Bool -> Tensor
 grid_sampler_2d :: Tensor -> Tensor -> Int -> Int -> Bool -> Tensor
 grid_sampler_2d_backward :: Tensor -> Tensor -> Tensor -> Int -> Int -> Bool -> (Tensor, Tensor)
@@ -530,6 +553,7 @@ indexCopy :: Tensor -> Int -> Tensor -> Tensor -> Tensor
 indexCopyWithDimname :: Tensor -> Dimname -> Tensor -> Tensor -> Tensor
 index_put :: Tensor -> [Tensor] -> Tensor -> Bool -> Tensor
 instance_norm :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Bool -> Double -> Double -> Bool -> Tensor
+inverse :: Tensor -> Tensor
 isclose :: Tensor -> Tensor -> Double -> Double -> Bool -> Tensor
 isnan :: Tensor -> Tensor
 is_distributed :: Tensor -> Bool
@@ -553,13 +577,23 @@ fbgemm_linear_quantize_weight :: Tensor -> (Tensor, Tensor, Double, Int)
 fbgemm_pack_gemm_matrix_fp16 :: Tensor -> Tensor
 fbgemm_linear_fp16_weight_fp32_activation :: Tensor -> Tensor -> Tensor -> Tensor
 fbgemm_linear_fp16_weight :: Tensor -> Tensor -> Tensor -> Tensor
+quantizeFbgemm' :: Tensor -> Tensor
+quantizeFbgemm :: Tensor -> Int -> Int -> Tensor
 log :: Tensor -> Tensor
+log10 :: Tensor -> Tensor
+log1p :: Tensor -> Tensor
+log2 :: Tensor -> Tensor
 logdet :: Tensor -> Tensor
+logSoftmax :: Tensor -> Int -> DType -> Tensor
 logSoftmaxWithDimname :: Tensor -> Dimname -> DType -> Tensor
 logsumexp :: Tensor -> Int -> Bool -> Tensor
 logsumexpWithDimnameList :: Tensor -> [Dimname] -> Bool -> Tensor
 margin_ranking_loss :: Tensor -> Tensor -> Tensor -> Double -> Int -> Tensor
+matmul :: Tensor -> Tensor -> Tensor
+matrixRank :: Tensor -> Double -> Bool -> Tensor
+matrixRank' :: Tensor -> Bool -> Tensor
 matrix_power :: Tensor -> Int -> Tensor
+maxDim :: Tensor -> Int -> Bool -> (Tensor, Tensor)
 maxValues :: Tensor -> Int -> Bool -> Tensor
 maxWithDimname :: Tensor -> Dimname -> Bool -> (Tensor, Tensor)
 maxValuesWithDimnames :: Tensor -> [Dimname] -> Bool -> Tensor
@@ -569,8 +603,12 @@ max_pool2d :: Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> 
 mkldnn_max_pool2d :: Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Bool -> Tensor
 quantized_max_pool2d :: Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Bool -> Tensor
 max_pool3d :: Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Bool -> Tensor
+meanAll :: Tensor -> DType -> Tensor
+meanDim :: Tensor -> Int -> Bool -> DType -> Tensor
 meanWithDimnames :: Tensor -> [Dimname] -> Bool -> DType -> Tensor
+medianDim :: Tensor -> Int -> Bool -> (Tensor, Tensor)
 medianWithDimname :: Tensor -> Dimname -> Bool -> (Tensor, Tensor)
+minDim :: Tensor -> Int -> Bool -> (Tensor, Tensor)
 minValues :: Tensor -> Int -> Bool -> Tensor
 minWithDimname :: Tensor -> Dimname -> Bool -> (Tensor, Tensor)
 minValuesWithDimnames :: Tensor -> [Dimname] -> Bool -> Tensor
@@ -598,6 +636,8 @@ miopen_rnn_backward :: Tensor -> [Tensor] -> Int -> Tensor -> Tensor -> Tensor -
 mm :: Tensor -> Tensor -> Tensor
 mode :: Tensor -> Int -> Bool -> (Tensor, Tensor)
 modeWithDimname :: Tensor -> Dimname -> Bool -> (Tensor, Tensor)
+mul :: Tensor -> Tensor -> Tensor
+mulScalar :: Tensor -> Float -> Tensor
 mv :: Tensor -> Tensor -> Tensor
 mvlgamma :: Tensor -> Int -> Tensor
 narrow :: Tensor -> Int -> Int -> Int -> Tensor
@@ -610,19 +650,26 @@ native_batch_norm_backward :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> 
 batch_norm_backward_reduce :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Bool -> Bool -> Bool -> (Tensor, Tensor, Tensor, Tensor)
 batch_norm_backward_elemt :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor
 batch_norm_update_stats :: Tensor -> Tensor -> Tensor -> Double -> (Tensor, Tensor)
-ones_like :: Tensor -> Tensor
+onesLikeWithMemoryFormat :: Tensor -> MemoryFormat -> Tensor
 pairwise_distance :: Tensor -> Tensor -> Double -> Double -> Bool -> Tensor
-cdist :: Tensor -> Tensor -> Double -> Tensor
+cdist :: Tensor -> Tensor -> Double -> Int -> Tensor
 pdist :: Tensor -> Double -> Tensor
 cosine_similarity :: Tensor -> Tensor -> Int -> Double -> Tensor
 pixel_shuffle :: Tensor -> Int -> Tensor
 pinverse :: Tensor -> Double -> Tensor
 poisson_nll_loss :: Tensor -> Tensor -> Bool -> Bool -> Double -> Int -> Tensor
-rand_like :: Tensor -> Tensor
-randn_like :: Tensor -> Tensor
+randLikeWithMemoryFormat :: Tensor -> MemoryFormat -> Tensor
+randintLike' :: Tensor -> Int -> MemoryFormat -> Tensor
+randintLike :: Tensor -> Int -> Int -> MemoryFormat -> Tensor
+randnLikeWithMemoryFormat :: Tensor -> MemoryFormat -> Tensor
 reciprocal :: Tensor -> Tensor
 neg :: Tensor -> Tensor
+repeatInterleaveRange :: Tensor -> Tensor
+repeatInterleave :: Tensor -> Tensor -> Int -> Tensor
+repeatInterleaveScalar :: Tensor -> Int -> Int -> Tensor
+reshape :: Tensor -> [Int] -> Tensor
 round :: Tensor -> Tensor
+relu :: Tensor -> Tensor
 prelu :: Tensor -> Tensor -> Tensor
 prelu_backward :: Tensor -> Tensor -> Tensor -> (Tensor, Tensor)
 gelu :: Tensor -> Tensor
@@ -631,7 +678,13 @@ hardshrink :: Tensor -> Float -> Tensor
 hardshrink_backward :: Tensor -> Tensor -> Float -> Tensor
 rsqrt :: Tensor -> Tensor
 selectWithDimname :: Tensor -> Dimname -> Int -> Tensor
+select :: Tensor -> Int -> Int -> Tensor
+selu :: Tensor -> Tensor
 celu :: Tensor -> Float -> Tensor
+sigmoid :: Tensor -> Tensor
+sin :: Tensor -> Tensor
+sinh :: Tensor -> Tensor
+size :: Tensor -> Int -> Int
 sizeWithDimname :: Tensor -> Dimname -> Int
 slice :: Tensor -> Int -> Int -> Int -> Int -> Tensor
 slogdet :: Tensor -> (Tensor, Tensor)
@@ -640,39 +693,74 @@ softmax :: Tensor -> Int -> DType -> Tensor
 softmaxWithDimname :: Tensor -> Dimname -> DType -> Tensor
 split :: Tensor -> Int -> Int -> [Tensor]
 split_with_sizes :: Tensor -> [Int] -> Int -> [Tensor]
+squeezeAll :: Tensor -> Tensor
+squeezeDim :: Tensor -> Int -> Tensor
 squeezeWithDimname :: Tensor -> Dimname -> Tensor
 sspaddmm :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor
 stack :: [Tensor] -> Int -> Tensor
 stft :: Tensor -> Int -> Int -> Int -> Tensor -> Bool -> Bool -> Tensor
 stride :: Tensor -> Int -> Int
 strideWithDimname :: Tensor -> Dimname -> Int
+sumAll :: Tensor -> DType -> Tensor
+sumDim :: Tensor -> Int -> Bool -> DType -> Tensor
 sumWithDimnames :: Tensor -> [Dimname] -> Bool -> DType -> Tensor
+sqrt :: Tensor -> Tensor
+stdAll :: Tensor -> Bool -> Tensor
+stdDim :: Tensor -> Int -> Bool -> Bool -> Tensor
+stdMeanAll :: Tensor -> Bool -> (Tensor, Tensor)
+stdMeanDim :: Tensor -> Int -> Bool -> Bool -> (Tensor, Tensor)
 stdMeanWithDimnames :: Tensor -> [Dimname] -> Bool -> Bool -> (Tensor, Tensor)
 stdWithDimnames :: Tensor -> [Dimname] -> Bool -> Bool -> Tensor
+prodAll :: Tensor -> DType -> Tensor
+prodDim :: Tensor -> Int -> Bool -> DType -> Tensor
 prodWithDimnames :: Tensor -> Dimname -> Bool -> DType -> Tensor
 t :: Tensor -> Tensor
 tan :: Tensor -> Tensor
+tanh :: Tensor -> Tensor
 tensordot :: Tensor -> Tensor -> [Int] -> [Int] -> Tensor
 threshold :: Tensor -> Float -> Float -> Tensor
 threshold_backward :: Tensor -> Tensor -> Float -> Tensor
+transpose :: Tensor -> Int -> Int -> Tensor
 transposeWithDimname :: Tensor -> Dimname -> Dimname -> Tensor
 one_hot :: Tensor -> Int -> Tensor
 flip :: Tensor -> [Int] -> Tensor
 roll :: Tensor -> Int -> Int -> Tensor
 rot90 :: Tensor -> Int -> [Int] -> Tensor
+trapz :: Tensor -> Tensor -> Int -> Tensor
+trapzScalar :: Tensor -> Double -> Int -> Tensor
 triplet_margin_loss :: Tensor -> Tensor -> Tensor -> Double -> Double -> Double -> Bool -> Int -> Tensor
 trunc :: Tensor -> Tensor
 unique_dim :: Tensor -> Int -> Bool -> Bool -> Bool -> (Tensor, Tensor, Tensor)
 unique_consecutive :: Tensor -> Bool -> Bool -> Int -> (Tensor, Tensor, Tensor)
 unique_dim_consecutive :: Tensor -> Int -> Bool -> Bool -> (Tensor, Tensor, Tensor)
 unsqueeze :: Tensor -> Int -> Tensor
+var :: Tensor -> Bool -> Tensor
+varDim :: Tensor -> Int -> Bool -> Bool -> Tensor
 varWithDimnames :: Tensor -> [Dimname] -> Bool -> Bool -> Tensor
+varMean :: Tensor -> Bool -> (Tensor, Tensor)
+varMeanDim :: Tensor -> Int -> Bool -> Bool -> (Tensor, Tensor)
 varMeanWithDimnames :: Tensor -> [Dimname] -> Bool -> Bool -> (Tensor, Tensor)
 where' :: Tensor -> Tensor -> Tensor -> Tensor
+isNonZero :: Tensor -> [Tensor]
 norm_except_dim :: Tensor -> Int -> Int -> Tensor
-zeros_like :: Tensor -> Tensor
+zerosLikeWithMemoryFormat :: Tensor -> MemoryFormat -> Tensor
 native_norm :: Tensor -> Float -> Tensor
-clone :: Tensor -> Tensor
+normCastAll :: Tensor -> Float -> DType -> Tensor
+normAll :: Tensor -> Float -> Tensor
+normCastDim :: Tensor -> Float -> Int -> Bool -> DType -> Tensor
+normDim :: Tensor -> Float -> Int -> Bool -> Tensor
+norm_tsNbs :: Tensor -> Float -> [Dimname] -> Bool -> DType -> Tensor
+norm_tsNb :: Tensor -> Float -> [Dimname] -> Bool -> Tensor
+frobeniusNormAll :: Tensor -> Tensor
+frobeniusNormDim :: Tensor -> Int -> Bool -> Tensor
+nuclearNormAll :: Tensor -> Bool -> Tensor
+nuclearNormDim :: Tensor -> (Int, Int) -> Bool -> Tensor
+clone :: Tensor -> MemoryFormat -> Tensor
+powScalar :: Tensor -> Float -> Tensor
+sub :: Tensor -> Tensor -> Float -> Tensor
+subScalar :: Tensor -> Float -> Float -> Tensor
+rsub :: Tensor -> Tensor -> Float -> Tensor
+rsubScalar :: Tensor -> Float -> Float -> Tensor
 addmm :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor
 to_dense_backward :: Tensor -> Tensor -> Tensor
 hspmm :: Tensor -> Tensor -> Tensor
@@ -696,26 +784,67 @@ fake_quantize_per_channel_affine_backward :: Tensor -> Tensor -> Tensor -> Tenso
 meshgrid :: [Tensor] -> [Tensor]
 cartesian_prod :: [Tensor] -> Tensor
 combinations :: Tensor -> Int -> Bool -> Tensor
+resultType :: Tensor -> Tensor -> DType
+resultTypeScalar :: Tensor -> Float -> DType
+resultTypeScalar' :: Float -> Tensor -> DType
+resultTypeScalars :: Float -> Float -> DType
 can_cast :: DType -> DType -> Bool
 promote_types :: DType -> DType -> DType
+lstm :: Tensor -> [Tensor] -> [Tensor] -> Bool -> Int -> Double -> Bool -> Bool -> Bool -> (Tensor, Tensor, Tensor)
+lstm' :: Tensor -> Tensor -> [Tensor] -> [Tensor] -> Bool -> Int -> Double -> Bool -> Bool -> (Tensor, Tensor, Tensor)
+gru :: Tensor -> Tensor -> [Tensor] -> Bool -> Int -> Double -> Bool -> Bool -> Bool -> (Tensor, Tensor)
+gru' :: Tensor -> Tensor -> Tensor -> [Tensor] -> Bool -> Int -> Double -> Bool -> Bool -> (Tensor, Tensor)
+rnnTanh :: Tensor -> Tensor -> [Tensor] -> Bool -> Int -> Double -> Bool -> Bool -> Bool -> (Tensor, Tensor)
+rnnTanh' :: Tensor -> Tensor -> Tensor -> [Tensor] -> Bool -> Int -> Double -> Bool -> Bool -> (Tensor, Tensor)
+rnnRelu :: Tensor -> Tensor -> [Tensor] -> Bool -> Int -> Double -> Bool -> Bool -> Bool -> (Tensor, Tensor)
+rnnRelu' :: Tensor -> Tensor -> Tensor -> [Tensor] -> Bool -> Int -> Double -> Bool -> Bool -> (Tensor, Tensor)
 lstm_cell :: Tensor -> [Tensor] -> Tensor -> Tensor -> Tensor -> Tensor -> (Tensor, Tensor)
 gru_cell :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor
 rnn_tanh_cell :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor
 rnn_relu_cell :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor
+quantizedLstm :: Tensor -> [Tensor] -> [Tensor] -> Bool -> Int -> Double -> Bool -> Bool -> Bool -> DType -> Bool -> (Tensor, Tensor, Tensor)
+quantizedLstm' :: Tensor -> Tensor -> [Tensor] -> [Tensor] -> Bool -> Int -> Double -> Bool -> Bool -> DType -> Bool -> (Tensor, Tensor, Tensor)
+quantizedGru :: Tensor -> Tensor -> [Tensor] -> Bool -> Int -> Double -> Bool -> Bool -> Bool -> (Tensor, Tensor)
+quantizedGru' :: Tensor -> Tensor -> Tensor -> [Tensor] -> Bool -> Int -> Double -> Bool -> Bool -> (Tensor, Tensor)
 quantized_lstm_cell :: Tensor -> [Tensor] -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Float -> Float -> Float -> Float -> (Tensor, Tensor)
 quantized_gru_cell :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Float -> Float -> Float -> Float -> Tensor
 quantized_rnn_relu_cell :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Float -> Float -> Float -> Float -> Tensor
 quantized_rnn_tanh_cell :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Float -> Float -> Float -> Float -> Tensor
+maskedFillScalar :: Tensor -> Tensor -> Float -> Tensor
+maskedFill :: Tensor -> Tensor -> Tensor -> Tensor
 masked_scatter :: Tensor -> Tensor -> Tensor -> Tensor
 indexAdd :: Tensor -> Int -> Tensor -> Tensor -> Tensor
 indexAddWithDimname :: Tensor -> Dimname -> Tensor -> Tensor -> Tensor
+indexFillScalar :: Tensor -> Int -> Tensor -> Float -> Tensor
+indexFill :: Tensor -> Int -> Tensor -> Tensor -> Tensor
+indexFillScalarWithDimname :: Tensor -> Dimname -> Tensor -> Float -> Tensor
+indexFillWithDimname :: Tensor -> Dimname -> Tensor -> Tensor -> Tensor
+scatter :: Tensor -> Int -> Tensor -> Tensor -> Tensor
+scatterScalar :: Tensor -> Int -> Tensor -> Float -> Tensor
+scatterWithDimname :: Tensor -> Dimname -> Tensor -> Tensor -> Tensor
+scatterScalarWithDimname :: Tensor -> Dimname -> Tensor -> Float -> Tensor
 scatterAdd :: Tensor -> Int -> Tensor -> Tensor -> Tensor
 scatterAddWithDimname :: Tensor -> Dimname -> Tensor -> Tensor -> Tensor
+bitwiseXorScalar :: Tensor -> Float -> Tensor
+bitwiseXor :: Tensor -> Tensor -> Tensor
 addbmm :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor
+diag :: Tensor -> Int -> Tensor
 cross :: Tensor -> Tensor -> Int -> Tensor
 triu :: Tensor -> Int -> Tensor
 tril :: Tensor -> Int -> Tensor
 trace :: Tensor -> Tensor
+neScalar :: Tensor -> Float -> Tensor
+ne :: Tensor -> Tensor -> Tensor
+eqScalar :: Tensor -> Float -> Tensor
+eq :: Tensor -> Tensor -> Tensor
+geScalar :: Tensor -> Float -> Tensor
+ge :: Tensor -> Tensor -> Tensor
+leScalar :: Tensor -> Float -> Tensor
+le :: Tensor -> Tensor -> Tensor
+gtScalar :: Tensor -> Float -> Tensor
+gt :: Tensor -> Tensor -> Tensor
+ltScalar :: Tensor -> Float -> Tensor
+lt :: Tensor -> Tensor -> Tensor
 take :: Tensor -> Tensor -> Tensor
 indexSelect :: Tensor -> Int -> Tensor -> Tensor
 indexSelectWithDimname :: Tensor -> Dimname -> Tensor -> Tensor
@@ -728,17 +857,35 @@ addcmul :: Tensor -> Tensor -> Tensor -> Float -> Tensor
 addcdiv :: Tensor -> Tensor -> Tensor -> Float -> Tensor
 lstsq :: Tensor -> Tensor -> (Tensor, Tensor)
 triangular_solve :: Tensor -> Tensor -> Bool -> Bool -> Bool -> (Tensor, Tensor)
+symeig :: Tensor -> Bool -> Bool -> (Tensor, Tensor)
+eig :: Tensor -> Bool -> (Tensor, Tensor)
+svd :: Tensor -> Bool -> Bool -> (Tensor, Tensor, Tensor)
+cholesky :: Tensor -> Bool -> Tensor
+cholesky_solve :: Tensor -> Tensor -> Bool -> Tensor
+solve :: Tensor -> Tensor -> (Tensor, Tensor)
+cholesky_inverse :: Tensor -> Bool -> Tensor
 qr :: Tensor -> Bool -> (Tensor, Tensor)
+geqrf :: Tensor -> (Tensor, Tensor)
+orgqr :: Tensor -> Tensor -> Tensor
 ormqr :: Tensor -> Tensor -> Tensor -> Bool -> Bool -> Tensor
 lu_solve :: Tensor -> Tensor -> Tensor -> Tensor
 lgamma :: Tensor -> Tensor
 digamma :: Tensor -> Tensor
 polygamma :: Int -> Tensor -> Tensor
 erfinv :: Tensor -> Tensor
+sign :: Tensor -> Tensor
 dist :: Tensor -> Tensor -> Float -> Tensor
 atan2 :: Tensor -> Tensor -> Tensor
+lerpScalar :: Tensor -> Tensor -> Float -> Tensor
+lerp :: Tensor -> Tensor -> Tensor -> Tensor
 histc :: Tensor -> Int -> Float -> Float -> Tensor
+fmodScalar :: Tensor -> Float -> Tensor
+fmod :: Tensor -> Tensor -> Tensor
+remainderScalar :: Tensor -> Float -> Tensor
+remainder :: Tensor -> Tensor -> Tensor
+min :: Tensor -> Tensor -> Tensor
 minAll :: Tensor -> Tensor
+max :: Tensor -> Tensor -> Tensor
 maxAll :: Tensor -> Tensor
 medianAll :: Tensor -> Tensor
 sort :: Tensor -> Int -> Bool -> (Tensor, Tensor)
@@ -746,11 +893,16 @@ sortWithDimname :: Tensor -> Dimname -> Bool -> (Tensor, Tensor)
 argsort :: Tensor -> Int -> Bool -> Tensor
 argsortWithDimname :: Tensor -> Dimname -> Bool -> Tensor
 topk :: Tensor -> Int -> Int -> Bool -> Bool -> (Tensor, Tensor)
+all :: Tensor -> Tensor
+any :: Tensor -> Tensor
 renorm :: Tensor -> Float -> Int -> Float -> Tensor
 equal :: Tensor -> Tensor -> Bool
+pow :: Tensor -> Tensor -> Tensor
+powScalar' :: Float -> Tensor -> Tensor
 alias :: Tensor -> Tensor
 binary_cross_entropy :: Tensor -> Tensor -> Tensor -> Int -> Tensor
 binary_cross_entropy_backward :: Tensor -> Tensor -> Tensor -> Tensor -> Int -> Tensor
+mse_loss :: Tensor -> Tensor -> Int -> Tensor
 mse_loss_backward :: Tensor -> Tensor -> Tensor -> Int -> Tensor
 l1_loss :: Tensor -> Tensor -> Int -> Tensor
 l1_loss_backward :: Tensor -> Tensor -> Tensor -> Int -> Tensor
@@ -5099,8 +5251,8 @@ grayScale70 :: [Char]
 dispImage :: Tensor -> IO ()
 readImage :: FilePath -> IO (Either String Tensor)
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679487032 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679487057 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679501250 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679501275 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
