@@ -1616,8 +1616,10 @@ instance Torch.Optim.Optimizer Torch.Optim.GDM
 instance Torch.Optim.Optimizer Torch.Optim.GD
 
 module Torch.Script
-newtype Module
-UnsafeModule :: ForeignPtr Module -> Module
+newtype ScriptModule
+UnsafeScriptModule :: ForeignPtr Module -> ScriptModule
+newtype RawModule
+UnsafeRawModule :: ForeignPtr Module -> RawModule
 type RawIValue = ForeignPtr IValue
 newtype Blob
 UnsafeBlob :: ForeignPtr (C10Ptr Blob) -> Blob
@@ -1627,6 +1629,24 @@ newtype Future
 UnsafeFuture :: ForeignPtr (C10Ptr IVFuture) -> Future
 newtype Capsule
 UnsafeCapsule :: ForeignPtr (C10Ptr Capsule) -> Capsule
+
+-- | See <a>https://github.com/pytorch/pytorch/wiki/PyTorch-IR</a>
+newtype Graph
+UnsafeGraph :: ForeignPtr (SharedPtr JitGraph) -> Graph
+data JitGraph
+JitGraph :: [JitValue] -> [JitValue] -> [JitNode] -> JitGraph
+[graphInputs] :: JitGraph -> [JitValue]
+[graphOutputs] :: JitGraph -> [JitValue]
+[graphNodes] :: JitGraph -> [JitNode]
+data JitNode
+JitNode :: [JitValue] -> [JitValue] -> String -> JitNode
+[nodeInputs] :: JitNode -> [JitValue]
+[nodeOutputs] :: JitNode -> [JitValue]
+[nodeKind] :: JitNode -> String
+data JitValue
+JitValue :: Int -> String -> JitValue
+[valueId] :: JitValue -> Int
+[valueType] :: JitValue -> String
 data IValue
 IVNone :: IValue
 IVTensor :: Tensor -> IValue
@@ -1647,25 +1667,81 @@ IVDevice :: IValue
 IVObject :: IValue
 IVUninitialized :: IValue
 IVCapsule :: IValue
-newModule :: String -> IO Module
-save :: Module -> FilePath -> IO ()
-load :: FilePath -> IO Module
-forward' :: Module -> [RawIValue] -> IO RawIValue
-forward :: Module -> [IValue] -> IO IValue
-register_parameter :: Module -> String -> Tensor -> Bool -> IO ()
-register_module :: Module -> String -> Module -> IO ()
-train :: Module -> Bool -> IO ()
-run_method :: Module -> String -> [IValue] -> IO IValue
-run_method1 :: Module -> String -> IValue -> IO IValue
-define :: Module -> String -> IO ()
+newModule :: String -> IO RawModule
+save :: ScriptModule -> FilePath -> IO ()
+save' :: RawModule -> FilePath -> IO ()
+data LoadMode
+WithoutRequiredGrad :: LoadMode
+WithRequiredGrad :: LoadMode
+load :: LoadMode -> FilePath -> IO ScriptModule
+load' :: FilePath -> IO RawModule
+forwardIO :: ScriptModule -> [IValue] -> IO IValue
+forward :: ScriptModule -> [IValue] -> IValue
+registerParameter :: RawModule -> String -> Tensor -> Bool -> IO ()
+registerModule :: RawModule -> String -> RawModule -> IO ()
+getParameters :: ScriptModule -> [Tensor]
+getParametersIO :: RawModule -> IO [Tensor]
+setParameters :: RawModule -> [Tensor] -> IO ()
+updateParameters :: LoadMode -> ScriptModule -> [Tensor] -> ScriptModule
+toScriptModule :: RawModule -> IO ScriptModule
+toRawModule :: ScriptModule -> IO RawModule
+clone :: RawModule -> IO RawModule
+train :: RawModule -> Bool -> IO ()
+define :: RawModule -> String -> IO ()
+dumpToStr :: ScriptModule -> Bool -> Bool -> Bool -> Int -> IO String
+dumpToStr' :: ScriptModule -> IO String
+runMethod :: ScriptModule -> String -> [IValue] -> IValue
+runMethod1 :: ScriptModule -> String -> IValue -> IValue
+trace :: String -> String -> ([Tensor] -> IO [Tensor]) -> [Tensor] -> IO RawModule
+
+-- | This function generates torchscript-module from Parameterized-instance
+--   of hasktorch. Usage is below. -- &gt;&gt; let example_inputs =
+--   asTensor (4::Float) -- &gt;&gt; init_parameters &lt;- sample MonoSpec
+--   -- &gt;&gt; mutableTorchscript &lt;- traceWithParameters
+--   <a>MyModule</a> -- (parameters [example_inputs'] -&gt; return
+--   [(traced_function parameters example_inputs')]) -- init_parameters --
+--   [example_inputs] -- &gt;&gt; immutableTorchscript &lt;- toScriptModule
+--   mutableTorchscript -- &gt;&gt; save immutableTorchscript
+--   "<a>torchscript file</a>"
+traceWithParameters :: Parameterized f => String -> (f -> [Tensor] -> IO [Tensor]) -> f -> [Tensor] -> IO RawModule
+traceAsGraph :: ([Tensor] -> IO [Tensor]) -> [Tensor] -> IO Graph
+printGraph :: Graph -> IO String
+
+-- | Output onnx file from graph. (really experimental implementation)
+--   printOnnx uses export_onnx function of libtorch. It outputs following
+--   error, because prim::Constant symbol using torchscript does not exist.
+--   -- Exception: ONNX export failed: Couldn't export operator
+--   prim::Constant -- Defined at: -- Graph we tried to export: -- graph(%0
+--   : Float(), -- %1 : Float()): -- %2 : int = prim::Constant[value=1]()
+--   -- %3 : Float() = aten::add(%0, %1, %2) -- return (%3) -- ; type:
+--   std::runtime_error On the other hand, torch.onnx.export of python
+--   works. onnx's symbol map is in python code.
+--   <a>https://github.com/pytorch/pytorch/blob/master/torch/onnx/symbolic_opset9.py</a>
+--   
+--   If you need onnx-file, at first make torchscript by trace , then
+--   convert torchscript into onnx by python-code.
+printOnnx :: Graph -> IO String
+graphToJitGraph :: Graph -> IO JitGraph
+instance GHC.Classes.Eq Torch.Script.LoadMode
+instance GHC.Show.Show Torch.Script.LoadMode
 instance GHC.Show.Show Torch.Script.IValue
+instance GHC.Classes.Eq Torch.Script.JitGraph
+instance GHC.Show.Show Torch.Script.JitGraph
+instance GHC.Classes.Eq Torch.Script.JitNode
+instance GHC.Show.Show Torch.Script.JitNode
+instance GHC.Classes.Eq Torch.Script.JitValue
+instance GHC.Show.Show Torch.Script.JitValue
+instance Torch.NN.Parameterized Torch.Script.ScriptModule
 instance Torch.Internal.Class.Castable [Torch.Script.IValue] [Torch.Script.RawIValue]
 instance Torch.Internal.Class.Castable Torch.Script.IValue Torch.Script.RawIValue
+instance Torch.Internal.Class.Castable Torch.Script.Graph (GHC.ForeignPtr.ForeignPtr (Torch.Internal.Type.SharedPtr Torch.Internal.Type.JitGraph))
 instance GHC.Show.Show Torch.Script.Capsule
 instance GHC.Show.Show Torch.Script.Future
 instance GHC.Show.Show Torch.Script.Object
 instance GHC.Show.Show Torch.Script.Blob
-instance Torch.Internal.Class.Castable Torch.Script.Module (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Module)
+instance Torch.Internal.Class.Castable Torch.Script.RawModule (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Module)
+instance GHC.Show.Show Torch.Script.ScriptModule
+instance Torch.Internal.Class.Castable Torch.Script.ScriptModule (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Module)
 
 module Torch.Random
 mkGenerator :: Device -> Word64 -> IO Generator
@@ -5251,8 +5327,8 @@ grayScale70 :: [Char]
 dispImage :: Tensor -> IO ()
 readImage :: FilePath -> IO (Either String Tensor)
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679501485 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679501510 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679587467 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679587492 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
