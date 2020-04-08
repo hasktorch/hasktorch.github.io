@@ -1169,13 +1169,13 @@ sigmoid :: Tensor -> Tensor
 -- | Applies a softmax function. It is applied to all slices along dim, and
 --   will re-scale them so that the elements lie in the range [0, 1] and
 --   sum to 1.
-softmax :: Int -> Tensor -> Tensor
+softmax :: Dim -> Tensor -> Tensor
 
 -- | Applies a softmax followed by a logarithm. While mathematically
 --   equivalent to log(softmax(x)), doing these two operations separately
 --   is slower, and numerically unstable. This function uses an alternative
 --   formulation to compute the output and gradient correctly.
-logSoftmax :: Int -> Tensor -> Tensor
+logSoftmax :: Dim -> Tensor -> Tensor
 
 -- | Thresholds each element of the input Tensor.
 threshold :: Float -> Float -> Tensor -> Tensor
@@ -1345,12 +1345,12 @@ bitwiseNot :: Tensor -> Tensor
 -- | Concatenates the given sequence of seq tensors in the given dimension.
 --   All tensors must either have the same shape (except in the
 --   concatenating dimension) or be empty.
-cat :: Int -> [Tensor] -> Tensor
+cat :: Dim -> [Tensor] -> Tensor
 
 -- | Splits a tensor into a specific number of chunks. Last chunk will be
 --   smaller if the tensor size along the given dimension dim is not
 --   divisible by chunks.
-chunk :: Int -> Int -> Tensor -> [Tensor]
+chunk :: Int -> Dim -> Tensor -> [Tensor]
 
 -- | Clamp all elements in input into the range [ min, max ] and return a
 --   resulting tensor.
@@ -1402,7 +1402,7 @@ sign :: Tensor -> Tensor
 
 -- | Returns a tensor that is a transposed version of <tt>input</tt>. The
 --   given dimensions <tt>dim0</tt> and <tt>dim1</tt> are swapped.
-transpose :: Int -> Int -> Tensor -> Tensor
+transpose :: Dim -> Dim -> Tensor -> Tensor
 
 -- | transpose special case for a 2D tensor
 transpose2D :: Tensor -> Tensor
@@ -1424,14 +1424,14 @@ any :: Tensor -> Bool
 --   output tensor is of the same size as input except in the dimension dim
 --   where it is of size 1. Otherwise, dim is squeezed, resulting in the
 --   output tensor having 1 fewer dimension than input.
-allDim :: Int -> Bool -> Tensor -> Tensor
+allDim :: Dim -> Bool -> Tensor -> Tensor
 
 -- | Returns True if any elements in each row of the tensor in the given
 --   dimension dim are True, False otherwise. If keepdim is True, the
 --   output tensor is of the same size as input except in the dimension dim
 --   where it is of size 1. Otherwise, dim is squeezed, resulting in the
 --   output tensor having 1 fewer dimension than input.
-anyDim :: Int -> Bool -> Tensor -> Tensor
+anyDim :: Dim -> Bool -> Tensor -> Tensor
 
 -- | Permute the dimensions of this tensor.
 permute :: [Int] -> Tensor -> Tensor
@@ -5251,8 +5251,8 @@ grayScale70 :: [Char]
 dispImage :: Tensor -> IO ()
 readImage :: FilePath -> IO (Either String Tensor)
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679501250 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679501275 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679501485 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679501510 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
