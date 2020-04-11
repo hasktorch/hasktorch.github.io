@@ -5326,13 +5326,32 @@ getImages' :: Int -> Int -> MnistData -> [Int] -> IO Tensor
 grayScale10 :: [Char]
 grayScale70 :: [Char]
 dispImage :: Tensor -> IO ()
-readImage :: FilePath -> IO (Either String Tensor)
+data PixelFormat
+Y8 :: PixelFormat
+YF :: PixelFormat
+YA8 :: PixelFormat
+RGB8 :: PixelFormat
+RGBF :: PixelFormat
+RGBA8 :: PixelFormat
+YCbCr8 :: PixelFormat
+CMYK8 :: PixelFormat
+CMYK16 :: PixelFormat
+RGBA16 :: PixelFormat
+RGB16 :: PixelFormat
+Y16 :: PixelFormat
+YA16 :: PixelFormat
+Y32 :: PixelFormat
+readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
+readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
+pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679587676 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679587701 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679587697 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679587722 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
 writePng :: FilePath -> Tensor -> IO ()
 hwc2chw :: Tensor -> Tensor
 chw2hwc :: Tensor -> Tensor
+instance GHC.Classes.Eq Torch.Vision.PixelFormat
+instance GHC.Show.Show Torch.Vision.PixelFormat
