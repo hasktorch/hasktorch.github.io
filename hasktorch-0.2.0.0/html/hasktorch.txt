@@ -1439,6 +1439,9 @@ permute :: [Int] -> Tensor -> Tensor
 -- | expand TODO: figure out what the <tt>implicit</tt> boolean value does
 expand :: Tensor -> Bool -> [Int] -> Tensor
 
+-- | flatten
+flatten :: Dim -> Dim -> Tensor -> Tensor
+
 -- | flattenAll
 flattenAll :: Tensor -> Tensor
 
@@ -1556,10 +1559,27 @@ Linear :: Parameter -> Parameter -> Linear
 [weight] :: Linear -> Parameter
 [bias] :: Linear -> Parameter
 linear :: Linear -> Tensor -> Tensor
+data Conv2dSpec
+Conv2dSpec :: Int -> Int -> Int -> Int -> Conv2dSpec
+[inputChannelSize] :: Conv2dSpec -> Int
+[outputChannelSize] :: Conv2dSpec -> Int
+[kernelHeight] :: Conv2dSpec -> Int
+[kernelWidth] :: Conv2dSpec -> Int
+data Conv2d
+Conv2d :: Parameter -> Parameter -> Conv2d
+[conv2dWeight] :: Conv2d -> Parameter
+[conv2dBias] :: Conv2d -> Parameter
+conv2dForward :: Conv2d -> (Int, Int) -> (Int, Int) -> Tensor -> Tensor
+instance GHC.Generics.Generic Torch.NN.Conv2d
+instance GHC.Show.Show Torch.NN.Conv2d
+instance GHC.Classes.Eq Torch.NN.Conv2dSpec
+instance GHC.Show.Show Torch.NN.Conv2dSpec
 instance GHC.Generics.Generic Torch.NN.Linear
 instance GHC.Show.Show Torch.NN.Linear
 instance GHC.Classes.Eq Torch.NN.LinearSpec
 instance GHC.Show.Show Torch.NN.LinearSpec
+instance Torch.NN.Randomizable Torch.NN.Conv2dSpec Torch.NN.Conv2d
+instance Torch.NN.Parameterized Torch.NN.Conv2d
 instance Torch.NN.Randomizable Torch.NN.LinearSpec Torch.NN.Linear
 instance Torch.NN.Parameterized Torch.NN.Linear
 instance Torch.NN.Parameterized [Torch.NN.Linear]
@@ -5358,8 +5378,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679588167 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679588192 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679593578 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679593603 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
