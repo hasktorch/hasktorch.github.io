@@ -3838,6 +3838,14 @@ randLike :: forall shape dtype device. Tensor device dtype shape -> IO (Tensor d
 --   </pre>
 randnLike :: forall shape dtype device. Tensor device dtype shape -> IO (Tensor device dtype shape)
 
+-- | reciprocal
+--   
+--   <pre>
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ reciprocal (ones :: CPUTensor 'D.Float '[3,2])
+--   (Float,[3,2])
+--   </pre>
+reciprocal :: forall shape dtype device. Tensor device dtype shape -> Tensor device dtype shape
+
 -- | negate TODO: probably not defined for <a>Bool</a> tensors
 --   
 --   <pre>
@@ -3977,6 +3985,11 @@ type Stack dim tensors = StackCheck (StackImpl dim tensors 1)
 --   (Float,([2,2,3],[[[1.0,1.0,1.0],[1.0,1.0,1.0]],[[1.0,1.0,1.0],[1.0,1.0,1.0]]]))
 --   </pre>
 stack :: forall dim shape dtype device tensors. (KnownNat dim, '(shape, dtype, device) ~ Stack dim tensors, Castable (HList tensors) [ATenTensor]) => HList tensors -> Tensor device dtype shape
+
+-- | t
+--   
+--   dtype &amp;&amp;&amp; shape $ t ones :: CPUTensor 'D.Float '<a>3,2</a>
+t :: forall shape dtype device. Tensor device dtype shape -> Tensor device dtype shape
 
 -- | tan
 --   
@@ -4178,6 +4191,22 @@ triu :: forall shape dtype device. shape ~ MatrixOrMatrixBatch shape => Int -> T
 --   </pre>
 tril :: forall shape dtype device. shape ~ MatrixOrMatrixBatch shape => Int -> Tensor device dtype shape -> Tensor device dtype shape
 
+-- | trace
+--   
+--   <pre>
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ trace (ones :: CPUTensor 'D.Float '[3,2])
+--   (Float,[3,2])
+--   </pre>
+trace :: forall shape dtype device. Tensor device dtype shape -> Tensor device dtype shape
+
+-- | nonzero
+--   
+--   <pre>
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ nonzero (zeros :: CPUTensor 'D.Float '[3,2])
+--   (Float,[3,2])
+--   </pre>
+nonzero :: forall shape dtype device. Tensor device dtype shape -> Tensor device dtype shape
+
 -- | lgamma function
 --   
 --   <pre>
@@ -4342,6 +4371,14 @@ type family TopKDeviceAndDTypeCheck dtype (device :: (DeviceType, Nat)) :: Const
 --                       []])
 --   </pre>
 topk :: forall k dim shape dtype device. (KnownNat k, KnownNat dim, All KnownNat shape, TopKDeviceAndDTypeCheck dtype device) => Bool -> Bool -> Tensor device dtype shape -> (Tensor device dtype (TopK k shape dim), Tensor device 'Int64 (TopK k shape dim))
+
+-- | alias
+--   
+--   <pre>
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ alias (ones :: CPUTensor 'D.Float '[3,2])
+--   (Float,[3,2])
+--   </pre>
+alias :: forall shape dtype device. Tensor device dtype shape -> Tensor device dtype shape
 
 -- | L1 loss TODO: probably only defined for floating point tensors, or
 --   maybe numeric type is lifted?
@@ -5378,8 +5415,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679612776 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679612801 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679613416 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679613441 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
