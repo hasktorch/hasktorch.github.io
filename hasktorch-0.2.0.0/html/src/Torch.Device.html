@@ -1,25 +1,169 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE FlexibleInstances #-}</span><span>
-</span><a name="line-2"></a><span class="hs-pragma">{-# LANGUAGE MultiParamTypeClasses #-}</span><span>
-</span><a name="line-3"></a><span>
-</span><a name="line-4"></a><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.Device</span><span> </span><span class="hs-keyword">where</span><span>
-</span><a name="line-5"></a><span>
-</span><a name="line-6"></a><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a><span> </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">I</span><span>
-</span><a name="line-7"></a><span>
-</span><a name="line-8"></a><span class="hs-keyword">import</span><span>           </span><a href="../../../libtorch-ffi-1.4.0.0/html/src/Torch.Internal.Class.html"><span class="hs-identifier">Torch.Internal.Class</span></a><span>                     </span><span class="hs-special">(</span><span> </span><a href="../../../libtorch-ffi-1.4.0.0/html/src/Torch.Internal.Class.html#Castable"><span class="hs-identifier hs-type">Castable</span></a><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span> </span><span class="hs-special">)</span><span>
-</span><a name="line-9"></a><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><a href="../../../libtorch-ffi-1.4.0.0/html/src/Torch.Internal.Const.html"><span class="hs-identifier">Torch.Internal.Const</span></a><span>                    </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">ATen</span><span>
-</span><a name="line-10"></a><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><a href="../../../libtorch-ffi-1.4.0.0/html/src/Torch.Internal.Type.html"><span class="hs-identifier">Torch.Internal.Type</span></a><span>                     </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">ATen</span><span>
-</span><a name="line-11"></a><span>
-</span><a name="line-12"></a><span class="hs-keyword">data</span><span> </span><a name="DeviceType"><a href="Torch.Device.html#DeviceType"><span class="hs-identifier">DeviceType</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a name="CPU"><a href="Torch.Device.html#CPU"><span class="hs-identifier">CPU</span></a></a><span> </span><span class="hs-glyph">|</span><span> </span><a name="CUDA"><a href="Torch.Device.html#CUDA"><span class="hs-identifier">CUDA</span></a></a><span>
-</span><a name="line-13"></a><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-type">Eq</span></a><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-type">Ord</span></a><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.Show.html#Show"><span class="hs-identifier hs-type">Show</span></a><span class="hs-special">)</span><span>
-</span><a name="line-14"></a><span>
-</span><a name="line-15"></a><span class="hs-keyword">data</span><span> </span><a name="Device"><a href="Torch.Device.html#Device"><span class="hs-identifier">Device</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a name="Device"><a href="Torch.Device.html#Device"><span class="hs-identifier">Device</span></a></a><span> </span><span class="hs-special">{</span><span> </span><a name="deviceType"><a href="Torch.Device.html#deviceType"><span class="hs-identifier">deviceType</span></a></a><span> </span><span class="hs-glyph">::</span><span> </span><a href="Torch.Device.html#DeviceType"><span class="hs-identifier hs-type">DeviceType</span></a><span class="hs-special">,</span><span> </span><a name="deviceIndex"><a href="Torch.Device.html#deviceIndex"><span class="hs-identifier">deviceIndex</span></a></a><span> </span><span class="hs-glyph">::</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.Int.html#Int16"><span class="hs-identifier hs-type">I.Int16</span></a><span> </span><span class="hs-special">}</span><span>
-</span><a name="line-16"></a><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-type">Eq</span></a><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-type">Ord</span></a><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.Show.html#Show"><span class="hs-identifier hs-type">Show</span></a><span class="hs-special">)</span><span>
-</span><a name="line-17"></a><span>
-</span><a name="line-18"></a><span class="hs-keyword">instance</span><span> </span><a href="../../../libtorch-ffi-1.4.0.0/html/src/Torch.Internal.Class.html#Castable"><span class="hs-identifier hs-type">Castable</span></a><span> </span><a href="Torch.Device.html#DeviceType"><span class="hs-identifier hs-type">DeviceType</span></a><span> </span><a href="../../../libtorch-ffi-1.4.0.0/html/src/Torch.Internal.Type.html#DeviceType"><span class="hs-identifier hs-type">ATen.DeviceType</span></a><span> </span><span class="hs-keyword">where</span><span>
-</span><a name="line-19"></a><span>  </span><a name="local-8214565720323824648"><a href="../../../libtorch-ffi-1.4.0.0/html/src/Torch.Internal.Class.html#cast"><span class="hs-identifier">cast</span></a></a><span> </span><a href="Torch.Device.html#CPU"><span class="hs-identifier hs-var">CPU</span></a><span>   </span><a name="local-6989586621679129801"><a href="#local-6989586621679129801"><span class="hs-identifier">f</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="#local-6989586621679129801"><span class="hs-identifier hs-var">f</span></a><span> </span><a href="../../../libtorch-ffi-1.4.0.0/html/src/Torch.Internal.Const.html#kCPU"><span class="hs-identifier hs-var">ATen.kCPU</span></a><span>
-</span><a name="line-20"></a><span>  </span><span class="hs-identifier">cast</span><span> </span><a href="Torch.Device.html#CUDA"><span class="hs-identifier hs-var">CUDA</span></a><span>  </span><a name="local-6989586621679129802"><a href="#local-6989586621679129802"><span class="hs-identifier">f</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="#local-6989586621679129802"><span class="hs-identifier hs-var">f</span></a><span> </span><a href="../../../libtorch-ffi-1.4.0.0/html/src/Torch.Internal.Const.html#kCUDA"><span class="hs-identifier hs-var">ATen.kCUDA</span></a><span>
-</span><a name="line-21"></a><span>
-</span><a name="line-22"></a><span>  </span><a name="local-8214565720323824647"><a href="../../../libtorch-ffi-1.4.0.0/html/src/Torch.Internal.Class.html#uncast"><span class="hs-identifier">uncast</span></a></a><span> </span><a name="local-6989586621679129803"><a href="#local-6989586621679129803"><span class="hs-identifier">x</span></a></a><span> </span><a name="local-6989586621679129804"><a href="#local-6989586621679129804"><span class="hs-identifier">f</span></a></a><span>
-</span><a name="line-23"></a><span>    </span><span class="hs-glyph">|</span><span> </span><a href="#local-6989586621679129803"><span class="hs-identifier hs-var">x</span></a><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a><span> </span><a href="../../../libtorch-ffi-1.4.0.0/html/src/Torch.Internal.Const.html#kCPU"><span class="hs-identifier hs-var">ATen.kCPU</span></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="#local-6989586621679129804"><span class="hs-identifier hs-var">f</span></a><span> </span><a href="Torch.Device.html#CPU"><span class="hs-identifier hs-var">CPU</span></a><span>
-</span><a name="line-24"></a><span>    </span><span class="hs-glyph">|</span><span> </span><a href="#local-6989586621679129803"><span class="hs-identifier hs-var">x</span></a><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a><span> </span><a href="../../../libtorch-ffi-1.4.0.0/html/src/Torch.Internal.Const.html#kCUDA"><span class="hs-identifier hs-var">ATen.kCUDA</span></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="#local-6989586621679129804"><span class="hs-identifier hs-var">f</span></a><span> </span><a href="Torch.Device.html#CUDA"><span class="hs-identifier hs-var">CUDA</span></a><span>
-</span><a name="line-25"></a></pre></body></html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="%24con2tag_Ct53ffFO8KM6RjEkWxjYsE"></span><span class="hs-pragma">{-# LANGUAGE FlexibleInstances #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE MultiParamTypeClasses #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.Device</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">I</span></span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="../../../../libtorch-ffi-1.4.0.0/html/src"><span class="hs-identifier">Torch.Internal.Class</span></a></span><span>                     </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi-1.4.0.0/html/src"><span class="hs-identifier">Castable</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi-1.4.0.0/html/src"><span class="hs-identifier">Torch.Internal.Const</span></a></span><span>                    </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">ATen</span></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi-1.4.0.0/html/src"><span class="hs-identifier">Torch.Internal.Type</span></a></span><span>                     </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">ATen</span></span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">data</span><span> </span><span id="DeviceType"><span class="annot"><a href="Torch.Device.html#DeviceType"><span class="hs-identifier hs-var">DeviceType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CPU"><span class="annot"><a href="Torch.Device.html#CPU"><span class="hs-identifier hs-var">CPU</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="CUDA"><span class="annot"><a href="Torch.Device.html#CUDA"><span class="hs-identifier hs-var">CUDA</span></a></span></span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679706217"><span id="local-6989586621679706219"><span class="annot"><span class="annottext">DeviceType -&gt; DeviceType -&gt; Bool
+(DeviceType -&gt; DeviceType -&gt; Bool)
+-&gt; (DeviceType -&gt; DeviceType -&gt; Bool) -&gt; Eq DeviceType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+/= :: DeviceType -&gt; DeviceType -&gt; Bool
+$c/= :: DeviceType -&gt; DeviceType -&gt; Bool
+== :: DeviceType -&gt; DeviceType -&gt; Bool
+$c== :: DeviceType -&gt; DeviceType -&gt; Bool
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679706201"><span id="local-6989586621679706203"><span id="local-6989586621679706205"><span id="local-6989586621679706207"><span id="local-6989586621679706209"><span id="local-6989586621679706211"><span id="local-6989586621679706213"><span class="annot"><span class="annottext">Eq DeviceType
+Eq DeviceType =&gt;
+(DeviceType -&gt; DeviceType -&gt; Ordering)
+-&gt; (DeviceType -&gt; DeviceType -&gt; Bool)
+-&gt; (DeviceType -&gt; DeviceType -&gt; Bool)
+-&gt; (DeviceType -&gt; DeviceType -&gt; Bool)
+-&gt; (DeviceType -&gt; DeviceType -&gt; Bool)
+-&gt; (DeviceType -&gt; DeviceType -&gt; DeviceType)
+-&gt; (DeviceType -&gt; DeviceType -&gt; DeviceType)
+-&gt; Ord DeviceType
+DeviceType -&gt; DeviceType -&gt; Bool
+DeviceType -&gt; DeviceType -&gt; Ordering
+DeviceType -&gt; DeviceType -&gt; DeviceType
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+min :: DeviceType -&gt; DeviceType -&gt; DeviceType
+$cmin :: DeviceType -&gt; DeviceType -&gt; DeviceType
+max :: DeviceType -&gt; DeviceType -&gt; DeviceType
+$cmax :: DeviceType -&gt; DeviceType -&gt; DeviceType
+&gt;= :: DeviceType -&gt; DeviceType -&gt; Bool
+$c&gt;= :: DeviceType -&gt; DeviceType -&gt; Bool
+&gt; :: DeviceType -&gt; DeviceType -&gt; Bool
+$c&gt; :: DeviceType -&gt; DeviceType -&gt; Bool
+&lt;= :: DeviceType -&gt; DeviceType -&gt; Bool
+$c&lt;= :: DeviceType -&gt; DeviceType -&gt; Bool
+&lt; :: DeviceType -&gt; DeviceType -&gt; Bool
+$c&lt; :: DeviceType -&gt; DeviceType -&gt; Bool
+compare :: DeviceType -&gt; DeviceType -&gt; Ordering
+$ccompare :: DeviceType -&gt; DeviceType -&gt; Ordering
+$cp1Ord :: Eq DeviceType
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679706194"><span id="local-6989586621679706196"><span id="local-6989586621679706198"><span class="annot"><span class="annottext">Int -&gt; DeviceType -&gt; ShowS
+[DeviceType] -&gt; ShowS
+DeviceType -&gt; String
+(Int -&gt; DeviceType -&gt; ShowS)
+-&gt; (DeviceType -&gt; String)
+-&gt; ([DeviceType] -&gt; ShowS)
+-&gt; Show DeviceType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+showList :: [DeviceType] -&gt; ShowS
+$cshowList :: [DeviceType] -&gt; ShowS
+show :: DeviceType -&gt; String
+$cshow :: DeviceType -&gt; String
+showsPrec :: Int -&gt; DeviceType -&gt; ShowS
+$cshowsPrec :: Int -&gt; DeviceType -&gt; ShowS
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">data</span><span> </span><span id="Device"><span class="annot"><a href="Torch.Device.html#Device"><span class="hs-identifier hs-var">Device</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Device"><span class="annot"><a href="Torch.Device.html#Device"><span class="hs-identifier hs-var">Device</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="deviceType"><span class="annot"><span class="annottext">Device -&gt; DeviceType
+</span><a href="Torch.Device.html#deviceType"><span class="hs-identifier hs-var hs-var">deviceType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Device.html#DeviceType"><span class="hs-identifier hs-type">DeviceType</span></a></span><span class="hs-special">,</span><span> </span><span id="deviceIndex"><span class="annot"><span class="annottext">Device -&gt; Int16
+</span><a href="Torch.Device.html#deviceIndex"><span class="hs-identifier hs-var hs-var">deviceIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-type">I.Int16</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679706186"><span id="local-6989586621679706188"><span class="annot"><span class="annottext">Device -&gt; Device -&gt; Bool
+(Device -&gt; Device -&gt; Bool)
+-&gt; (Device -&gt; Device -&gt; Bool) -&gt; Eq Device
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+/= :: Device -&gt; Device -&gt; Bool
+$c/= :: Device -&gt; Device -&gt; Bool
+== :: Device -&gt; Device -&gt; Bool
+$c== :: Device -&gt; Device -&gt; Bool
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679706171"><span id="local-6989586621679706173"><span id="local-6989586621679706175"><span id="local-6989586621679706177"><span id="local-6989586621679706179"><span id="local-6989586621679706181"><span id="local-6989586621679706183"><span class="annot"><span class="annottext">Eq Device
+Eq Device =&gt;
+(Device -&gt; Device -&gt; Ordering)
+-&gt; (Device -&gt; Device -&gt; Bool)
+-&gt; (Device -&gt; Device -&gt; Bool)
+-&gt; (Device -&gt; Device -&gt; Bool)
+-&gt; (Device -&gt; Device -&gt; Bool)
+-&gt; (Device -&gt; Device -&gt; Device)
+-&gt; (Device -&gt; Device -&gt; Device)
+-&gt; Ord Device
+Device -&gt; Device -&gt; Bool
+Device -&gt; Device -&gt; Ordering
+Device -&gt; Device -&gt; Device
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+min :: Device -&gt; Device -&gt; Device
+$cmin :: Device -&gt; Device -&gt; Device
+max :: Device -&gt; Device -&gt; Device
+$cmax :: Device -&gt; Device -&gt; Device
+&gt;= :: Device -&gt; Device -&gt; Bool
+$c&gt;= :: Device -&gt; Device -&gt; Bool
+&gt; :: Device -&gt; Device -&gt; Bool
+$c&gt; :: Device -&gt; Device -&gt; Bool
+&lt;= :: Device -&gt; Device -&gt; Bool
+$c&lt;= :: Device -&gt; Device -&gt; Bool
+&lt; :: Device -&gt; Device -&gt; Bool
+$c&lt; :: Device -&gt; Device -&gt; Bool
+compare :: Device -&gt; Device -&gt; Ordering
+$ccompare :: Device -&gt; Device -&gt; Ordering
+$cp1Ord :: Eq Device
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679706165"><span id="local-6989586621679706167"><span id="local-6989586621679706169"><span class="annot"><span class="annottext">Int -&gt; Device -&gt; ShowS
+[Device] -&gt; ShowS
+Device -&gt; String
+(Int -&gt; Device -&gt; ShowS)
+-&gt; (Device -&gt; String) -&gt; ([Device] -&gt; ShowS) -&gt; Show Device
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+showList :: [Device] -&gt; ShowS
+$cshowList :: [Device] -&gt; ShowS
+show :: Device -&gt; String
+$cshow :: Device -&gt; String
+showsPrec :: Int -&gt; Device -&gt; ShowS
+$cshowsPrec :: Int -&gt; Device -&gt; ShowS
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi-1.4.0.0/html/src"><span class="hs-identifier hs-type">Castable</span></a></span><span> </span><span class="annot"><a href="Torch.Device.html#DeviceType"><span class="hs-identifier hs-type">DeviceType</span></a></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi-1.4.0.0/html/src"><span class="hs-identifier hs-type">ATen.DeviceType</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-19"></span><span>  </span><span id="local-6989586621679706160"><span class="annot"><span class="annottext">cast :: DeviceType -&gt; (Int16 -&gt; IO r) -&gt; IO r
+</span><a href="../../../../libtorch-ffi-1.4.0.0/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">cast</span></a></span></span><span> </span><span class="annot"><a href="Torch.Device.html#CPU"><span class="hs-identifier hs-type">CPU</span></a></span><span>   </span><span id="local-6989586621679706158"><span class="annot"><span class="annottext">f :: Int16 -&gt; IO r
+</span><a href="#local-6989586621679706158"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int16 -&gt; IO r
+</span><a href="#local-6989586621679706158"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Int16
+</span><a href="../../../../libtorch-ffi-1.4.0.0/html/src"><span class="hs-identifier hs-var">ATen.kCPU</span></a></span><span>
+</span><span id="line-20"></span><span>  </span><span class="annot"><a href="../../../../libtorch-ffi-1.4.0.0/html/src"><span class="hs-identifier hs-var">cast</span></a></span><span> </span><span class="annot"><a href="Torch.Device.html#CUDA"><span class="hs-identifier hs-type">CUDA</span></a></span><span>  </span><span id="local-6989586621679706156"><span class="annot"><span class="annottext">f :: Int16 -&gt; IO r
+</span><a href="#local-6989586621679706156"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int16 -&gt; IO r
+</span><a href="#local-6989586621679706156"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Int16
+</span><a href="../../../../libtorch-ffi-1.4.0.0/html/src"><span class="hs-identifier hs-var">ATen.kCUDA</span></a></span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span>  </span><span id="local-6989586621679706154"><span class="annot"><span class="annottext">uncast :: Int16 -&gt; (DeviceType -&gt; IO r) -&gt; IO r
+</span><a href="../../../../libtorch-ffi-1.4.0.0/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">uncast</span></a></span></span><span> </span><span id="local-6989586621679706152"><span class="annot"><span class="annottext">x :: Int16
+</span><a href="#local-6989586621679706152"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span id="local-6989586621679706151"><span class="annot"><span class="annottext">f :: DeviceType -&gt; IO r
+</span><a href="#local-6989586621679706151"><span class="hs-identifier hs-var">f</span></a></span></span><span>
+</span><span id="line-23"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Int16
+</span><a href="#local-6989586621679706152"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Int16 -&gt; Int16 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">Int16
+</span><a href="../../../../libtorch-ffi-1.4.0.0/html/src"><span class="hs-identifier hs-var">ATen.kCPU</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DeviceType -&gt; IO r
+</span><a href="#local-6989586621679706151"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">DeviceType
+</span><a href="Torch.Device.html#CPU"><span class="hs-identifier hs-var">CPU</span></a></span><span>
+</span><span id="line-24"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Int16
+</span><a href="#local-6989586621679706152"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Int16 -&gt; Int16 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">Int16
+</span><a href="../../../../libtorch-ffi-1.4.0.0/html/src"><span class="hs-identifier hs-var">ATen.kCUDA</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DeviceType -&gt; IO r
+</span><a href="#local-6989586621679706151"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">DeviceType
+</span><a href="Torch.Device.html#CUDA"><span class="hs-identifier hs-var">CUDA</span></a></span><span>
+</span><span id="line-25"></span></pre></body></html>

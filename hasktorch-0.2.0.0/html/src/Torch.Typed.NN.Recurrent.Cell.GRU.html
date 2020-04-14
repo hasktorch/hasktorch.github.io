@@ -1,121 +1,699 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE AllowAmbiguousTypes     #-}</span><span>
-</span><a name="line-2"></a><span class="hs-pragma">{-# LANGUAGE DataKinds               #-}</span><span>
-</span><a name="line-3"></a><span class="hs-pragma">{-# LANGUAGE DeriveGeneric           #-}</span><span>
-</span><a name="line-4"></a><span class="hs-pragma">{-# LANGUAGE FlexibleContexts        #-}</span><span>
-</span><a name="line-5"></a><span class="hs-pragma">{-# LANGUAGE FlexibleInstances       #-}</span><span>
-</span><a name="line-6"></a><span class="hs-pragma">{-# LANGUAGE MultiParamTypeClasses   #-}</span><span>
-</span><a name="line-7"></a><span class="hs-pragma">{-# LANGUAGE NoStarIsType            #-}</span><span>
-</span><a name="line-8"></a><span class="hs-pragma">{-# LANGUAGE OverloadedLists         #-}</span><span>
-</span><a name="line-9"></a><span class="hs-pragma">{-# LANGUAGE PolyKinds               #-}</span><span>
-</span><a name="line-10"></a><span class="hs-pragma">{-# LANGUAGE RankNTypes              #-}</span><span>
-</span><a name="line-11"></a><span class="hs-pragma">{-# LANGUAGE RecordWildCards         #-}</span><span>
-</span><a name="line-12"></a><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables     #-}</span><span>
-</span><a name="line-13"></a><span class="hs-pragma">{-# LANGUAGE TypeFamilies            #-}</span><span>
-</span><a name="line-14"></a><span class="hs-pragma">{-# LANGUAGE TypeOperators           #-}</span><span>
-</span><a name="line-15"></a><span class="hs-pragma">{-# LANGUAGE UndecidableInstances    #-}</span><span>
-</span><a name="line-16"></a><span class="hs-pragma">{-# LANGUAGE UndecidableSuperClasses #-}</span><span>
-</span><a name="line-17"></a><span class="hs-pragma">{-# OPTIONS_GHC -fplugin GHC.TypeLits.Normalise #-}</span><span>
-</span><a name="line-18"></a><span class="hs-pragma">{-# OPTIONS_GHC -fplugin GHC.TypeLits.KnownNat.Solver #-}</span><span>
-</span><a name="line-19"></a><span class="hs-pragma">{-# OPTIONS_GHC -fplugin GHC.TypeLits.Extra.Solver #-}</span><span>
-</span><a name="line-20"></a><span class="hs-pragma">{-# OPTIONS_GHC -fconstraint-solver-iterations=0 #-}</span><span>
-</span><a name="line-21"></a><span>
-</span><a name="line-22"></a><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.Typed.NN.Recurrent.Cell.GRU</span><span> </span><span class="hs-keyword">where</span><span>
-</span><a name="line-23"></a><span>
-</span><a name="line-24"></a><span class="hs-keyword">import</span><span>           </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/Data.List.html"><span class="hs-identifier">Data.List</span></a><span>                      </span><span class="hs-special">(</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/Data.Foldable.html#foldl%27"><span class="hs-identifier hs-var">foldl'</span></a><span>
-</span><a name="line-25"></a><span>                                                </span><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.List.html#scanl%27"><span class="hs-identifier hs-var">scanl'</span></a><span>
-</span><a name="line-26"></a><span>                                                </span><span class="hs-special">)</span><span>
-</span><a name="line-27"></a><span class="hs-keyword">import</span><span>           </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.Generics.html"><span class="hs-identifier">GHC.Generics</span></a><span>
-</span><a name="line-28"></a><span class="hs-keyword">import</span><span>           </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.TypeLits.html"><span class="hs-identifier">GHC.TypeLits</span></a><span>
-</span><a name="line-29"></a><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><a href="Torch.Device.html"><span class="hs-identifier">Torch.Device</span></a><span>                  </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">D</span><span>
-</span><a name="line-30"></a><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><a href="Torch.DType.html"><span class="hs-identifier">Torch.DType</span></a><span>                   </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">D</span><span>
-</span><a name="line-31"></a><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><a href="Torch.NN.html"><span class="hs-identifier">Torch.NN</span></a><span>                      </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">A</span><span>
-</span><a name="line-32"></a><span class="hs-keyword">import</span><span>           </span><a href="Torch.Typed.Tensor.html"><span class="hs-identifier">Torch.Typed.Tensor</span></a><span>
-</span><a name="line-33"></a><span class="hs-keyword">import</span><span>           </span><a href="Torch.Typed.Parameter.html"><span class="hs-identifier">Torch.Typed.Parameter</span></a><span>
-</span><a name="line-34"></a><span class="hs-keyword">import</span><span>           </span><a href="Torch.Typed.Factories.html"><span class="hs-identifier">Torch.Typed.Factories</span></a><span>
-</span><a name="line-35"></a><span class="hs-keyword">import</span><span>           </span><a href="Torch.Typed.Functional.html"><span class="hs-identifier">Torch.Typed.Functional</span></a><span>      </span><span class="hs-keyword">hiding</span><span> </span><span class="hs-special">(</span><span> </span><a href="Torch.Typed.Functional.html#linear"><span class="hs-identifier hs-var">linear</span></a><span> </span><span class="hs-special">)</span><span>
-</span><a name="line-36"></a><span class="hs-keyword">import</span><span>           </span><a href="Torch.Typed.NN.html"><span class="hs-identifier">Torch.Typed.NN</span></a><span>
-</span><a name="line-37"></a><span>
-</span><a name="line-38"></a><span class="hs-comment">-- | A specification for a gated recurrent unit (GRU) cell.</span><span>
-</span><a name="line-39"></a><span class="hs-comment">--</span><span>
-</span><a name="line-40"></a><span class="hs-keyword">data</span><span> </span><a name="GRUCellSpec"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCellSpec"><span class="hs-identifier">GRUCellSpec</span></a></a><span> </span><span class="hs-special">(</span><a name="local-6989586621679573726"><a href="#local-6989586621679573726"><span class="hs-identifier">inputDim</span></a></a><span> </span><span class="hs-glyph">::</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src/GHC.Types.html#Nat"><span class="hs-identifier hs-type">Nat</span></a><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><a name="local-6989586621679573727"><a href="#local-6989586621679573727"><span class="hs-identifier">hiddenDim</span></a></a><span> </span><span class="hs-glyph">::</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src/GHC.Types.html#Nat"><span class="hs-identifier hs-type">Nat</span></a><span class="hs-special">)</span><span>
-</span><a name="line-41"></a><span>                  </span><span class="hs-special">(</span><a name="local-6989586621679573728"><a href="#local-6989586621679573728"><span class="hs-identifier">dtype</span></a></a><span> </span><span class="hs-glyph">::</span><span> </span><a href="Torch.DType.html#DType"><span class="hs-identifier hs-type">D.DType</span></a><span class="hs-special">)</span><span>
-</span><a name="line-42"></a><span>                  </span><span class="hs-special">(</span><a name="local-6989586621679573729"><a href="#local-6989586621679573729"><span class="hs-identifier">device</span></a></a><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><a href="Torch.Device.html#DeviceType"><span class="hs-identifier hs-type">D.DeviceType</span></a><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src/GHC.Types.html#Nat"><span class="hs-identifier hs-type">Nat</span></a><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><a name="line-43"></a><span>  </span><span class="hs-glyph">=</span><span> </span><a name="GRUCellSpec"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCellSpec"><span class="hs-identifier">GRUCellSpec</span></a></a><span> </span><span class="hs-comment">-- ^ Weights and biases are drawn from the standard normal distibution (having mean 0 and variance 1)</span><span>
-</span><a name="line-44"></a><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.Show.html#Show"><span class="hs-identifier hs-type">Show</span></a><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-type">Eq</span></a><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-type">Ord</span></a><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.Generics.html#Generic"><span class="hs-identifier hs-type">Generic</span></a><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.Enum.html#Enum"><span class="hs-identifier hs-type">Enum</span></a><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.Enum.html#Bounded"><span class="hs-identifier hs-type">Bounded</span></a><span class="hs-special">)</span><span>
-</span><a name="line-45"></a><span>
-</span><a name="line-46"></a><span class="hs-comment">-- | A gated recurrent unit (GRU) cell.</span><span>
-</span><a name="line-47"></a><span class="hs-comment">--</span><span>
-</span><a name="line-48"></a><span class="hs-keyword">data</span><span> </span><a name="GRUCell"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCell"><span class="hs-identifier">GRUCell</span></a></a><span> </span><span class="hs-special">(</span><a name="local-6989586621679573722"><a href="#local-6989586621679573722"><span class="hs-identifier">inputDim</span></a></a><span> </span><span class="hs-glyph">::</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src/GHC.Types.html#Nat"><span class="hs-identifier hs-type">Nat</span></a><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><a name="local-6989586621679573723"><a href="#local-6989586621679573723"><span class="hs-identifier">hiddenDim</span></a></a><span> </span><span class="hs-glyph">::</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src/GHC.Types.html#Nat"><span class="hs-identifier hs-type">Nat</span></a><span class="hs-special">)</span><span>
-</span><a name="line-49"></a><span>              </span><span class="hs-special">(</span><a name="local-6989586621679573724"><a href="#local-6989586621679573724"><span class="hs-identifier">dtype</span></a></a><span> </span><span class="hs-glyph">::</span><span> </span><a href="Torch.DType.html#DType"><span class="hs-identifier hs-type">D.DType</span></a><span class="hs-special">)</span><span>
-</span><a name="line-50"></a><span>              </span><span class="hs-special">(</span><a name="local-6989586621679573725"><a href="#local-6989586621679573725"><span class="hs-identifier">device</span></a></a><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><a href="Torch.Device.html#DeviceType"><span class="hs-identifier hs-type">D.DeviceType</span></a><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src/GHC.Types.html#Nat"><span class="hs-identifier hs-type">Nat</span></a><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><a name="line-51"></a><span>  </span><span class="hs-glyph">=</span><span>  </span><a name="GRUCell"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCell"><span class="hs-identifier">GRUCell</span></a></a><span> </span><span class="hs-special">{</span><span> </span><a name="gruCell_w_ih"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#gruCell_w_ih"><span class="hs-identifier">gruCell_w_ih</span></a></a><span> </span><span class="hs-glyph">::</span><span> </span><a href="Torch.Typed.Parameter.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a><span> </span><a href="#local-6989586621679573725"><span class="hs-identifier hs-type">device</span></a><span> </span><a href="#local-6989586621679573724"><span class="hs-identifier hs-type">dtype</span></a><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="hs-number">3</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.TypeNats.html#%2A"><span class="hs-operator hs-type">*</span></a><span> </span><a href="#local-6989586621679573723"><span class="hs-identifier hs-type">hiddenDim</span></a><span class="hs-special">,</span><span> </span><a href="#local-6989586621679573722"><span class="hs-identifier hs-type">inputDim</span></a><span class="hs-special">]</span><span> </span><span class="hs-comment">-- ^ input-to-hidden weights</span><span>
-</span><a name="line-52"></a><span>              </span><span class="hs-special">,</span><span> </span><a name="gruCell_w_hh"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#gruCell_w_hh"><span class="hs-identifier">gruCell_w_hh</span></a></a><span> </span><span class="hs-glyph">::</span><span> </span><a href="Torch.Typed.Parameter.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a><span> </span><a href="#local-6989586621679573725"><span class="hs-identifier hs-type">device</span></a><span> </span><a href="#local-6989586621679573724"><span class="hs-identifier hs-type">dtype</span></a><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="hs-number">3</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.TypeNats.html#%2A"><span class="hs-operator hs-type">*</span></a><span> </span><a href="#local-6989586621679573723"><span class="hs-identifier hs-type">hiddenDim</span></a><span class="hs-special">,</span><span> </span><a href="#local-6989586621679573723"><span class="hs-identifier hs-type">hiddenDim</span></a><span class="hs-special">]</span><span> </span><span class="hs-comment">-- ^ hidden-to-hidden weights</span><span>
-</span><a name="line-53"></a><span>              </span><span class="hs-special">,</span><span> </span><a name="gruCell_b_ih"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#gruCell_b_ih"><span class="hs-identifier">gruCell_b_ih</span></a></a><span> </span><span class="hs-glyph">::</span><span> </span><a href="Torch.Typed.Parameter.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a><span> </span><a href="#local-6989586621679573725"><span class="hs-identifier hs-type">device</span></a><span> </span><a href="#local-6989586621679573724"><span class="hs-identifier hs-type">dtype</span></a><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="hs-number">3</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.TypeNats.html#%2A"><span class="hs-operator hs-type">*</span></a><span> </span><a href="#local-6989586621679573723"><span class="hs-identifier hs-type">hiddenDim</span></a><span class="hs-special">]</span><span> </span><span class="hs-comment">-- ^ input-to-hidden bias</span><span>
-</span><a name="line-54"></a><span>              </span><span class="hs-special">,</span><span> </span><a name="gruCell_b_hh"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#gruCell_b_hh"><span class="hs-identifier">gruCell_b_hh</span></a></a><span> </span><span class="hs-glyph">::</span><span> </span><a href="Torch.Typed.Parameter.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a><span> </span><a href="#local-6989586621679573725"><span class="hs-identifier hs-type">device</span></a><span> </span><a href="#local-6989586621679573724"><span class="hs-identifier hs-type">dtype</span></a><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="hs-number">3</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.TypeNats.html#%2A"><span class="hs-operator hs-type">*</span></a><span> </span><a href="#local-6989586621679573723"><span class="hs-identifier hs-type">hiddenDim</span></a><span class="hs-special">]</span><span> </span><span class="hs-comment">-- ^ hidden-to-hidden bias</span><span>
-</span><a name="line-55"></a><span>              </span><span class="hs-special">}</span><span>
-</span><a name="line-56"></a><span>  </span><span class="hs-keyword">deriving</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.Generics.html#Generic"><span class="hs-identifier hs-type">Generic</span></a><span>
-</span><a name="line-57"></a><span>
-</span><a name="line-58"></a><span class="hs-keyword">instance</span><span> </span><span class="hs-special">(</span><span> </span><a href="Torch.Typed.Tensor.html#KnownDevice"><span class="hs-identifier hs-type">KnownDevice</span></a><span> </span><a href="#local-6989586621679573730"><span class="hs-identifier hs-type">device</span></a><span>
-</span><a name="line-59"></a><span>         </span><span class="hs-special">,</span><span> </span><a href="Torch.Typed.Tensor.html#KnownDType"><span class="hs-identifier hs-type">KnownDType</span></a><span> </span><a href="#local-6989586621679573731"><span class="hs-identifier hs-type">dtype</span></a><span>
-</span><a name="line-60"></a><span>         </span><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.TypeNats.html#KnownNat"><span class="hs-identifier hs-type">KnownNat</span></a><span> </span><a href="#local-6989586621679573732"><span class="hs-identifier hs-type">inputDim</span></a><span>
-</span><a name="line-61"></a><span>         </span><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.TypeNats.html#KnownNat"><span class="hs-identifier hs-type">KnownNat</span></a><span> </span><a href="#local-6989586621679573733"><span class="hs-identifier hs-type">hiddenDim</span></a><span>
-</span><a name="line-62"></a><span>         </span><span class="hs-special">,</span><span> </span><a href="Torch.Typed.Factories.html#RandDTypeIsValid"><span class="hs-identifier hs-type">RandDTypeIsValid</span></a><span> </span><a href="#local-6989586621679573730"><span class="hs-identifier hs-type">device</span></a><span> </span><a href="#local-6989586621679573731"><span class="hs-identifier hs-type">dtype</span></a><span>
-</span><a name="line-63"></a><span>         </span><span class="hs-special">)</span><span>
-</span><a name="line-64"></a><span>  </span><span class="hs-glyph">=&gt;</span><span> </span><a href="Torch.NN.html#Randomizable"><span class="hs-identifier hs-type">A.Randomizable</span></a><span>
-</span><a name="line-65"></a><span>       </span><span class="hs-special">(</span><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCellSpec"><span class="hs-identifier hs-type">GRUCellSpec</span></a><span> </span><a href="#local-6989586621679573732"><span class="hs-identifier hs-type">inputDim</span></a><span> </span><a href="#local-6989586621679573733"><span class="hs-identifier hs-type">hiddenDim</span></a><span> </span><a href="#local-6989586621679573731"><span class="hs-identifier hs-type">dtype</span></a><span> </span><a href="#local-6989586621679573730"><span class="hs-identifier hs-type">device</span></a><span class="hs-special">)</span><span>
-</span><a name="line-66"></a><span>       </span><span class="hs-special">(</span><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCell"><span class="hs-identifier hs-type">GRUCell</span></a><span>     </span><a href="#local-6989586621679573732"><span class="hs-identifier hs-type">inputDim</span></a><span> </span><a href="#local-6989586621679573733"><span class="hs-identifier hs-type">hiddenDim</span></a><span> </span><a href="#local-6989586621679573731"><span class="hs-identifier hs-type">dtype</span></a><span> </span><a href="#local-6989586621679573730"><span class="hs-identifier hs-type">device</span></a><span class="hs-special">)</span><span>
-</span><a name="line-67"></a><span> </span><span class="hs-keyword">where</span><span>
-</span><a name="line-68"></a><span>  </span><a name="local-8214565720324124426"><a href="Torch.NN.html#sample"><span class="hs-identifier">sample</span></a></a><span> </span><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCellSpec"><span class="hs-identifier hs-var">GRUCellSpec</span></a><span> </span><span class="hs-glyph">=</span><span>
-</span><a name="line-69"></a><span>    </span><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCell"><span class="hs-identifier hs-var">GRUCell</span></a><span>
-</span><a name="line-70"></a><span>      </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/Data.Functor.html#%3C%24%3E"><span class="hs-operator hs-var">&lt;$&gt;</span></a><span> </span><span class="hs-special">(</span><a href="Torch.Typed.Parameter.html#makeIndependent"><span class="hs-identifier hs-var">makeIndependent</span></a><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.Base.html#%3D%3C%3C"><span class="hs-operator hs-var">=&lt;&lt;</span></a><span> </span><a href="Torch.Typed.Factories.html#randn"><span class="hs-identifier hs-var">randn</span></a><span class="hs-special">)</span><span>
-</span><a name="line-71"></a><span>      </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.Base.html#%3C%2A%3E"><span class="hs-operator hs-var">&lt;*&gt;</span></a><span> </span><span class="hs-special">(</span><a href="Torch.Typed.Parameter.html#makeIndependent"><span class="hs-identifier hs-var">makeIndependent</span></a><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.Base.html#%3D%3C%3C"><span class="hs-operator hs-var">=&lt;&lt;</span></a><span> </span><a href="Torch.Typed.Factories.html#randn"><span class="hs-identifier hs-var">randn</span></a><span class="hs-special">)</span><span>
-</span><a name="line-72"></a><span>      </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.Base.html#%3C%2A%3E"><span class="hs-operator hs-var">&lt;*&gt;</span></a><span> </span><span class="hs-special">(</span><a href="Torch.Typed.Parameter.html#makeIndependent"><span class="hs-identifier hs-var">makeIndependent</span></a><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.Base.html#%3D%3C%3C"><span class="hs-operator hs-var">=&lt;&lt;</span></a><span> </span><a href="Torch.Typed.Factories.html#randn"><span class="hs-identifier hs-var">randn</span></a><span class="hs-special">)</span><span>
-</span><a name="line-73"></a><span>      </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.Base.html#%3C%2A%3E"><span class="hs-operator hs-var">&lt;*&gt;</span></a><span> </span><span class="hs-special">(</span><a href="Torch.Typed.Parameter.html#makeIndependent"><span class="hs-identifier hs-var">makeIndependent</span></a><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.Base.html#%3D%3C%3C"><span class="hs-operator hs-var">=&lt;&lt;</span></a><span> </span><a href="Torch.Typed.Factories.html#randn"><span class="hs-identifier hs-var">randn</span></a><span class="hs-special">)</span><span>
-</span><a name="line-74"></a><span>
-</span><a name="line-75"></a><span class="hs-comment">-- | A single recurrent step of a `GRUCell`</span><span>
-</span><a name="line-76"></a><span class="hs-comment">--</span><span>
-</span><a name="line-77"></a><span class="hs-identifier">forwardStep</span><span>
-</span><a name="line-78"></a><span>  </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><a name="local-6989586621679573744"><a href="#local-6989586621679573744"><span class="hs-identifier">inputDim</span></a></a><span> </span><a name="local-6989586621679573745"><a href="#local-6989586621679573745"><span class="hs-identifier">hiddenDim</span></a></a><span> </span><a name="local-6989586621679573746"><a href="#local-6989586621679573746"><span class="hs-identifier">batchSize</span></a></a><span> </span><a name="local-6989586621679573747"><a href="#local-6989586621679573747"><span class="hs-identifier">dtype</span></a></a><span> </span><a name="local-6989586621679573748"><a href="#local-6989586621679573748"><span class="hs-identifier">device</span></a></a><span>
-</span><a name="line-79"></a><span>   </span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span> </span><a href="Torch.Typed.Tensor.html#KnownDType"><span class="hs-identifier hs-type">KnownDType</span></a><span> </span><a href="#local-6989586621679573747"><span class="hs-identifier hs-type">dtype</span></a><span>
-</span><a name="line-80"></a><span>     </span><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.TypeNats.html#KnownNat"><span class="hs-identifier hs-type">KnownNat</span></a><span> </span><a href="#local-6989586621679573744"><span class="hs-identifier hs-type">inputDim</span></a><span>
-</span><a name="line-81"></a><span>     </span><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.TypeNats.html#KnownNat"><span class="hs-identifier hs-type">KnownNat</span></a><span> </span><a href="#local-6989586621679573745"><span class="hs-identifier hs-type">hiddenDim</span></a><span>
-</span><a name="line-82"></a><span>     </span><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.TypeNats.html#KnownNat"><span class="hs-identifier hs-type">KnownNat</span></a><span> </span><a href="#local-6989586621679573746"><span class="hs-identifier hs-type">batchSize</span></a><span>
-</span><a name="line-83"></a><span>     </span><span class="hs-special">)</span><span>
-</span><a name="line-84"></a><span>  </span><span class="hs-glyph">=&gt;</span><span> </span><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCell"><span class="hs-identifier hs-type">GRUCell</span></a><span> </span><a href="#local-6989586621679573744"><span class="hs-identifier hs-type">inputDim</span></a><span> </span><a href="#local-6989586621679573745"><span class="hs-identifier hs-type">hiddenDim</span></a><span> </span><a href="#local-6989586621679573747"><span class="hs-identifier hs-type">dtype</span></a><span> </span><a href="#local-6989586621679573748"><span class="hs-identifier hs-type">device</span></a><span> </span><span class="hs-comment">-- ^ The cell</span><span>
-</span><a name="line-85"></a><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a><span> </span><a href="#local-6989586621679573748"><span class="hs-identifier hs-type">device</span></a><span> </span><a href="#local-6989586621679573747"><span class="hs-identifier hs-type">dtype</span></a><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><a href="#local-6989586621679573746"><span class="hs-identifier hs-type">batchSize</span></a><span class="hs-special">,</span><span> </span><a href="#local-6989586621679573745"><span class="hs-identifier hs-type">hiddenDim</span></a><span class="hs-special">]</span><span class="hs-comment">-- ^ The current Hidden state</span><span>
-</span><a name="line-86"></a><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a><span> </span><a href="#local-6989586621679573748"><span class="hs-identifier hs-type">device</span></a><span> </span><a href="#local-6989586621679573747"><span class="hs-identifier hs-type">dtype</span></a><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><a href="#local-6989586621679573746"><span class="hs-identifier hs-type">batchSize</span></a><span class="hs-special">,</span><span> </span><a href="#local-6989586621679573744"><span class="hs-identifier hs-type">inputDim</span></a><span class="hs-special">]</span><span class="hs-comment">-- ^ The input</span><span>
-</span><a name="line-87"></a><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a><span> </span><a href="#local-6989586621679573748"><span class="hs-identifier hs-type">device</span></a><span> </span><a href="#local-6989586621679573747"><span class="hs-identifier hs-type">dtype</span></a><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><a href="#local-6989586621679573746"><span class="hs-identifier hs-type">batchSize</span></a><span class="hs-special">,</span><span> </span><a href="#local-6989586621679573745"><span class="hs-identifier hs-type">hiddenDim</span></a><span class="hs-special">]</span><span class="hs-comment">-- ^ The subsequent Hidden state</span><span>
-</span><a name="line-88"></a><a name="forwardStep"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#forwardStep"><span class="hs-identifier">forwardStep</span></a></a><span> </span><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCell"><span class="hs-identifier hs-var">GRUCell</span></a><span> </span><span class="hs-special">{</span><span class="hs-glyph">..</span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span> </span><a href="Torch.Typed.Functional.html#gruCell"><span class="hs-identifier hs-var">gruCell</span></a><span>   </span><span class="hs-special">(</span><a href="Torch.Typed.Parameter.html#toDependent"><span class="hs-identifier hs-var">toDependent</span></a><span> </span><a href="#local-6989586621679573749"><span class="hs-identifier hs-var">gruCell_w_ih</span></a><span class="hs-special">)</span><span>
-</span><a name="line-89"></a><span>                                     </span><span class="hs-special">(</span><a href="Torch.Typed.Parameter.html#toDependent"><span class="hs-identifier hs-var">toDependent</span></a><span> </span><a href="#local-6989586621679573750"><span class="hs-identifier hs-var">gruCell_w_hh</span></a><span class="hs-special">)</span><span>
-</span><a name="line-90"></a><span>                                     </span><span class="hs-special">(</span><a href="Torch.Typed.Parameter.html#toDependent"><span class="hs-identifier hs-var">toDependent</span></a><span> </span><a href="#local-6989586621679573751"><span class="hs-identifier hs-var">gruCell_b_ih</span></a><span class="hs-special">)</span><span>
-</span><a name="line-91"></a><span>                                     </span><span class="hs-special">(</span><a href="Torch.Typed.Parameter.html#toDependent"><span class="hs-identifier hs-var">toDependent</span></a><span> </span><a href="#local-6989586621679573752"><span class="hs-identifier hs-var">gruCell_b_hh</span></a><span class="hs-special">)</span><span>
-</span><a name="line-92"></a><span>
-</span><a name="line-93"></a><span class="hs-comment">-- | foldl' for lists of tensors unsing a `GRUCell`</span><span>
-</span><a name="line-94"></a><span class="hs-comment">--</span><span>
-</span><a name="line-95"></a><span class="hs-identifier">forward</span><span>
-</span><a name="line-96"></a><span>  </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><a name="local-6989586621679573739"><a href="#local-6989586621679573739"><span class="hs-identifier">inputDim</span></a></a><span> </span><a name="local-6989586621679573740"><a href="#local-6989586621679573740"><span class="hs-identifier">hiddenDim</span></a></a><span> </span><a name="local-6989586621679573741"><a href="#local-6989586621679573741"><span class="hs-identifier">batchSize</span></a></a><span> </span><a name="local-6989586621679573742"><a href="#local-6989586621679573742"><span class="hs-identifier">dtype</span></a></a><span> </span><a name="local-6989586621679573743"><a href="#local-6989586621679573743"><span class="hs-identifier">device</span></a></a><span>
-</span><a name="line-97"></a><span>   </span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span> </span><a href="Torch.Typed.Tensor.html#KnownDType"><span class="hs-identifier hs-type">KnownDType</span></a><span> </span><a href="#local-6989586621679573742"><span class="hs-identifier hs-type">dtype</span></a><span>
-</span><a name="line-98"></a><span>     </span><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.TypeNats.html#KnownNat"><span class="hs-identifier hs-type">KnownNat</span></a><span> </span><a href="#local-6989586621679573739"><span class="hs-identifier hs-type">inputDim</span></a><span>
-</span><a name="line-99"></a><span>     </span><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.TypeNats.html#KnownNat"><span class="hs-identifier hs-type">KnownNat</span></a><span> </span><a href="#local-6989586621679573740"><span class="hs-identifier hs-type">hiddenDim</span></a><span>
-</span><a name="line-100"></a><span>     </span><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.TypeNats.html#KnownNat"><span class="hs-identifier hs-type">KnownNat</span></a><span> </span><a href="#local-6989586621679573741"><span class="hs-identifier hs-type">batchSize</span></a><span>
-</span><a name="line-101"></a><span>     </span><span class="hs-special">)</span><span>
-</span><a name="line-102"></a><span>  </span><span class="hs-glyph">=&gt;</span><span> </span><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCell"><span class="hs-identifier hs-type">GRUCell</span></a><span> </span><a href="#local-6989586621679573739"><span class="hs-identifier hs-type">inputDim</span></a><span> </span><a href="#local-6989586621679573740"><span class="hs-identifier hs-type">hiddenDim</span></a><span> </span><a href="#local-6989586621679573742"><span class="hs-identifier hs-type">dtype</span></a><span> </span><a href="#local-6989586621679573743"><span class="hs-identifier hs-type">device</span></a><span>
-</span><a name="line-103"></a><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a><span> </span><a href="#local-6989586621679573743"><span class="hs-identifier hs-type">device</span></a><span> </span><a href="#local-6989586621679573742"><span class="hs-identifier hs-type">dtype</span></a><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><a href="#local-6989586621679573741"><span class="hs-identifier hs-type">batchSize</span></a><span class="hs-special">,</span><span> </span><a href="#local-6989586621679573740"><span class="hs-identifier hs-type">hiddenDim</span></a><span class="hs-special">]</span><span> </span><span class="hs-comment">-- ^ The initial Hidden state</span><span>
-</span><a name="line-104"></a><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a><span> </span><a href="#local-6989586621679573743"><span class="hs-identifier hs-type">device</span></a><span> </span><a href="#local-6989586621679573742"><span class="hs-identifier hs-type">dtype</span></a><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><a href="#local-6989586621679573741"><span class="hs-identifier hs-type">batchSize</span></a><span class="hs-special">,</span><span> </span><a href="#local-6989586621679573739"><span class="hs-identifier hs-type">inputDim</span></a><span class="hs-special">]</span><span class="hs-special">]</span><span> </span><span class="hs-comment">-- ^ The list of inputs</span><span>
-</span><a name="line-105"></a><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a><span> </span><a href="#local-6989586621679573743"><span class="hs-identifier hs-type">device</span></a><span> </span><a href="#local-6989586621679573742"><span class="hs-identifier hs-type">dtype</span></a><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><a href="#local-6989586621679573741"><span class="hs-identifier hs-type">batchSize</span></a><span class="hs-special">,</span><span> </span><a href="#local-6989586621679573740"><span class="hs-identifier hs-type">hiddenDim</span></a><span class="hs-special">]</span><span> </span><span class="hs-comment">-- ^ The final Hidden state</span><span>
-</span><a name="line-106"></a><a name="forward"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#forward"><span class="hs-identifier">forward</span></a></a><span> </span><a name="local-6989586621679573753"><a href="#local-6989586621679573753"><span class="hs-identifier">cell</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/Data.Foldable.html#foldl%27"><span class="hs-identifier hs-var">foldl'</span></a><span> </span><span class="hs-special">(</span><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#forwardStep"><span class="hs-identifier hs-var">forwardStep</span></a><span> </span><a href="#local-6989586621679573753"><span class="hs-identifier hs-var">cell</span></a><span class="hs-special">)</span><span>
-</span><a name="line-107"></a><span>
-</span><a name="line-108"></a><span class="hs-comment">-- | scanl' for lists of tensors unsing a `GRUCell`</span><span>
-</span><a name="line-109"></a><span class="hs-comment">--</span><span>
-</span><a name="line-110"></a><span class="hs-identifier">forwardScan</span><span>
-</span><a name="line-111"></a><span>  </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><a name="local-6989586621679573734"><a href="#local-6989586621679573734"><span class="hs-identifier">inputDim</span></a></a><span> </span><a name="local-6989586621679573735"><a href="#local-6989586621679573735"><span class="hs-identifier">hiddenDim</span></a></a><span> </span><a name="local-6989586621679573736"><a href="#local-6989586621679573736"><span class="hs-identifier">batchSize</span></a></a><span> </span><a name="local-6989586621679573737"><a href="#local-6989586621679573737"><span class="hs-identifier">dtype</span></a></a><span> </span><a name="local-6989586621679573738"><a href="#local-6989586621679573738"><span class="hs-identifier">device</span></a></a><span>
-</span><a name="line-112"></a><span>   </span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span> </span><a href="Torch.Typed.Tensor.html#KnownDType"><span class="hs-identifier hs-type">KnownDType</span></a><span> </span><a href="#local-6989586621679573737"><span class="hs-identifier hs-type">dtype</span></a><span>
-</span><a name="line-113"></a><span>     </span><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.TypeNats.html#KnownNat"><span class="hs-identifier hs-type">KnownNat</span></a><span> </span><a href="#local-6989586621679573734"><span class="hs-identifier hs-type">inputDim</span></a><span>
-</span><a name="line-114"></a><span>     </span><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.TypeNats.html#KnownNat"><span class="hs-identifier hs-type">KnownNat</span></a><span> </span><a href="#local-6989586621679573735"><span class="hs-identifier hs-type">hiddenDim</span></a><span>
-</span><a name="line-115"></a><span>     </span><span class="hs-special">,</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.TypeNats.html#KnownNat"><span class="hs-identifier hs-type">KnownNat</span></a><span> </span><a href="#local-6989586621679573736"><span class="hs-identifier hs-type">batchSize</span></a><span>
-</span><a name="line-116"></a><span>     </span><span class="hs-special">)</span><span>
-</span><a name="line-117"></a><span>  </span><span class="hs-glyph">=&gt;</span><span> </span><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCell"><span class="hs-identifier hs-type">GRUCell</span></a><span> </span><a href="#local-6989586621679573734"><span class="hs-identifier hs-type">inputDim</span></a><span> </span><a href="#local-6989586621679573735"><span class="hs-identifier hs-type">hiddenDim</span></a><span> </span><a href="#local-6989586621679573737"><span class="hs-identifier hs-type">dtype</span></a><span> </span><a href="#local-6989586621679573738"><span class="hs-identifier hs-type">device</span></a><span>
-</span><a name="line-118"></a><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a><span> </span><a href="#local-6989586621679573738"><span class="hs-identifier hs-type">device</span></a><span> </span><a href="#local-6989586621679573737"><span class="hs-identifier hs-type">dtype</span></a><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><a href="#local-6989586621679573736"><span class="hs-identifier hs-type">batchSize</span></a><span class="hs-special">,</span><span> </span><a href="#local-6989586621679573735"><span class="hs-identifier hs-type">hiddenDim</span></a><span class="hs-special">]</span><span> </span><span class="hs-comment">-- ^ The initial Hidden state</span><span>
-</span><a name="line-119"></a><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a><span> </span><a href="#local-6989586621679573738"><span class="hs-identifier hs-type">device</span></a><span> </span><a href="#local-6989586621679573737"><span class="hs-identifier hs-type">dtype</span></a><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><a href="#local-6989586621679573736"><span class="hs-identifier hs-type">batchSize</span></a><span class="hs-special">,</span><span> </span><a href="#local-6989586621679573734"><span class="hs-identifier hs-type">inputDim</span></a><span class="hs-special">]</span><span class="hs-special">]</span><span> </span><span class="hs-comment">-- ^ The list of inputs</span><span>
-</span><a name="line-120"></a><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a><span> </span><a href="#local-6989586621679573738"><span class="hs-identifier hs-type">device</span></a><span> </span><a href="#local-6989586621679573737"><span class="hs-identifier hs-type">dtype</span></a><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><a href="#local-6989586621679573736"><span class="hs-identifier hs-type">batchSize</span></a><span class="hs-special">,</span><span> </span><a href="#local-6989586621679573735"><span class="hs-identifier hs-type">hiddenDim</span></a><span class="hs-special">]</span><span class="hs-special">]</span><span> </span><span class="hs-comment">-- ^ All subsequent Hidden states</span><span>
-</span><a name="line-121"></a><a name="forwardScan"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#forwardScan"><span class="hs-identifier">forwardScan</span></a></a><span> </span><a name="local-6989586621679573754"><a href="#local-6989586621679573754"><span class="hs-identifier">cell</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="file:///nix/store/wxc91qn3x7zvxz65925aq4zhn6vmjlr7-ghc-8.6.5-doc/share/doc/ghc/html/libraries/base-4.12.0.0/src/GHC.List.html#scanl%27"><span class="hs-identifier hs-var">scanl'</span></a><span> </span><span class="hs-special">(</span><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#forwardStep"><span class="hs-identifier hs-var">forwardStep</span></a><span> </span><a href="#local-6989586621679573754"><span class="hs-identifier hs-var">cell</span></a><span class="hs-special">)</span></pre></body></html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="%24maxtag_EXh4fzEncRXAORKnfCF3wW"><span id="%24tag2con_EXh4fzEncRXAORKnfCF3wW"><span id="%24con2tag_EXh4fzEncRXAORKnfCF3wW"></span></span></span><span class="hs-pragma">{-# LANGUAGE AllowAmbiguousTypes     #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DataKinds               #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric           #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE FlexibleContexts        #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE FlexibleInstances       #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE MultiParamTypeClasses   #-}</span><span>
+</span><span id="line-7"></span><span class="hs-pragma">{-# LANGUAGE NoStarIsType            #-}</span><span>
+</span><span id="line-8"></span><span class="hs-pragma">{-# LANGUAGE OverloadedLists         #-}</span><span>
+</span><span id="line-9"></span><span class="hs-pragma">{-# LANGUAGE PolyKinds               #-}</span><span>
+</span><span id="line-10"></span><span class="hs-pragma">{-# LANGUAGE RankNTypes              #-}</span><span>
+</span><span id="line-11"></span><span class="hs-pragma">{-# LANGUAGE RecordWildCards         #-}</span><span>
+</span><span id="line-12"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables     #-}</span><span>
+</span><span id="line-13"></span><span class="hs-pragma">{-# LANGUAGE TypeFamilies            #-}</span><span>
+</span><span id="line-14"></span><span class="hs-pragma">{-# LANGUAGE TypeOperators           #-}</span><span>
+</span><span id="line-15"></span><span class="hs-pragma">{-# LANGUAGE UndecidableInstances    #-}</span><span>
+</span><span id="line-16"></span><span class="hs-pragma">{-# LANGUAGE UndecidableSuperClasses #-}</span><span>
+</span><span id="line-17"></span><span class="hs-pragma">{-# OPTIONS_GHC -fplugin GHC.TypeLits.Normalise #-}</span><span>
+</span><span id="line-18"></span><span class="hs-pragma">{-# OPTIONS_GHC -fplugin GHC.TypeLits.KnownNat.Solver #-}</span><span>
+</span><span id="line-19"></span><span class="hs-pragma">{-# OPTIONS_GHC -fplugin GHC.TypeLits.Extra.Solver #-}</span><span>
+</span><span id="line-20"></span><span class="hs-pragma">{-# OPTIONS_GHC -fconstraint-solver-iterations=0 #-}</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.Typed.NN.Recurrent.Cell.GRU</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier">Data.List</span></a></span><span>                      </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier">foldl'</span></a></span><span>
+</span><span id="line-25"></span><span>                                                </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier">scanl'</span></a></span><span>
+</span><span id="line-26"></span><span>                                                </span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier">GHC.Generics</span></a></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier">GHC.TypeLits</span></a></span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.Device.html"><span class="hs-identifier">Torch.Device</span></a></span><span>                  </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.DType.html"><span class="hs-identifier">Torch.DType</span></a></span><span>                   </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.NN.html"><span class="hs-identifier">Torch.NN</span></a></span><span>                      </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">A</span></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="Torch.Typed.Tensor.html"><span class="hs-identifier">Torch.Typed.Tensor</span></a></span><span>
+</span><span id="line-33"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="Torch.Typed.Parameter.html"><span class="hs-identifier">Torch.Typed.Parameter</span></a></span><span>
+</span><span id="line-34"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="Torch.Typed.Factories.html"><span class="hs-identifier">Torch.Typed.Factories</span></a></span><span>
+</span><span id="line-35"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="Torch.Typed.Functional.html"><span class="hs-identifier">Torch.Typed.Functional</span></a></span><span>      </span><span class="hs-keyword">hiding</span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.Typed.Functional.html#linear"><span class="hs-identifier">linear</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="Torch.Typed.NN.html"><span class="hs-identifier">Torch.Typed.NN</span></a></span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="hs-comment">-- | A specification for a gated recurrent unit (GRU) cell.</span><span>
+</span><span id="line-39"></span><span class="hs-comment">--</span><span>
+</span><span id="line-40"></span><span id="local-6989586621679723596"><span id="local-6989586621679723597"></span></span><span class="hs-keyword">data</span><span> </span><span id="GRUCellSpec"><span class="annot"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCellSpec"><span class="hs-identifier hs-var">GRUCellSpec</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679723595"><span class="annot"><a href="#local-6989586621679723595"><span class="hs-identifier hs-type">inputDim</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src"><span class="hs-identifier hs-type">Nat</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679723594"><span class="annot"><a href="#local-6989586621679723594"><span class="hs-identifier hs-type">hiddenDim</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src"><span class="hs-identifier hs-type">Nat</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span>                  </span><span class="hs-special">(</span><span id="local-6989586621679723593"><span class="annot"><a href="#local-6989586621679723593"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.DType.html#DType"><span class="hs-identifier hs-type">D.DType</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-42"></span><span>                  </span><span class="hs-special">(</span><span id="local-6989586621679723592"><span class="annot"><a href="#local-6989586621679723592"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Device.html#DeviceType"><span class="hs-identifier hs-type">D.DeviceType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src"><span class="hs-identifier hs-type">Nat</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="GRUCellSpec"><span class="annot"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCellSpec"><span class="hs-identifier hs-var">GRUCellSpec</span></a></span></span><span> </span><span class="hs-comment">-- ^ Weights and biases are drawn from the standard normal distibution (having mean 0 and variance 1)</span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679723585"><span id="local-6989586621679723587"><span id="local-6989586621679723589"><span class="annot"><span class="annottext">Int -&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; ShowS
+[GRUCellSpec inputDim hiddenDim dtype device] -&gt; ShowS
+GRUCellSpec inputDim hiddenDim dtype device -&gt; String
+(Int -&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; ShowS)
+-&gt; (GRUCellSpec inputDim hiddenDim dtype device -&gt; String)
+-&gt; ([GRUCellSpec inputDim hiddenDim dtype device] -&gt; ShowS)
+-&gt; Show (GRUCellSpec inputDim hiddenDim dtype device)
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Int -&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; ShowS
+forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+[GRUCellSpec inputDim hiddenDim dtype device] -&gt; ShowS
+forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device -&gt; String
+showList :: [GRUCellSpec inputDim hiddenDim dtype device] -&gt; ShowS
+$cshowList :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+[GRUCellSpec inputDim hiddenDim dtype device] -&gt; ShowS
+show :: GRUCellSpec inputDim hiddenDim dtype device -&gt; String
+$cshow :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device -&gt; String
+showsPrec :: Int -&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; ShowS
+$cshowsPrec :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Int -&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; ShowS
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679723580"><span id="local-6989586621679723582"><span class="annot"><span class="annottext">GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Bool
+(GRUCellSpec inputDim hiddenDim dtype device
+ -&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Bool)
+-&gt; (GRUCellSpec inputDim hiddenDim dtype device
+    -&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Bool)
+-&gt; Eq (GRUCellSpec inputDim hiddenDim dtype device)
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Bool
+/= :: GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Bool
+$c/= :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Bool
+== :: GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Bool
+$c== :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Bool
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679723564"><span id="local-6989586621679723566"><span id="local-6989586621679723568"><span id="local-6989586621679723570"><span id="local-6989586621679723572"><span id="local-6989586621679723574"><span id="local-6989586621679723576"><span class="annot"><span class="annottext">Eq (GRUCellSpec inputDim hiddenDim dtype device)
+Eq (GRUCellSpec inputDim hiddenDim dtype device) =&gt;
+(GRUCellSpec inputDim hiddenDim dtype device
+ -&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Ordering)
+-&gt; (GRUCellSpec inputDim hiddenDim dtype device
+    -&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Bool)
+-&gt; (GRUCellSpec inputDim hiddenDim dtype device
+    -&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Bool)
+-&gt; (GRUCellSpec inputDim hiddenDim dtype device
+    -&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Bool)
+-&gt; (GRUCellSpec inputDim hiddenDim dtype device
+    -&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Bool)
+-&gt; (GRUCellSpec inputDim hiddenDim dtype device
+    -&gt; GRUCellSpec inputDim hiddenDim dtype device
+    -&gt; GRUCellSpec inputDim hiddenDim dtype device)
+-&gt; (GRUCellSpec inputDim hiddenDim dtype device
+    -&gt; GRUCellSpec inputDim hiddenDim dtype device
+    -&gt; GRUCellSpec inputDim hiddenDim dtype device)
+-&gt; Ord (GRUCellSpec inputDim hiddenDim dtype device)
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Bool
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Ordering
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Eq (GRUCellSpec inputDim hiddenDim dtype device)
+forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Bool
+forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Ordering
+forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+min :: GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+$cmin :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+max :: GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+$cmax :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+&gt;= :: GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Bool
+$c&gt;= :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Bool
+&gt; :: GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Bool
+$c&gt; :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Bool
+&lt;= :: GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Bool
+$c&lt;= :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Bool
+&lt; :: GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Bool
+$c&lt; :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Bool
+compare :: GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Ordering
+$ccompare :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device -&gt; Ordering
+$cp1Ord :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Eq (GRUCellSpec inputDim hiddenDim dtype device)
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(forall x.
+ GRUCellSpec inputDim hiddenDim dtype device
+ -&gt; Rep (GRUCellSpec inputDim hiddenDim dtype device) x)
+-&gt; (forall x.
+    Rep (GRUCellSpec inputDim hiddenDim dtype device) x
+    -&gt; GRUCellSpec inputDim hiddenDim dtype device)
+-&gt; Generic (GRUCellSpec inputDim hiddenDim dtype device)
+forall x.
+Rep (GRUCellSpec inputDim hiddenDim dtype device) x
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+forall x.
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; Rep (GRUCellSpec inputDim hiddenDim dtype device) x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)) x.
+Rep (GRUCellSpec inputDim hiddenDim dtype device) x
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)) x.
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; Rep (GRUCellSpec inputDim hiddenDim dtype device) x
+$cto :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)) x.
+Rep (GRUCellSpec inputDim hiddenDim dtype device) x
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+$cfrom :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)) x.
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; Rep (GRUCellSpec inputDim hiddenDim dtype device) x
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></a></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679723544"><span id="local-6989586621679723546"><span id="local-6989586621679723548"><span id="local-6989586621679723550"><span id="local-6989586621679723552"><span id="local-6989586621679723554"><span id="local-6989586621679723556"><span id="local-6989586621679723558"><span class="annot"><span class="annottext">Int -&gt; GRUCellSpec inputDim hiddenDim dtype device
+GRUCellSpec inputDim hiddenDim dtype device -&gt; Int
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; [GRUCellSpec inputDim hiddenDim dtype device]
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+-&gt; [GRUCellSpec inputDim hiddenDim dtype device]
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+-&gt; [GRUCellSpec inputDim hiddenDim dtype device]
+(GRUCellSpec inputDim hiddenDim dtype device
+ -&gt; GRUCellSpec inputDim hiddenDim dtype device)
+-&gt; (GRUCellSpec inputDim hiddenDim dtype device
+    -&gt; GRUCellSpec inputDim hiddenDim dtype device)
+-&gt; (Int -&gt; GRUCellSpec inputDim hiddenDim dtype device)
+-&gt; (GRUCellSpec inputDim hiddenDim dtype device -&gt; Int)
+-&gt; (GRUCellSpec inputDim hiddenDim dtype device
+    -&gt; [GRUCellSpec inputDim hiddenDim dtype device])
+-&gt; (GRUCellSpec inputDim hiddenDim dtype device
+    -&gt; GRUCellSpec inputDim hiddenDim dtype device
+    -&gt; [GRUCellSpec inputDim hiddenDim dtype device])
+-&gt; (GRUCellSpec inputDim hiddenDim dtype device
+    -&gt; GRUCellSpec inputDim hiddenDim dtype device
+    -&gt; [GRUCellSpec inputDim hiddenDim dtype device])
+-&gt; (GRUCellSpec inputDim hiddenDim dtype device
+    -&gt; GRUCellSpec inputDim hiddenDim dtype device
+    -&gt; GRUCellSpec inputDim hiddenDim dtype device
+    -&gt; [GRUCellSpec inputDim hiddenDim dtype device])
+-&gt; Enum (GRUCellSpec inputDim hiddenDim dtype device)
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Int -&gt; GRUCellSpec inputDim hiddenDim dtype device
+forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device -&gt; Int
+forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; [GRUCellSpec inputDim hiddenDim dtype device]
+forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+-&gt; [GRUCellSpec inputDim hiddenDim dtype device]
+forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+-&gt; [GRUCellSpec inputDim hiddenDim dtype device]
+enumFromThenTo :: GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+-&gt; [GRUCellSpec inputDim hiddenDim dtype device]
+$cenumFromThenTo :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+-&gt; [GRUCellSpec inputDim hiddenDim dtype device]
+enumFromTo :: GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+-&gt; [GRUCellSpec inputDim hiddenDim dtype device]
+$cenumFromTo :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+-&gt; [GRUCellSpec inputDim hiddenDim dtype device]
+enumFromThen :: GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+-&gt; [GRUCellSpec inputDim hiddenDim dtype device]
+$cenumFromThen :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+-&gt; [GRUCellSpec inputDim hiddenDim dtype device]
+enumFrom :: GRUCellSpec inputDim hiddenDim dtype device
+-&gt; [GRUCellSpec inputDim hiddenDim dtype device]
+$cenumFrom :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; [GRUCellSpec inputDim hiddenDim dtype device]
+fromEnum :: GRUCellSpec inputDim hiddenDim dtype device -&gt; Int
+$cfromEnum :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device -&gt; Int
+toEnum :: Int -&gt; GRUCellSpec inputDim hiddenDim dtype device
+$ctoEnum :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Int -&gt; GRUCellSpec inputDim hiddenDim dtype device
+pred :: GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+$cpred :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+succ :: GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+$csucc :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></a></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679723539"><span id="local-6989586621679723541"><span class="annot"><span class="annottext">GRUCellSpec inputDim hiddenDim dtype device
+GRUCellSpec inputDim hiddenDim dtype device
+-&gt; GRUCellSpec inputDim hiddenDim dtype device
+-&gt; Bounded (GRUCellSpec inputDim hiddenDim dtype device)
+forall a. a -&gt; a -&gt; Bounded a
+forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+maxBound :: GRUCellSpec inputDim hiddenDim dtype device
+$cmaxBound :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+minBound :: GRUCellSpec inputDim hiddenDim dtype device
+$cminBound :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+GRUCellSpec inputDim hiddenDim dtype device
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-45"></span><span>
+</span><span id="line-46"></span><span class="hs-comment">-- | A gated recurrent unit (GRU) cell.</span><span>
+</span><span id="line-47"></span><span class="hs-comment">--</span><span>
+</span><span id="line-48"></span><span id="local-6989586621679723536"><span id="local-6989586621679723537"></span></span><span class="hs-keyword">data</span><span> </span><span id="GRUCell"><span class="annot"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCell"><span class="hs-identifier hs-var">GRUCell</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679723654"><span class="annot"><a href="#local-6989586621679723654"><span class="hs-identifier hs-type">inputDim</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src"><span class="hs-identifier hs-type">Nat</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679723655"><span class="annot"><a href="#local-6989586621679723655"><span class="hs-identifier hs-type">hiddenDim</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src"><span class="hs-identifier hs-type">Nat</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span>              </span><span class="hs-special">(</span><span id="local-6989586621679723656"><span class="annot"><a href="#local-6989586621679723656"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.DType.html#DType"><span class="hs-identifier hs-type">D.DType</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span>              </span><span class="hs-special">(</span><span id="local-6989586621679723657"><span class="annot"><a href="#local-6989586621679723657"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Device.html#DeviceType"><span class="hs-identifier hs-type">D.DeviceType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src"><span class="hs-identifier hs-type">Nat</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>  </span><span class="hs-glyph">=</span><span>  </span><span id="GRUCell"><span class="annot"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCell"><span class="hs-identifier hs-var">GRUCell</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="gruCell_w_ih"><span class="annot"><span class="annottext">GRUCell inputDim hiddenDim dtype device
+-&gt; Parameter device dtype '[3 * hiddenDim, inputDim]
+</span><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#gruCell_w_ih"><span class="hs-identifier hs-var hs-var">gruCell_w_ih</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Typed.Parameter.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723657"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723656"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><span class="hs-number">3</span></span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-operator hs-type">*</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723655"><span class="hs-identifier hs-type">hiddenDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679723654"><span class="hs-identifier hs-type">inputDim</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-comment">-- ^ input-to-hidden weights</span><span>
+</span><span id="line-52"></span><span>              </span><span class="hs-special">,</span><span> </span><span id="gruCell_w_hh"><span class="annot"><span class="annottext">GRUCell inputDim hiddenDim dtype device
+-&gt; Parameter device dtype '[3 * hiddenDim, hiddenDim]
+</span><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#gruCell_w_hh"><span class="hs-identifier hs-var hs-var">gruCell_w_hh</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Typed.Parameter.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723657"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723656"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><span class="hs-number">3</span></span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-operator hs-type">*</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723655"><span class="hs-identifier hs-type">hiddenDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679723655"><span class="hs-identifier hs-type">hiddenDim</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-comment">-- ^ hidden-to-hidden weights</span><span>
+</span><span id="line-53"></span><span>              </span><span class="hs-special">,</span><span> </span><span id="gruCell_b_ih"><span class="annot"><span class="annottext">GRUCell inputDim hiddenDim dtype device
+-&gt; Parameter device dtype '[3 * hiddenDim]
+</span><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#gruCell_b_ih"><span class="hs-identifier hs-var hs-var">gruCell_b_ih</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Typed.Parameter.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723657"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723656"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><span class="hs-number">3</span></span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-operator hs-type">*</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723655"><span class="hs-identifier hs-type">hiddenDim</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-comment">-- ^ input-to-hidden bias</span><span>
+</span><span id="line-54"></span><span>              </span><span class="hs-special">,</span><span> </span><span id="gruCell_b_hh"><span class="annot"><span class="annottext">GRUCell inputDim hiddenDim dtype device
+-&gt; Parameter device dtype '[3 * hiddenDim]
+</span><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#gruCell_b_hh"><span class="hs-identifier hs-var hs-var">gruCell_b_hh</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Typed.Parameter.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723657"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723656"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><span class="hs-number">3</span></span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-operator hs-type">*</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723655"><span class="hs-identifier hs-type">hiddenDim</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-comment">-- ^ hidden-to-hidden bias</span><span>
+</span><span id="line-55"></span><span>              </span><span class="hs-special">}</span><span>
+</span><span id="line-56"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="annottext">(forall x.
+ GRUCell inputDim hiddenDim dtype device
+ -&gt; Rep (GRUCell inputDim hiddenDim dtype device) x)
+-&gt; (forall x.
+    Rep (GRUCell inputDim hiddenDim dtype device) x
+    -&gt; GRUCell inputDim hiddenDim dtype device)
+-&gt; Generic (GRUCell inputDim hiddenDim dtype device)
+forall x.
+Rep (GRUCell inputDim hiddenDim dtype device) x
+-&gt; GRUCell inputDim hiddenDim dtype device
+forall x.
+GRUCell inputDim hiddenDim dtype device
+-&gt; Rep (GRUCell inputDim hiddenDim dtype device) x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)) x.
+Rep (GRUCell inputDim hiddenDim dtype device) x
+-&gt; GRUCell inputDim hiddenDim dtype device
+forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)) x.
+GRUCell inputDim hiddenDim dtype device
+-&gt; Rep (GRUCell inputDim hiddenDim dtype device) x
+$cto :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)) x.
+Rep (GRUCell inputDim hiddenDim dtype device) x
+-&gt; GRUCell inputDim hiddenDim dtype device
+$cfrom :: forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)) x.
+GRUCell inputDim hiddenDim dtype device
+-&gt; Rep (GRUCell inputDim hiddenDim dtype device) x
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></a></span><span>
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span id="local-6989586621679723525"><span id="local-6989586621679723526"><span id="local-6989586621679723527"><span id="local-6989586621679723528"><span class="hs-keyword">instance</span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#KnownDevice"><span class="hs-identifier hs-type">KnownDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723528"><span class="hs-identifier hs-type">device</span></a></span><span>
+</span><span id="line-59"></span><span>         </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#KnownDType"><span class="hs-identifier hs-type">KnownDType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723527"><span class="hs-identifier hs-type">dtype</span></a></span><span>
+</span><span id="line-60"></span><span>         </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-type">KnownNat</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723526"><span class="hs-identifier hs-type">inputDim</span></a></span><span>
+</span><span id="line-61"></span><span>         </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-type">KnownNat</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723525"><span class="hs-identifier hs-type">hiddenDim</span></a></span><span>
+</span><span id="line-62"></span><span>         </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Factories.html#RandDTypeIsValid"><span class="hs-identifier hs-type">RandDTypeIsValid</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723528"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723527"><span class="hs-identifier hs-type">dtype</span></a></span><span>
+</span><span id="line-63"></span><span>         </span><span class="hs-special">)</span><span>
+</span><span id="line-64"></span><span>  </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.NN.html#Randomizable"><span class="hs-identifier hs-type">A.Randomizable</span></a></span><span>
+</span><span id="line-65"></span><span>       </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCellSpec"><span class="hs-identifier hs-type">GRUCellSpec</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723526"><span class="hs-identifier hs-type">inputDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723525"><span class="hs-identifier hs-type">hiddenDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723527"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723528"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-66"></span><span>       </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCell"><span class="hs-identifier hs-type">GRUCell</span></a></span><span>     </span><span class="annot"><a href="#local-6989586621679723526"><span class="hs-identifier hs-type">inputDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723525"><span class="hs-identifier hs-type">hiddenDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723527"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723528"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-67"></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-68"></span><span>  </span><span id="local-6989586621679723522"><span class="annot"><span class="annottext">sample :: GRUCellSpec inputDim hiddenDim dtype device
+-&gt; IO (GRUCell inputDim hiddenDim dtype device)
+</span><a href="Torch.NN.html#sample"><span class="hs-identifier hs-var hs-var hs-var hs-var">sample</span></a></span></span><span> </span><span class="annot"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCellSpec"><span class="hs-identifier hs-type">GRUCellSpec</span></a></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-69"></span><span>    </span><span class="annot"><span class="annottext">Parameter device dtype '[3 * hiddenDim, inputDim]
+-&gt; Parameter device dtype '[3 * hiddenDim, hiddenDim]
+-&gt; Parameter device dtype '[3 * hiddenDim]
+-&gt; Parameter device dtype '[3 * hiddenDim]
+-&gt; GRUCell inputDim hiddenDim dtype device
+forall (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Parameter device dtype '[3 * hiddenDim, inputDim]
+-&gt; Parameter device dtype '[3 * hiddenDim, hiddenDim]
+-&gt; Parameter device dtype '[3 * hiddenDim]
+-&gt; Parameter device dtype '[3 * hiddenDim]
+-&gt; GRUCell inputDim hiddenDim dtype device
+</span><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCell"><span class="hs-identifier hs-var">GRUCell</span></a></span><span>
+</span><span id="line-70"></span><span>      </span><span class="annot"><span class="annottext">(Parameter device dtype '[3 * hiddenDim, inputDim]
+ -&gt; Parameter device dtype '[3 * hiddenDim, hiddenDim]
+ -&gt; Parameter device dtype '[3 * hiddenDim]
+ -&gt; Parameter device dtype '[3 * hiddenDim]
+ -&gt; GRUCell inputDim hiddenDim dtype device)
+-&gt; IO (Parameter device dtype '[3 * hiddenDim, inputDim])
+-&gt; IO
+     (Parameter device dtype '[3 * hiddenDim, hiddenDim]
+      -&gt; Parameter device dtype '[3 * hiddenDim]
+      -&gt; Parameter device dtype '[3 * hiddenDim]
+      -&gt; GRUCell inputDim hiddenDim dtype device)
+forall (f :: Type -&gt; Type) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-operator hs-var">&lt;$&gt;</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor device dtype '[3 * hiddenDim, inputDim]
+-&gt; IO (Parameter device dtype '[3 * hiddenDim, inputDim])
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Tensor device dtype shape -&gt; IO (Parameter device dtype shape)
+</span><a href="Torch.Typed.Parameter.html#makeIndependent"><span class="hs-identifier hs-var">makeIndependent</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor device dtype '[3 * hiddenDim, inputDim]
+ -&gt; IO (Parameter device dtype '[3 * hiddenDim, inputDim]))
+-&gt; IO (Tensor device dtype '[3 * hiddenDim, inputDim])
+-&gt; IO (Parameter device dtype '[3 * hiddenDim, inputDim])
+forall (m :: Type -&gt; Type) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-operator hs-var">=&lt;&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">IO (Tensor device dtype '[3 * hiddenDim, inputDim])
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+(TensorOptions shape dtype device,
+ RandDTypeIsValid device dtype) =&gt;
+IO (Tensor device dtype shape)
+</span><a href="Torch.Typed.Factories.html#randn"><span class="hs-identifier hs-var">randn</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-71"></span><span>      </span><span class="annot"><span class="annottext">IO
+  (Parameter device dtype '[3 * hiddenDim, hiddenDim]
+   -&gt; Parameter device dtype '[3 * hiddenDim]
+   -&gt; Parameter device dtype '[3 * hiddenDim]
+   -&gt; GRUCell inputDim hiddenDim dtype device)
+-&gt; IO (Parameter device dtype '[3 * hiddenDim, hiddenDim])
+-&gt; IO
+     (Parameter device dtype '[3 * hiddenDim]
+      -&gt; Parameter device dtype '[3 * hiddenDim]
+      -&gt; GRUCell inputDim hiddenDim dtype device)
+forall (f :: Type -&gt; Type) a b.
+Applicative f =&gt;
+f (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-operator hs-var">&lt;*&gt;</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor device dtype '[3 * hiddenDim, hiddenDim]
+-&gt; IO (Parameter device dtype '[3 * hiddenDim, hiddenDim])
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Tensor device dtype shape -&gt; IO (Parameter device dtype shape)
+</span><a href="Torch.Typed.Parameter.html#makeIndependent"><span class="hs-identifier hs-var">makeIndependent</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor device dtype '[3 * hiddenDim, hiddenDim]
+ -&gt; IO (Parameter device dtype '[3 * hiddenDim, hiddenDim]))
+-&gt; IO (Tensor device dtype '[3 * hiddenDim, hiddenDim])
+-&gt; IO (Parameter device dtype '[3 * hiddenDim, hiddenDim])
+forall (m :: Type -&gt; Type) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-operator hs-var">=&lt;&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">IO (Tensor device dtype '[3 * hiddenDim, hiddenDim])
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+(TensorOptions shape dtype device,
+ RandDTypeIsValid device dtype) =&gt;
+IO (Tensor device dtype shape)
+</span><a href="Torch.Typed.Factories.html#randn"><span class="hs-identifier hs-var">randn</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-72"></span><span>      </span><span class="annot"><span class="annottext">IO
+  (Parameter device dtype '[3 * hiddenDim]
+   -&gt; Parameter device dtype '[3 * hiddenDim]
+   -&gt; GRUCell inputDim hiddenDim dtype device)
+-&gt; IO (Parameter device dtype '[3 * hiddenDim])
+-&gt; IO
+     (Parameter device dtype '[3 * hiddenDim]
+      -&gt; GRUCell inputDim hiddenDim dtype device)
+forall (f :: Type -&gt; Type) a b.
+Applicative f =&gt;
+f (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-operator hs-var">&lt;*&gt;</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor device dtype '[3 * hiddenDim]
+-&gt; IO (Parameter device dtype '[3 * hiddenDim])
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Tensor device dtype shape -&gt; IO (Parameter device dtype shape)
+</span><a href="Torch.Typed.Parameter.html#makeIndependent"><span class="hs-identifier hs-var">makeIndependent</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor device dtype '[3 * hiddenDim]
+ -&gt; IO (Parameter device dtype '[3 * hiddenDim]))
+-&gt; IO (Tensor device dtype '[3 * hiddenDim])
+-&gt; IO (Parameter device dtype '[3 * hiddenDim])
+forall (m :: Type -&gt; Type) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-operator hs-var">=&lt;&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">IO (Tensor device dtype '[3 * hiddenDim])
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+(TensorOptions shape dtype device,
+ RandDTypeIsValid device dtype) =&gt;
+IO (Tensor device dtype shape)
+</span><a href="Torch.Typed.Factories.html#randn"><span class="hs-identifier hs-var">randn</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-73"></span><span>      </span><span class="annot"><span class="annottext">IO
+  (Parameter device dtype '[3 * hiddenDim]
+   -&gt; GRUCell inputDim hiddenDim dtype device)
+-&gt; IO (Parameter device dtype '[3 * hiddenDim])
+-&gt; IO (GRUCell inputDim hiddenDim dtype device)
+forall (f :: Type -&gt; Type) a b.
+Applicative f =&gt;
+f (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-operator hs-var">&lt;*&gt;</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor device dtype '[3 * hiddenDim]
+-&gt; IO (Parameter device dtype '[3 * hiddenDim])
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Tensor device dtype shape -&gt; IO (Parameter device dtype shape)
+</span><a href="Torch.Typed.Parameter.html#makeIndependent"><span class="hs-identifier hs-var">makeIndependent</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor device dtype '[3 * hiddenDim]
+ -&gt; IO (Parameter device dtype '[3 * hiddenDim]))
+-&gt; IO (Tensor device dtype '[3 * hiddenDim])
+-&gt; IO (Parameter device dtype '[3 * hiddenDim])
+forall (m :: Type -&gt; Type) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-operator hs-var">=&lt;&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">IO (Tensor device dtype '[3 * hiddenDim])
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+(TensorOptions shape dtype device,
+ RandDTypeIsValid device dtype) =&gt;
+IO (Tensor device dtype shape)
+</span><a href="Torch.Typed.Factories.html#randn"><span class="hs-identifier hs-var">randn</span></a></span><span class="hs-special">)</span></span></span></span></span><span>
+</span><span id="line-74"></span><span>
+</span><span id="line-75"></span><span class="hs-comment">-- | A single recurrent step of a `GRUCell`</span><span>
+</span><span id="line-76"></span><span class="hs-comment">--</span><span>
+</span><span id="line-77"></span><span class="annot"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#forwardStep"><span class="hs-identifier hs-type">forwardStep</span></a></span><span>
+</span><span id="line-78"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679723614"><span class="annot"><a href="#local-6989586621679723614"><span class="hs-identifier hs-type">inputDim</span></a></span></span><span> </span><span id="local-6989586621679723613"><span class="annot"><a href="#local-6989586621679723613"><span class="hs-identifier hs-type">hiddenDim</span></a></span></span><span> </span><span id="local-6989586621679723612"><span class="annot"><a href="#local-6989586621679723612"><span class="hs-identifier hs-type">batchSize</span></a></span></span><span> </span><span id="local-6989586621679723615"><span class="annot"><a href="#local-6989586621679723615"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span id="local-6989586621679723611"><span class="annot"><a href="#local-6989586621679723611"><span class="hs-identifier hs-type">device</span></a></span></span><span>
+</span><span id="line-79"></span><span>   </span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#KnownDType"><span class="hs-identifier hs-type">KnownDType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723615"><span class="hs-identifier hs-type">dtype</span></a></span><span>
+</span><span id="line-80"></span><span>     </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-type">KnownNat</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723614"><span class="hs-identifier hs-type">inputDim</span></a></span><span>
+</span><span id="line-81"></span><span>     </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-type">KnownNat</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723613"><span class="hs-identifier hs-type">hiddenDim</span></a></span><span>
+</span><span id="line-82"></span><span>     </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-type">KnownNat</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723612"><span class="hs-identifier hs-type">batchSize</span></a></span><span>
+</span><span id="line-83"></span><span>     </span><span class="hs-special">)</span><span>
+</span><span id="line-84"></span><span>  </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCell"><span class="hs-identifier hs-type">GRUCell</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723614"><span class="hs-identifier hs-type">inputDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723613"><span class="hs-identifier hs-type">hiddenDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723615"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723611"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="hs-comment">-- ^ The cell</span><span>
+</span><span id="line-85"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723611"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723615"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679723612"><span class="hs-identifier hs-type">batchSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679723613"><span class="hs-identifier hs-type">hiddenDim</span></a></span><span class="hs-special">]</span><span class="hs-comment">-- ^ The current Hidden state</span><span>
+</span><span id="line-86"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723611"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723615"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679723612"><span class="hs-identifier hs-type">batchSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679723614"><span class="hs-identifier hs-type">inputDim</span></a></span><span class="hs-special">]</span><span class="hs-comment">-- ^ The input</span><span>
+</span><span id="line-87"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723611"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723615"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679723612"><span class="hs-identifier hs-type">batchSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679723613"><span class="hs-identifier hs-type">hiddenDim</span></a></span><span class="hs-special">]</span><span class="hs-comment">-- ^ The subsequent Hidden state</span><span>
+</span><span id="line-88"></span><span id="forwardStep"><span class="annot"><span class="annottext">forwardStep :: GRUCell inputDim hiddenDim dtype device
+-&gt; Tensor device dtype '[batchSize, hiddenDim]
+-&gt; Tensor device dtype '[batchSize, inputDim]
+-&gt; Tensor device dtype '[batchSize, hiddenDim]
+</span><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#forwardStep"><span class="hs-identifier hs-var hs-var">forwardStep</span></a></span></span><span> </span><span id="local-6989586621679723512"><span id="local-6989586621679723513"><span id="local-6989586621679723514"><span id="local-6989586621679723515"><span class="annot"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCell"><span class="hs-identifier hs-type">GRUCell</span></a></span><span> </span><span class="hs-special">{</span><span class="hs-glyph">..</span><span class="hs-special">}</span></span></span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor device dtype '[3 * hiddenDim, inputDim]
+-&gt; Tensor device dtype '[3 * hiddenDim, hiddenDim]
+-&gt; Tensor device dtype '[3 * hiddenDim]
+-&gt; Tensor device dtype '[3 * hiddenDim]
+-&gt; Tensor device dtype '[batchSize, hiddenDim]
+-&gt; Tensor device dtype '[batchSize, inputDim]
+-&gt; Tensor device dtype '[batchSize, hiddenDim]
+forall (inputSize :: Nat) (hiddenSize :: Nat) (batchSize :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)).
+Tensor device dtype '[3 * hiddenSize, inputSize]
+-&gt; Tensor device dtype '[3 * hiddenSize, hiddenSize]
+-&gt; Tensor device dtype '[3 * hiddenSize]
+-&gt; Tensor device dtype '[3 * hiddenSize]
+-&gt; Tensor device dtype '[batchSize, hiddenSize]
+-&gt; Tensor device dtype '[batchSize, inputSize]
+-&gt; Tensor device dtype '[batchSize, hiddenSize]
+</span><a href="Torch.Typed.Functional.html#gruCell"><span class="hs-identifier hs-var">gruCell</span></a></span><span>   </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parameter device dtype '[3 * hiddenDim, inputDim]
+-&gt; Tensor device dtype '[3 * hiddenDim, inputDim]
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Parameter device dtype shape -&gt; Tensor device dtype shape
+</span><a href="Torch.Typed.Parameter.html#toDependent"><span class="hs-identifier hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">Parameter device dtype '[3 * hiddenDim, inputDim]
+</span><a href="#local-6989586621679723515"><span class="hs-identifier hs-var">gruCell_w_ih</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-89"></span><span>                                     </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parameter device dtype '[3 * hiddenDim, hiddenDim]
+-&gt; Tensor device dtype '[3 * hiddenDim, hiddenDim]
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Parameter device dtype shape -&gt; Tensor device dtype shape
+</span><a href="Torch.Typed.Parameter.html#toDependent"><span class="hs-identifier hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">Parameter device dtype '[3 * hiddenDim, hiddenDim]
+</span><a href="#local-6989586621679723514"><span class="hs-identifier hs-var">gruCell_w_hh</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-90"></span><span>                                     </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parameter device dtype '[3 * hiddenDim]
+-&gt; Tensor device dtype '[3 * hiddenDim]
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Parameter device dtype shape -&gt; Tensor device dtype shape
+</span><a href="Torch.Typed.Parameter.html#toDependent"><span class="hs-identifier hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">Parameter device dtype '[3 * hiddenDim]
+</span><a href="#local-6989586621679723513"><span class="hs-identifier hs-var">gruCell_b_ih</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-91"></span><span>                                     </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parameter device dtype '[3 * hiddenDim]
+-&gt; Tensor device dtype '[3 * hiddenDim]
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Parameter device dtype shape -&gt; Tensor device dtype shape
+</span><a href="Torch.Typed.Parameter.html#toDependent"><span class="hs-identifier hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">Parameter device dtype '[3 * hiddenDim]
+</span><a href="#local-6989586621679723512"><span class="hs-identifier hs-var">gruCell_b_hh</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-92"></span><span>
+</span><span id="line-93"></span><span class="hs-comment">-- | foldl' for lists of tensors unsing a `GRUCell`</span><span>
+</span><span id="line-94"></span><span class="hs-comment">--</span><span>
+</span><span id="line-95"></span><span class="annot"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#forward"><span class="hs-identifier hs-type">forward</span></a></span><span>
+</span><span id="line-96"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679723508"><span class="annot"><a href="#local-6989586621679723508"><span class="hs-identifier hs-type">inputDim</span></a></span></span><span> </span><span id="local-6989586621679723507"><span class="annot"><a href="#local-6989586621679723507"><span class="hs-identifier hs-type">hiddenDim</span></a></span></span><span> </span><span id="local-6989586621679723506"><span class="annot"><a href="#local-6989586621679723506"><span class="hs-identifier hs-type">batchSize</span></a></span></span><span> </span><span id="local-6989586621679723505"><span class="annot"><a href="#local-6989586621679723505"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span id="local-6989586621679723504"><span class="annot"><a href="#local-6989586621679723504"><span class="hs-identifier hs-type">device</span></a></span></span><span>
+</span><span id="line-97"></span><span>   </span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#KnownDType"><span class="hs-identifier hs-type">KnownDType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723505"><span class="hs-identifier hs-type">dtype</span></a></span><span>
+</span><span id="line-98"></span><span>     </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-type">KnownNat</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723508"><span class="hs-identifier hs-type">inputDim</span></a></span><span>
+</span><span id="line-99"></span><span>     </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-type">KnownNat</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723507"><span class="hs-identifier hs-type">hiddenDim</span></a></span><span>
+</span><span id="line-100"></span><span>     </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-type">KnownNat</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723506"><span class="hs-identifier hs-type">batchSize</span></a></span><span>
+</span><span id="line-101"></span><span>     </span><span class="hs-special">)</span><span>
+</span><span id="line-102"></span><span>  </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCell"><span class="hs-identifier hs-type">GRUCell</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723508"><span class="hs-identifier hs-type">inputDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723507"><span class="hs-identifier hs-type">hiddenDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723505"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723504"><span class="hs-identifier hs-type">device</span></a></span><span>
+</span><span id="line-103"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723504"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723505"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679723506"><span class="hs-identifier hs-type">batchSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679723507"><span class="hs-identifier hs-type">hiddenDim</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-comment">-- ^ The initial Hidden state</span><span>
+</span><span id="line-104"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723504"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723505"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679723506"><span class="hs-identifier hs-type">batchSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679723508"><span class="hs-identifier hs-type">inputDim</span></a></span><span class="hs-special">]</span><span class="hs-special">]</span><span> </span><span class="hs-comment">-- ^ The list of inputs</span><span>
+</span><span id="line-105"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723504"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723505"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679723506"><span class="hs-identifier hs-type">batchSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679723507"><span class="hs-identifier hs-type">hiddenDim</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-comment">-- ^ The final Hidden state</span><span>
+</span><span id="line-106"></span><span id="forward"><span class="annot"><span class="annottext">forward :: GRUCell inputDim hiddenDim dtype device
+-&gt; Tensor device dtype '[batchSize, hiddenDim]
+-&gt; [Tensor device dtype '[batchSize, inputDim]]
+-&gt; Tensor device dtype '[batchSize, hiddenDim]
+</span><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#forward"><span class="hs-identifier hs-var hs-var">forward</span></a></span></span><span> </span><span id="local-6989586621679723503"><span class="annot"><span class="annottext">cell :: GRUCell inputDim hiddenDim dtype device
+</span><a href="#local-6989586621679723503"><span class="hs-identifier hs-var">cell</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Tensor device dtype '[batchSize, hiddenDim]
+ -&gt; Tensor device dtype '[batchSize, inputDim]
+ -&gt; Tensor device dtype '[batchSize, hiddenDim])
+-&gt; Tensor device dtype '[batchSize, hiddenDim]
+-&gt; [Tensor device dtype '[batchSize, inputDim]]
+-&gt; Tensor device dtype '[batchSize, hiddenDim]
+forall (t :: Type -&gt; Type) b a.
+Foldable t =&gt;
+(b -&gt; a -&gt; b) -&gt; b -&gt; t a -&gt; b
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-var">foldl'</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">GRUCell inputDim hiddenDim dtype device
+-&gt; Tensor device dtype '[batchSize, hiddenDim]
+-&gt; Tensor device dtype '[batchSize, inputDim]
+-&gt; Tensor device dtype '[batchSize, hiddenDim]
+forall (inputDim :: Nat) (hiddenDim :: Nat) (batchSize :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)).
+(KnownDType dtype, KnownNat inputDim, KnownNat hiddenDim,
+ KnownNat batchSize) =&gt;
+GRUCell inputDim hiddenDim dtype device
+-&gt; Tensor device dtype '[batchSize, hiddenDim]
+-&gt; Tensor device dtype '[batchSize, inputDim]
+-&gt; Tensor device dtype '[batchSize, hiddenDim]
+</span><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#forwardStep"><span class="hs-identifier hs-var">forwardStep</span></a></span><span> </span><span class="annot"><span class="annottext">GRUCell inputDim hiddenDim dtype device
+</span><a href="#local-6989586621679723503"><span class="hs-identifier hs-var">cell</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-107"></span><span>
+</span><span id="line-108"></span><span class="hs-comment">-- | scanl' for lists of tensors unsing a `GRUCell`</span><span>
+</span><span id="line-109"></span><span class="hs-comment">--</span><span>
+</span><span id="line-110"></span><span class="annot"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#forwardScan"><span class="hs-identifier hs-type">forwardScan</span></a></span><span>
+</span><span id="line-111"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679723501"><span class="annot"><a href="#local-6989586621679723501"><span class="hs-identifier hs-type">inputDim</span></a></span></span><span> </span><span id="local-6989586621679723500"><span class="annot"><a href="#local-6989586621679723500"><span class="hs-identifier hs-type">hiddenDim</span></a></span></span><span> </span><span id="local-6989586621679723499"><span class="annot"><a href="#local-6989586621679723499"><span class="hs-identifier hs-type">batchSize</span></a></span></span><span> </span><span id="local-6989586621679723498"><span class="annot"><a href="#local-6989586621679723498"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span id="local-6989586621679723497"><span class="annot"><a href="#local-6989586621679723497"><span class="hs-identifier hs-type">device</span></a></span></span><span>
+</span><span id="line-112"></span><span>   </span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#KnownDType"><span class="hs-identifier hs-type">KnownDType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723498"><span class="hs-identifier hs-type">dtype</span></a></span><span>
+</span><span id="line-113"></span><span>     </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-type">KnownNat</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723501"><span class="hs-identifier hs-type">inputDim</span></a></span><span>
+</span><span id="line-114"></span><span>     </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-type">KnownNat</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723500"><span class="hs-identifier hs-type">hiddenDim</span></a></span><span>
+</span><span id="line-115"></span><span>     </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-type">KnownNat</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723499"><span class="hs-identifier hs-type">batchSize</span></a></span><span>
+</span><span id="line-116"></span><span>     </span><span class="hs-special">)</span><span>
+</span><span id="line-117"></span><span>  </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#GRUCell"><span class="hs-identifier hs-type">GRUCell</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723501"><span class="hs-identifier hs-type">inputDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723500"><span class="hs-identifier hs-type">hiddenDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723498"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723497"><span class="hs-identifier hs-type">device</span></a></span><span>
+</span><span id="line-118"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723497"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723498"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679723499"><span class="hs-identifier hs-type">batchSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679723500"><span class="hs-identifier hs-type">hiddenDim</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-comment">-- ^ The initial Hidden state</span><span>
+</span><span id="line-119"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723497"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723498"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679723499"><span class="hs-identifier hs-type">batchSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679723501"><span class="hs-identifier hs-type">inputDim</span></a></span><span class="hs-special">]</span><span class="hs-special">]</span><span> </span><span class="hs-comment">-- ^ The list of inputs</span><span>
+</span><span id="line-120"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723497"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679723498"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679723499"><span class="hs-identifier hs-type">batchSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679723500"><span class="hs-identifier hs-type">hiddenDim</span></a></span><span class="hs-special">]</span><span class="hs-special">]</span><span> </span><span class="hs-comment">-- ^ All subsequent Hidden states</span><span>
+</span><span id="line-121"></span><span id="forwardScan"><span class="annot"><span class="annottext">forwardScan :: GRUCell inputDim hiddenDim dtype device
+-&gt; Tensor device dtype '[batchSize, hiddenDim]
+-&gt; [Tensor device dtype '[batchSize, inputDim]]
+-&gt; [Tensor device dtype '[batchSize, hiddenDim]]
+</span><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#forwardScan"><span class="hs-identifier hs-var hs-var">forwardScan</span></a></span></span><span> </span><span id="local-6989586621679723496"><span class="annot"><span class="annottext">cell :: GRUCell inputDim hiddenDim dtype device
+</span><a href="#local-6989586621679723496"><span class="hs-identifier hs-var">cell</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Tensor device dtype '[batchSize, hiddenDim]
+ -&gt; Tensor device dtype '[batchSize, inputDim]
+ -&gt; Tensor device dtype '[batchSize, hiddenDim])
+-&gt; Tensor device dtype '[batchSize, hiddenDim]
+-&gt; [Tensor device dtype '[batchSize, inputDim]]
+-&gt; [Tensor device dtype '[batchSize, hiddenDim]]
+forall b a. (b -&gt; a -&gt; b) -&gt; b -&gt; [a] -&gt; [b]
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-var">scanl'</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">GRUCell inputDim hiddenDim dtype device
+-&gt; Tensor device dtype '[batchSize, hiddenDim]
+-&gt; Tensor device dtype '[batchSize, inputDim]
+-&gt; Tensor device dtype '[batchSize, hiddenDim]
+forall (inputDim :: Nat) (hiddenDim :: Nat) (batchSize :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)).
+(KnownDType dtype, KnownNat inputDim, KnownNat hiddenDim,
+ KnownNat batchSize) =&gt;
+GRUCell inputDim hiddenDim dtype device
+-&gt; Tensor device dtype '[batchSize, hiddenDim]
+-&gt; Tensor device dtype '[batchSize, inputDim]
+-&gt; Tensor device dtype '[batchSize, hiddenDim]
+</span><a href="Torch.Typed.NN.Recurrent.Cell.GRU.html#forwardStep"><span class="hs-identifier hs-var">forwardStep</span></a></span><span> </span><span class="annot"><span class="annottext">GRUCell inputDim hiddenDim dtype device
+</span><a href="#local-6989586621679723496"><span class="hs-identifier hs-var">cell</span></a></span><span class="hs-special">)</span></pre></body></html>

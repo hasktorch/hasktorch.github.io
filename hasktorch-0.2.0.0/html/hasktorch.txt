@@ -104,7 +104,7 @@ instance Torch.Internal.Class.Castable [Torch.Dimname.Dimname] (GHC.ForeignPtr.F
 module Torch.HList
 type family ListLength (xs :: [k]) :: Nat
 data family HList (xs :: [k])
-pattern (:.) :: forall x (xs :: [Type]). () => () => x -> HList xs -> HList (x : xs)
+pattern (:.) :: x -> HList xs -> HList (x : xs)
 infixr 2 :.
 class Apply f a b
 apply :: Apply f a b => f -> a -> b
@@ -121,7 +121,7 @@ class HMap f (xs :: [k]) (ys :: [k])
 hmap :: HMap f xs ys => f -> HList xs -> HList ys
 
 -- | Alternative version of <a>HMap</a> with better type inference based on
---   <a>Apply'</a>
+--   <a>Apply</a>`
 class HMap' f (xs :: [k]) (ys :: [k]) | f xs -> ys
 hmap' :: HMap' f xs ys => f -> HList xs -> HList ys
 class HMapM m f (xs :: [k]) (ys :: [k])
@@ -192,32 +192,32 @@ instance forall k (ys :: [k]). Torch.HList.HCartesianProduct '[] ys '[]
 instance Torch.HList.HZipWith3 f '[] '[] '[] '[]
 instance (Torch.HList.Apply' f (a, b, c) d, Torch.HList.HZipWith3 f as bs cs ds) => Torch.HList.HZipWith3 f (a : as) (b : bs) (c : cs) (d : ds)
 instance Torch.HList.HZip3 '[] '[] '[] '[]
-instance ((a, b, c) Data.Type.Equality.~ d, Torch.HList.HZip3 as bs cs ds) => Torch.HList.HZip3 (a : as) (b : bs) (c : cs) (d : ds)
+instance ((a, b, c) GHC.Types.~ d, Torch.HList.HZip3 as bs cs ds) => Torch.HList.HZip3 (a : as) (b : bs) (c : cs) (d : ds)
 instance GHC.Base.Applicative m => Torch.HList.HZipWithM m f '[] '[] '[]
 instance (GHC.Base.Applicative m, Torch.HList.Apply' f (x, y) (m z), Torch.HList.HZipWithM m f xs ys zs) => Torch.HList.HZipWithM m f (x : xs) (y : ys) (z : zs)
 instance Torch.HList.HZipWith f '[] '[] '[]
 instance (Torch.HList.Apply' f (x, y) z, Torch.HList.HZipWith f xs ys zs) => Torch.HList.HZipWith f (x : xs) (y : ys) (z : zs)
-instance forall k (a :: [k]) (b :: [k]) (c :: [k]) x y. (Torch.HList.HZip' a b c, x Data.Type.Equality.~ (Torch.HList.HList a, Torch.HList.HList b), y Data.Type.Equality.~ Torch.HList.HList c) => Torch.HList.Apply' Torch.HList.HZipF x y
+instance forall k (a :: [k]) (b :: [k]) (c :: [k]) x y. (Torch.HList.HZip' a b c, x GHC.Types.~ (Torch.HList.HList a, Torch.HList.HList b), y GHC.Types.~ Torch.HList.HList c) => Torch.HList.Apply' Torch.HList.HZipF x y
 instance Torch.HList.HZip' '[] '[] '[]
-instance (Torch.HList.HList (x : y) Data.Type.Equality.~ z, Torch.HList.HZip' xs ys zs) => Torch.HList.HZip' (x : xs) (Torch.HList.HList y : ys) (z : zs)
+instance (Torch.HList.HList (x : y) GHC.Types.~ z, Torch.HList.HZip' xs ys zs) => Torch.HList.HZip' (x : xs) (Torch.HList.HList y : ys) (z : zs)
 instance Torch.HList.HZip '[] '[] '[]
-instance ((x, y) Data.Type.Equality.~ z, Torch.HList.HZip xs ys zs) => Torch.HList.HZip (x : xs) (y : ys) (z : zs)
+instance ((x, y) GHC.Types.~ z, Torch.HList.HZip xs ys zs) => Torch.HList.HZip (x : xs) (y : ys) (z : zs)
 instance (Torch.HList.HConcatFD as bs, Torch.HList.HAppendFD a bs cs) => Torch.HList.HConcatFD (Torch.HList.HList a : as) cs
 instance forall k (b :: [k]). Torch.HList.HAppendFD '[] b b
 instance Torch.HList.HAppendFD as bs cs => Torch.HList.HAppendFD (a : as) bs (a : cs)
 instance Torch.HList.HConcatFD '[] '[]
 instance Torch.HList.HReplicateFD 0 e '[]
-instance (Torch.HList.HReplicateFD (n GHC.TypeNats.- 1) e es, es' Data.Type.Equality.~ (e : es), 1 GHC.TypeNats.<= n) => Torch.HList.HReplicateFD n e es'
-instance (GHC.Base.Monad m, Torch.HList.HUnfoldM m f res xs, Torch.HList.Apply f s res, res Data.Type.Equality.~ Torch.HList.HUnfoldMRes m s xs) => Torch.HList.HUnfoldM m f (m (Torch.HList.HJust (x, s))) (x : xs)
+instance (Torch.HList.HReplicateFD (n GHC.TypeNats.- 1) e es, es' GHC.Types.~ (e : es), 1 GHC.TypeNats.<= n) => Torch.HList.HReplicateFD n e es'
+instance (GHC.Base.Monad m, Torch.HList.HUnfoldM m f res xs, Torch.HList.Apply f s res, res GHC.Types.~ Torch.HList.HUnfoldMRes m s xs) => Torch.HList.HUnfoldM m f (m (Torch.HList.HJust (x, s))) (x : xs)
 instance GHC.Base.Monad m => Torch.HList.HUnfoldM m f (m Torch.HList.HNothing) '[]
-instance (Torch.HList.Apply f s res, Torch.HList.HUnfold f res xs, res Data.Type.Equality.~ Torch.HList.HUnfoldRes s xs) => Torch.HList.HUnfold f (Torch.HList.HJust (x, s)) (x : xs)
+instance (Torch.HList.Apply f s res, Torch.HList.HUnfold f res xs, res GHC.Types.~ Torch.HList.HUnfoldRes s xs) => Torch.HList.HUnfold f (Torch.HList.HJust (x, s)) (x : xs)
 instance Torch.HList.HUnfold f Torch.HList.HNothing '[]
-instance (GHC.Base.Monad m, acc Data.Type.Equality.~ res) => Torch.HList.HFoldrM m f acc '[] res
+instance (GHC.Base.Monad m, acc GHC.Types.~ res) => Torch.HList.HFoldrM m f acc '[] res
 instance (GHC.Base.Monad m, Torch.HList.Apply' f (x, m res) (m res'), Torch.HList.HFoldrM m f acc xs res) => Torch.HList.HFoldrM m f acc (x : xs) res'
-instance (acc Data.Type.Equality.~ res) => Torch.HList.HFoldr f acc '[] res
+instance (acc GHC.Types.~ res) => Torch.HList.HFoldr f acc '[] res
 instance (Torch.HList.Apply' f (x, res) res', Torch.HList.HFoldr f acc xs res) => Torch.HList.HFoldr f acc (x : xs) res'
 instance GHC.Base.Applicative f => Torch.HList.HSequence f '[] '[]
-instance (GHC.Base.Applicative g, Torch.HList.HSequence f xs ys, y Data.Type.Equality.~ x, f Data.Type.Equality.~ g) => Torch.HList.HSequence g (f x : xs) (y : ys)
+instance (GHC.Base.Applicative g, Torch.HList.HSequence f xs ys, y GHC.Types.~ x, f GHC.Types.~ g) => Torch.HList.HSequence g (f x : xs) (y : ys)
 instance GHC.Base.Applicative m => Torch.HList.HMapM' m f '[] '[]
 instance (GHC.Base.Applicative m, Torch.HList.Apply' f x (m y), Torch.HList.HMapM' m f xs ys) => Torch.HList.HMapM' m f (x : xs) (y : ys)
 instance GHC.Base.Monad m => Torch.HList.HMapM m f '[] '[]
@@ -1876,18 +1876,18 @@ add :: forall shape'' shape shape' dtype dtype' dtype'' device. (dtype'' ~ DType
 sub :: forall shape'' shape shape' dtype dtype' dtype'' device. (dtype'' ~ DTypePromotion dtype dtype', shape'' ~ Broadcast shape shape', BasicArithmeticDTypeIsValid device dtype, BasicArithmeticDTypeIsValid device dtype', BasicArithmeticDTypeIsValid device dtype'') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device dtype'' shape''
 mul :: forall shape'' shape shape' dtype dtype' dtype'' device. (dtype'' ~ DTypePromotion dtype dtype', shape'' ~ Broadcast shape shape', BasicArithmeticDTypeIsValid device dtype, BasicArithmeticDTypeIsValid device dtype', BasicArithmeticDTypeIsValid device dtype'') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device dtype'' shape''
 type family ComparisonDTypeIsValid (device :: (DeviceType, Nat)) (dtype :: DType) :: Constraint
-gt :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device  'Bool shape''
-lt :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device  'Bool shape''
-ge :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device  'Bool shape''
-le :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device  'Bool shape''
-eq :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device  'Bool shape''
-ne :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device  'Bool shape''
-(>.) :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device  'Bool shape''
-(<.) :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device  'Bool shape''
-(>=.) :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device  'Bool shape''
-(<=.) :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device  'Bool shape''
-(==.) :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device  'Bool shape''
-(/=.) :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device  'Bool shape''
+gt :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device 'Bool shape''
+lt :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device 'Bool shape''
+ge :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device 'Bool shape''
+le :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device 'Bool shape''
+eq :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device 'Bool shape''
+ne :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device 'Bool shape''
+(>.) :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device 'Bool shape''
+(<.) :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device 'Bool shape''
+(>=.) :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device 'Bool shape''
+(<=.) :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device 'Bool shape''
+(==.) :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device 'Bool shape''
+(/=.) :: forall shape'' shape shape' dtype dtype' device. (shape'' ~ Broadcast shape shape', ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device 'Bool shape''
 type family ComputeMatMul (reversedShape :: [Nat]) (reversedShape' :: [Nat]) :: Maybe [Nat]
 type family CheckMatMul (shape :: [Nat]) (shape' :: [Nat]) (result :: Maybe [Nat]) :: [Nat]
 type MatMul shape shape' = CheckMatMul shape shape' (ComputeMatMul (Reverse shape) (Reverse shape'))
@@ -1938,12 +1938,12 @@ dtype :: forall device dtype shape. TensorOptions shape dtype device => Tensor d
 -- | returns tensor device uses compile-time information only
 device :: forall device dtype shape. TensorOptions shape dtype device => Tensor device dtype shape -> Device
 toInt :: Tensor device dtype shape -> Int
-toFloat :: forall device. Tensor device  'Float '[] -> Float
-toDouble :: forall device. Tensor device  'Double '[] -> Double
-toBool :: forall device. Tensor device  'Bool '[] -> Bool
+toFloat :: forall device. Tensor device 'Float '[] -> Float
+toDouble :: forall device. Tensor device 'Double '[] -> Double
+toBool :: forall device. Tensor device 'Bool '[] -> Bool
 instance Torch.HList.Apply Torch.Typed.Tensor.TensorListUnfold [Torch.Tensor.ATenTensor] (GHC.Types.IO Torch.HList.HNothing)
 instance Torch.Internal.Class.Castable x Torch.Tensor.ATenTensor => Torch.HList.Apply Torch.Typed.Tensor.TensorListUnfold [Torch.Tensor.ATenTensor] (GHC.Types.IO (Torch.HList.HJust (x, [Torch.Tensor.ATenTensor])))
-instance (Torch.HList.HFoldrM GHC.Types.IO Torch.Typed.Tensor.TensorListFold [Torch.Tensor.ATenTensor] l [Torch.Tensor.ATenTensor], Torch.HList.Apply Torch.Typed.Tensor.TensorListUnfold [Torch.Tensor.ATenTensor] res, Torch.HList.HUnfoldM GHC.Types.IO Torch.Typed.Tensor.TensorListUnfold res l, res Data.Type.Equality.~ Torch.HList.HUnfoldMRes GHC.Types.IO [Torch.Tensor.ATenTensor] l) => Torch.Internal.Class.Castable (Torch.HList.HList l) [Torch.Tensor.ATenTensor]
+instance (Torch.HList.HFoldrM GHC.Types.IO Torch.Typed.Tensor.TensorListFold [Torch.Tensor.ATenTensor] l [Torch.Tensor.ATenTensor], Torch.HList.Apply Torch.Typed.Tensor.TensorListUnfold [Torch.Tensor.ATenTensor] res, Torch.HList.HUnfoldM GHC.Types.IO Torch.Typed.Tensor.TensorListUnfold res l, res GHC.Types.~ Torch.HList.HUnfoldMRes GHC.Types.IO [Torch.Tensor.ATenTensor] l) => Torch.Internal.Class.Castable (Torch.HList.HList l) [Torch.Tensor.ATenTensor]
 instance Torch.Internal.Class.Castable x Torch.Tensor.ATenTensor => Torch.HList.Apply' Torch.Typed.Tensor.TensorListFold (x, GHC.Types.IO [Torch.Tensor.ATenTensor]) (GHC.Types.IO [Torch.Tensor.ATenTensor])
 instance (Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device) => Torch.Typed.Tensor.TensorOptions '[] dtype device
 instance (GHC.TypeNats.KnownNat h, Torch.Typed.Tensor.TensorOptions t dtype device) => Torch.Typed.Tensor.TensorOptions (h : t) dtype device
@@ -1991,7 +1991,7 @@ randint :: forall shape dtype device. (TensorOptions shape dtype device, RandDTy
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (t' -&gt;
 --   D.asValue (toDynamic t') :: [Float]) $ linspace <tt>3 </tt>'( 'D.CPU,
 --   0) 0 2 (Float,([3],[0.0,1.0,2.0]))
-linspace :: forall steps device start end. (Scalar start, Scalar end, KnownNat steps, TensorOptions '[steps]  'Float device) => start -> end -> Tensor device  'Float '[steps]
+linspace :: forall steps device start end. (Scalar start, Scalar end, KnownNat steps, TensorOptions '[steps] 'Float device) => start -> end -> Tensor device 'Float '[steps]
 eyeSquare :: forall n dtype device. (KnownNat n, TensorOptions '[n, n] dtype device) => Tensor device dtype '[n, n]
 
 module Torch.Typed.Functional
@@ -2678,7 +2678,7 @@ transpose2D :: forall (i :: Nat) (j :: Nat) dtype device. Tensor device dtype '[
 --   &gt;&gt;&gt; toInt t == 1
 --   True
 --   </pre>
-all :: forall shape device. Tensor device  'Bool shape -> Tensor device  'Bool '[]
+all :: forall shape device. Tensor device 'Bool shape -> Tensor device 'Bool '[]
 
 -- | any See
 --   <a>https://pytorch.org/docs/stable/tensors.html#torch.BoolTensor.any</a>.
@@ -2703,7 +2703,7 @@ all :: forall shape device. Tensor device  'Bool shape -> Tensor device  'Bool '
 --   &gt;&gt;&gt; toInt t == 1
 --   True
 --   </pre>
-any :: forall shape device. Tensor device  'Bool shape -> Tensor device  'Bool '[]
+any :: forall shape device. Tensor device 'Bool shape -> Tensor device 'Bool '[]
 data KeepOrDropDim
 KeepDim :: KeepOrDropDim
 DropDim :: KeepOrDropDim
@@ -2737,7 +2737,7 @@ type family ConditionalDropDimension (shape :: [Nat]) (dim :: Nat) (keepOrDropDi
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [[Bool]]) $ allDim @0 @KeepDim t
 --   (Bool,([1,2],[[True,False]]))
 --   </pre>
-allDim :: forall dim keepOrDropDim shape' shape device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim, shape' ~ ConditionalDropDimension shape dim keepOrDropDim) => Tensor device  'Bool shape -> Tensor device  'Bool shape'
+allDim :: forall dim keepOrDropDim shape' shape device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim, shape' ~ ConditionalDropDimension shape dim keepOrDropDim) => Tensor device 'Bool shape -> Tensor device 'Bool shape'
 
 -- | anyDim See
 --   <a>https://pytorch.org/docs/stable/tensors.html#torch.BoolTensor.any</a>.
@@ -2765,7 +2765,7 @@ allDim :: forall dim keepOrDropDim shape' shape device. (KnownNat dim, KnownKeep
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [[Bool]]) $ anyDim @0 @KeepDim t
 --   (Bool,([1,2],[[True,True]]))
 --   </pre>
-anyDim :: forall dim keepOrDropDim shape' shape device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim, shape' ~ ConditionalDropDimension shape dim keepOrDropDim) => Tensor device  'Bool shape -> Tensor device  'Bool shape'
+anyDim :: forall dim keepOrDropDim shape' shape device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim, shape' ~ ConditionalDropDimension shape dim keepOrDropDim) => Tensor device 'Bool shape -> Tensor device 'Bool shape'
 
 -- | dropout TODO: probably only defined for floating point tensors, or
 --   maybe numeric type is lifted? TODO: get rid of IO by exposing the RNG
@@ -2888,7 +2888,7 @@ adaptiveAvgPool1d :: forall outputSize channelSize inputSize batchSize dtype dev
 --     :: (Tensor '( 'D.CPU, 0) 'D.Float '[1, 3, 8],
 --         Tensor '( 'D.CPU, 0) 'D.Int64 '[1, 3, 8])
 --   </pre>
-adaptiveMaxPool1d :: forall outputSize channelSize inputSize batchSize dtype device. All KnownNat '[channelSize, inputSize, batchSize, outputSize] => Tensor device dtype '[batchSize, channelSize, inputSize] -> (Tensor device dtype '[batchSize, channelSize, outputSize], Tensor device  'Int64 '[batchSize, channelSize, outputSize])
+adaptiveMaxPool1d :: forall outputSize channelSize inputSize batchSize dtype device. All KnownNat '[channelSize, inputSize, batchSize, outputSize] => Tensor device dtype '[batchSize, channelSize, inputSize] -> (Tensor device dtype '[batchSize, channelSize, outputSize], Tensor device 'Int64 '[batchSize, channelSize, outputSize])
 
 -- | addmv TODO: probably only defined for floating point tensors, or maybe
 --   numeric type is lifted? TODO: can we use D.Scalar for beta and alpha?
@@ -2952,7 +2952,7 @@ allclose :: forall shape dtype device. Double -> Double -> Bool -> Tensor device
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [[Int]]) $ argmax @0 @KeepDim t
 --   (Int64,([1,2],[[3,1]]))
 --   </pre>
-argmax :: forall dim keepOrDropDim shape' shape dtype device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim, shape' ~ ConditionalDropDimension shape dim keepOrDropDim) => Tensor device dtype shape -> Tensor device  'Int64 shape'
+argmax :: forall dim keepOrDropDim shape' shape dtype device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim, shape' ~ ConditionalDropDimension shape dim keepOrDropDim) => Tensor device dtype shape -> Tensor device 'Int64 shape'
 
 -- | argmin See
 --   <a>https://pytorch.org/docs/stable/torch.html#torch.argmin</a>.
@@ -2980,7 +2980,7 @@ argmax :: forall dim keepOrDropDim shape' shape dtype device. (KnownNat dim, Kno
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [[Int]]) $ argmin @0 @KeepDim t
 --   (Int64,([1,2],[[1,3]]))
 --   </pre>
-argmin :: forall dim keepOrDropDim shape' shape dtype device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim, shape' ~ ConditionalDropDimension shape dim keepOrDropDim) => Tensor device dtype shape -> Tensor device  'Int64 shape'
+argmin :: forall dim keepOrDropDim shape' shape dtype device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim, shape' ~ ConditionalDropDimension shape dim keepOrDropDim) => Tensor device dtype shape -> Tensor device 'Int64 shape'
 
 -- | asin
 --   
@@ -3018,7 +3018,7 @@ baddbmm :: forall shape' shape batchSize n m k dtype device. (KnownNat n, KnownN
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ bitwiseNot (ones :: CPUTensor 'D.Bool [3,3])
 --   (Bool,[3,3])
 --   </pre>
-bitwiseNot :: forall shape device. Tensor device  'Bool shape -> Tensor device  'Bool shape
+bitwiseNot :: forall shape device. Tensor device 'Bool shape -> Tensor device 'Bool shape
 
 -- | batched matrix multiplication TODO: probably only defined for floating
 --   point tensors, or maybe numeric type is lifted?
@@ -3058,7 +3058,7 @@ bmm :: forall batchSize n m k dtype device. Tensor device dtype '[batchSize, n, 
 --   </pre>
 type family BroadcastTensorsImpl (tensors :: [a]) (acc :: Maybe ([Nat], DType, (DeviceType, Nat))) :: Maybe ([Nat], DType, (DeviceType, Nat))
 type family BroadcastTensorsCheck (tensors :: [a]) (result :: Maybe ([Nat], DType, (DeviceType, Nat))) :: [a]
-type BroadcastTensors tensors = BroadcastTensorsCheck tensors (BroadcastTensorsImpl tensors  'Nothing)
+type BroadcastTensors tensors = BroadcastTensorsCheck tensors (BroadcastTensorsImpl tensors 'Nothing)
 
 -- | broadcast tensors TODO: broadcastTensors returns garbage data and is
 --   hence broken See
@@ -3254,7 +3254,7 @@ clampMin :: forall shape dtype device. Float -> Tensor device dtype shape -> Ten
 --   the device is CUDA
 cudnnIsAcceptable :: forall shape dtype device. Tensor device dtype shape -> Bool
 constantPadNd1d :: forall (pad :: (Nat, Nat)) n dtype device. All KnownNat '[Fst pad, Snd pad, n] => Float -> Tensor device dtype '[n] -> Tensor device dtype '[(n + Fst pad) + Snd pad]
-type ConvSideCheck (inputSize :: Nat) (kernelSize :: Nat) (stride :: Nat) (padding :: Nat) (outputSize :: Nat) = (kernelSize >= 1, stride >= 1, ((inputSize + (2 * padding)) + 1) >= kernelSize, outputSize >= 1, outputSize ~ ConvOutputSize inputSize kernelSize stride padding)
+type ConvSideCheck (inputSize :: Nat) (kernelSize :: Nat) (stride :: Nat) (padding :: Nat) (outputSize :: Nat) = (1 <= kernelSize, 1 <= stride, (kernelSize - 1) <= (inputSize + (2 * padding)), 1 <= outputSize, outputSize ~ ConvOutputSize inputSize kernelSize stride padding)
 
 -- | ConvOutputSize
 --   
@@ -3377,7 +3377,7 @@ type family PaddingIdxCheck (idx :: Maybe Nat) (numEmbeds :: Nat) :: Constraint
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [[[Float]]]) $ t
 --   (Float,([4,1,2],[[[1.0,1.0]],[[3.0,3.0]],[[1.0,1.0]],[[2.0,2.0]]]))
 --   </pre>
-embedding :: forall (paddingIdx :: Maybe Nat) numEmbeds embedDim shape dtype device. (KnownMaybeNat paddingIdx, PaddingIdxCheck paddingIdx numEmbeds) => Bool -> Bool -> Tensor device dtype '[numEmbeds, embedDim] -> Tensor device  'Int64 shape -> Tensor device dtype (Reverse (embedDim : Reverse shape))
+embedding :: forall (paddingIdx :: Maybe Nat) numEmbeds embedDim shape dtype device. (KnownMaybeNat paddingIdx, PaddingIdxCheck paddingIdx numEmbeds) => Bool -> Bool -> Tensor device dtype '[numEmbeds, embedDim] -> Tensor device 'Int64 shape -> Tensor device dtype (Reverse (embedDim : Reverse shape))
 
 -- | emptyLike TODO: this seems quite unsafe, the values of this tensor
 --   will be random
@@ -3463,7 +3463,7 @@ fullLike :: forall shape dtype device. Float -> Tensor device dtype shape -> Ten
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ isclose 0.1 0.1 False (ones :: CPUTensor 'D.Float '[3,2]) (ones :: CPUTensor 'D.Float '[3,2])
 --   (Bool,[3,2])
 --   </pre>
-isclose :: forall shape dtype device. Double -> Double -> Bool -> Tensor device dtype shape -> Tensor device dtype shape -> Tensor device  'Bool shape
+isclose :: forall shape dtype device. Double -> Double -> Bool -> Tensor device dtype shape -> Tensor device dtype shape -> Tensor device 'Bool shape
 
 -- | is NaN TODO: probably only defined for floating point tensors, or
 --   maybe numeric type is lifted?
@@ -3472,7 +3472,7 @@ isclose :: forall shape dtype device. Double -> Double -> Bool -> Tensor device 
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ isNaN (ones :: CPUTensor 'D.Float '[3,2])
 --   (Bool,[3,2])
 --   </pre>
-isNaN :: forall shape dtype device. Tensor device dtype shape -> Tensor device  'Bool shape
+isNaN :: forall shape dtype device. Tensor device dtype shape -> Tensor device 'Bool shape
 
 -- | is distributed
 isDistributed :: forall shape dtype device. Tensor device dtype shape -> Bool
@@ -3788,7 +3788,7 @@ maxPool3d :: forall kernelSize stride padding channelSize inputSize0 inputSize1 
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\u -&gt; D.asValue (toDynamic u) :: [[[Float]]]) $ t'
 --   (Float,([2,3,3],[[[1.0,1.0,1.0],[0.5,0.5,0.5],[1.0,1.0,1.0]],[[1.0,1.0,1.0],[0.5,0.5,0.5],[1.0,1.0,1.0]]]))
 --   </pre>
-maskedFill :: forall a shape shape' shape'' dtype device. (Scalar a, shape'' ~ Broadcast shape shape') => Tensor device  'Bool shape' -> a -> Tensor device dtype shape -> Tensor device dtype shape''
+maskedFill :: forall a shape shape' shape'' dtype device. (Scalar a, shape'' ~ Broadcast shape shape') => Tensor device 'Bool shape' -> a -> Tensor device dtype shape -> Tensor device dtype shape''
 
 -- | matrix-matrix multiplication TODO: probably only defined for floating
 --   point tensors, or maybe numeric type is lifted?
@@ -4229,7 +4229,7 @@ type family DropValue (shape :: [Nat]) (i :: Nat) :: [Nat]
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ fst $ minDim @2 t
 --   (Float,[3,4])
 --   </pre>
-minDim :: forall d shape dtype device. KnownNat d => Tensor device dtype shape -> (Tensor device dtype (DropValue shape d), Tensor device  'Int64 (DropValue shape d))
+minDim :: forall d shape dtype device. KnownNat d => Tensor device dtype shape -> (Tensor device dtype (DropValue shape d), Tensor device 'Int64 (DropValue shape d))
 
 -- | maxAll
 --   
@@ -4253,7 +4253,7 @@ maxAll :: forall shape dtype device. Tensor device dtype shape -> Tensor device 
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ fst $ maxDim @2 t
 --   (Float,[3,4])
 --   </pre>
-maxDim :: forall d shape dtype device. KnownNat d => Tensor device dtype shape -> (Tensor device dtype (DropValue shape d), Tensor device  'Int64 (DropValue shape d))
+maxDim :: forall d shape dtype device. KnownNat d => Tensor device dtype shape -> (Tensor device dtype (DropValue shape d), Tensor device 'Int64 (DropValue shape d))
 
 -- | medianAll
 --   
@@ -4277,7 +4277,7 @@ medianAll :: forall shape dtype device. Tensor device dtype shape -> Tensor devi
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ fst $ medianDim @2 t
 --   (Float,[3,4])
 --   </pre>
-medianDim :: forall d shape dtype device. KnownNat d => Tensor device dtype shape -> (Tensor device dtype (DropValue shape d), Tensor device  'Int64 (DropValue shape d))
+medianDim :: forall d shape dtype device. KnownNat d => Tensor device dtype shape -> (Tensor device dtype (DropValue shape d), Tensor device 'Int64 (DropValue shape d))
 
 -- | median See
 --   <a>https://pytorch.org/docs/stable/torch.html#torch.median</a>.
@@ -4288,7 +4288,7 @@ medianDim :: forall d shape dtype device. KnownNat d => Tensor device dtype shap
 --   &gt;&gt;&gt; median' @0 @KeepDim t
 --   (Tensor Float [1,2] [[ 3.0000   ,  1.0000   ]],Tensor Int64 [1,2] [[ 1,  0]])
 --   </pre>
-median' :: forall dim keepOrDropDim shape dtype device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim) => Tensor device dtype shape -> (Tensor device dtype (ConditionalDropDimension shape dim keepOrDropDim), Tensor device  'Int64 (ConditionalDropDimension shape dim keepOrDropDim))
+median' :: forall dim keepOrDropDim shape dtype device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim) => Tensor device dtype shape -> (Tensor device dtype (ConditionalDropDimension shape dim keepOrDropDim), Tensor device 'Int64 (ConditionalDropDimension shape dim keepOrDropDim))
 
 -- | meanAll
 --   
@@ -4341,7 +4341,7 @@ type family TopKDeviceAndDTypeCheck dtype (device :: (DeviceType, Nat)) :: Const
 --                       []],Tensor Int64 [2,0] [[],
 --                       []])
 --   </pre>
-topk :: forall k dim shape dtype device. (KnownNat k, KnownNat dim, All KnownNat shape, TopKDeviceAndDTypeCheck dtype device) => Bool -> Bool -> Tensor device dtype shape -> (Tensor device dtype (TopK k shape dim), Tensor device  'Int64 (TopK k shape dim))
+topk :: forall k dim shape dtype device. (KnownNat k, KnownNat dim, All KnownNat shape, TopKDeviceAndDTypeCheck dtype device) => Bool -> Bool -> Tensor device dtype shape -> (Tensor device dtype (TopK k shape dim), Tensor device 'Int64 (TopK k shape dim))
 
 -- | L1 loss TODO: probably only defined for floating point tensors, or
 --   maybe numeric type is lifted?
@@ -4408,7 +4408,7 @@ l1Loss :: forall reduction shape dtype device. KnownReduction reduction => Tenso
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ nllLoss @ReduceMean @3 @5 @'[2, 1, 2] weight (-100) (logSoftmax @1 input) target
 --   (Float,[])
 --   </pre>
-nllLoss :: forall reduction n c ds dtype device. (KnownReduction reduction, KnownNat n, KnownNat c, KnownShape ds) => Tensor device dtype '[c] -> Int -> Tensor device dtype (n : (c : ds)) -> Tensor device  'Int64 (n : ds) -> Tensor device dtype (ConditionalReduction (n : ds) reduction)
+nllLoss :: forall reduction n c ds dtype device. (KnownReduction reduction, KnownNat n, KnownNat c, KnownShape ds) => Tensor device dtype '[c] -> Int -> Tensor device dtype (n : (c : ds)) -> Tensor device 'Int64 (n : ds) -> Tensor device dtype (ConditionalReduction (n : ds) reduction)
 
 -- | smooth L1 loss TODO: probably only defined for floating point tensors,
 --   or maybe numeric type is lifted?
@@ -4550,7 +4550,7 @@ adaptiveAvgPool3d :: forall outputSize channelSize inputSize0 inputSize1 inputSi
 --   &gt;&gt;&gt; :t t
 --   t :: Tensor '( 'D.CPU, 0) 'D.Float '[1, 3, 8, 16]
 --   </pre>
-adaptiveMaxPool2d :: forall outputSize channelSize inputSize0 inputSize1 batchSize dtype device. All KnownNat '[channelSize, inputSize0, inputSize1, batchSize, Fst outputSize, Snd outputSize] => Tensor device dtype '[batchSize, channelSize, inputSize0, inputSize1] -> (Tensor device dtype '[batchSize, channelSize, Fst outputSize, Snd outputSize], Tensor device  'Int64 '[batchSize, channelSize, Fst outputSize, Snd outputSize])
+adaptiveMaxPool2d :: forall outputSize channelSize inputSize0 inputSize1 batchSize dtype device. All KnownNat '[channelSize, inputSize0, inputSize1, batchSize, Fst outputSize, Snd outputSize] => Tensor device dtype '[batchSize, channelSize, inputSize0, inputSize1] -> (Tensor device dtype '[batchSize, channelSize, Fst outputSize, Snd outputSize], Tensor device 'Int64 '[batchSize, channelSize, Fst outputSize, Snd outputSize])
 
 -- | adaptive 3-D max-pool TODO: probably only defined for floating point
 --   tensors, or maybe numeric type is lifted?
@@ -4564,7 +4564,7 @@ adaptiveMaxPool2d :: forall outputSize channelSize inputSize0 inputSize1 batchSi
 --   &gt;&gt;&gt; :t t
 --   t :: Tensor '( 'D.CPU, 0) 'D.Float '[1, 3, 8, 16, 2]
 --   </pre>
-adaptiveMaxPool3d :: forall outputSize channelSize inputSize0 inputSize1 inputSize2 batchSize dtype device. All KnownNat '[channelSize, inputSize0, inputSize1, inputSize2, batchSize, Fst3 outputSize, Snd3 outputSize, Trd3 outputSize] => Tensor device dtype '[batchSize, channelSize, inputSize0, inputSize1, inputSize2] -> (Tensor device dtype '[batchSize, channelSize, Fst3 outputSize, Snd3 outputSize, Trd3 outputSize], Tensor device  'Int64 '[batchSize, channelSize, Fst3 outputSize, Snd3 outputSize, Trd3 outputSize])
+adaptiveMaxPool3d :: forall outputSize channelSize inputSize0 inputSize1 inputSize2 batchSize dtype device. All KnownNat '[channelSize, inputSize0, inputSize1, inputSize2, batchSize, Fst3 outputSize, Snd3 outputSize, Trd3 outputSize] => Tensor device dtype '[batchSize, channelSize, inputSize0, inputSize1, inputSize2] -> (Tensor device dtype '[batchSize, channelSize, Fst3 outputSize, Snd3 outputSize, Trd3 outputSize], Tensor device 'Int64 '[batchSize, channelSize, Fst3 outputSize, Snd3 outputSize, Trd3 outputSize])
 
 -- | averaged 2-D pooling TODO: probably only defined for floating point
 --   tensors, or maybe numeric type is lifted?
@@ -4644,7 +4644,7 @@ instance Torch.Typed.Functional.KnownReduction 'Torch.Functional.ReduceSum
 
 module Torch.Typed.Parameter
 newtype Parameter (device :: (DeviceType, Nat)) (dtype :: DType) (shape :: [Nat])
-UnsafeMkParameter :: IndependentTensor -> Parameter
+UnsafeMkParameter :: IndependentTensor -> Parameter (device :: (DeviceType, Nat)) (dtype :: DType) (shape :: [Nat])
 toDependent :: forall shape dtype device. Parameter device dtype shape -> Tensor device dtype shape
 data ToDependent
 ToDependent :: ToDependent
@@ -4661,7 +4661,7 @@ gFlattenParameters :: forall a. GParameterized f as => f a -> HList as
 gReplaceParameters :: forall a. GParameterized f as => f a -> HList as -> f a
 instance GHC.Show.Show (Torch.Typed.Parameter.Parameter device dtype shape)
 instance (GHC.Generics.Generic f, Torch.Typed.Parameter.GParameterized (GHC.Generics.Rep f) as) => Torch.Typed.Parameter.Parameterized f as
-instance (Torch.Typed.Parameter.GParameterized l as, Torch.Typed.Parameter.GParameterized r bs, Torch.HList.HAppendFD as bs cs, cs Data.Type.Equality.~ (as Torch.HList.++ bs)) => Torch.Typed.Parameter.GParameterized (l GHC.Generics.:*: r) cs
+instance (Torch.Typed.Parameter.GParameterized l as, Torch.Typed.Parameter.GParameterized r bs, Torch.HList.HAppendFD as bs cs, cs GHC.Types.~ (as Torch.HList.++ bs)) => Torch.Typed.Parameter.GParameterized (l GHC.Generics.:*: r) cs
 instance Torch.Typed.Parameter.Parameterized f as => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 i f) as
 instance Torch.Typed.Parameter.GParameterized f as => Torch.Typed.Parameter.GParameterized (GHC.Generics.M1 i t f) as
 instance Torch.Typed.Parameter.GParameterized GHC.Generics.U1 '[]
@@ -4669,7 +4669,7 @@ instance Torch.Typed.Parameter.Parameterized (Torch.Typed.Tensor.Tensor device d
 instance Torch.Typed.Parameter.Parameterized (Torch.Typed.Parameter.Parameter device dtype shape) '[Torch.Typed.Parameter.Parameter device dtype shape]
 instance Torch.Typed.Parameter.Parameterized GHC.Types.Double '[]
 instance Torch.Typed.Parameter.Parameterized (Torch.HList.HList '[]) '[]
-instance (Torch.Typed.Parameter.Parameterized f as, Torch.Typed.Parameter.Parameterized (Torch.HList.HList fs) bs, Torch.HList.HAppendFD as bs cs, cs Data.Type.Equality.~ (as Torch.HList.++ bs)) => Torch.Typed.Parameter.Parameterized (Torch.HList.HList (f : fs)) cs
+instance (Torch.Typed.Parameter.Parameterized f as, Torch.Typed.Parameter.Parameterized (Torch.HList.HList fs) bs, Torch.HList.HAppendFD as bs cs, cs GHC.Types.~ (as Torch.HList.++ bs)) => Torch.Typed.Parameter.Parameterized (Torch.HList.HList (f : fs)) cs
 instance Torch.HList.Apply' Torch.Typed.Parameter.MakeIndependent (Torch.Typed.Tensor.Tensor device dtype shape) (GHC.Types.IO (Torch.Typed.Parameter.Parameter device dtype shape))
 instance Torch.HList.Apply' Torch.Typed.Parameter.ToDependent (Torch.Typed.Parameter.Parameter device dtype shape) (Torch.Typed.Tensor.Tensor device dtype shape)
 instance Torch.NN.Randomizable (Torch.HList.HList '[]) (Torch.HList.HList '[])
@@ -4692,13 +4692,13 @@ class HasScatter devices' device f gs | devices' device f -> gs
 scatter :: HasScatter devices' device f gs => f -> HList gs
 class HasGather device' devices fs g | device' devices fs -> g
 gather :: HasGather device' devices fs g => HList fs -> g
-instance (chunks Data.Type.Equality.~ Torch.HList.ListLength fs, devices Data.Type.Equality.~ Torch.Typed.Device.GetDevices fs, devices' Data.Type.Equality.~ Torch.HList.HReplicateR chunks device', Torch.Typed.Device.HasToDevices devices' devices fs tensorChunks, '(shape, dtype, device') Data.Type.Equality.~ Torch.Typed.Functional.Cat 0 tensorChunks, Torch.Internal.Class.Castable (Torch.HList.HList tensorChunks) [Torch.Tensor.ATenTensor]) => Torch.Typed.Device.HasGather device' devices fs (Torch.Typed.Tensor.Tensor device' dtype shape)
-instance (chunks Data.Type.Equality.~ Torch.HList.ListLength devices', tensorChunks Data.Type.Equality.~ Torch.Typed.Functional.Chunk chunks 0 shape dtype device, Torch.Internal.Class.Castable (Torch.HList.HList tensorChunks) [Torch.Tensor.ATenTensor], devices Data.Type.Equality.~ Torch.HList.HReplicateR chunks device, Torch.Typed.Device.HasToDevices devices' devices tensorChunks gs, GHC.TypeNats.KnownNat chunks) => Torch.Typed.Device.HasScatter devices' device (Torch.Typed.Tensor.Tensor device dtype shape) gs
+instance (chunks GHC.Types.~ Torch.HList.ListLength fs, devices GHC.Types.~ Torch.Typed.Device.GetDevices fs, devices' GHC.Types.~ Torch.HList.HReplicateR chunks device', Torch.Typed.Device.HasToDevices devices' devices fs tensorChunks, '(shape, dtype, device') GHC.Types.~ Torch.Typed.Functional.Cat 0 tensorChunks, Torch.Internal.Class.Castable (Torch.HList.HList tensorChunks) [Torch.Tensor.ATenTensor]) => Torch.Typed.Device.HasGather device' devices fs (Torch.Typed.Tensor.Tensor device' dtype shape)
+instance (chunks GHC.Types.~ Torch.HList.ListLength devices', tensorChunks GHC.Types.~ Torch.Typed.Functional.Chunk chunks 0 shape dtype device, Torch.Internal.Class.Castable (Torch.HList.HList tensorChunks) [Torch.Tensor.ATenTensor], devices GHC.Types.~ Torch.HList.HReplicateR chunks device, Torch.Typed.Device.HasToDevices devices' devices tensorChunks gs, GHC.TypeNats.KnownNat chunks) => Torch.Typed.Device.HasScatter devices' device (Torch.Typed.Tensor.Tensor device dtype shape) gs
 instance Torch.Typed.Device.HasToDevices '[] '[] '[] '[]
 instance (Torch.Typed.Device.HasToDevices devices' devices fs gs, Torch.Typed.Device.HasToDevice device' device f g) => Torch.Typed.Device.HasToDevices (device' : devices') (device : devices) (f : fs) (g : gs)
 instance Torch.Typed.Device.HasReplicate '[] device f '[]
 instance (Torch.Typed.Device.HasReplicate devices' device f gs, Torch.Typed.Device.HasToDevice device' device f g) => Torch.Typed.Device.HasReplicate (device' : devices') device f (g : gs)
-instance (g Data.Type.Equality.~ Torch.Typed.Device.ReplaceDevice f device' device, f Data.Type.Equality.~ Torch.Typed.Device.ReplaceDevice g device device', GHC.Generics.Generic f, GHC.Generics.Generic g, Torch.Typed.Device.GHasToDevice device' device (GHC.Generics.Rep f) (GHC.Generics.Rep g)) => Torch.Typed.Device.HasToDevice device' device f g
+instance (g GHC.Types.~ Torch.Typed.Device.ReplaceDevice f device' device, f GHC.Types.~ Torch.Typed.Device.ReplaceDevice g device device', GHC.Generics.Generic f, GHC.Generics.Generic g, Torch.Typed.Device.GHasToDevice device' device (GHC.Generics.Rep f) (GHC.Generics.Rep g)) => Torch.Typed.Device.HasToDevice device' device f g
 instance (Torch.Typed.Device.GHasToDevice device' device l l', Torch.Typed.Device.GHasToDevice device' device r r') => Torch.Typed.Device.GHasToDevice device' device (l GHC.Generics.:*: r) (l' GHC.Generics.:*: r')
 instance Torch.Typed.Device.HasToDevice device' device f g => Torch.Typed.Device.GHasToDevice device' device (GHC.Generics.K1 i f) (GHC.Generics.K1 i g)
 instance Torch.Typed.Device.GHasToDevice device' device f g => Torch.Typed.Device.GHasToDevice device' device (GHC.Generics.M1 i t f) (GHC.Generics.M1 i t g)
@@ -4714,7 +4714,7 @@ class HasForward f a b | f a -> b
 forward :: HasForward f a b => f -> a -> b
 forwardStoch :: HasForward f a b => f -> a -> IO b
 data LinearSpec (inputFeatures :: Nat) (outputFeatures :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
-LinearSpec :: LinearSpec
+LinearSpec :: LinearSpec (inputFeatures :: Nat) (outputFeatures :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
 data Linear (inputFeatures :: Nat) (outputFeatures :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
 [Linear] :: forall inputFeatures outputFeatures dtype device. {linearWeight :: Parameter device dtype '[outputFeatures, inputFeatures], linearBias :: Parameter device dtype '[outputFeatures]} -> Linear inputFeatures outputFeatures dtype device
 
@@ -4730,15 +4730,15 @@ data EmbeddingType
 Constant :: EmbeddingType
 Learned :: EmbeddingType
 data EmbeddingSpec (paddingIdx :: Maybe Nat) (numEmbeds :: Nat) (embedSize :: Nat) (embeddingType :: EmbeddingType) (dtype :: DType) (device :: (DeviceType, Nat))
-[ConstEmbeddingSpec] :: forall paddingIdx numEmbeds embedSize dtype device. Tensor device dtype '[numEmbeds, embedSize] -> EmbeddingSpec paddingIdx numEmbeds embedSize  'Constant dtype device
-[LearnedEmbeddingWithRandomInitSpec] :: forall paddingIdx numEmbeds embedSize dtype device. EmbeddingSpec paddingIdx numEmbeds embedSize  'Learned dtype device
-[LearnedEmbeddingWithCustomInitSpec] :: forall paddingIdx numEmbeds embedSize dtype device. Tensor device dtype '[numEmbeds, embedSize] -> EmbeddingSpec paddingIdx numEmbeds embedSize  'Learned dtype device
+[ConstEmbeddingSpec] :: forall paddingIdx numEmbeds embedSize dtype device. Tensor device dtype '[numEmbeds, embedSize] -> EmbeddingSpec paddingIdx numEmbeds embedSize 'Constant dtype device
+[LearnedEmbeddingWithRandomInitSpec] :: forall paddingIdx numEmbeds embedSize dtype device. EmbeddingSpec paddingIdx numEmbeds embedSize 'Learned dtype device
+[LearnedEmbeddingWithCustomInitSpec] :: forall paddingIdx numEmbeds embedSize dtype device. Tensor device dtype '[numEmbeds, embedSize] -> EmbeddingSpec paddingIdx numEmbeds embedSize 'Learned dtype device
 data Embedding (paddingIdx :: Maybe Nat) (numEmbeds :: Nat) (embedSize :: Nat) (embeddingType :: EmbeddingType) (dtype :: DType) (device :: (DeviceType, Nat))
-[ConstEmbedding] :: forall paddingIdx numEmbeds embedSize dtype device. {constEmbedWeights :: Tensor device dtype '[numEmbeds, embedSize]} -> Embedding paddingIdx numEmbeds embedSize  'Constant dtype device
-[LearnedEmbedding] :: forall paddingIdx numEmbeds embedSize dtype device. {learnedEmbedWeights :: Parameter device dtype '[numEmbeds, embedSize]} -> Embedding paddingIdx numEmbeds embedSize  'Learned dtype device
-embed :: forall paddingIdx shape numEmbeds embedSize embeddingType dtype device shape'. (KnownMaybeNat paddingIdx, PaddingIdxCheck paddingIdx numEmbeds, shape' ~ Reverse (embedSize : Reverse shape)) => Embedding paddingIdx numEmbeds embedSize embeddingType dtype device -> Tensor device  'Int64 shape -> Tensor device dtype shape'
+[ConstEmbedding] :: forall paddingIdx numEmbeds embedSize dtype device. {constEmbedWeights :: Tensor device dtype '[numEmbeds, embedSize]} -> Embedding paddingIdx numEmbeds embedSize 'Constant dtype device
+[LearnedEmbedding] :: forall paddingIdx numEmbeds embedSize dtype device. {learnedEmbedWeights :: Parameter device dtype '[numEmbeds, embedSize]} -> Embedding paddingIdx numEmbeds embedSize 'Learned dtype device
+embed :: forall paddingIdx shape numEmbeds embedSize embeddingType dtype device shape'. (KnownMaybeNat paddingIdx, PaddingIdxCheck paddingIdx numEmbeds, shape' ~ Reverse (embedSize : Reverse shape)) => Embedding paddingIdx numEmbeds embedSize embeddingType dtype device -> Tensor device 'Int64 shape -> Tensor device dtype shape'
 data Conv1dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
-Conv1dSpec :: Conv1dSpec
+Conv1dSpec :: Conv1dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
 data Conv1d (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
 [Conv1d] :: forall inputChannelSize outputChannelSize kernelSize dtype device. {conv1dWeight :: Parameter device dtype '[outputChannelSize, inputChannelSize, kernelSize], conv1dBias :: Parameter device dtype '[outputChannelSize]} -> Conv1d inputChannelSize outputChannelSize kernelSize dtype device
 
@@ -4746,7 +4746,7 @@ data Conv1d (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize :: 
 --   signatures make the code significantly cleaner.
 conv1d :: forall stride padding. _ => Conv1d _ _ _ _ _ -> Tensor _ _ _ -> Tensor _ _ _
 data Conv2dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
-Conv2dSpec :: Conv2dSpec
+Conv2dSpec :: Conv2dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
 data Conv2d (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
 [Conv2d] :: forall inputChannelSize outputChannelSize kernelSize0 kernelSize1 dtype device. {conv2dWeight :: Parameter device dtype '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1], conv2dBias :: Parameter device dtype '[outputChannelSize]} -> Conv2d inputChannelSize outputChannelSize kernelSize0 kernelSize1 dtype device
 
@@ -4754,7 +4754,7 @@ data Conv2d (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 ::
 --   signatures make the code significantly cleaner.
 conv2d :: forall stride padding. _ => Conv2d _ _ _ _ _ _ -> Tensor _ _ _ -> Tensor _ _ _
 data Conv3dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
-Conv3dSpec :: Conv3dSpec
+Conv3dSpec :: Conv3dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
 data Conv3d (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
 [Conv3d] :: forall inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device. {conv3dWeight :: Parameter device dtype '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1, kernelSize2], conv3dBias :: Parameter device dtype '[outputChannelSize]} -> Conv3d inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device
 
@@ -4803,13 +4803,13 @@ instance (Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[stride, padding, inputC
 instance (GHC.TypeNats.KnownNat inputChannelSize, GHC.TypeNats.KnownNat outputChannelSize, GHC.TypeNats.KnownNat kernelSize, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.Conv1dSpec inputChannelSize outputChannelSize kernelSize dtype device) (Torch.Typed.NN.Conv1d inputChannelSize outputChannelSize kernelSize dtype device)
 instance GHC.Generics.Generic (Torch.Typed.NN.Embedding paddingIdx numEmbeds embedSize 'Torch.Typed.NN.Constant dtype device)
 instance GHC.Generics.Generic (Torch.Typed.NN.Embedding paddingIdx numEmbeds embedSize 'Torch.Typed.NN.Learned dtype device)
-instance (Torch.Typed.Functional.KnownMaybeNat paddingIdx, Torch.Typed.Functional.PaddingIdxCheck paddingIdx numEmbeds, shape' Data.Type.Equality.~ Torch.Typed.Aux.Reverse (embedSize : Torch.Typed.Aux.Reverse shape)) => Torch.Typed.NN.HasForward (Torch.Typed.NN.Embedding paddingIdx numEmbeds embedSize embeddingType dtype device) (Torch.Typed.Tensor.Tensor device 'Torch.DType.Int64 shape) (Torch.Typed.Tensor.Tensor device dtype shape')
+instance (Torch.Typed.Functional.KnownMaybeNat paddingIdx, Torch.Typed.Functional.PaddingIdxCheck paddingIdx numEmbeds, shape' GHC.Types.~ Torch.Typed.Aux.Reverse (embedSize : Torch.Typed.Aux.Reverse shape)) => Torch.Typed.NN.HasForward (Torch.Typed.NN.Embedding paddingIdx numEmbeds embedSize embeddingType dtype device) (Torch.Typed.Tensor.Tensor device 'Torch.DType.Int64 shape) (Torch.Typed.Tensor.Tensor device dtype shape')
 instance Torch.NN.Randomizable (Torch.Typed.NN.EmbeddingSpec paddingIdx numEmbeds embedSize 'Torch.Typed.NN.Constant dtype device) (Torch.Typed.NN.Embedding paddingIdx numEmbeds embedSize 'Torch.Typed.NN.Constant dtype device)
 instance (GHC.TypeNats.KnownNat numEmbeds, GHC.TypeNats.KnownNat embedSize, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.EmbeddingSpec 'GHC.Maybe.Nothing numEmbeds embedSize 'Torch.Typed.NN.Learned dtype device) (Torch.Typed.NN.Embedding 'GHC.Maybe.Nothing numEmbeds embedSize 'Torch.Typed.NN.Learned dtype device)
-instance (paddingIdx GHC.TypeNats.<= numEmbeds, 1 GHC.TypeNats.<= (numEmbeds GHC.TypeNats.- paddingIdx), (((numEmbeds GHC.TypeNats.- paddingIdx) GHC.TypeNats.- 1) GHC.TypeNats.+ (1 GHC.TypeNats.+ paddingIdx)) Data.Type.Equality.~ numEmbeds, GHC.TypeNats.KnownNat paddingIdx, GHC.TypeNats.KnownNat numEmbeds, GHC.TypeNats.KnownNat embedSize, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.EmbeddingSpec ('GHC.Maybe.Just paddingIdx) numEmbeds embedSize 'Torch.Typed.NN.Learned dtype device) (Torch.Typed.NN.Embedding ('GHC.Maybe.Just paddingIdx) numEmbeds embedSize 'Torch.Typed.NN.Learned dtype device)
+instance (paddingIdx GHC.TypeNats.<= numEmbeds, 1 GHC.TypeNats.<= (numEmbeds GHC.TypeNats.- paddingIdx), (((numEmbeds GHC.TypeNats.- paddingIdx) GHC.TypeNats.- 1) GHC.TypeNats.+ (1 GHC.TypeNats.+ paddingIdx)) GHC.Types.~ numEmbeds, GHC.TypeNats.KnownNat paddingIdx, GHC.TypeNats.KnownNat numEmbeds, GHC.TypeNats.KnownNat embedSize, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.EmbeddingSpec ('GHC.Maybe.Just paddingIdx) numEmbeds embedSize 'Torch.Typed.NN.Learned dtype device) (Torch.Typed.NN.Embedding ('GHC.Maybe.Just paddingIdx) numEmbeds embedSize 'Torch.Typed.NN.Learned dtype device)
 instance Torch.Typed.NN.HasForward Torch.Typed.NN.Dropout (Torch.Typed.Tensor.Tensor device dtype shape) (Torch.Typed.Tensor.Tensor device dtype shape)
 instance Torch.NN.Randomizable Torch.Typed.NN.DropoutSpec Torch.Typed.NN.Dropout
-instance (shape'' Data.Type.Equality.~ Torch.Typed.Tensor.MatMul shape '[inputFeatures, outputFeatures], shape' Data.Type.Equality.~ Torch.Typed.Tensor.Broadcast shape'' shape'') => Torch.Typed.NN.HasForward (Torch.Typed.NN.Linear inputFeatures outputFeatures dtype device) (Torch.Typed.Tensor.Tensor device dtype shape) (Torch.Typed.Tensor.Tensor device dtype shape')
+instance (shape'' GHC.Types.~ Torch.Typed.Tensor.MatMul shape '[inputFeatures, outputFeatures], shape' GHC.Types.~ Torch.Typed.Tensor.Broadcast shape'' shape'') => Torch.Typed.NN.HasForward (Torch.Typed.NN.Linear inputFeatures outputFeatures dtype device) (Torch.Typed.Tensor.Tensor device dtype shape) (Torch.Typed.Tensor.Tensor device dtype shape')
 instance (GHC.TypeNats.KnownNat inputFeatures, GHC.TypeNats.KnownNat outputFeatures, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.LinearSpec inputFeatures outputFeatures dtype device) (Torch.Typed.NN.Linear inputFeatures outputFeatures dtype device)
 
 module Torch.Typed.NN.Transformer
@@ -4817,7 +4817,7 @@ data MultiheadAttentionSpec (embedDim :: Nat) (numHeads :: Nat) (dtype :: DType)
 [MultiheadAttentionSpec] :: {mhaDropoutSpec :: DropoutSpec} -> MultiheadAttentionSpec embedDim numHeads dtype device
 data MultiheadAttention (embedDim :: Nat) (numHeads :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
 [MultiheadAttention] :: {mhaInProj :: Linear embedDim (embedDim * 3) dtype device, mhaOutProj :: Linear embedDim embedDim dtype device, mhaDropout :: Dropout} -> MultiheadAttention embedDim numHeads dtype device
-multiheadAttention :: forall embedDim numHeads seqLen batchSize headDim dtype device. (1 <= numHeads, embedDim ~ (headDim * numHeads), Mod (embedDim * 3) 3 ~ 0, Div (embedDim * 3) 3 ~ embedDim, All KnownNat '[embedDim, numHeads, seqLen, batchSize, headDim], KnownDType dtype, StandardFloatingPointDTypeValidation device dtype, MatMulDTypeIsValid device dtype, BasicArithmeticDTypeIsValid device dtype, dtype ~ SumDType dtype, SumDTypeIsValid device dtype, KnownDevice device) => MultiheadAttention embedDim numHeads dtype device -> Bool -> Tensor device dtype '[batchSize, seqLen, seqLen] -> Tensor device  'Bool '[batchSize, seqLen] -> Maybe (Tensor device dtype '[batchSize, seqLen, seqLen, headDim]) -> Maybe (Tensor device dtype '[batchSize, seqLen, seqLen, headDim]) -> Tensor device dtype '[batchSize, seqLen, embedDim] -> IO (Tensor device dtype '[batchSize, seqLen, embedDim], Tensor device dtype '[batchSize, seqLen, seqLen])
+multiheadAttention :: forall embedDim numHeads seqLen batchSize headDim dtype device. (1 <= numHeads, embedDim ~ (headDim * numHeads), Mod (embedDim * 3) 3 ~ 0, Div (embedDim * 3) 3 ~ embedDim, All KnownNat '[embedDim, numHeads, seqLen, batchSize, headDim], KnownDType dtype, StandardFloatingPointDTypeValidation device dtype, MatMulDTypeIsValid device dtype, BasicArithmeticDTypeIsValid device dtype, dtype ~ SumDType dtype, SumDTypeIsValid device dtype, KnownDevice device) => MultiheadAttention embedDim numHeads dtype device -> Bool -> Tensor device dtype '[batchSize, seqLen, seqLen] -> Tensor device 'Bool '[batchSize, seqLen] -> Maybe (Tensor device dtype '[batchSize, seqLen, seqLen, headDim]) -> Maybe (Tensor device dtype '[batchSize, seqLen, seqLen, headDim]) -> Tensor device dtype '[batchSize, seqLen, embedDim] -> IO (Tensor device dtype '[batchSize, seqLen, embedDim], Tensor device dtype '[batchSize, seqLen, seqLen])
 data TransformerMLPSpec (embedDim :: Nat) (ffnDim :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
 [TransformerMLPSpec] :: forall embedDim ffnDim dtype device. {dropout0Spec :: DropoutSpec, dropout1Spec :: DropoutSpec} -> TransformerMLPSpec embedDim ffnDim dtype device
 data TransformerMLP (embedDim :: Nat) (ffnDim :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
@@ -4827,18 +4827,18 @@ data TransformerLayerSpec (embedDim :: Nat) (numHeads :: Nat) (ffnDim :: Nat) (d
 [TransformerLayerSpec] :: forall embedDim numHeads ffnDim dtype device. {mhaSpec :: MultiheadAttentionSpec embedDim numHeads dtype device, attnDropoutSpec :: DropoutSpec, epsSpec :: Double, mlpSpec :: TransformerMLPSpec embedDim ffnDim dtype device} -> TransformerLayerSpec embedDim numHeads ffnDim dtype device
 data TransformerLayer (embedDim :: Nat) (numHeads :: Nat) (ffnDim :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
 [TransformerLayer] :: forall embedDim numHeads ffnDim dtype device. {mha :: MultiheadAttention embedDim numHeads dtype device, attnDropout :: Dropout, ln0 :: LayerNorm '[embedDim] dtype device, ln1 :: LayerNorm '[embedDim] dtype device, mlp :: TransformerMLP embedDim ffnDim dtype device} -> TransformerLayer embedDim numHeads ffnDim dtype device
-transformerLayer :: forall numHeads ffnDim embedDim headDim seqLen batchSize dtype device. (1 <= numHeads, embedDim ~ (headDim * numHeads), Mod (embedDim * 3) 3 ~ 0, Div (embedDim * 3) 3 ~ embedDim, All KnownNat '[embedDim, numHeads, seqLen, batchSize, headDim], EndsWith '[batchSize, seqLen, embedDim] '[embedDim], KnownDType dtype, dtype ~ SumDType dtype, StandardFloatingPointDTypeValidation device dtype, MatMulDTypeIsValid device dtype, BasicArithmeticDTypeIsValid device dtype, SumDTypeIsValid device dtype, KnownDevice device) => TransformerLayer embedDim numHeads ffnDim dtype device -> Bool -> Tensor device dtype '[batchSize, seqLen, seqLen] -> Tensor device  'Bool '[batchSize, seqLen] -> Maybe (Tensor device dtype '[batchSize, seqLen, seqLen, headDim]) -> Maybe (Tensor device dtype '[batchSize, seqLen, seqLen, headDim]) -> Tensor device dtype '[batchSize, seqLen, embedDim] -> IO (Tensor device dtype '[batchSize, seqLen, embedDim])
+transformerLayer :: forall numHeads ffnDim embedDim headDim seqLen batchSize dtype device. (1 <= numHeads, embedDim ~ (headDim * numHeads), Mod (embedDim * 3) 3 ~ 0, Div (embedDim * 3) 3 ~ embedDim, All KnownNat '[embedDim, numHeads, seqLen, batchSize, headDim], EndsWith '[batchSize, seqLen, embedDim] '[embedDim], KnownDType dtype, dtype ~ SumDType dtype, StandardFloatingPointDTypeValidation device dtype, MatMulDTypeIsValid device dtype, BasicArithmeticDTypeIsValid device dtype, SumDTypeIsValid device dtype, KnownDevice device) => TransformerLayer embedDim numHeads ffnDim dtype device -> Bool -> Tensor device dtype '[batchSize, seqLen, seqLen] -> Tensor device 'Bool '[batchSize, seqLen] -> Maybe (Tensor device dtype '[batchSize, seqLen, seqLen, headDim]) -> Maybe (Tensor device dtype '[batchSize, seqLen, seqLen, headDim]) -> Tensor device dtype '[batchSize, seqLen, embedDim] -> IO (Tensor device dtype '[batchSize, seqLen, embedDim])
 data TransformerLMSpec (numAttnLayers :: Nat) (numHeads :: Nat) (ffnDim :: Nat) (paddingIdx :: Nat) (numEmbeds :: Nat) (embedDim :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
 [TransformerLMSpec] :: forall numAttnLayers numHeads ffnDim paddingIdx numEmbeds embedDim dtype device. {lmDropoutSpec :: DropoutSpec, lmLayerSpec :: TransformerLayerSpec embedDim numHeads ffnDim dtype device} -> TransformerLMSpec numAttnLayers numHeads ffnDim paddingIdx numEmbeds embedDim dtype device
 data TransformerLM (numAttnLayers :: Nat) (numHeads :: Nat) (ffnDim :: Nat) (paddingIdx :: Nat) (numEmbeds :: Nat) (embedDim :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
-[TransformerLM] :: forall numAttnLayers numHeads ffnDim paddingIdx numEmbeds embedDim dtype device. {tEmbedding :: Embedding ( 'Just paddingIdx) numEmbeds embedDim  'Learned dtype device, tPosEmbedding :: Embedding  'Nothing 2048 embedDim  'Constant dtype device, tDropout :: Dropout, tLayers :: HList (HReplicateR numAttnLayers (TransformerLayer embedDim numHeads ffnDim dtype device)), tProj :: Linear embedDim numEmbeds dtype device} -> TransformerLM numAttnLayers numHeads ffnDim paddingIdx numEmbeds embedDim dtype device
+[TransformerLM] :: forall numAttnLayers numHeads ffnDim paddingIdx numEmbeds embedDim dtype device. {tEmbedding :: Embedding ('Just paddingIdx) numEmbeds embedDim 'Learned dtype device, tPosEmbedding :: Embedding 'Nothing 2048 embedDim 'Constant dtype device, tDropout :: Dropout, tLayers :: HList (HReplicateR numAttnLayers (TransformerLayer embedDim numHeads ffnDim dtype device)), tProj :: Linear embedDim numEmbeds dtype device} -> TransformerLM numAttnLayers numHeads ffnDim paddingIdx numEmbeds embedDim dtype device
 data FoldLayers (batchSize :: Nat) (seqLen :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
-FoldLayers :: Bool -> Tensor device dtype '[batchSize, seqLen, seqLen] -> Tensor device  'Bool '[batchSize, seqLen] -> FoldLayers
-[flTrain] :: FoldLayers -> Bool
-[flAttentionMask] :: FoldLayers -> Tensor device dtype '[batchSize, seqLen, seqLen]
-[flKeyPaddingMask] :: FoldLayers -> Tensor device  'Bool '[batchSize, seqLen]
-transformerLM :: forall numAttnLayers numHeads ffnDim paddingIdx numEmbeds embedDim seqLen batchSize dtype device. (All KnownNat '[paddingIdx, embedDim, seqLen, batchSize], (paddingIdx + 1) <= numEmbeds, 1 <= seqLen, HFoldrM IO (FoldLayers batchSize seqLen dtype device) (Tensor device dtype '[batchSize, seqLen, embedDim]) (HReplicateR numAttnLayers (TransformerLayer embedDim numHeads ffnDim dtype device)) (Tensor device dtype '[batchSize, seqLen, embedDim]), BasicArithmeticDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device  'Int64, KnownDType dtype, KnownDevice device) => TransformerLM numAttnLayers numHeads ffnDim paddingIdx numEmbeds embedDim dtype device -> Bool -> Tensor device  'Int64 '[batchSize, seqLen] -> IO (Tensor device dtype '[batchSize, seqLen, numEmbeds])
-sinusoidal :: forall numEmbeds embedDim device. (All KnownNat '[numEmbeds, embedDim], 1 <= numEmbeds, 1 <= Div embedDim 2, (Div embedDim 2 * 2) ~ embedDim, StandardFloatingPointDTypeValidation device  'Float, BasicArithmeticDTypeIsValid device  'Float, KnownDevice device) => Tensor device  'Float '[numEmbeds, embedDim]
+FoldLayers :: Bool -> Tensor device dtype '[batchSize, seqLen, seqLen] -> Tensor device 'Bool '[batchSize, seqLen] -> FoldLayers (batchSize :: Nat) (seqLen :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+[flTrain] :: FoldLayers (batchSize :: Nat) (seqLen :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)) -> Bool
+[flAttentionMask] :: FoldLayers (batchSize :: Nat) (seqLen :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)) -> Tensor device dtype '[batchSize, seqLen, seqLen]
+[flKeyPaddingMask] :: FoldLayers (batchSize :: Nat) (seqLen :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)) -> Tensor device 'Bool '[batchSize, seqLen]
+transformerLM :: forall numAttnLayers numHeads ffnDim paddingIdx numEmbeds embedDim seqLen batchSize dtype device. (All KnownNat '[paddingIdx, embedDim, seqLen, batchSize], (paddingIdx + 1) <= numEmbeds, 1 <= seqLen, HFoldrM IO (FoldLayers batchSize seqLen dtype device) (Tensor device dtype '[batchSize, seqLen, embedDim]) (HReplicateR numAttnLayers (TransformerLayer embedDim numHeads ffnDim dtype device)) (Tensor device dtype '[batchSize, seqLen, embedDim]), BasicArithmeticDTypeIsValid device dtype, ComparisonDTypeIsValid device dtype, ComparisonDTypeIsValid device 'Int64, KnownDType dtype, KnownDevice device) => TransformerLM numAttnLayers numHeads ffnDim paddingIdx numEmbeds embedDim dtype device -> Bool -> Tensor device 'Int64 '[batchSize, seqLen] -> IO (Tensor device dtype '[batchSize, seqLen, numEmbeds])
+sinusoidal :: forall numEmbeds embedDim device. (All KnownNat '[numEmbeds, embedDim], 1 <= numEmbeds, 1 <= Div embedDim 2, (Div embedDim 2 * 2) ~ embedDim, StandardFloatingPointDTypeValidation device 'Float, BasicArithmeticDTypeIsValid device 'Float, KnownDevice device) => Tensor device 'Float '[numEmbeds, embedDim]
 instance GHC.Generics.Generic (Torch.Typed.NN.Transformer.TransformerLM numAttnLayers numHeads ffnDim paddingIdx numEmbeds embedDim dtype device)
 instance GHC.Show.Show (Torch.Typed.NN.Transformer.TransformerLMSpec numAttnLayers numHeads ffnDim paddingIdx numEmbeds embedDim dtype device)
 instance GHC.Generics.Generic (Torch.Typed.NN.Transformer.TransformerLayer embedDim numHeads ffnDim dtype device)
@@ -4851,30 +4851,30 @@ instance GHC.Generics.Generic (Torch.Typed.NN.Transformer.MultiheadAttention emb
 instance GHC.Show.Show (Torch.Typed.NN.Transformer.MultiheadAttention embedDim numHeads dtype device)
 instance GHC.Classes.Eq (Torch.Typed.NN.Transformer.MultiheadAttentionSpec embedDim numHeads dtype device)
 instance GHC.Show.Show (Torch.Typed.NN.Transformer.MultiheadAttentionSpec embedDim numHeads dtype device)
-instance (1 GHC.TypeNats.<= numHeads, embedDim Data.Type.Equality.~ (headDim GHC.TypeNats.* numHeads), GHC.TypeNats.Mod (embedDim GHC.TypeNats.* 3) 3 Data.Type.Equality.~ 0, GHC.TypeNats.Div (embedDim GHC.TypeNats.* 3) 3 Data.Type.Equality.~ embedDim, Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[embedDim, numHeads, seqLen, batchSize, headDim], Torch.Typed.Functional.EndsWith '[batchSize, seqLen, embedDim] '[embedDim], Torch.Typed.Tensor.KnownDType dtype, dtype Data.Type.Equality.~ Torch.Typed.Functional.SumDType dtype, Torch.Typed.Aux.StandardFloatingPointDTypeValidation device dtype, Torch.Typed.Tensor.MatMulDTypeIsValid device dtype, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype, Torch.Typed.Functional.SumDTypeIsValid device dtype, Torch.Typed.Tensor.KnownDevice device) => Torch.HList.Apply' (Torch.Typed.NN.Transformer.FoldLayers batchSize seqLen dtype device) (Torch.Typed.NN.Transformer.TransformerLayer embedDim numHeads ffnDim dtype device, GHC.Types.IO (Torch.Typed.Tensor.Tensor device dtype '[batchSize, seqLen, embedDim])) (GHC.Types.IO (Torch.Typed.Tensor.Tensor device dtype '[batchSize, seqLen, embedDim]))
+instance (1 GHC.TypeNats.<= numHeads, embedDim GHC.Types.~ (headDim GHC.TypeNats.* numHeads), GHC.TypeNats.Mod (embedDim GHC.TypeNats.* 3) 3 GHC.Types.~ 0, GHC.TypeNats.Div (embedDim GHC.TypeNats.* 3) 3 GHC.Types.~ embedDim, Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[embedDim, numHeads, seqLen, batchSize, headDim], Torch.Typed.Functional.EndsWith '[batchSize, seqLen, embedDim] '[embedDim], Torch.Typed.Tensor.KnownDType dtype, dtype GHC.Types.~ Torch.Typed.Functional.SumDType dtype, Torch.Typed.Aux.StandardFloatingPointDTypeValidation device dtype, Torch.Typed.Tensor.MatMulDTypeIsValid device dtype, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype, Torch.Typed.Functional.SumDTypeIsValid device dtype, Torch.Typed.Tensor.KnownDevice device) => Torch.HList.Apply' (Torch.Typed.NN.Transformer.FoldLayers batchSize seqLen dtype device) (Torch.Typed.NN.Transformer.TransformerLayer embedDim numHeads ffnDim dtype device, GHC.Types.IO (Torch.Typed.Tensor.Tensor device dtype '[batchSize, seqLen, embedDim])) (GHC.Types.IO (Torch.Typed.Tensor.Tensor device dtype '[batchSize, seqLen, embedDim]))
 instance (Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[paddingIdx, embedDim, seqLen, batchSize], (paddingIdx GHC.TypeNats.+ 1) GHC.TypeNats.<= numEmbeds, 1 GHC.TypeNats.<= seqLen, Torch.HList.HFoldrM GHC.Types.IO (Torch.Typed.NN.Transformer.FoldLayers batchSize seqLen dtype device) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, seqLen, embedDim]) (Torch.HList.HReplicateR numAttnLayers (Torch.Typed.NN.Transformer.TransformerLayer embedDim numHeads ffnDim dtype device)) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, seqLen, embedDim]), Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype, Torch.Typed.Tensor.ComparisonDTypeIsValid device dtype, Torch.Typed.Tensor.ComparisonDTypeIsValid device 'Torch.DType.Int64, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device) => Torch.Typed.NN.HasForward (Torch.Typed.NN.Transformer.TransformerLM numAttnLayers numHeads ffnDim paddingIdx numEmbeds embedDim dtype device) (Torch.Typed.Tensor.Tensor device 'Torch.DType.Int64 '[batchSize, seqLen]) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, seqLen, numEmbeds])
-instance (paddingIdx GHC.TypeNats.<= numEmbeds, 1 GHC.TypeNats.<= (numEmbeds GHC.TypeNats.- paddingIdx), (((numEmbeds GHC.TypeNats.- paddingIdx) GHC.TypeNats.- 1) GHC.TypeNats.+ (1 GHC.TypeNats.+ paddingIdx)) Data.Type.Equality.~ numEmbeds, (GHC.TypeNats.Div embedDim 2 GHC.TypeNats.* 2) Data.Type.Equality.~ embedDim, Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[ffnDim, paddingIdx, numEmbeds, embedDim], Torch.HList.HReplicate numAttnLayers (Torch.Typed.NN.Transformer.TransformerLayerSpec embedDim numHeads ffnDim dtype device), Torch.NN.Randomizable (Torch.HList.HList (Torch.HList.HReplicateR numAttnLayers (Torch.Typed.NN.Transformer.TransformerLayerSpec embedDim numHeads ffnDim dtype device))) (Torch.HList.HList (Torch.HList.HReplicateR numAttnLayers (Torch.Typed.NN.Transformer.TransformerLayer embedDim numHeads ffnDim dtype device))), Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Factories.RandDTypeIsValid device dtype, Torch.Typed.Aux.StandardFloatingPointDTypeValidation device 'Torch.DType.Float, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device 'Torch.DType.Float, Torch.Typed.Tensor.KnownDevice device) => Torch.NN.Randomizable (Torch.Typed.NN.Transformer.TransformerLMSpec numAttnLayers numHeads ffnDim paddingIdx numEmbeds embedDim dtype device) (Torch.Typed.NN.Transformer.TransformerLM numAttnLayers numHeads ffnDim paddingIdx numEmbeds embedDim dtype device)
+instance (paddingIdx GHC.TypeNats.<= numEmbeds, 1 GHC.TypeNats.<= (numEmbeds GHC.TypeNats.- paddingIdx), (((numEmbeds GHC.TypeNats.- paddingIdx) GHC.TypeNats.- 1) GHC.TypeNats.+ (1 GHC.TypeNats.+ paddingIdx)) GHC.Types.~ numEmbeds, (GHC.TypeNats.Div embedDim 2 GHC.TypeNats.* 2) GHC.Types.~ embedDim, Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[ffnDim, paddingIdx, numEmbeds, embedDim], Torch.HList.HReplicate numAttnLayers (Torch.Typed.NN.Transformer.TransformerLayerSpec embedDim numHeads ffnDim dtype device), Torch.NN.Randomizable (Torch.HList.HList (Torch.HList.HReplicateR numAttnLayers (Torch.Typed.NN.Transformer.TransformerLayerSpec embedDim numHeads ffnDim dtype device))) (Torch.HList.HList (Torch.HList.HReplicateR numAttnLayers (Torch.Typed.NN.Transformer.TransformerLayer embedDim numHeads ffnDim dtype device))), Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Factories.RandDTypeIsValid device dtype, Torch.Typed.Aux.StandardFloatingPointDTypeValidation device 'Torch.DType.Float, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device 'Torch.DType.Float, Torch.Typed.Tensor.KnownDevice device) => Torch.NN.Randomizable (Torch.Typed.NN.Transformer.TransformerLMSpec numAttnLayers numHeads ffnDim paddingIdx numEmbeds embedDim dtype device) (Torch.Typed.NN.Transformer.TransformerLM numAttnLayers numHeads ffnDim paddingIdx numEmbeds embedDim dtype device)
 instance (Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[embedDim, numHeads, ffnDim], Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.Transformer.TransformerLayerSpec embedDim numHeads ffnDim dtype device) (Torch.Typed.NN.Transformer.TransformerLayer embedDim numHeads ffnDim dtype device)
 instance (Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[embedDim, ffnDim], Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.Transformer.TransformerMLPSpec embedDim ffnDim dtype device) (Torch.Typed.NN.Transformer.TransformerMLP embedDim ffnDim dtype device)
 instance (Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[embedDim, numHeads], Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.Transformer.MultiheadAttentionSpec embedDim numHeads dtype device) (Torch.Typed.NN.Transformer.MultiheadAttention embedDim numHeads dtype device)
 
 module Torch.Typed.NN.Recurrent.LSTM
 data LSTMLayerSpec (inputSize :: Nat) (hiddenSize :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat))
-LSTMLayerSpec :: LSTMLayerSpec
+LSTMLayerSpec :: LSTMLayerSpec (inputSize :: Nat) (hiddenSize :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat))
 data LSTMLayer (inputSize :: Nat) (hiddenSize :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat))
-[LSTMUnidirectionalLayer] :: Parameter device dtype (LSTMWIShape hiddenSize inputSize) -> Parameter device dtype (LSTMWHShape hiddenSize inputSize) -> Parameter device dtype (LSTMBIShape hiddenSize inputSize) -> Parameter device dtype (LSTMBHShape hiddenSize inputSize) -> LSTMLayer inputSize hiddenSize  'Unidirectional dtype device
-[LSTMBidirectionalLayer] :: Parameter device dtype (LSTMWIShape hiddenSize inputSize) -> Parameter device dtype (LSTMWHShape hiddenSize inputSize) -> Parameter device dtype (LSTMBIShape hiddenSize inputSize) -> Parameter device dtype (LSTMBHShape hiddenSize inputSize) -> Parameter device dtype (LSTMWIShape hiddenSize inputSize) -> Parameter device dtype (LSTMWHShape hiddenSize inputSize) -> Parameter device dtype (LSTMBIShape hiddenSize inputSize) -> Parameter device dtype (LSTMBHShape hiddenSize inputSize) -> LSTMLayer inputSize hiddenSize  'Bidirectional dtype device
+[LSTMUnidirectionalLayer] :: Parameter device dtype (LSTMWIShape hiddenSize inputSize) -> Parameter device dtype (LSTMWHShape hiddenSize inputSize) -> Parameter device dtype (LSTMBIShape hiddenSize inputSize) -> Parameter device dtype (LSTMBHShape hiddenSize inputSize) -> LSTMLayer inputSize hiddenSize 'Unidirectional dtype device
+[LSTMBidirectionalLayer] :: Parameter device dtype (LSTMWIShape hiddenSize inputSize) -> Parameter device dtype (LSTMWHShape hiddenSize inputSize) -> Parameter device dtype (LSTMBIShape hiddenSize inputSize) -> Parameter device dtype (LSTMBHShape hiddenSize inputSize) -> Parameter device dtype (LSTMWIShape hiddenSize inputSize) -> Parameter device dtype (LSTMWHShape hiddenSize inputSize) -> Parameter device dtype (LSTMBIShape hiddenSize inputSize) -> Parameter device dtype (LSTMBHShape hiddenSize inputSize) -> LSTMLayer inputSize hiddenSize 'Bidirectional dtype device
 data LSTMLayerStackSpec (inputSize :: Nat) (hiddenSize :: Nat) (numLayers :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat))
-LSTMLayerStackSpec :: LSTMLayerStackSpec
+LSTMLayerStackSpec :: LSTMLayerStackSpec (inputSize :: Nat) (hiddenSize :: Nat) (numLayers :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat))
 data LSTMLayerStack (inputSize :: Nat) (hiddenSize :: Nat) (numLayers :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat))
 [LSTMLayer1] :: LSTMLayer inputSize hiddenSize directionality dtype device -> LSTMLayerStack inputSize hiddenSize 1 directionality dtype device
 [LSTMLayerK] :: 2 <= numLayers => LSTMLayerStack inputSize hiddenSize (numLayers - 1) directionality dtype device -> LSTMLayer (hiddenSize * NumberOfDirections directionality) hiddenSize directionality dtype device -> LSTMLayerStack inputSize hiddenSize numLayers directionality dtype device
 newtype LSTMSpec (inputSize :: Nat) (hiddenSize :: Nat) (numLayers :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat))
-LSTMSpec :: DropoutSpec -> LSTMSpec
+LSTMSpec :: DropoutSpec -> LSTMSpec (inputSize :: Nat) (hiddenSize :: Nat) (numLayers :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat))
 data LSTM (inputSize :: Nat) (hiddenSize :: Nat) (numLayers :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat))
-LSTM :: LSTMLayerStack inputSize hiddenSize numLayers directionality dtype device -> Dropout -> LSTM
-[lstm_layer_stack] :: LSTM -> LSTMLayerStack inputSize hiddenSize numLayers directionality dtype device
-[lstm_dropout] :: LSTM -> Dropout
+LSTM :: LSTMLayerStack inputSize hiddenSize numLayers directionality dtype device -> Dropout -> LSTM (inputSize :: Nat) (hiddenSize :: Nat) (numLayers :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat))
+[lstm_layer_stack] :: LSTM (inputSize :: Nat) (hiddenSize :: Nat) (numLayers :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat)) -> LSTMLayerStack inputSize hiddenSize numLayers directionality dtype device
+[lstm_dropout] :: LSTM (inputSize :: Nat) (hiddenSize :: Nat) (numLayers :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat)) -> Dropout
 
 -- | Helper to do xavier uniform initializations on weight matrices and
 --   orthagonal initializations for the gates. (When implemented.)
@@ -4894,22 +4894,22 @@ data LSTMWithInitSpec (inputSize :: Nat) (hiddenSize :: Nat) (numLayers :: Nat) 
 
 -- | Weights drawn from Xavier-Uniform with zeros-value initialized biases
 --   and cell states.
-[LSTMWithZerosInitSpec] :: forall inputSize hiddenSize numLayers directionality dtype device. LSTMSpec inputSize hiddenSize numLayers directionality dtype device -> LSTMWithInitSpec inputSize hiddenSize numLayers directionality  'ConstantInitialization dtype device
+[LSTMWithZerosInitSpec] :: forall inputSize hiddenSize numLayers directionality dtype device. LSTMSpec inputSize hiddenSize numLayers directionality dtype device -> LSTMWithInitSpec inputSize hiddenSize numLayers directionality 'ConstantInitialization dtype device
 
 -- | Weights drawn from Xavier-Uniform with zeros-value initialized biases
 --   and user-provided cell states.
-[LSTMWithConstInitSpec] :: forall inputSize hiddenSize numLayers directionality dtype device. LSTMSpec inputSize hiddenSize numLayers directionality dtype device -> Tensor device dtype '[numLayers * NumberOfDirections directionality, hiddenSize] -> Tensor device dtype '[numLayers * NumberOfDirections directionality, hiddenSize] -> LSTMWithInitSpec inputSize hiddenSize numLayers directionality  'ConstantInitialization dtype device
+[LSTMWithConstInitSpec] :: forall inputSize hiddenSize numLayers directionality dtype device. LSTMSpec inputSize hiddenSize numLayers directionality dtype device -> Tensor device dtype '[numLayers * NumberOfDirections directionality, hiddenSize] -> Tensor device dtype '[numLayers * NumberOfDirections directionality, hiddenSize] -> LSTMWithInitSpec inputSize hiddenSize numLayers directionality 'ConstantInitialization dtype device
 
 -- | Weights drawn from Xavier-Uniform with zeros-value initialized biases
 --   and learned cell states.
-[LSTMWithLearnedInitSpec] :: forall inputSize hiddenSize numLayers directionality dtype device. LSTMSpec inputSize hiddenSize numLayers directionality dtype device -> Tensor device dtype '[numLayers * NumberOfDirections directionality, hiddenSize] -> Tensor device dtype '[numLayers * NumberOfDirections directionality, hiddenSize] -> LSTMWithInitSpec inputSize hiddenSize numLayers directionality  'LearnedInitialization dtype device
+[LSTMWithLearnedInitSpec] :: forall inputSize hiddenSize numLayers directionality dtype device. LSTMSpec inputSize hiddenSize numLayers directionality dtype device -> Tensor device dtype '[numLayers * NumberOfDirections directionality, hiddenSize] -> Tensor device dtype '[numLayers * NumberOfDirections directionality, hiddenSize] -> LSTMWithInitSpec inputSize hiddenSize numLayers directionality 'LearnedInitialization dtype device
 
 -- | A long, short-term memory layer with either fixed initial states for
 --   the memory cells and hidden state or learnable inital states for the
 --   memory cells and hidden state.
 data LSTMWithInit (inputSize :: Nat) (hiddenSize :: Nat) (numLayers :: Nat) (directionality :: RNNDirectionality) (initialization :: RNNInitialization) (dtype :: DType) (device :: (DeviceType, Nat))
-[LSTMWithConstInit] :: forall inputSize hiddenSize numLayers directionality dtype device. {lstmWithConstInit_lstm :: LSTM inputSize hiddenSize numLayers directionality dtype device, lstmWithConstInit_c :: Tensor device dtype '[numLayers * NumberOfDirections directionality, hiddenSize], lstmWithConstInit_h :: Tensor device dtype '[numLayers * NumberOfDirections directionality, hiddenSize]} -> LSTMWithInit inputSize hiddenSize numLayers directionality  'ConstantInitialization dtype device
-[LSTMWithLearnedInit] :: forall inputSize hiddenSize numLayers directionality dtype device. {lstmWithLearnedInit_lstm :: LSTM inputSize hiddenSize numLayers directionality dtype device, lstmWithLearnedInit_c :: Parameter device dtype '[numLayers * NumberOfDirections directionality, hiddenSize], lstmWithLearnedInit_h :: Parameter device dtype '[numLayers * NumberOfDirections directionality, hiddenSize]} -> LSTMWithInit inputSize hiddenSize numLayers directionality  'LearnedInitialization dtype device
+[LSTMWithConstInit] :: forall inputSize hiddenSize numLayers directionality dtype device. {lstmWithConstInit_lstm :: LSTM inputSize hiddenSize numLayers directionality dtype device, lstmWithConstInit_c :: Tensor device dtype '[numLayers * NumberOfDirections directionality, hiddenSize], lstmWithConstInit_h :: Tensor device dtype '[numLayers * NumberOfDirections directionality, hiddenSize]} -> LSTMWithInit inputSize hiddenSize numLayers directionality 'ConstantInitialization dtype device
+[LSTMWithLearnedInit] :: forall inputSize hiddenSize numLayers directionality dtype device. {lstmWithLearnedInit_lstm :: LSTM inputSize hiddenSize numLayers directionality dtype device, lstmWithLearnedInit_c :: Parameter device dtype '[numLayers * NumberOfDirections directionality, hiddenSize], lstmWithLearnedInit_h :: Parameter device dtype '[numLayers * NumberOfDirections directionality, hiddenSize]} -> LSTMWithInit inputSize hiddenSize numLayers directionality 'LearnedInitialization dtype device
 lstm :: forall shapeOrder batchSize seqLen directionality initialization numLayers inputSize outputSize hiddenSize inputShape outputShape hxShape parameters tensorParameters dtype device. (KnownNat (NumberOfDirections directionality), KnownNat numLayers, KnownNat batchSize, KnownNat hiddenSize, KnownRNNShapeOrder shapeOrder, KnownRNNDirectionality directionality, outputSize ~ (hiddenSize * NumberOfDirections directionality), inputShape ~ RNNShape shapeOrder seqLen batchSize inputSize, outputShape ~ RNNShape shapeOrder seqLen batchSize outputSize, hxShape ~ '[numLayers * NumberOfDirections directionality, batchSize, hiddenSize], Parameterized (LSTM inputSize hiddenSize numLayers directionality dtype device) parameters, tensorParameters ~ LSTMR inputSize hiddenSize numLayers directionality dtype device, Castable (HList tensorParameters) [ATenTensor], HMap' ToDependent parameters tensorParameters) => Bool -> LSTMWithInit inputSize hiddenSize numLayers directionality initialization dtype device -> Tensor device dtype inputShape -> (Tensor device dtype outputShape, Tensor device dtype hxShape, Tensor device dtype hxShape)
 
 -- | Forward propagate the <a>LSTM</a> module (without applying dropout on
@@ -4992,32 +4992,32 @@ instance GHC.Generics.Generic (Torch.Typed.NN.Recurrent.LSTM.LSTMWithInit inputS
 instance (GHC.TypeNats.KnownNat hiddenSize, GHC.TypeNats.KnownNat numLayers, GHC.TypeNats.KnownNat (Torch.Typed.Functional.NumberOfDirections directionality), Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMSpec inputSize hiddenSize numLayers directionality dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTM inputSize hiddenSize numLayers directionality dtype device)) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMWithInitSpec inputSize hiddenSize numLayers directionality 'Torch.Typed.NN.Recurrent.LSTM.ConstantInitialization dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTMWithInit inputSize hiddenSize numLayers directionality 'Torch.Typed.NN.Recurrent.LSTM.ConstantInitialization dtype device)
 instance (GHC.TypeNats.KnownNat hiddenSize, GHC.TypeNats.KnownNat numLayers, GHC.TypeNats.KnownNat (Torch.Typed.Functional.NumberOfDirections directionality), Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMSpec inputSize hiddenSize numLayers directionality dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTM inputSize hiddenSize numLayers directionality dtype device)) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMWithInitSpec inputSize hiddenSize numLayers directionality 'Torch.Typed.NN.Recurrent.LSTM.LearnedInitialization dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTMWithInit inputSize hiddenSize numLayers directionality 'Torch.Typed.NN.Recurrent.LSTM.LearnedInitialization dtype device)
 instance (Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, GHC.TypeNats.KnownNat inputSize, GHC.TypeNats.KnownNat hiddenSize, GHC.TypeNats.KnownNat (Torch.Typed.Functional.NumberOfDirections directionality), Torch.Typed.Factories.RandDTypeIsValid device dtype, Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerStackSpec inputSize hiddenSize numLayers directionality dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerStack inputSize hiddenSize numLayers directionality dtype device)) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMSpec inputSize hiddenSize numLayers directionality dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTM inputSize hiddenSize numLayers directionality dtype device)
-instance Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayer inputSize hiddenSize directionality dtype device)) parameters => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerStack inputSize hiddenSize 1 directionality dtype device)) parameters
-instance (2 GHC.TypeNats.<= numLayers, Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerStack inputSize hiddenSize (numLayers GHC.TypeNats.- 1) directionality dtype device)) parameters, Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayer (hiddenSize GHC.TypeNats.* Torch.Typed.Functional.NumberOfDirections directionality) hiddenSize directionality dtype device)) parameters', Torch.HList.HAppendFD parameters parameters' parameters'', parameters'' Data.Type.Equality.~ (parameters Torch.HList.++ parameters')) => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerStack inputSize hiddenSize numLayers directionality dtype device)) parameters''
+instance (layer GHC.Types.~ GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayer inputSize hiddenSize directionality dtype device), Torch.Typed.Parameter.GParameterized layer parameters) => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerStack inputSize hiddenSize 1 directionality dtype device)) parameters
+instance (2 GHC.TypeNats.<= numLayers, layerStack GHC.Types.~ GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerStack inputSize hiddenSize (numLayers GHC.TypeNats.- 1) directionality dtype device), layer GHC.Types.~ GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayer (hiddenSize GHC.TypeNats.* Torch.Typed.Functional.NumberOfDirections directionality) hiddenSize directionality dtype device), Torch.Typed.Parameter.GParameterized layer parameters', Torch.Typed.Parameter.GParameterized layerStack parameters, Torch.Typed.Parameter.GParameterized layer parameters', Torch.HList.HAppendFD parameters parameters' parameters'', parameters'' GHC.Types.~ (parameters Torch.HList.++ parameters')) => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerStack inputSize hiddenSize numLayers directionality dtype device)) parameters''
 instance (Torch.Typed.Factories.RandDTypeIsValid device dtype, GHC.TypeNats.KnownNat inputSize, GHC.TypeNats.KnownNat hiddenSize, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerSpec inputSize hiddenSize directionality dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTMLayer inputSize hiddenSize directionality dtype device)) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerStackSpec inputSize hiddenSize 1 directionality dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerStack inputSize hiddenSize 1 directionality dtype device)
 instance (2 GHC.TypeNats.<= numLayers, Torch.Typed.Factories.RandDTypeIsValid device dtype, GHC.TypeNats.KnownNat inputSize, GHC.TypeNats.KnownNat hiddenSize, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerStackSpec inputSize hiddenSize (numLayers GHC.TypeNats.- 1) directionality dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerStack inputSize hiddenSize (numLayers GHC.TypeNats.- 1) directionality dtype device), Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerSpec (hiddenSize GHC.TypeNats.* Torch.Typed.Functional.NumberOfDirections directionality) hiddenSize directionality dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTMLayer (hiddenSize GHC.TypeNats.* Torch.Typed.Functional.NumberOfDirections directionality) hiddenSize directionality dtype device)) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerStackSpec inputSize hiddenSize numLayers directionality dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerStack inputSize hiddenSize numLayers directionality dtype device)
-instance (wiShape Data.Type.Equality.~ Torch.Typed.Functional.LSTMWIShape hiddenSize inputSize, whShape Data.Type.Equality.~ Torch.Typed.Functional.LSTMWHShape hiddenSize inputSize, biShape Data.Type.Equality.~ Torch.Typed.Functional.LSTMBIShape hiddenSize inputSize, bhShape Data.Type.Equality.~ Torch.Typed.Functional.LSTMBHShape hiddenSize inputSize, parameters Data.Type.Equality.~ '[Torch.Typed.Parameter.Parameter device dtype wiShape, Torch.Typed.Parameter.Parameter device dtype whShape, Torch.Typed.Parameter.Parameter device dtype biShape, Torch.Typed.Parameter.Parameter device dtype bhShape]) => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayer inputSize hiddenSize 'Torch.Typed.Functional.Unidirectional dtype device)) parameters
-instance (wiShape Data.Type.Equality.~ Torch.Typed.Functional.LSTMWIShape hiddenSize inputSize, whShape Data.Type.Equality.~ Torch.Typed.Functional.LSTMWHShape hiddenSize inputSize, biShape Data.Type.Equality.~ Torch.Typed.Functional.LSTMBIShape hiddenSize inputSize, bhShape Data.Type.Equality.~ Torch.Typed.Functional.LSTMBHShape hiddenSize inputSize, parameters Data.Type.Equality.~ '[Torch.Typed.Parameter.Parameter device dtype wiShape, Torch.Typed.Parameter.Parameter device dtype whShape, Torch.Typed.Parameter.Parameter device dtype biShape, Torch.Typed.Parameter.Parameter device dtype bhShape, Torch.Typed.Parameter.Parameter device dtype wiShape, Torch.Typed.Parameter.Parameter device dtype whShape, Torch.Typed.Parameter.Parameter device dtype biShape, Torch.Typed.Parameter.Parameter device dtype bhShape]) => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayer inputSize hiddenSize 'Torch.Typed.Functional.Bidirectional dtype device)) parameters
+instance (wiShape GHC.Types.~ Torch.Typed.Functional.LSTMWIShape hiddenSize inputSize, whShape GHC.Types.~ Torch.Typed.Functional.LSTMWHShape hiddenSize inputSize, biShape GHC.Types.~ Torch.Typed.Functional.LSTMBIShape hiddenSize inputSize, bhShape GHC.Types.~ Torch.Typed.Functional.LSTMBHShape hiddenSize inputSize, parameters GHC.Types.~ '[Torch.Typed.Parameter.Parameter device dtype wiShape, Torch.Typed.Parameter.Parameter device dtype whShape, Torch.Typed.Parameter.Parameter device dtype biShape, Torch.Typed.Parameter.Parameter device dtype bhShape]) => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayer inputSize hiddenSize 'Torch.Typed.Functional.Unidirectional dtype device)) parameters
+instance (wiShape GHC.Types.~ Torch.Typed.Functional.LSTMWIShape hiddenSize inputSize, whShape GHC.Types.~ Torch.Typed.Functional.LSTMWHShape hiddenSize inputSize, biShape GHC.Types.~ Torch.Typed.Functional.LSTMBIShape hiddenSize inputSize, bhShape GHC.Types.~ Torch.Typed.Functional.LSTMBHShape hiddenSize inputSize, parameters GHC.Types.~ '[Torch.Typed.Parameter.Parameter device dtype wiShape, Torch.Typed.Parameter.Parameter device dtype whShape, Torch.Typed.Parameter.Parameter device dtype biShape, Torch.Typed.Parameter.Parameter device dtype bhShape, Torch.Typed.Parameter.Parameter device dtype wiShape, Torch.Typed.Parameter.Parameter device dtype whShape, Torch.Typed.Parameter.Parameter device dtype biShape, Torch.Typed.Parameter.Parameter device dtype bhShape]) => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.LSTM.LSTMLayer inputSize hiddenSize 'Torch.Typed.Functional.Bidirectional dtype device)) parameters
 instance (Torch.Typed.Factories.RandDTypeIsValid device dtype, GHC.TypeNats.KnownNat inputSize, GHC.TypeNats.KnownNat hiddenSize, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerSpec inputSize hiddenSize 'Torch.Typed.Functional.Unidirectional dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTMLayer inputSize hiddenSize 'Torch.Typed.Functional.Unidirectional dtype device)
 instance (Torch.Typed.Factories.RandDTypeIsValid device dtype, GHC.TypeNats.KnownNat inputSize, GHC.TypeNats.KnownNat hiddenSize, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerSpec inputSize hiddenSize 'Torch.Typed.Functional.Bidirectional dtype device) (Torch.Typed.NN.Recurrent.LSTM.LSTMLayer inputSize hiddenSize 'Torch.Typed.Functional.Bidirectional dtype device)
 
 module Torch.Typed.NN.Recurrent.GRU
 data GRULayerSpec (inputSize :: Nat) (hiddenSize :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat))
-GRULayerSpec :: GRULayerSpec
+GRULayerSpec :: GRULayerSpec (inputSize :: Nat) (hiddenSize :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat))
 data GRULayer (inputSize :: Nat) (hiddenSize :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat))
-[GRUUnidirectionalLayer] :: Parameter device dtype (GRUWIShape hiddenSize inputSize) -> Parameter device dtype (GRUWHShape hiddenSize inputSize) -> Parameter device dtype (GRUBIShape hiddenSize inputSize) -> Parameter device dtype (GRUBHShape hiddenSize inputSize) -> GRULayer inputSize hiddenSize  'Unidirectional dtype device
-[GRUBidirectionalLayer] :: Parameter device dtype (GRUWIShape hiddenSize inputSize) -> Parameter device dtype (GRUWHShape hiddenSize inputSize) -> Parameter device dtype (GRUBIShape hiddenSize inputSize) -> Parameter device dtype (GRUBHShape hiddenSize inputSize) -> Parameter device dtype (GRUWIShape hiddenSize inputSize) -> Parameter device dtype (GRUWHShape hiddenSize inputSize) -> Parameter device dtype (GRUBIShape hiddenSize inputSize) -> Parameter device dtype (GRUBHShape hiddenSize inputSize) -> GRULayer inputSize hiddenSize  'Bidirectional dtype device
+[GRUUnidirectionalLayer] :: Parameter device dtype (GRUWIShape hiddenSize inputSize) -> Parameter device dtype (GRUWHShape hiddenSize inputSize) -> Parameter device dtype (GRUBIShape hiddenSize inputSize) -> Parameter device dtype (GRUBHShape hiddenSize inputSize) -> GRULayer inputSize hiddenSize 'Unidirectional dtype device
+[GRUBidirectionalLayer] :: Parameter device dtype (GRUWIShape hiddenSize inputSize) -> Parameter device dtype (GRUWHShape hiddenSize inputSize) -> Parameter device dtype (GRUBIShape hiddenSize inputSize) -> Parameter device dtype (GRUBHShape hiddenSize inputSize) -> Parameter device dtype (GRUWIShape hiddenSize inputSize) -> Parameter device dtype (GRUWHShape hiddenSize inputSize) -> Parameter device dtype (GRUBIShape hiddenSize inputSize) -> Parameter device dtype (GRUBHShape hiddenSize inputSize) -> GRULayer inputSize hiddenSize 'Bidirectional dtype device
 data GRULayerStackSpec (inputSize :: Nat) (hiddenSize :: Nat) (numLayers :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat))
-GRULayerStackSpec :: GRULayerStackSpec
+GRULayerStackSpec :: GRULayerStackSpec (inputSize :: Nat) (hiddenSize :: Nat) (numLayers :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat))
 data GRULayerStack (inputSize :: Nat) (hiddenSize :: Nat) (numLayers :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat))
 [GRULayer1] :: GRULayer inputSize hiddenSize directionality dtype device -> GRULayerStack inputSize hiddenSize 1 directionality dtype device
 [GRULayerK] :: 2 <= numLayers => GRULayerStack inputSize hiddenSize (numLayers - 1) directionality dtype device -> GRULayer (hiddenSize * NumberOfDirections directionality) hiddenSize directionality dtype device -> GRULayerStack inputSize hiddenSize numLayers directionality dtype device
 newtype GRUSpec (inputSize :: Nat) (hiddenSize :: Nat) (numLayers :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat))
-GRUSpec :: DropoutSpec -> GRUSpec
+GRUSpec :: DropoutSpec -> GRUSpec (inputSize :: Nat) (hiddenSize :: Nat) (numLayers :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat))
 data GRU (inputSize :: Nat) (hiddenSize :: Nat) (numLayers :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat))
-GRU :: GRULayerStack inputSize hiddenSize numLayers directionality dtype device -> Dropout -> GRU
-[gru_layer_stack] :: GRU -> GRULayerStack inputSize hiddenSize numLayers directionality dtype device
-[gru_dropout] :: GRU -> Dropout
+GRU :: GRULayerStack inputSize hiddenSize numLayers directionality dtype device -> Dropout -> GRU (inputSize :: Nat) (hiddenSize :: Nat) (numLayers :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat))
+[gru_layer_stack] :: GRU (inputSize :: Nat) (hiddenSize :: Nat) (numLayers :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat)) -> GRULayerStack inputSize hiddenSize numLayers directionality dtype device
+[gru_dropout] :: GRU (inputSize :: Nat) (hiddenSize :: Nat) (numLayers :: Nat) (directionality :: RNNDirectionality) (dtype :: DType) (device :: (DeviceType, Nat)) -> Dropout
 
 -- | Helper to do xavier uniform initializations on weight matrices and
 --   orthagonal initializations for the gates. (When implemented.)
@@ -5037,22 +5037,22 @@ data GRUWithInitSpec (inputSize :: Nat) (hiddenSize :: Nat) (numLayers :: Nat) (
 
 -- | Weights drawn from Xavier-Uniform with zeros-value initialized biases
 --   and cell states.
-[GRUWithZerosInitSpec] :: forall inputSize hiddenSize numLayers directionality dtype device. GRUSpec inputSize hiddenSize numLayers directionality dtype device -> GRUWithInitSpec inputSize hiddenSize numLayers directionality  'ConstantInitialization dtype device
+[GRUWithZerosInitSpec] :: forall inputSize hiddenSize numLayers directionality dtype device. GRUSpec inputSize hiddenSize numLayers directionality dtype device -> GRUWithInitSpec inputSize hiddenSize numLayers directionality 'ConstantInitialization dtype device
 
 -- | Weights drawn from Xavier-Uniform with zeros-value initialized biases
 --   and user-provided cell states.
-[GRUWithConstInitSpec] :: forall inputSize hiddenSize numLayers directionality dtype device. GRUSpec inputSize hiddenSize numLayers directionality dtype device -> Tensor device dtype '[numLayers * NumberOfDirections directionality, hiddenSize] -> GRUWithInitSpec inputSize hiddenSize numLayers directionality  'ConstantInitialization dtype device
+[GRUWithConstInitSpec] :: forall inputSize hiddenSize numLayers directionality dtype device. GRUSpec inputSize hiddenSize numLayers directionality dtype device -> Tensor device dtype '[numLayers * NumberOfDirections directionality, hiddenSize] -> GRUWithInitSpec inputSize hiddenSize numLayers directionality 'ConstantInitialization dtype device
 
 -- | Weights drawn from Xavier-Uniform with zeros-value initialized biases
 --   and learned cell states.
-[GRUWithLearnedInitSpec] :: forall inputSize hiddenSize numLayers directionality dtype device. GRUSpec inputSize hiddenSize numLayers directionality dtype device -> Tensor device dtype '[numLayers * NumberOfDirections directionality, hiddenSize] -> GRUWithInitSpec inputSize hiddenSize numLayers directionality  'LearnedInitialization dtype device
+[GRUWithLearnedInitSpec] :: forall inputSize hiddenSize numLayers directionality dtype device. GRUSpec inputSize hiddenSize numLayers directionality dtype device -> Tensor device dtype '[numLayers * NumberOfDirections directionality, hiddenSize] -> GRUWithInitSpec inputSize hiddenSize numLayers directionality 'LearnedInitialization dtype device
 
 -- | A long, short-term memory layer with either fixed initial states for
 --   the memory cells and hidden state or learnable inital states for the
 --   memory cells and hidden state.
 data GRUWithInit (inputSize :: Nat) (hiddenSize :: Nat) (numLayers :: Nat) (directionality :: RNNDirectionality) (initialization :: RNNInitialization) (dtype :: DType) (device :: (DeviceType, Nat))
-[GRUWithConstInit] :: forall inputSize hiddenSize numLayers directionality dtype device. {gruWithConstInit_gru :: GRU inputSize hiddenSize numLayers directionality dtype device, gruWithConstInit_h :: Tensor device dtype '[numLayers * NumberOfDirections directionality, hiddenSize]} -> GRUWithInit inputSize hiddenSize numLayers directionality  'ConstantInitialization dtype device
-[GRUWithLearnedInit] :: forall inputSize hiddenSize numLayers directionality dtype device. {gruWithLearnedInit_gru :: GRU inputSize hiddenSize numLayers directionality dtype device, gruWithLearnedInit_h :: Parameter device dtype '[numLayers * NumberOfDirections directionality, hiddenSize]} -> GRUWithInit inputSize hiddenSize numLayers directionality  'LearnedInitialization dtype device
+[GRUWithConstInit] :: forall inputSize hiddenSize numLayers directionality dtype device. {gruWithConstInit_gru :: GRU inputSize hiddenSize numLayers directionality dtype device, gruWithConstInit_h :: Tensor device dtype '[numLayers * NumberOfDirections directionality, hiddenSize]} -> GRUWithInit inputSize hiddenSize numLayers directionality 'ConstantInitialization dtype device
+[GRUWithLearnedInit] :: forall inputSize hiddenSize numLayers directionality dtype device. {gruWithLearnedInit_gru :: GRU inputSize hiddenSize numLayers directionality dtype device, gruWithLearnedInit_h :: Parameter device dtype '[numLayers * NumberOfDirections directionality, hiddenSize]} -> GRUWithInit inputSize hiddenSize numLayers directionality 'LearnedInitialization dtype device
 gru :: forall shapeOrder batchSize seqLen directionality initialization numLayers inputSize outputSize hiddenSize inputShape outputShape hcShape parameters tensorParameters dtype device. (KnownNat (NumberOfDirections directionality), KnownNat numLayers, KnownNat batchSize, KnownNat hiddenSize, KnownRNNShapeOrder shapeOrder, KnownRNNDirectionality directionality, outputSize ~ (hiddenSize * NumberOfDirections directionality), inputShape ~ RNNShape shapeOrder seqLen batchSize inputSize, outputShape ~ RNNShape shapeOrder seqLen batchSize outputSize, hcShape ~ '[numLayers * NumberOfDirections directionality, batchSize, hiddenSize], Parameterized (GRU inputSize hiddenSize numLayers directionality dtype device) parameters, tensorParameters ~ GRUR inputSize hiddenSize numLayers directionality dtype device, Castable (HList tensorParameters) [ATenTensor], HMap' ToDependent parameters tensorParameters) => Bool -> GRUWithInit inputSize hiddenSize numLayers directionality initialization dtype device -> Tensor device dtype inputShape -> (Tensor device dtype outputShape, Tensor device dtype hcShape)
 
 -- | Forward propagate the <a>GRU</a> module (without applying dropout on
@@ -5132,12 +5132,12 @@ instance GHC.Generics.Generic (Torch.Typed.NN.Recurrent.GRU.GRUWithInit inputSiz
 instance (GHC.TypeNats.KnownNat hiddenSize, GHC.TypeNats.KnownNat numLayers, GHC.TypeNats.KnownNat (Torch.Typed.Functional.NumberOfDirections directionality), Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.GRU.GRUSpec inputSize hiddenSize numLayers directionality dtype device) (Torch.Typed.NN.Recurrent.GRU.GRU inputSize hiddenSize numLayers directionality dtype device)) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.GRU.GRUWithInitSpec inputSize hiddenSize numLayers directionality 'Torch.Typed.NN.Recurrent.GRU.ConstantInitialization dtype device) (Torch.Typed.NN.Recurrent.GRU.GRUWithInit inputSize hiddenSize numLayers directionality 'Torch.Typed.NN.Recurrent.GRU.ConstantInitialization dtype device)
 instance (GHC.TypeNats.KnownNat hiddenSize, GHC.TypeNats.KnownNat numLayers, GHC.TypeNats.KnownNat (Torch.Typed.Functional.NumberOfDirections directionality), Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.GRU.GRUSpec inputSize hiddenSize numLayers directionality dtype device) (Torch.Typed.NN.Recurrent.GRU.GRU inputSize hiddenSize numLayers directionality dtype device)) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.GRU.GRUWithInitSpec inputSize hiddenSize numLayers directionality 'Torch.Typed.NN.Recurrent.GRU.LearnedInitialization dtype device) (Torch.Typed.NN.Recurrent.GRU.GRUWithInit inputSize hiddenSize numLayers directionality 'Torch.Typed.NN.Recurrent.GRU.LearnedInitialization dtype device)
 instance (Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, GHC.TypeNats.KnownNat inputSize, GHC.TypeNats.KnownNat hiddenSize, GHC.TypeNats.KnownNat (Torch.Typed.Functional.NumberOfDirections directionality), Torch.Typed.Factories.RandDTypeIsValid device dtype, Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.GRU.GRULayerStackSpec inputSize hiddenSize numLayers directionality dtype device) (Torch.Typed.NN.Recurrent.GRU.GRULayerStack inputSize hiddenSize numLayers directionality dtype device)) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.GRU.GRUSpec inputSize hiddenSize numLayers directionality dtype device) (Torch.Typed.NN.Recurrent.GRU.GRU inputSize hiddenSize numLayers directionality dtype device)
-instance Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.GRU.GRULayer inputSize hiddenSize directionality dtype device)) parameters => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.GRU.GRULayerStack inputSize hiddenSize 1 directionality dtype device)) parameters
-instance (2 GHC.TypeNats.<= numLayers, Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.GRU.GRULayerStack inputSize hiddenSize (numLayers GHC.TypeNats.- 1) directionality dtype device)) parameters, Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.GRU.GRULayer (hiddenSize GHC.TypeNats.* Torch.Typed.Functional.NumberOfDirections directionality) hiddenSize directionality dtype device)) parameters', Torch.HList.HAppendFD parameters parameters' parameters'', parameters'' Data.Type.Equality.~ (parameters Torch.HList.++ parameters')) => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.GRU.GRULayerStack inputSize hiddenSize numLayers directionality dtype device)) parameters''
+instance (layer GHC.Types.~ GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.GRU.GRULayer inputSize hiddenSize directionality dtype device), Torch.Typed.Parameter.GParameterized layer parameters) => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.GRU.GRULayerStack inputSize hiddenSize 1 directionality dtype device)) parameters
+instance (2 GHC.TypeNats.<= numLayers, layerStack GHC.Types.~ GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.GRU.GRULayerStack inputSize hiddenSize (numLayers GHC.TypeNats.- 1) directionality dtype device), layer GHC.Types.~ GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.GRU.GRULayer (hiddenSize GHC.TypeNats.* Torch.Typed.Functional.NumberOfDirections directionality) hiddenSize directionality dtype device), Torch.Typed.Parameter.GParameterized layerStack parameters, Torch.Typed.Parameter.GParameterized layer parameters', Torch.HList.HAppendFD parameters parameters' parameters'', parameters'' GHC.Types.~ (parameters Torch.HList.++ parameters')) => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.GRU.GRULayerStack inputSize hiddenSize numLayers directionality dtype device)) parameters''
 instance (Torch.Typed.Factories.RandDTypeIsValid device dtype, GHC.TypeNats.KnownNat inputSize, GHC.TypeNats.KnownNat hiddenSize, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.GRU.GRULayerSpec inputSize hiddenSize directionality dtype device) (Torch.Typed.NN.Recurrent.GRU.GRULayer inputSize hiddenSize directionality dtype device)) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.GRU.GRULayerStackSpec inputSize hiddenSize 1 directionality dtype device) (Torch.Typed.NN.Recurrent.GRU.GRULayerStack inputSize hiddenSize 1 directionality dtype device)
 instance (2 GHC.TypeNats.<= numLayers, Torch.Typed.Factories.RandDTypeIsValid device dtype, GHC.TypeNats.KnownNat inputSize, GHC.TypeNats.KnownNat hiddenSize, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.GRU.GRULayerStackSpec inputSize hiddenSize (numLayers GHC.TypeNats.- 1) directionality dtype device) (Torch.Typed.NN.Recurrent.GRU.GRULayerStack inputSize hiddenSize (numLayers GHC.TypeNats.- 1) directionality dtype device), Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.GRU.GRULayerSpec (hiddenSize GHC.TypeNats.* Torch.Typed.Functional.NumberOfDirections directionality) hiddenSize directionality dtype device) (Torch.Typed.NN.Recurrent.GRU.GRULayer (hiddenSize GHC.TypeNats.* Torch.Typed.Functional.NumberOfDirections directionality) hiddenSize directionality dtype device)) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.GRU.GRULayerStackSpec inputSize hiddenSize numLayers directionality dtype device) (Torch.Typed.NN.Recurrent.GRU.GRULayerStack inputSize hiddenSize numLayers directionality dtype device)
-instance (wiShape Data.Type.Equality.~ Torch.Typed.Functional.GRUWIShape hiddenSize inputSize, whShape Data.Type.Equality.~ Torch.Typed.Functional.GRUWHShape hiddenSize inputSize, biShape Data.Type.Equality.~ Torch.Typed.Functional.GRUBIShape hiddenSize inputSize, bhShape Data.Type.Equality.~ Torch.Typed.Functional.GRUBHShape hiddenSize inputSize, parameters Data.Type.Equality.~ '[Torch.Typed.Parameter.Parameter device dtype wiShape, Torch.Typed.Parameter.Parameter device dtype whShape, Torch.Typed.Parameter.Parameter device dtype biShape, Torch.Typed.Parameter.Parameter device dtype bhShape]) => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.GRU.GRULayer inputSize hiddenSize 'Torch.Typed.Functional.Unidirectional dtype device)) parameters
-instance (wiShape Data.Type.Equality.~ Torch.Typed.Functional.GRUWIShape hiddenSize inputSize, whShape Data.Type.Equality.~ Torch.Typed.Functional.GRUWHShape hiddenSize inputSize, biShape Data.Type.Equality.~ Torch.Typed.Functional.GRUBIShape hiddenSize inputSize, bhShape Data.Type.Equality.~ Torch.Typed.Functional.GRUBHShape hiddenSize inputSize, parameters Data.Type.Equality.~ '[Torch.Typed.Parameter.Parameter device dtype wiShape, Torch.Typed.Parameter.Parameter device dtype whShape, Torch.Typed.Parameter.Parameter device dtype biShape, Torch.Typed.Parameter.Parameter device dtype bhShape, Torch.Typed.Parameter.Parameter device dtype wiShape, Torch.Typed.Parameter.Parameter device dtype whShape, Torch.Typed.Parameter.Parameter device dtype biShape, Torch.Typed.Parameter.Parameter device dtype bhShape]) => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.GRU.GRULayer inputSize hiddenSize 'Torch.Typed.Functional.Bidirectional dtype device)) parameters
+instance (wiShape GHC.Types.~ Torch.Typed.Functional.GRUWIShape hiddenSize inputSize, whShape GHC.Types.~ Torch.Typed.Functional.GRUWHShape hiddenSize inputSize, biShape GHC.Types.~ Torch.Typed.Functional.GRUBIShape hiddenSize inputSize, bhShape GHC.Types.~ Torch.Typed.Functional.GRUBHShape hiddenSize inputSize, parameters GHC.Types.~ '[Torch.Typed.Parameter.Parameter device dtype wiShape, Torch.Typed.Parameter.Parameter device dtype whShape, Torch.Typed.Parameter.Parameter device dtype biShape, Torch.Typed.Parameter.Parameter device dtype bhShape]) => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.GRU.GRULayer inputSize hiddenSize 'Torch.Typed.Functional.Unidirectional dtype device)) parameters
+instance (wiShape GHC.Types.~ Torch.Typed.Functional.GRUWIShape hiddenSize inputSize, whShape GHC.Types.~ Torch.Typed.Functional.GRUWHShape hiddenSize inputSize, biShape GHC.Types.~ Torch.Typed.Functional.GRUBIShape hiddenSize inputSize, bhShape GHC.Types.~ Torch.Typed.Functional.GRUBHShape hiddenSize inputSize, parameters GHC.Types.~ '[Torch.Typed.Parameter.Parameter device dtype wiShape, Torch.Typed.Parameter.Parameter device dtype whShape, Torch.Typed.Parameter.Parameter device dtype biShape, Torch.Typed.Parameter.Parameter device dtype bhShape, Torch.Typed.Parameter.Parameter device dtype wiShape, Torch.Typed.Parameter.Parameter device dtype whShape, Torch.Typed.Parameter.Parameter device dtype biShape, Torch.Typed.Parameter.Parameter device dtype bhShape]) => Torch.Typed.Parameter.GParameterized (GHC.Generics.K1 GHC.Generics.R (Torch.Typed.NN.Recurrent.GRU.GRULayer inputSize hiddenSize 'Torch.Typed.Functional.Bidirectional dtype device)) parameters
 instance (Torch.Typed.Factories.RandDTypeIsValid device dtype, GHC.TypeNats.KnownNat inputSize, GHC.TypeNats.KnownNat hiddenSize, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.GRU.GRULayerSpec inputSize hiddenSize 'Torch.Typed.Functional.Unidirectional dtype device) (Torch.Typed.NN.Recurrent.GRU.GRULayer inputSize hiddenSize 'Torch.Typed.Functional.Unidirectional dtype device)
 instance (Torch.Typed.Factories.RandDTypeIsValid device dtype, GHC.TypeNats.KnownNat inputSize, GHC.TypeNats.KnownNat hiddenSize, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device) => Torch.NN.Randomizable (Torch.Typed.NN.Recurrent.GRU.GRULayerSpec inputSize hiddenSize 'Torch.Typed.Functional.Bidirectional dtype device) (Torch.Typed.NN.Recurrent.GRU.GRULayer inputSize hiddenSize 'Torch.Typed.Functional.Bidirectional dtype device)
 
@@ -5148,23 +5148,23 @@ data LSTMCellSpec (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType) (device 
 
 -- | Weights and biases are drawn from the standard normal distibution
 --   (having mean 0 and variance 1)
-LSTMCellSpec :: LSTMCellSpec
+LSTMCellSpec :: LSTMCellSpec (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
 
 -- | A long, short-term memory cell.
 data LSTMCell (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
-LSTMCell :: Parameter device dtype '[4 * hiddenDim, inputDim] -> Parameter device dtype '[4 * hiddenDim, hiddenDim] -> Parameter device dtype '[4 * hiddenDim] -> Parameter device dtype '[4 * hiddenDim] -> LSTMCell
+LSTMCell :: Parameter device dtype '[4 * hiddenDim, inputDim] -> Parameter device dtype '[4 * hiddenDim, hiddenDim] -> Parameter device dtype '[4 * hiddenDim] -> Parameter device dtype '[4 * hiddenDim] -> LSTMCell (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
 
 -- | input-to-hidden weights
-[lstmCell_w_ih] :: LSTMCell -> Parameter device dtype '[4 * hiddenDim, inputDim]
+[lstmCell_w_ih] :: LSTMCell (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)) -> Parameter device dtype '[4 * hiddenDim, inputDim]
 
 -- | hidden-to-hidden weights
-[lstmCell_w_hh] :: LSTMCell -> Parameter device dtype '[4 * hiddenDim, hiddenDim]
+[lstmCell_w_hh] :: LSTMCell (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)) -> Parameter device dtype '[4 * hiddenDim, hiddenDim]
 
 -- | input-to-hidden bias
-[lstmCell_b_ih] :: LSTMCell -> Parameter device dtype '[4 * hiddenDim]
+[lstmCell_b_ih] :: LSTMCell (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)) -> Parameter device dtype '[4 * hiddenDim]
 
 -- | hidden-to-hidden bias
-[lstmCell_b_hh] :: LSTMCell -> Parameter device dtype '[4 * hiddenDim]
+[lstmCell_b_hh] :: LSTMCell (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)) -> Parameter device dtype '[4 * hiddenDim]
 
 -- | A single recurrent step of an <a>LSTMCell</a>
 forwardStep :: forall inputDim hiddenDim batchSize dtype device. (KnownDType dtype, KnownNat inputDim, KnownNat hiddenDim, KnownNat batchSize) => LSTMCell inputDim hiddenDim dtype device -> (Tensor device dtype '[batchSize, hiddenDim], Tensor device dtype '[batchSize, hiddenDim]) -> Tensor device dtype '[batchSize, inputDim] -> (Tensor device dtype '[batchSize, hiddenDim], Tensor device dtype '[batchSize, hiddenDim])
@@ -5190,23 +5190,23 @@ data GRUCellSpec (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType) (device :
 
 -- | Weights and biases are drawn from the standard normal distibution
 --   (having mean 0 and variance 1)
-GRUCellSpec :: GRUCellSpec
+GRUCellSpec :: GRUCellSpec (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
 
 -- | A gated recurrent unit (GRU) cell.
 data GRUCell (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
-GRUCell :: Parameter device dtype '[3 * hiddenDim, inputDim] -> Parameter device dtype '[3 * hiddenDim, hiddenDim] -> Parameter device dtype '[3 * hiddenDim] -> Parameter device dtype '[3 * hiddenDim] -> GRUCell
+GRUCell :: Parameter device dtype '[3 * hiddenDim, inputDim] -> Parameter device dtype '[3 * hiddenDim, hiddenDim] -> Parameter device dtype '[3 * hiddenDim] -> Parameter device dtype '[3 * hiddenDim] -> GRUCell (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
 
 -- | input-to-hidden weights
-[gruCell_w_ih] :: GRUCell -> Parameter device dtype '[3 * hiddenDim, inputDim]
+[gruCell_w_ih] :: GRUCell (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)) -> Parameter device dtype '[3 * hiddenDim, inputDim]
 
 -- | hidden-to-hidden weights
-[gruCell_w_hh] :: GRUCell -> Parameter device dtype '[3 * hiddenDim, hiddenDim]
+[gruCell_w_hh] :: GRUCell (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)) -> Parameter device dtype '[3 * hiddenDim, hiddenDim]
 
 -- | input-to-hidden bias
-[gruCell_b_ih] :: GRUCell -> Parameter device dtype '[3 * hiddenDim]
+[gruCell_b_ih] :: GRUCell (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)) -> Parameter device dtype '[3 * hiddenDim]
 
 -- | hidden-to-hidden bias
-[gruCell_b_hh] :: GRUCell -> Parameter device dtype '[3 * hiddenDim]
+[gruCell_b_hh] :: GRUCell (inputDim :: Nat) (hiddenDim :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)) -> Parameter device dtype '[3 * hiddenDim]
 
 -- | A single recurrent step of a <a>GRUCell</a>
 forwardStep :: forall inputDim hiddenDim batchSize dtype device. (KnownDType dtype, KnownNat inputDim, KnownNat hiddenDim, KnownNat batchSize) => GRUCell inputDim hiddenDim dtype device -> Tensor device dtype '[batchSize, hiddenDim] -> Tensor device dtype '[batchSize, inputDim] -> Tensor device dtype '[batchSize, hiddenDim]
@@ -5231,7 +5231,7 @@ toDType :: HasToDType dtype' dtype f g => f -> g
 type family PutDType (f :: k) (dtype' :: DType) (dtype :: DType) :: k
 class GHasToDType (dtype' :: DType) (dtype :: DType) (f :: Type -> Type) (g :: Type -> Type)
 gToDType :: forall a. GHasToDType dtype' dtype f g => f a -> g a
-instance (g Data.Type.Equality.~ Torch.Typed.DType.PutDType f dtype' dtype, f Data.Type.Equality.~ Torch.Typed.DType.PutDType g dtype dtype', GHC.Generics.Generic f, GHC.Generics.Generic g, Torch.Typed.DType.GHasToDType dtype' dtype (GHC.Generics.Rep f) (GHC.Generics.Rep g)) => Torch.Typed.DType.HasToDType dtype' dtype f g
+instance (g GHC.Types.~ Torch.Typed.DType.PutDType f dtype' dtype, f GHC.Types.~ Torch.Typed.DType.PutDType g dtype dtype', GHC.Generics.Generic f, GHC.Generics.Generic g, Torch.Typed.DType.GHasToDType dtype' dtype (GHC.Generics.Rep f) (GHC.Generics.Rep g)) => Torch.Typed.DType.HasToDType dtype' dtype f g
 instance (Torch.Typed.DType.GHasToDType dtype' dtype l l', Torch.Typed.DType.GHasToDType dtype' dtype r r') => Torch.Typed.DType.GHasToDType dtype' dtype (l GHC.Generics.:*: r) (l' GHC.Generics.:*: r')
 instance Torch.Typed.DType.HasToDType dtype' dtype f g => Torch.Typed.DType.GHasToDType dtype' dtype (GHC.Generics.K1 i f) (GHC.Generics.K1 i g)
 instance Torch.Typed.DType.GHasToDType dtype' dtype f g => Torch.Typed.DType.GHasToDType dtype' dtype (GHC.Generics.M1 i t f) (GHC.Generics.M1 i t g)
@@ -5301,23 +5301,23 @@ AdamParameterUpdate :: Float -> LearningRate device dtype -> AdamParameterUpdate
 
 -- | Adam step
 adam :: forall gradients tensors momenta adamStep dtype device. (HZipWith AdamMomentum1Update momenta gradients momenta, HZipWith AdamMomentum2Update momenta gradients momenta, HMap' AdamBiasAdjustment momenta momenta, HZipWith3 (AdamParameterUpdate device dtype) tensors momenta momenta tensors) => LearningRate device dtype -> HList gradients -> HList tensors -> Adam momenta -> (HList tensors, Adam momenta)
-instance (parameter Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, momentum Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, shape Data.Type.Equality.~ Torch.Typed.Tensor.Broadcast '[] shape, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype, Torch.Typed.Aux.StandardFloatingPointDTypeValidation device dtype) => Torch.HList.Apply' (Torch.Typed.Optim.AdamParameterUpdate device dtype) (parameter, momentum, momentum) parameter
+instance (parameter GHC.Types.~ Torch.Typed.Tensor.Tensor device dtype shape, momentum GHC.Types.~ Torch.Typed.Tensor.Tensor device dtype shape, shape GHC.Types.~ Torch.Typed.Tensor.Broadcast '[] shape, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype, Torch.Typed.Aux.StandardFloatingPointDTypeValidation device dtype) => Torch.HList.Apply' (Torch.Typed.Optim.AdamParameterUpdate device dtype) (parameter, momentum, momentum) parameter
 instance forall k (momenta :: [k]) (gradients :: [k]) (device :: (Torch.Device.DeviceType, GHC.Types.Nat)) (dtype :: Torch.DType.DType) (tensors :: [k]). (Torch.HList.HZipWith Torch.Typed.Optim.AdamMomentum1Update momenta gradients momenta, Torch.HList.HZipWith Torch.Typed.Optim.AdamMomentum2Update momenta gradients momenta, Torch.HList.HMap' Torch.Typed.Optim.AdamBiasAdjustment momenta momenta, Torch.HList.HZipWith3 (Torch.Typed.Optim.AdamParameterUpdate device dtype) tensors momenta momenta tensors) => Torch.Typed.Optim.Optimizer (Torch.Typed.Optim.Adam momenta) gradients tensors dtype device
-instance (momentum Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape) => Torch.HList.Apply' Torch.Typed.Optim.AdamBiasAdjustment momentum momentum
-instance (gradient Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, momentum2 Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, shape Data.Type.Equality.~ Torch.Typed.Tensor.Broadcast shape shape, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype) => Torch.HList.Apply' Torch.Typed.Optim.AdamMomentum2Update (momentum2, gradient) momentum2
-instance (gradient Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, momentum1 Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape) => Torch.HList.Apply' Torch.Typed.Optim.AdamMomentum1Update (momentum1, gradient) momentum1
-instance (parameter Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, gradient Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, momentum Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, shape Data.Type.Equality.~ Torch.Typed.Tensor.Broadcast '[] shape, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype) => Torch.HList.Apply' (Torch.Typed.Optim.GDMStep device dtype) (parameter, gradient, momentum) (parameter, momentum)
+instance (momentum GHC.Types.~ Torch.Typed.Tensor.Tensor device dtype shape) => Torch.HList.Apply' Torch.Typed.Optim.AdamBiasAdjustment momentum momentum
+instance (gradient GHC.Types.~ Torch.Typed.Tensor.Tensor device dtype shape, momentum2 GHC.Types.~ Torch.Typed.Tensor.Tensor device dtype shape, shape GHC.Types.~ Torch.Typed.Tensor.Broadcast shape shape, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype) => Torch.HList.Apply' Torch.Typed.Optim.AdamMomentum2Update (momentum2, gradient) momentum2
+instance (gradient GHC.Types.~ Torch.Typed.Tensor.Tensor device dtype shape, momentum1 GHC.Types.~ Torch.Typed.Tensor.Tensor device dtype shape) => Torch.HList.Apply' Torch.Typed.Optim.AdamMomentum1Update (momentum1, gradient) momentum1
+instance (parameter GHC.Types.~ Torch.Typed.Tensor.Tensor device dtype shape, gradient GHC.Types.~ Torch.Typed.Tensor.Tensor device dtype shape, momentum GHC.Types.~ Torch.Typed.Tensor.Tensor device dtype shape, shape GHC.Types.~ Torch.Typed.Tensor.Broadcast '[] shape, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype) => Torch.HList.Apply' (Torch.Typed.Optim.GDMStep device dtype) (parameter, gradient, momentum) (parameter, momentum)
 instance forall k (device :: (Torch.Device.DeviceType, GHC.Types.Nat)) (dtype :: Torch.DType.DType) (tensors :: [k]) (gradients :: [k]) (momenta :: [k]) (gdmStep :: [k]). (Torch.HList.HZipWith3 (Torch.Typed.Optim.GDMStep device dtype) tensors gradients momenta gdmStep, Torch.HList.HMap' Torch.HList.Fst gdmStep tensors, Torch.HList.HMap' Torch.HList.Snd gdmStep momenta) => Torch.Typed.Optim.Optimizer (Torch.Typed.Optim.GDM momenta) gradients tensors dtype device
-instance (parameter Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, gradient Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, shape Data.Type.Equality.~ Torch.Typed.Tensor.Broadcast '[] shape, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype) => Torch.HList.Apply' (Torch.Typed.Optim.GDStep device dtype) (parameter, gradient) parameter
+instance (parameter GHC.Types.~ Torch.Typed.Tensor.Tensor device dtype shape, gradient GHC.Types.~ Torch.Typed.Tensor.Tensor device dtype shape, shape GHC.Types.~ Torch.Typed.Tensor.Broadcast '[] shape, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype) => Torch.HList.Apply' (Torch.Typed.Optim.GDStep device dtype) (parameter, gradient) parameter
 instance forall k (device :: (Torch.Device.DeviceType, GHC.Types.Nat)) (dtype :: Torch.DType.DType) (tensors :: [k]) (gradients :: [k]). Torch.HList.HZipWith (Torch.Typed.Optim.GDStep device dtype) tensors gradients tensors => Torch.Typed.Optim.Optimizer Torch.Typed.Optim.GD gradients tensors dtype device
-instance (parameter Data.Type.Equality.~ Torch.Typed.Parameter.Parameter device dtype shape, momentum Data.Type.Equality.~ Torch.Typed.Tensor.Tensor device dtype shape, Torch.Typed.Tensor.TensorOptions shape dtype device) => Torch.HList.Apply' Torch.Typed.Optim.ZerosLike parameter momentum
+instance (parameter GHC.Types.~ Torch.Typed.Parameter.Parameter device dtype shape, momentum GHC.Types.~ Torch.Typed.Tensor.Tensor device dtype shape, Torch.Typed.Tensor.TensorOptions shape dtype device) => Torch.HList.Apply' Torch.Typed.Optim.ZerosLike parameter momentum
 
 module Torch.Typed.NN.DataParallel
 data ForwardConcurrentlyF
 ForwardConcurrentlyF :: ForwardConcurrentlyF
 ForwardConcurrentlyStochF :: ForwardConcurrentlyF
-forwardConcurrently' :: forall devices' device' device model input output models inputs outputs. ( 'Just device ~ GetDevice model,  'Just device ~ GetDevice input, HasScatter devices' device input inputs, HasReplicate devices' device model models, HZipWithM Concurrently ForwardConcurrentlyF models inputs outputs, HasGather device' devices' outputs output) => model -> input -> IO output
-forwardConcurrentlyStoch' :: forall devices' device' device model input output models inputs outputs. ( 'Just device ~ GetDevice model,  'Just device ~ GetDevice input, HasScatter devices' device input inputs, HasReplicate devices' device model models, HZipWithM Concurrently ForwardConcurrentlyF models inputs outputs, HasGather device' devices' outputs output) => model -> input -> IO output
+forwardConcurrently' :: forall devices' device' device model input output models inputs outputs. ('Just device ~ GetDevice model, 'Just device ~ GetDevice input, HasScatter devices' device input inputs, HasReplicate devices' device model models, HZipWithM Concurrently ForwardConcurrentlyF models inputs outputs, HasGather device' devices' outputs output) => model -> input -> IO output
+forwardConcurrentlyStoch' :: forall devices' device' device model input output models inputs outputs. ('Just device ~ GetDevice model, 'Just device ~ GetDevice input, HasScatter devices' device input inputs, HasReplicate devices' device model models, HZipWithM Concurrently ForwardConcurrentlyF models inputs outputs, HasGather device' devices' outputs output) => model -> input -> IO output
 forwardConcurrently :: forall models inputs outputs. HZipWithM Concurrently ForwardConcurrentlyF models inputs outputs => HList models -> HList inputs -> Concurrently (HList outputs)
 forwardConcurrentlyStoch :: forall models inputs outputs. HZipWithM Concurrently ForwardConcurrentlyF models inputs outputs => HList models -> HList inputs -> Concurrently (HList outputs)
 class HasGradConcurrently device' devices parameters losses gradients | device' devices parameters losses -> gradients
@@ -5330,9 +5330,9 @@ data SumF
 SumF :: SumF
 instance GHC.Num.Num y => Torch.HList.Apply' Torch.Typed.NN.DataParallel.SumF (y, y) y
 instance forall k (device' :: (Torch.Device.DeviceType, GHC.Types.Nat)) (device :: (Torch.Device.DeviceType, GHC.Types.Nat)) (xs :: [*]) (ys :: [k]) (devices :: [(Torch.Device.DeviceType, GHC.Types.Nat)]) (xxs :: [*]). (Torch.Typed.Device.HasToDevice device' device (Torch.HList.HList xs) (Torch.HList.HList ys), Torch.Typed.NN.DataParallel.ReduceGradients device' devices xxs ys, Torch.HList.HZipWith Torch.Typed.NN.DataParallel.SumF ys ys ys, 1 GHC.TypeNats.<= Torch.HList.ListLength xxs) => Torch.Typed.NN.DataParallel.ReduceGradients device' (device : devices) (Torch.HList.HList xs : xxs) ys
-instance forall k1 k2 (parameters :: [k2]) (losses :: [k2]) (gradients' :: [k2]) (device' :: (Torch.Device.DeviceType, GHC.Types.Nat)) (devices :: [(Torch.Device.DeviceType, GHC.Types.Nat)]) (gradients :: [k1]). (Torch.HList.HZipWithM Control.Concurrent.Async.Concurrently Torch.Typed.NN.DataParallel.GradConcurrentlyF parameters losses gradients', Torch.Typed.NN.DataParallel.ReduceGradients device' devices gradients' gradients) => Torch.Typed.NN.DataParallel.HasGradConcurrently device' devices parameters losses gradients
+instance forall k1 k2 (parameters :: [k1]) (losses :: [k1]) (gradients' :: [k1]) (device' :: (Torch.Device.DeviceType, GHC.Types.Nat)) (devices :: [(Torch.Device.DeviceType, GHC.Types.Nat)]) (gradients :: [k2]). (Torch.HList.HZipWithM Control.Concurrent.Async.Concurrently Torch.Typed.NN.DataParallel.GradConcurrentlyF parameters losses gradients', Torch.Typed.NN.DataParallel.ReduceGradients device' devices gradients' gradients) => Torch.Typed.NN.DataParallel.HasGradConcurrently device' devices parameters losses gradients
 instance forall k (device' :: (Torch.Device.DeviceType, GHC.Types.Nat)) (device :: (Torch.Device.DeviceType, GHC.Types.Nat)) (xs :: [*]) (ys :: [k]). Torch.Typed.Device.HasToDevice device' device (Torch.HList.HList xs) (Torch.HList.HList ys) => Torch.Typed.NN.DataParallel.ReduceGradients device' '[device] '[Torch.HList.HList xs] ys
-instance forall k1 k2 (parameters :: [k2]) (gradients :: [k1]) (device :: (Torch.Device.DeviceType, GHC.Types.Nat)) (dtype :: Torch.DType.DType). (Torch.Typed.Autograd.HasGrad (Torch.HList.HList parameters) (Torch.HList.HList gradients), Torch.Internal.Class.Castable (Torch.HList.HList gradients) [Torch.Tensor.ATenTensor]) => Torch.HList.Apply' Torch.Typed.NN.DataParallel.GradConcurrentlyF (Torch.HList.HList parameters, Torch.Typed.Optim.Loss device dtype) (Control.Concurrent.Async.Concurrently (Torch.HList.HList gradients))
+instance forall k1 k2 (parameters :: [k1]) (gradients :: [k2]) (device :: (Torch.Device.DeviceType, GHC.Types.Nat)) (dtype :: Torch.DType.DType). (Torch.Typed.Autograd.HasGrad (Torch.HList.HList parameters) (Torch.HList.HList gradients), Torch.Internal.Class.Castable (Torch.HList.HList gradients) [Torch.Tensor.ATenTensor]) => Torch.HList.Apply' Torch.Typed.NN.DataParallel.GradConcurrentlyF (Torch.HList.HList parameters, Torch.Typed.Optim.Loss device dtype) (Control.Concurrent.Async.Concurrently (Torch.HList.HList gradients))
 instance Torch.Typed.NN.HasForward model input output => Torch.HList.Apply' Torch.Typed.NN.DataParallel.ForwardConcurrentlyF (model, input) (Control.Concurrent.Async.Concurrently output)
 
 module Torch.Typed.Vision
@@ -5344,11 +5344,11 @@ type Rows = 28
 type Cols = 28
 type DataDim = Rows * Cols
 type ClassDim = 10
-getLabels :: forall n. KnownNat n => MnistData -> [Int] -> CPUTensor  'Int64 '[n]
+getLabels :: forall n. KnownNat n => MnistData -> [Int] -> CPUTensor 'Int64 '[n]
 getLabel :: MnistData -> Int -> Int
-getImage :: MnistData -> Int -> CPUTensor  'Float '[DataDim]
-getImages' :: forall n. KnownNat n => MnistData -> [Int] -> CPUTensor  'Float '[n, DataDim]
-getImages :: forall n. KnownNat n => MnistData -> [Int] -> CPUTensor  'Float '[n, DataDim]
+getImage :: MnistData -> Int -> CPUTensor 'Float '[DataDim]
+getImages' :: forall n. KnownNat n => MnistData -> [Int] -> CPUTensor 'Float '[n, DataDim]
+getImages :: forall n. KnownNat n => MnistData -> [Int] -> CPUTensor 'Float '[n, DataDim]
 length :: MnistData -> Int
 decompressFile :: String -> String -> IO ByteString
 initMnist :: String -> IO (MnistData, MnistData)
@@ -5378,8 +5378,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679593578 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679593603 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679612776 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679612801 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
