@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE RecordWildCards #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE FunctionalDependencies #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.NN.Recurrent.Cell.GRU</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier">GHC.Generics</span></a></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.html"><span class="hs-identifier">Torch</span></a></span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">data</span><span> </span><span id="GRUSpec"><span class="annot"><a href="Torch.NN.Recurrent.Cell.GRU.html#GRUSpec"><span class="hs-identifier hs-var">GRUSpec</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="GRUSpec"><span class="annot"><a href="Torch.NN.Recurrent.Cell.GRU.html#GRUSpec"><span class="hs-identifier hs-var">GRUSpec</span></a></span></span><span> </span><span class="hs-special">{</span><span>
+</span><span id="line-13"></span><span>    </span><span id="inputSize"><span class="annot"><span class="annottext">GRUSpec -&gt; Int
+</span><a href="Torch.NN.Recurrent.Cell.GRU.html#inputSize"><span class="hs-identifier hs-var hs-var">inputSize</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src"><span class="hs-identifier hs-type">Int</span></a></span><span class="hs-special">,</span><span> </span><span>
+</span><span id="line-14"></span><span>    </span><span id="hiddenSize"><span class="annot"><span class="annottext">GRUSpec -&gt; Int
+</span><a href="Torch.NN.Recurrent.Cell.GRU.html#hiddenSize"><span class="hs-identifier hs-var hs-var">hiddenSize</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-15"></span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679723288"><span id="local-6989586621679723290"><span class="annot"><span class="annottext">GRUSpec -&gt; GRUSpec -&gt; Bool
+(GRUSpec -&gt; GRUSpec -&gt; Bool)
+-&gt; (GRUSpec -&gt; GRUSpec -&gt; Bool) -&gt; Eq GRUSpec
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+/= :: GRUSpec -&gt; GRUSpec -&gt; Bool
+$c/= :: GRUSpec -&gt; GRUSpec -&gt; Bool
+== :: GRUSpec -&gt; GRUSpec -&gt; Bool
+$c== :: GRUSpec -&gt; GRUSpec -&gt; Bool
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/ghc-prim-0.5.3/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679723281"><span id="local-6989586621679723283"><span id="local-6989586621679723285"><span class="annot"><span class="annottext">Int -&gt; GRUSpec -&gt; ShowS
+[GRUSpec] -&gt; ShowS
+GRUSpec -&gt; String
+(Int -&gt; GRUSpec -&gt; ShowS)
+-&gt; (GRUSpec -&gt; String) -&gt; ([GRUSpec] -&gt; ShowS) -&gt; Show GRUSpec
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+showList :: [GRUSpec] -&gt; ShowS
+$cshowList :: [GRUSpec] -&gt; ShowS
+show :: GRUSpec -&gt; String
+$cshow :: GRUSpec -&gt; String
+showsPrec :: Int -&gt; GRUSpec -&gt; ShowS
+$cshowsPrec :: Int -&gt; GRUSpec -&gt; ShowS
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span id="local-6989586621679723278"><span id="local-6989586621679723279"></span></span><span class="hs-keyword">data</span><span> </span><span id="GRUCell"><span class="annot"><a href="Torch.NN.Recurrent.Cell.GRU.html#GRUCell"><span class="hs-identifier hs-var">GRUCell</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="GRUCell"><span class="annot"><a href="Torch.NN.Recurrent.Cell.GRU.html#GRUCell"><span class="hs-identifier hs-var">GRUCell</span></a></span></span><span> </span><span class="hs-special">{</span><span>
+</span><span id="line-18"></span><span>	</span><span id="weightsIH"><span class="annot"><span class="annottext">GRUCell -&gt; Parameter
+</span><a href="Torch.NN.Recurrent.Cell.GRU.html#weightsIH"><span class="hs-identifier hs-var hs-var">weightsIH</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.NN.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>	</span><span id="weightsHH"><span class="annot"><span class="annottext">GRUCell -&gt; Parameter
+</span><a href="Torch.NN.Recurrent.Cell.GRU.html#weightsHH"><span class="hs-identifier hs-var hs-var">weightsHH</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.NN.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>	</span><span id="biasIH"><span class="annot"><span class="annottext">GRUCell -&gt; Parameter
+</span><a href="Torch.NN.Recurrent.Cell.GRU.html#biasIH"><span class="hs-identifier hs-var hs-var">biasIH</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.NN.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>	</span><span id="biasHH"><span class="annot"><span class="annottext">GRUCell -&gt; Parameter
+</span><a href="Torch.NN.Recurrent.Cell.GRU.html#biasHH"><span class="hs-identifier hs-var hs-var">biasHH</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.NN.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a></span><span>
+</span><span id="line-22"></span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(forall x. GRUCell -&gt; Rep GRUCell x)
+-&gt; (forall x. Rep GRUCell x -&gt; GRUCell) -&gt; Generic GRUCell
+forall x. Rep GRUCell x -&gt; GRUCell
+forall x. GRUCell -&gt; Rep GRUCell x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cto :: forall x. Rep GRUCell x -&gt; GRUCell
+$cfrom :: forall x. GRUCell -&gt; Rep GRUCell x
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></a></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679723264"><span id="local-6989586621679723266"><span id="local-6989586621679723268"><span class="annot"><span class="annottext">Int -&gt; GRUCell -&gt; ShowS
+[GRUCell] -&gt; ShowS
+GRUCell -&gt; String
+(Int -&gt; GRUCell -&gt; ShowS)
+-&gt; (GRUCell -&gt; String) -&gt; ([GRUCell] -&gt; ShowS) -&gt; Show GRUCell
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+showList :: [GRUCell] -&gt; ShowS
+$cshowList :: [GRUCell] -&gt; ShowS
+show :: GRUCell -&gt; String
+$cshow :: GRUCell -&gt; String
+showsPrec :: Int -&gt; GRUCell -&gt; ShowS
+$cshowsPrec :: Int -&gt; GRUCell -&gt; ShowS
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="annot"><a href="Torch.NN.Recurrent.Cell.GRU.html#gruCellForward"><span class="hs-identifier hs-type">gruCellForward</span></a></span><span> </span><span>
+</span><span id="line-25"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.NN.Recurrent.Cell.GRU.html#GRUCell"><span class="hs-identifier hs-type">GRUCell</span></a></span><span> </span><span class="hs-comment">-- ^ cell parameters</span><span>
+</span><span id="line-26"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="hs-comment">-- ^ input</span><span>
+</span><span id="line-27"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="hs-comment">-- ^ hidden</span><span>
+</span><span id="line-28"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="hs-comment">-- ^ output</span><span>
+</span><span id="line-29"></span><span id="gruCellForward"><span class="annot"><span class="annottext">gruCellForward :: GRUCell -&gt; Tensor -&gt; Tensor -&gt; Tensor
+</span><a href="Torch.NN.Recurrent.Cell.GRU.html#gruCellForward"><span class="hs-identifier hs-var hs-var">gruCellForward</span></a></span></span><span> </span><span id="local-6989586621679723259"><span id="local-6989586621679723260"><span id="local-6989586621679723261"><span id="local-6989586621679723262"><span class="annot"><a href="Torch.NN.Recurrent.Cell.GRU.html#GRUCell"><span class="hs-identifier hs-type">GRUCell</span></a></span><span class="hs-special">{</span><span class="hs-glyph">..</span><span class="hs-special">}</span></span></span></span></span><span> </span><span id="local-6989586621679723258"><span class="annot"><span class="annottext">input :: Tensor
+</span><a href="#local-6989586621679723258"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span id="local-6989586621679723257"><span class="annot"><span class="annottext">hidden :: Tensor
+</span><a href="#local-6989586621679723257"><span class="hs-identifier hs-var">hidden</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-30"></span><span>	</span><span class="annot"><span class="annottext">Tensor -&gt; Tensor -&gt; Tensor -&gt; Tensor -&gt; Tensor -&gt; Tensor -&gt; Tensor
+</span><a href="Torch.Functional.html#gruCell"><span class="hs-identifier hs-var">gruCell</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679723255"><span class="hs-identifier hs-var">weightsIH'</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679723254"><span class="hs-identifier hs-var">weightsHH'</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679723253"><span class="hs-identifier hs-var">biasIH'</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679723252"><span class="hs-identifier hs-var">biasHH'</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679723257"><span class="hs-identifier hs-var">hidden</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679723258"><span class="hs-identifier hs-var">input</span></a></span><span>
+</span><span id="line-31"></span><span>	</span><span class="hs-keyword">where</span><span>
+</span><span id="line-32"></span><span>		</span><span id="local-6989586621679723255"><span class="annot"><span class="annottext">weightsIH' :: Tensor
+</span><a href="#local-6989586621679723255"><span class="hs-identifier hs-var hs-var">weightsIH'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parameter -&gt; Tensor
+</span><a href="Torch.Autograd.html#toDependent"><span class="hs-identifier hs-var hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">Parameter
+</span><a href="#local-6989586621679723262"><span class="hs-identifier hs-var">weightsIH</span></a></span><span>
+</span><span id="line-33"></span><span>		</span><span id="local-6989586621679723254"><span class="annot"><span class="annottext">weightsHH' :: Tensor
+</span><a href="#local-6989586621679723254"><span class="hs-identifier hs-var hs-var">weightsHH'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parameter -&gt; Tensor
+</span><a href="Torch.Autograd.html#toDependent"><span class="hs-identifier hs-var hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">Parameter
+</span><a href="#local-6989586621679723261"><span class="hs-identifier hs-var">weightsHH</span></a></span><span>
+</span><span id="line-34"></span><span>		</span><span id="local-6989586621679723253"><span class="annot"><span class="annottext">biasIH' :: Tensor
+</span><a href="#local-6989586621679723253"><span class="hs-identifier hs-var hs-var">biasIH'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parameter -&gt; Tensor
+</span><a href="Torch.Autograd.html#toDependent"><span class="hs-identifier hs-var hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">Parameter
+</span><a href="#local-6989586621679723260"><span class="hs-identifier hs-var">biasIH</span></a></span><span>
+</span><span id="line-35"></span><span>		</span><span id="local-6989586621679723252"><span class="annot"><span class="annottext">biasHH' :: Tensor
+</span><a href="#local-6989586621679723252"><span class="hs-identifier hs-var hs-var">biasHH'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parameter -&gt; Tensor
+</span><a href="Torch.Autograd.html#toDependent"><span class="hs-identifier hs-var hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">Parameter
+</span><a href="#local-6989586621679723259"><span class="hs-identifier hs-var">biasHH</span></a></span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.NN.html#Randomizable"><span class="hs-identifier hs-type">Randomizable</span></a></span><span> </span><span class="annot"><a href="Torch.NN.Recurrent.Cell.GRU.html#GRUSpec"><span class="hs-identifier hs-type">GRUSpec</span></a></span><span> </span><span class="annot"><a href="Torch.NN.Recurrent.Cell.GRU.html#GRUCell"><span class="hs-identifier hs-type">GRUCell</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-38"></span><span>  </span><span id="local-6989586621679723248"><span class="annot"><span class="annottext">sample :: GRUSpec -&gt; IO GRUCell
+</span><a href="Torch.NN.html#sample"><span class="hs-identifier hs-var hs-var hs-var hs-var">sample</span></a></span></span><span> </span><span id="local-6989586621679723245"><span id="local-6989586621679723246"><span class="annot"><a href="Torch.NN.Recurrent.Cell.GRU.html#GRUSpec"><span class="hs-identifier hs-type">GRUSpec</span></a></span><span class="hs-special">{</span><span class="hs-glyph">..</span><span class="hs-special">}</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-39"></span><span>    </span><span id="local-6989586621679723244"><span class="annot"><span class="annottext">Parameter
+</span><a href="#local-6989586621679723244"><span class="hs-identifier hs-var">weightsIH'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; IO Parameter
+</span><a href="Torch.Autograd.html#makeIndependent"><span class="hs-identifier hs-var">makeIndependent</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor -&gt; IO Parameter) -&gt; IO Tensor -&gt; IO Parameter
+forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-operator hs-var">=&lt;&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; IO Tensor
+</span><a href="Torch.TensorFactories.html#randIO%27"><span class="hs-identifier hs-var">randIO'</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679723246"><span class="hs-identifier hs-var">inputSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679723245"><span class="hs-identifier hs-var">hiddenSize</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-40"></span><span>    </span><span id="local-6989586621679723240"><span class="annot"><span class="annottext">Parameter
+</span><a href="#local-6989586621679723240"><span class="hs-identifier hs-var">weightsHH'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; IO Parameter
+</span><a href="Torch.Autograd.html#makeIndependent"><span class="hs-identifier hs-var">makeIndependent</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor -&gt; IO Parameter) -&gt; IO Tensor -&gt; IO Parameter
+forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-operator hs-var">=&lt;&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; IO Tensor
+</span><a href="Torch.TensorFactories.html#randIO%27"><span class="hs-identifier hs-var">randIO'</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679723245"><span class="hs-identifier hs-var">hiddenSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679723245"><span class="hs-identifier hs-var">hiddenSize</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-41"></span><span>    </span><span id="local-6989586621679723239"><span class="annot"><span class="annottext">Parameter
+</span><a href="#local-6989586621679723239"><span class="hs-identifier hs-var">biasIH'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; IO Parameter
+</span><a href="Torch.Autograd.html#makeIndependent"><span class="hs-identifier hs-var">makeIndependent</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor -&gt; IO Parameter) -&gt; IO Tensor -&gt; IO Parameter
+forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-operator hs-var">=&lt;&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; IO Tensor
+</span><a href="Torch.TensorFactories.html#randIO%27"><span class="hs-identifier hs-var">randIO'</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679723245"><span class="hs-identifier hs-var">hiddenSize</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-42"></span><span>    </span><span id="local-6989586621679723238"><span class="annot"><span class="annottext">Parameter
+</span><a href="#local-6989586621679723238"><span class="hs-identifier hs-var">biasHH'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; IO Parameter
+</span><a href="Torch.Autograd.html#makeIndependent"><span class="hs-identifier hs-var">makeIndependent</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor -&gt; IO Parameter) -&gt; IO Tensor -&gt; IO Parameter
+forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-operator hs-var">=&lt;&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; IO Tensor
+</span><a href="Torch.TensorFactories.html#randIO%27"><span class="hs-identifier hs-var">randIO'</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679723245"><span class="hs-identifier hs-var">hiddenSize</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-43"></span><span>    </span><span class="annot"><span class="annottext">GRUCell -&gt; IO GRUCell
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">(GRUCell -&gt; IO GRUCell) -&gt; GRUCell -&gt; IO GRUCell
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="../file:///nix/store/yi1zp26n2al045qmp9gwpxblhp2c8gs8-ghc-8.8.3-doc/share/doc/ghc/html/libraries/base-4.13.0.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">$WGRUCell :: Parameter -&gt; Parameter -&gt; Parameter -&gt; Parameter -&gt; GRUCell
+</span><a href="Torch.NN.Recurrent.Cell.GRU.html#%24WGRUCell"><span class="hs-identifier hs-type hs-type">GRUCell</span></a></span><span> </span><span class="hs-special">{</span><span>
+</span><span id="line-44"></span><span>        </span><span class="annot"><span class="annottext">weightsIH :: Parameter
+</span><a href="Torch.NN.Recurrent.Cell.GRU.html#weightsIH"><span class="hs-identifier hs-var">weightsIH</span></a></span><span class="hs-glyph">=</span><span class="annot"><span class="annottext">Parameter
+</span><a href="#local-6989586621679723244"><span class="hs-identifier hs-var">weightsIH'</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-45"></span><span>        </span><span class="annot"><span class="annottext">weightsHH :: Parameter
+</span><a href="Torch.NN.Recurrent.Cell.GRU.html#weightsHH"><span class="hs-identifier hs-var">weightsHH</span></a></span><span class="hs-glyph">=</span><span class="annot"><span class="annottext">Parameter
+</span><a href="#local-6989586621679723240"><span class="hs-identifier hs-var">weightsHH'</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-46"></span><span>        </span><span class="annot"><span class="annottext">biasIH :: Parameter
+</span><a href="Torch.NN.Recurrent.Cell.GRU.html#biasIH"><span class="hs-identifier hs-var">biasIH</span></a></span><span class="hs-glyph">=</span><span class="annot"><span class="annottext">Parameter
+</span><a href="#local-6989586621679723239"><span class="hs-identifier hs-var">biasIH'</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-47"></span><span>        </span><span class="annot"><span class="annottext">biasHH :: Parameter
+</span><a href="Torch.NN.Recurrent.Cell.GRU.html#biasHH"><span class="hs-identifier hs-var">biasHH</span></a></span><span class="hs-glyph">=</span><span class="annot"><span class="annottext">Parameter
+</span><a href="#local-6989586621679723238"><span class="hs-identifier hs-var">biasHH'</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-48"></span></pre></body></html>

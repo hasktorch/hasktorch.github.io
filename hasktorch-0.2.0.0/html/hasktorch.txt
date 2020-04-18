@@ -1011,6 +1011,12 @@ im2col_backward :: Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int
 isfinite :: Tensor -> Tensor
 
 module Torch.Functional
+data RNNParams
+RNNParams :: Tensor -> Tensor -> Tensor -> Tensor -> RNNParams
+[weightIH] :: RNNParams -> Tensor
+[weightHH] :: RNNParams -> Tensor
+[biasIH] :: RNNParams -> Tensor
+[biasHH] :: RNNParams -> Tensor
 data KeepDim
 KeepDim :: KeepDim
 RemoveDim :: KeepDim
@@ -1116,6 +1122,13 @@ divScalar :: Scalar a => a -> Tensor -> Tensor
 --   m times p)(k×m×p) tensor, out will be an (j times k times n times
 --   p)(j×k×n×p) tensor.
 matmul :: Tensor -> Tensor -> Tensor
+
+-- | A simple lookup table that looks up embeddings in a fixed dictionary
+--   and size. This module is often used to retrieve word embeddings using
+--   indices. The input to the module is a list of indices, and the
+--   embedding matrix, and the output is the corresponding word embeddings.
+embedding :: Bool -> Bool -> Tensor -> Int -> Tensor -> Tensor
+embedding' :: Tensor -> Tensor -> Tensor
 
 -- | Computes the error function of each element
 erf :: Tensor -> Tensor
@@ -1261,6 +1274,12 @@ mseLoss :: Tensor -> Tensor -> Tensor
 
 -- | The negative log likelihood loss.
 nllLoss' :: Tensor -> Tensor -> Tensor
+
+-- | Returns cosine similarity between x1 and x2, computed along dim.
+cosineSimilarity :: Int -> Double -> Tensor -> Tensor -> Tensor
+
+-- | Returns cosine similarity with defaulted options.
+cosineSimilarity' :: Tensor -> Tensor -> Tensor
 
 -- | Applies a 1D adaptive max pooling over an input signal composed of
 --   several input planes.
@@ -1445,6 +1464,30 @@ flatten :: Dim -> Dim -> Tensor -> Tensor
 -- | flattenAll
 flattenAll :: Tensor -> Tensor
 
+-- | A long short-term memory (LSTM) cell.
+lstmCell :: Tensor -> Tensor -> Tensor -> Tensor -> (Tensor, Tensor) -> Tensor -> (Tensor, Tensor)
+
+-- | A gated recurrent unit (GRU) cell
+gruCell :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor
+
+-- | An Elman RNN cell with tanh non-linearity
+rnnTanhCell :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor
+
+-- | An Elman RNN cell with ReLU non-linearity
+rnnReluCell :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor
+
+-- | A quantized long short-term memory (LSTM) cell.
+quantizedLstmCell :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Float -> Float -> Float -> Float -> (Tensor, Tensor) -> Tensor -> (Tensor, Tensor)
+
+-- | A quantized long gated recurrent unit (GRU) cell.
+quantizedGruCell :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Float -> Float -> Float -> Float -> Tensor -> Tensor -> Tensor
+
+-- | A quantized Elman RNN cell with relu non-linearity
+quantizedRnnReluCell :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Float -> Float -> Float -> Float -> Tensor -> Tensor -> Tensor
+
+-- | A quantized Elman RNN cell with tanh non-linearity
+quantizedRnnTanhCell :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Float -> Float -> Float -> Float -> Tensor -> Tensor -> Tensor
+
 -- | smoothL1Loss
 smoothL1Loss :: Reduction -> Tensor -> Tensor -> Tensor
 
@@ -1468,6 +1511,7 @@ lstsq :: Tensor -> Tensor -> (Tensor, Tensor)
 mv :: Tensor -> Tensor -> Tensor
 slice :: Tensor -> Int -> Int -> Int -> Int -> Tensor
 sumWithDimnames :: Tensor -> [Dimname] -> Bool -> DType -> Tensor
+instance GHC.Show.Show Torch.Functional.RNNParams
 instance GHC.Show.Show Torch.Functional.KeepDim
 instance GHC.Classes.Eq Torch.Functional.KeepDim
 instance GHC.Show.Show Torch.Functional.Reduction
@@ -1793,6 +1837,60 @@ instance GHC.Classes.Eq Torch.Random.Generator
 instance GHC.Show.Show (GHC.Conc.Sync.TVar (GHC.Maybe.Maybe (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Generator)))
 
 module Torch
+
+module Torch.NN.Recurrent.Cell.LSTM
+data LSTMSpec
+LSTMSpec :: Int -> Int -> LSTMSpec
+[inputSize] :: LSTMSpec -> Int
+[hiddenSize] :: LSTMSpec -> Int
+data LSTMCell
+LSTMCell :: Parameter -> Parameter -> Parameter -> Parameter -> LSTMCell
+[weightsIH] :: LSTMCell -> Parameter
+[weightsHH] :: LSTMCell -> Parameter
+[biasIH] :: LSTMCell -> Parameter
+[biasHH] :: LSTMCell -> Parameter
+lstmCellForward :: LSTMCell -> Tensor -> (Tensor, Tensor) -> (Tensor, Tensor)
+instance GHC.Show.Show Torch.NN.Recurrent.Cell.LSTM.LSTMCell
+instance GHC.Generics.Generic Torch.NN.Recurrent.Cell.LSTM.LSTMCell
+instance GHC.Show.Show Torch.NN.Recurrent.Cell.LSTM.LSTMSpec
+instance GHC.Classes.Eq Torch.NN.Recurrent.Cell.LSTM.LSTMSpec
+instance Torch.NN.Randomizable Torch.NN.Recurrent.Cell.LSTM.LSTMSpec Torch.NN.Recurrent.Cell.LSTM.LSTMCell
+
+module Torch.NN.Recurrent.Cell.GRU
+data GRUSpec
+GRUSpec :: Int -> Int -> GRUSpec
+[inputSize] :: GRUSpec -> Int
+[hiddenSize] :: GRUSpec -> Int
+data GRUCell
+GRUCell :: Parameter -> Parameter -> Parameter -> Parameter -> GRUCell
+[weightsIH] :: GRUCell -> Parameter
+[weightsHH] :: GRUCell -> Parameter
+[biasIH] :: GRUCell -> Parameter
+[biasHH] :: GRUCell -> Parameter
+gruCellForward :: GRUCell -> Tensor -> Tensor -> Tensor
+instance GHC.Show.Show Torch.NN.Recurrent.Cell.GRU.GRUCell
+instance GHC.Generics.Generic Torch.NN.Recurrent.Cell.GRU.GRUCell
+instance GHC.Show.Show Torch.NN.Recurrent.Cell.GRU.GRUSpec
+instance GHC.Classes.Eq Torch.NN.Recurrent.Cell.GRU.GRUSpec
+instance Torch.NN.Randomizable Torch.NN.Recurrent.Cell.GRU.GRUSpec Torch.NN.Recurrent.Cell.GRU.GRUCell
+
+module Torch.NN.Recurrent.Cell.Elman
+data ElmanSpec
+ElmanSpec :: Int -> Int -> ElmanSpec
+[inputSize] :: ElmanSpec -> Int
+[hiddenSize] :: ElmanSpec -> Int
+data ElmanCell
+ElmanCell :: Parameter -> Parameter -> Parameter -> Parameter -> ElmanCell
+[weightsIH] :: ElmanCell -> Parameter
+[weightsHH] :: ElmanCell -> Parameter
+[biasIH] :: ElmanCell -> Parameter
+[biasHH] :: ElmanCell -> Parameter
+elmanCellForward :: ElmanCell -> Tensor -> Tensor -> Tensor
+instance GHC.Show.Show Torch.NN.Recurrent.Cell.Elman.ElmanCell
+instance GHC.Generics.Generic Torch.NN.Recurrent.Cell.Elman.ElmanCell
+instance GHC.Show.Show Torch.NN.Recurrent.Cell.Elman.ElmanSpec
+instance GHC.Classes.Eq Torch.NN.Recurrent.Cell.Elman.ElmanSpec
+instance Torch.NN.Randomizable Torch.NN.Recurrent.Cell.Elman.ElmanSpec Torch.NN.Recurrent.Cell.Elman.ElmanCell
 
 module Torch.Typed
 
@@ -5418,8 +5516,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679613469 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679613494 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679621589 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679621614 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
