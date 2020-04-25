@@ -1030,6 +1030,8 @@ RNNParams :: Tensor -> Tensor -> Tensor -> Tensor -> RNNParams
 [weightHH] :: RNNParams -> Tensor
 [biasIH] :: RNNParams -> Tensor
 [biasHH] :: RNNParams -> Tensor
+data Diag
+Diag :: Int -> Diag
 data KeepDim
 KeepDim :: KeepDim
 RemoveDim :: KeepDim
@@ -1443,7 +1445,7 @@ transpose2D :: Tensor -> Tensor
 --   second argument controls which diagonal to consider: If Int = 0, it is
 --   the main diagonal. If Int &gt; 0, it is above the main diagonal. If
 --   Int &lt; 0, it is below the main diagonal.
-diag :: Int -> Tensor -> Tensor
+diag :: Diag -> Tensor -> Tensor
 
 -- | Returns True if all elements in the tensor are True, False otherwise.
 all :: Tensor -> Bool
@@ -1540,7 +1542,7 @@ topK :: Int -> Dim -> Bool -> Bool -> Tensor -> (Tensor, Tensor)
 --   diagonal are the set of indices &lt;math&gt; for &lt;math&gt;
 --   &lt;math&gt; where &lt;math&gt; and &lt;math&gt; are the dimensions of
 --   the matrix.
-triu :: Int -> Tensor -> Tensor
+triu :: Diag -> Tensor -> Tensor
 
 -- | Returns the lower triangular part of the matrix (2-D tensor) or batch
 --   of matrices input, the other elements of the result tensor out are set
@@ -1553,7 +1555,7 @@ triu :: Int -> Tensor -> Tensor
 --   diagonals are the set of indices &lt;math&gt; for &lt;math&gt;
 --   &lt;math&gt; where &lt;math&gt; and &lt;math&gt; are the dimensions of
 --   the matrix.
-tril :: Int -> Tensor -> Tensor
+tril :: Diag -> Tensor -> Tensor
 
 -- | Returns a new tensor with a dimension of size one inserted at the
 --   specified position. The returned tensor shares the same underlying
@@ -5581,8 +5583,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679627329 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679627354 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679627475 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679627500 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
