@@ -1101,6 +1101,10 @@ mul :: Tensor -> Tensor -> Tensor
 --   a new resulting tensor
 sub :: Tensor -> Tensor -> Tensor
 
+-- | Element wise division of input tensor by other tensor and returns a
+--   new resulting tensor
+div :: Tensor -> Tensor -> Tensor
+
 -- | ceil
 ceil :: Tensor -> Tensor
 
@@ -1598,6 +1602,13 @@ tril :: Diag -> Tensor -> Tensor
 --   (dim input) + 1)] can be used. Negative dim will correspond to
 --   unsqueeze applied at dim = dim + (dim input) + 1
 unsqueeze :: Dim -> Tensor -> Tensor
+
+-- | Upsamples the input, using bilinear upsampling. Expected inputs are
+--   spatial (4 dimensional).
+upsampleBilinear2d :: (Int, Int) -> Bool -> Tensor -> Tensor
+
+-- | Splits the tensor into chunks of given size if possible.
+split :: Int -> Dim -> Tensor -> [Tensor]
 
 -- | Creates a criterion that measures the mean absolute error (MAE)
 --   between each element in the input &lt;math&gt; and target &lt;math&gt;
@@ -5713,8 +5724,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679633463 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679633488 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679633968 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679633993 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
