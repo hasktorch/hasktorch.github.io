@@ -1181,6 +1181,10 @@ log1p :: Tensor -> Tensor
 --   of input.
 log2 :: Tensor -> Tensor
 
+-- | Returns a new tensor with the natural logarithm of the elements of
+--   input.
+log :: Tensor -> Tensor
+
 -- | Returns a new tensor with the logarithm to the base 10 of the elements
 --   of input.
 log10 :: Tensor -> Tensor
@@ -1795,6 +1799,8 @@ flattenParameters :: Parameterized f => f -> [Parameter]
 flattenParameters :: (Parameterized f, Generic f, Parameterized' (Rep f)) => f -> [Parameter]
 replaceOwnParameters :: Parameterized f => f -> ParamStream f
 replaceOwnParameters :: (Parameterized f, Generic f, Parameterized' (Rep f)) => f -> ParamStream f
+forward :: Parameterized f => f -> Tensor -> Tensor
+forward :: Parameterized f => f -> Tensor -> Tensor
 class Parameterized' f
 flattenParameters' :: Parameterized' f => f a -> [Parameter]
 replaceOwnParameters' :: Parameterized' f => f a -> ParamStream (f a)
@@ -5724,13 +5730,14 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679633968 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679633993 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679638478 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679638503 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
 writePng :: FilePath -> Tensor -> IO ()
 hwc2chw :: Tensor -> Tensor
 chw2hwc :: Tensor -> Tensor
+randomIndexes :: Int -> [Int]
 instance GHC.Classes.Eq Torch.Vision.PixelFormat
 instance GHC.Show.Show Torch.Vision.PixelFormat
