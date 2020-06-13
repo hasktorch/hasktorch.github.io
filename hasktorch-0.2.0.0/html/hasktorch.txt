@@ -1048,6 +1048,10 @@ RNNParams :: Tensor -> Tensor -> Tensor -> Tensor -> RNNParams
 [weightHH] :: RNNParams -> Tensor
 [biasIH] :: RNNParams -> Tensor
 [biasHH] :: RNNParams -> Tensor
+data Offset
+OffsetMain :: Offset
+OffsetAbove :: Offset
+OffsetBelow :: Offset
 data Diag
 Diag :: Int -> Diag
 data KeepDim
@@ -1170,6 +1174,29 @@ embedding' :: Tensor -> Tensor -> Tensor
 -- | Computes the error function of each element
 erf :: Tensor -> Tensor
 
+-- | Computes the complementary error function of each element of input
+erfc :: Tensor -> Tensor
+
+-- | Computes the inverse error function of each element of input. The
+--   inverse error function is defined in the range (-1, 1)(−1,1) as:
+--   erfinv(erf(x)) = x
+erfinv :: Tensor -> Tensor
+
+-- | Computes the logarithm of the gamma function on input.
+lgamma :: Tensor -> Tensor
+
+-- | Computes the logarithmic derivative of the gamma function on input.
+digamma :: Tensor -> Tensor
+
+-- | Computes the nth derivative of the digamma function on input. n geq
+--   0n≥0 is called the order of the polygamma function.
+polygamma :: Int -> Tensor -> Tensor
+
+-- | Computes the multivariate log-gamma function with dimension pp
+--   element-wise. All elements must be greater than (p-1)/2, otherwise an
+--   error would be thrown.
+mvlgamma :: Int -> Tensor -> Tensor
+
 -- | Returns a new tensor with the exponential of the elements of the input
 --   tensor input.
 exp :: Tensor -> Tensor
@@ -1287,6 +1314,11 @@ le :: Tensor -> Tensor -> Tensor
 --   argument.
 eq :: Tensor -> Tensor -> Tensor
 (==.) :: Tensor -> Tensor -> Tensor
+isclose :: Double -> Double -> Bool -> Tensor -> Tensor -> Tensor
+isnan :: Tensor -> Tensor
+isNonzero :: Tensor -> Bool
+isSameSize :: Tensor -> Tensor -> Bool
+isSigned :: Tensor -> Bool
 
 -- | Computes input /= other element-wise. The second argument can be a
 --   number or a tensor whose shape is broadcastable with the first
@@ -1329,6 +1361,51 @@ cosineSimilarity :: Dim -> Double -> Tensor -> Tensor -> Tensor
 -- | Returns cosine similarity with defaulted options.
 cosineSimilarity' :: Tensor -> Tensor -> Tensor
 
+-- | The Connectionist Temporal Classification loss. Calculates loss
+--   between a continuous (unsegmented) time series and a target sequence.
+--   CTCLoss sums over the probability of possible alignments of input to
+--   target, producing a loss value which is differentiable with respect to
+--   each input node. The alignment of input to target is assumed to be
+--   “many-to-one”, which limits the length of the target sequence such
+--   that it must be leq≤ the input length.
+ctcLoss :: Bool -> Int -> Reduction -> [Int] -> [Int] -> Tensor -> Tensor -> Tensor
+
+-- | Returns CTC loss with defaulted options.
+ctcLoss' :: Reduction -> [Int] -> [Int] -> Tensor -> Tensor -> Tensor
+
+-- | Measures the loss given an input tensor xx and a labels tensor yy
+--   (containing 1 or -1). This is usually used for measuring whether two
+--   inputs are similar or dissimilar, e.g. using the L1 pairwise distance
+--   as xx, and is typically used for learning nonlinear embeddings or
+--   semi-supervised learning.
+hingeEmbeddingLoss :: Double -> Reduction -> Tensor -> Tensor -> Tensor
+marginRankingLoss :: Tensor -> Tensor -> Tensor -> Double -> Reduction -> Tensor
+
+-- | The 2D negative log likelihood loss
+nllLoss2D :: Reduction -> Int -> Tensor -> Tensor -> Tensor -> Tensor
+
+-- | Creates a criterion that optimizes a multi-class classification hinge
+--   loss (margin-based loss) between input &lt;math&gt; (a 2D mini-batch
+--   Tensor) and output &lt;math&gt; (which is a 1D tensor of target class
+--   indices)
+multiMarginLoss :: Reduction -> Float -> Float -> Tensor -> Tensor -> Tensor -> Tensor
+
+-- | Creates a criterion that optimizes a multi-label one-versus-all loss
+--   based on max-entropy, between input &lt;math&gt; and target
+--   &lt;math&gt; of size &lt;math&gt; .
+multiLabelMarginLoss :: Reduction -> Tensor -> Tensor -> Tensor
+
+-- | The Kullback-Leibler divergence Loss KL divergence is a useful
+--   distance measure for continuous distributions and is often useful when
+--   performing direct regression over the space of (discretely sampled)
+--   continuous output distributions. As with NLLLoss, the input given is
+--   expected to contain log-probabilities and is not restricted to a 2D
+--   Tensor. The targets are interpreted as probabilities by default, but
+--   could be considered as log-probabilities with log_target set to True.
+--   This criterion expects a target Tensor of the same size as the input
+--   Tensor.
+klDiv :: Reduction -> Tensor -> Tensor -> Tensor
+
 -- | Applies a 1D adaptive max pooling over an input signal composed of
 --   several input planes.
 adaptiveMaxPool1d :: Int -> Tensor -> (Tensor, Tensor)
@@ -1356,6 +1433,23 @@ maxPool2d :: (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Bool -> Ten
 --   input planes.
 maxPool3d :: (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Bool -> Tensor -> Tensor
 
+-- | Applies a 1D average pooling over an input signal composed of several
+--   input planes.
+avgPool1d :: Int -> Int -> Int -> Bool -> Bool -> Tensor -> Tensor
+avgPool1d' :: Int -> Int -> Int -> Tensor -> Tensor
+
+-- | Applies a 1D adaptive average pooling over an input signal composed of
+--   several input planes.
+adaptiveAvgPool1d :: Int -> Tensor -> Tensor
+
+-- | Applies a 2D adaptive average pooling over an input signal composed of
+--   several input planes.
+adaptiveAvgPool2d :: (Int, Int) -> Tensor -> Tensor
+
+-- | Applies a 3D adaptive average pooling over an input signal composed of
+--   several input planes.
+adaptiveAvgPool3d :: (Int, Int, Int) -> Tensor -> Tensor
+
 -- | Takes the inverse of the square matrix input. <tt>input</tt> can be
 --   batches of 2D square tensors, in which case this function would return
 --   a tensor composed of individual inverses.
@@ -1382,6 +1476,27 @@ cholesky :: Tri -> Tensor -> Tensor
 --   matrix to be inverted given its Cholesky factor matrix uu .
 choleskySolve :: Tri -> Tensor -> Tensor -> Tensor
 
+-- | This function returns the solution to the system of linear equations
+--   represented by AX = BAX=B and the LU factorization of A, in order as a
+--   namedtuple solution, LU. LU contains L and U factors for LU
+--   factorization of A
+solve :: Tensor -> Tensor -> (Tensor, Tensor)
+
+-- | Solves a linear system of equations with a positive semidefinite
+--   matrix to be inverted given its Cholesky factor matrix uu .
+choleskyInverse :: Tri -> Tensor -> Tensor
+
+-- | This is a low-level function for calling LAPACK directly. This
+--   function returns a namedtuple (a, tau) as defined in LAPACK
+--   documentation for geqrf.
+geqrf :: Tensor -> (Tensor, Tensor)
+
+-- | Computes the orthogonal matrix Q of a QR factorization, from the
+--   <tt>(input, input2)</tt> tuple returned by <a>geqrf</a> function. This
+--   directly calls the underlying LAPACK function <tt>?orgqr</tt>. See
+--   LAPACK documentation for <tt>orgqr</tt> for further details.
+orgqr :: Tensor -> Tensor -> Tensor
+
 -- | During training, randomly zeroes some of the elements of the input
 --   tensor with probability p using samples from a Bernoulli distribution.
 dropout :: Double -> Bool -> Tensor -> IO Tensor
@@ -1391,32 +1506,35 @@ featureDropout :: Double -> Bool -> Tensor -> IO Tensor
 alphaDropout :: Double -> Bool -> Tensor -> IO Tensor
 featureAlphaDropout :: Double -> Bool -> Tensor -> IO Tensor
 
--- | Applies a 1D average pooling over an input signal composed of several
---   input planes.
-avgPool1d :: Int -> Int -> Int -> Bool -> Bool -> Tensor -> Tensor
-avgPool1d' :: Int -> Int -> Int -> Tensor -> Tensor
-
--- | Applies a 1D adaptive average pooling over an input signal composed of
---   several input planes.
-adaptiveAvgPool1d :: Int -> Tensor -> Tensor
-
--- | Applies a 2D adaptive average pooling over an input signal composed of
---   several input planes.
-adaptiveAvgPool2d :: (Int, Int) -> Tensor -> Tensor
-
--- | Applies a 3D adaptive average pooling over an input signal composed of
---   several input planes.
-adaptiveAvgPool3d :: (Int, Int, Int) -> Tensor -> Tensor
-
 -- | Computes the bitwise NOT of the given input tensor. The input tensor
 --   must be of integral or Boolean types. For bool tensors, it computes
 --   the logical NOT.
 bitwiseNot :: Tensor -> Tensor
 
+-- | Computes the element-wise logical NOT of the given input tensor. If
+--   not specified, the output tensor will have the bool dtype. If the
+--   input tensor is not a bool tensor, zeros are treated as False and
+--   non-zeros are treated as True.
+logicalNot :: Tensor -> Tensor
+logicalXor :: Tensor -> Tensor -> Tensor
+logicalAnd :: Tensor -> Tensor -> Tensor
+logicalOr :: Tensor -> Tensor -> Tensor
+
 -- | Concatenates the given sequence of seq tensors in the given dimension.
 --   All tensors must either have the same shape (except in the
 --   concatenating dimension) or be empty.
 cat :: Dim -> [Tensor] -> Tensor
+index :: [Tensor] -> Tensor -> Tensor
+indexCopy :: Int -> Tensor -> Tensor -> Tensor -> Tensor
+indexCopyWithDimname :: Dimname -> Tensor -> Tensor -> Tensor -> Tensor
+
+-- | Puts values from the tensor value into the input tensor (out-of-place)
+--   using the indices specified in indices (which is a tuple of Tensors).
+--   The expression tensor.index_put_(indices, value) is equivalent to
+--   tensor[indices] = value. If accumulate is True, the elements in value
+--   are added to self. If accumulate is False, the behavior is undefined
+--   if indices contain duplicate elements.
+indexPut :: Bool -> [Tensor] -> Tensor -> Tensor -> Tensor
 
 -- | Splits a tensor into a specific number of chunks. Last chunk will be
 --   smaller if the tensor size along the given dimension dim is not
@@ -1447,27 +1565,6 @@ conv1d' :: Tensor -> Tensor -> Int -> Int -> Tensor -> Tensor
 conv2d :: Tensor -> Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Int -> Tensor -> Tensor
 conv2d' :: Tensor -> Tensor -> (Int, Int) -> (Int, Int) -> Tensor -> Tensor
 
--- | This function returns the solution to the system of linear equations
---   represented by AX = BAX=B and the LU factorization of A, in order as a
---   namedtuple solution, LU. LU contains L and U factors for LU
---   factorization of A
-solve :: Tensor -> Tensor -> (Tensor, Tensor)
-
--- | Solves a linear system of equations with a positive semidefinite
---   matrix to be inverted given its Cholesky factor matrix uu .
-choleskyInverse :: Tri -> Tensor -> Tensor
-
--- | This is a low-level function for calling LAPACK directly. This
---   function returns a namedtuple (a, tau) as defined in LAPACK
---   documentation for geqrf.
-geqrf :: Tensor -> (Tensor, Tensor)
-
--- | Computes the orthogonal matrix Q of a QR factorization, from the
---   <tt>(input, input2)</tt> tuple returned by <a>geqrf</a> function. This
---   directly calls the underlying LAPACK function <tt>?orgqr</tt>. See
---   LAPACK documentation for <tt>orgqr</tt> for further details.
-orgqr :: Tensor -> Tensor -> Tensor
-
 -- | Returns a new tensor with the signs of the elements of <tt>input</tt>
 sign :: Tensor -> Tensor
 
@@ -1483,6 +1580,24 @@ transpose2D :: Tensor -> Tensor
 --   the main diagonal. If Int &gt; 0, it is above the main diagonal. If
 --   Int &lt; 0, it is below the main diagonal.
 diag :: Diag -> Tensor -> Tensor
+diagEmbed :: Offset -> Int -> Int -> Tensor -> Tensor
+
+-- | If input is a vector (1-D tensor), then returns a 2-D square tensor
+--   with the elements of input as the diagonal. If input is a tensor with
+--   more than one dimension, then returns a 2-D tensor with diagonal
+--   elements equal to a flattened input. The argument offset controls
+--   which diagonal to consider: If offset = 0, it is the main diagonal. If
+--   offset &gt; 0, it is above the main diagonal. If offset &lt; 0, it is
+--   below the main diagonal.
+diagflat :: Offset -> Tensor -> Tensor
+
+-- | Returns a partial view of input with the its diagonal elements with
+--   respect to dim1 and dim2 appended as a dimension at the end of the
+--   shape. Applying diagEmbed to the output of this function with the same
+--   arguments yields a diagonal matrix with the diagonal entries of the
+--   input. However, diagEmbed has different default dimensions, so those
+--   need to be explicitly specified.
+diagonal :: Offset -> Dimname -> Dimname -> Dimname -> Tensor -> Tensor
 
 -- | Returns True if all elements in the tensor are True, False otherwise.
 all :: Tensor -> Bool
@@ -1573,6 +1688,10 @@ sumDim :: Dim -> KeepDim -> DType -> Tensor -> Tensor
 --   is returned, where the indices are the indices of the elements in the
 --   original input tensor.
 topK :: Int -> Dim -> Bool -> Bool -> Tensor -> (Tensor, Tensor)
+
+-- | Returns the log of summed exponentials of each row of the input tensor
+--   in the given dimension dim. The computation is numerically stabilized.
+logsumexp :: Bool -> Int -> Tensor -> Tensor
 
 -- | Returns the upper triangular part of a matrix (2-D tensor) or batch of
 --   matrices input, the other elements of the result tensor out are set to
@@ -1694,44 +1813,38 @@ stdMean :: Bool -> Tensor -> (Tensor, Tensor)
 --   standard-deviation will be calculated via the biased estimator.
 --   Otherwise, Bessel’s correction will be used.
 stdMeanDim :: Dim -> Bool -> KeepDim -> Tensor -> (Tensor, Tensor)
-
--- | The 2D negative log likelihood loss
-nllLoss2D :: Reduction -> Int -> Tensor -> Tensor -> Tensor -> Tensor
-
--- | Creates a criterion that optimizes a multi-class classification hinge
---   loss (margin-based loss) between input &lt;math&gt; (a 2D mini-batch
---   Tensor) and output &lt;math&gt; (which is a 1D tensor of target class
---   indices)
-multiMarginLoss :: Reduction -> Float -> Float -> Tensor -> Tensor -> Tensor -> Tensor
-
--- | Creates a criterion that optimizes a multi-label one-versus-all loss
---   based on max-entropy, between input &lt;math&gt; and target
---   &lt;math&gt; of size &lt;math&gt; .
-multiLabelMarginLoss :: Reduction -> Tensor -> Tensor -> Tensor
+acos :: Tensor -> Tensor
 addmv :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor
 addr :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor
 allclose :: Tensor -> Tensor -> Double -> Double -> Bool -> Bool
 argmin :: Tensor -> Int -> Bool -> Tensor
-baddbmm :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor
-bmm :: Tensor -> Tensor -> Tensor
-acos :: Tensor -> Tensor
 asin :: Tensor -> Tensor
 atan :: Tensor -> Tensor
+baddbmm :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor
+bmm :: Tensor -> Tensor -> Tensor
+conj :: Tensor -> Tensor
+det :: Tensor -> Tensor
 dot :: Tensor -> Tensor -> Tensor
 einsum :: String -> [Tensor] -> Tensor
+expm1 :: Tensor -> Tensor
+ger :: Tensor -> Tensor -> Tensor
+logdet :: Tensor -> Tensor
 lstsq :: Tensor -> Tensor -> (Tensor, Tensor)
 mv :: Tensor -> Tensor -> Tensor
 slice :: Tensor -> Int -> Int -> Int -> Int -> Tensor
 sumWithDimnames :: Tensor -> [Dimname] -> Bool -> DType -> Tensor
 instance GHC.Show.Show Torch.Functional.RNNParams
+instance GHC.Show.Show Torch.Functional.Offset
 instance GHC.Show.Show Torch.Functional.KeepDim
 instance GHC.Classes.Eq Torch.Functional.KeepDim
 instance GHC.Show.Show Torch.Functional.Reduction
 instance GHC.Classes.Eq Torch.Functional.Reduction
 instance GHC.Show.Show Torch.Functional.Tri
 instance GHC.Classes.Eq Torch.Functional.Tri
+instance Torch.Internal.Class.Castable Torch.Functional.Offset GHC.Int.Int64
 instance Torch.Internal.Class.Castable Torch.Functional.Reduction GHC.Int.Int64
 instance GHC.Num.Num Torch.Tensor.Tensor
+instance GHC.Classes.Eq Torch.Tensor.Tensor
 instance GHC.Real.Fractional Torch.Tensor.Tensor
 
 module Torch.Initializers
@@ -5735,8 +5848,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679639412 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679639437 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679645356 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679645381 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
