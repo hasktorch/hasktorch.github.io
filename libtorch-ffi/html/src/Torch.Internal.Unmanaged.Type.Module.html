@@ -1,0 +1,835 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DataKinds #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE PolyKinds #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE TemplateHaskell #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE QuasiQuotes #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-7"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-8"></span><span class="hs-pragma">{-# LANGUAGE TypeFamilies #-}</span><span>
+</span><span id="line-9"></span><span class="hs-pragma">{-# LANGUAGE FlexibleInstances #-}</span><span>
+</span><span id="line-10"></span><span class="hs-pragma">{-# LANGUAGE MultiParamTypeClasses #-}</span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.Internal.Unmanaged.Type.Module</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/ipnvp1661ppcyizvbflqkqa5zqv8g8sf-safe-exceptions-lib-safe-exceptions-0.1.7.0-doc/share/doc/safe-exceptions/html/src"><span class="hs-identifier">Control.Exception.Safe</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/ipnvp1661ppcyizvbflqkqa5zqv8g8sf-safe-exceptions-lib-safe-exceptions-0.1.7.0-doc/share/doc/safe-exceptions/html/src"><span class="hs-identifier">bracket</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/myq28agg45arrr187hbw7ggsf0js8pwf-inline-c-cpp-lib-inline-c-cpp-0.4.0.2-doc/share/doc/inline-c-cpp/html/src"><span class="hs-identifier">Language.C.Inline.Cpp</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">C</span></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/myq28agg45arrr187hbw7ggsf0js8pwf-inline-c-cpp-lib-inline-c-cpp-0.4.0.2-doc/share/doc/inline-c-cpp/html/src"><span class="hs-identifier">Language.C.Inline.Cpp.Exceptions</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">C</span></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/3cyp38ah96r9r93hixkc294xsx2wa3h5-inline-c-lib-inline-c-0.9.1.0-doc/share/doc/inline-c/html/src"><span class="hs-identifier">Language.C.Inline.Context</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">C</span></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/3cyp38ah96r9r93hixkc294xsx2wa3h5-inline-c-lib-inline-c-0.9.1.0-doc/share/doc/inline-c/html/src"><span class="hs-identifier">Language.C.Types</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">C</span></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Map</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Map</span></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Foreign.C.String</span></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Foreign.C.Types</span></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Foreign</span></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.Internal.Type.html"><span class="hs-identifier">Torch.Internal.Type</span></a></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi-helper/html/src"><span class="hs-identifier">Torch.Internal.Unmanaged.Helper</span></a></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.Internal.Class.html"><span class="hs-identifier">Torch.Internal.Class</span></a></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.IORef</span></span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="hs-identifier">C.context</span><span> </span><span class="hs-operator">$</span><span> </span><span class="hs-identifier">C.cppCtx</span><span> </span><span class="hs-operator">&lt;&gt;</span><span> </span><span class="hs-identifier">mempty</span><span> </span><span class="hs-special">{</span><span> </span><span class="hs-identifier">C.ctxTypesTable</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier">typeTable</span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="hs-identifier">C.include</span><span> </span><span class="hs-string">&quot;&lt;torch/script.h&gt;&quot;</span><span>
+</span><span id="line-32"></span><span class="hs-identifier">C.include</span><span> </span><span class="hs-string">&quot;&lt;torch/csrc/jit/serialization/export.h&gt;&quot;</span><span>
+</span><span id="line-33"></span><span class="hs-identifier">C.include</span><span> </span><span class="hs-string">&quot;&lt;vector&gt;&quot;</span><span>
+</span><span id="line-34"></span><span class="hs-identifier">C.include</span><span> </span><span class="hs-string">&quot;&lt;iostream&gt;&quot;</span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span class="hs-comment">-- From libtorch/include/torch/csrc/jit/script/module.h</span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#newModule"><span class="hs-identifier hs-type">newModule</span></a></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span id="newModule"><span class="annot"><span class="annottext">newModule :: Ptr StdString -&gt; IO (Ptr Module)
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#newModule"><span class="hs-identifier hs-var hs-var">newModule</span></a></span></span><span> </span><span id="local-6989586621684156382"><span class="annot"><span class="annottext">name :: Ptr StdString
+</span><a href="#local-6989586621684156382"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-41"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| torch::jit::script::Module* { return new torch::jit::script::Module(
+     *$(std::string* name)
+    );
+  }|]</span></span><span>
+</span><span id="line-45"></span><span>
+</span><span id="line-46"></span><span class="hs-keyword">foreign</span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-keyword">ccall</span></span><span> </span><span class="annot"><span class="hs-keyword">unsafe</span></span><span> </span><span class="annot"><span class="hs-string">&quot;hasktorch_finalizer.h &amp;delete_module&quot;</span></span><span>
+</span><span id="line-47"></span><span>  </span><span id="c_delete_module"><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#c_delete_module"><span class="hs-identifier hs-var">c_delete_module</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FunPtr</span></span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Class.html#CppObject"><span class="hs-identifier hs-type">CppObject</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-50"></span><span>  </span><span id="local-6989586621684156360"><span class="annot"><span class="annottext">fromPtr :: Ptr Module -&gt; IO (ForeignPtr Module)
+</span><a href="Torch.Internal.Class.html#fromPtr"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromPtr</span></a></span></span><span> </span><span id="local-6989586621684156358"><span class="annot"><span class="annottext">ptr :: Ptr Module
+</span><a href="#local-6989586621684156358"><span class="hs-identifier hs-var">ptr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FinalizerPtr Module -&gt; Ptr Module -&gt; IO (ForeignPtr Module)
+forall a. FinalizerPtr a -&gt; Ptr a -&gt; IO (ForeignPtr a)
+</span><span class="hs-identifier hs-var">newForeignPtr</span></span><span> </span><span class="annot"><span class="annottext">FinalizerPtr Module
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#c_delete_module"><span class="hs-identifier hs-var">c_delete_module</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Module
+</span><a href="#local-6989586621684156358"><span class="hs-identifier hs-var">ptr</span></a></span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="hs-keyword">foreign</span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-keyword">ccall</span></span><span> </span><span class="annot"><span class="hs-keyword">unsafe</span></span><span> </span><span class="annot"><span class="hs-string">&quot;hasktorch_finalizer.h &amp;delete_jitgraph&quot;</span></span><span>
+</span><span id="line-53"></span><span>  </span><span id="c_delete_jitgraph"><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#c_delete_jitgraph"><span class="hs-identifier hs-var">c_delete_jitgraph</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FunPtr</span></span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#SharedPtr"><span class="hs-identifier hs-type">SharedPtr</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitGraph"><span class="hs-identifier hs-type">JitGraph</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Class.html#CppObject"><span class="hs-identifier hs-type">CppObject</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#SharedPtr"><span class="hs-identifier hs-type">SharedPtr</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitGraph"><span class="hs-identifier hs-type">JitGraph</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-56"></span><span>  </span><span id="local-6989586621684156354"><span class="annot"><span class="annottext">fromPtr :: Ptr (SharedPtr JitGraph) -&gt; IO (ForeignPtr (SharedPtr JitGraph))
+</span><a href="#local-6989586621684156354"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromPtr</span></a></span></span><span> </span><span id="local-6989586621684156353"><span class="annot"><span class="annottext">ptr :: Ptr (SharedPtr JitGraph)
+</span><a href="#local-6989586621684156353"><span class="hs-identifier hs-var">ptr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FinalizerPtr (SharedPtr JitGraph)
+-&gt; Ptr (SharedPtr JitGraph) -&gt; IO (ForeignPtr (SharedPtr JitGraph))
+forall a. FinalizerPtr a -&gt; Ptr a -&gt; IO (ForeignPtr a)
+</span><span class="hs-identifier hs-var">newForeignPtr</span></span><span> </span><span class="annot"><span class="annottext">FinalizerPtr (SharedPtr JitGraph)
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#c_delete_jitgraph"><span class="hs-identifier hs-var">c_delete_jitgraph</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr (SharedPtr JitGraph)
+</span><a href="#local-6989586621684156353"><span class="hs-identifier hs-var">ptr</span></a></span><span>
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span class="hs-keyword">foreign</span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-keyword">ccall</span></span><span> </span><span class="annot"><span class="hs-keyword">unsafe</span></span><span> </span><span class="annot"><span class="hs-string">&quot;hasktorch_finalizer.h &amp;delete_jitnode&quot;</span></span><span>
+</span><span id="line-59"></span><span>  </span><span id="c_delete_jitnode"><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#c_delete_jitnode"><span class="hs-identifier hs-var">c_delete_jitnode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FunPtr</span></span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitNode"><span class="hs-identifier hs-type">JitNode</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-60"></span><span>
+</span><span id="line-61"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Class.html#CppObject"><span class="hs-identifier hs-type">CppObject</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitNode"><span class="hs-identifier hs-type">JitNode</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-62"></span><span>  </span><span id="local-6989586621684156350"><span class="annot"><span class="annottext">fromPtr :: Ptr JitNode -&gt; IO (ForeignPtr JitNode)
+</span><a href="#local-6989586621684156350"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromPtr</span></a></span></span><span> </span><span id="local-6989586621684156349"><span class="annot"><span class="annottext">ptr :: Ptr JitNode
+</span><a href="#local-6989586621684156349"><span class="hs-identifier hs-var">ptr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FinalizerPtr JitNode -&gt; Ptr JitNode -&gt; IO (ForeignPtr JitNode)
+forall a. FinalizerPtr a -&gt; Ptr a -&gt; IO (ForeignPtr a)
+</span><span class="hs-identifier hs-var">newForeignPtr</span></span><span> </span><span class="annot"><span class="annottext">FinalizerPtr JitNode
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#c_delete_jitnode"><span class="hs-identifier hs-var">c_delete_jitnode</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr JitNode
+</span><a href="#local-6989586621684156349"><span class="hs-identifier hs-var">ptr</span></a></span><span>
+</span><span id="line-63"></span><span>
+</span><span id="line-64"></span><span class="hs-keyword">foreign</span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-keyword">ccall</span></span><span> </span><span class="annot"><span class="hs-keyword">unsafe</span></span><span> </span><span class="annot"><span class="hs-string">&quot;hasktorch_finalizer.h &amp;delete_jitvalue&quot;</span></span><span>
+</span><span id="line-65"></span><span>  </span><span id="c_delete_jitvalue"><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#c_delete_jitvalue"><span class="hs-identifier hs-var">c_delete_jitvalue</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FunPtr</span></span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitValue"><span class="hs-identifier hs-type">JitValue</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-66"></span><span>
+</span><span id="line-67"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Class.html#CppObject"><span class="hs-identifier hs-type">CppObject</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitValue"><span class="hs-identifier hs-type">JitValue</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-68"></span><span>  </span><span id="local-6989586621684156346"><span class="annot"><span class="annottext">fromPtr :: Ptr JitValue -&gt; IO (ForeignPtr JitValue)
+</span><a href="#local-6989586621684156346"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromPtr</span></a></span></span><span> </span><span id="local-6989586621684156345"><span class="annot"><span class="annottext">ptr :: Ptr JitValue
+</span><a href="#local-6989586621684156345"><span class="hs-identifier hs-var">ptr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FinalizerPtr JitValue -&gt; Ptr JitValue -&gt; IO (ForeignPtr JitValue)
+forall a. FinalizerPtr a -&gt; Ptr a -&gt; IO (ForeignPtr a)
+</span><span class="hs-identifier hs-var">newForeignPtr</span></span><span> </span><span class="annot"><span class="annottext">FinalizerPtr JitValue
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#c_delete_jitvalue"><span class="hs-identifier hs-var">c_delete_jitvalue</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr JitValue
+</span><a href="#local-6989586621684156345"><span class="hs-identifier hs-var">ptr</span></a></span><span>
+</span><span id="line-69"></span><span>
+</span><span id="line-70"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#save"><span class="hs-identifier hs-type">save</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FilePath</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-71"></span><span id="save"><span class="annot"><span class="annottext">save :: Ptr Module -&gt; FilePath -&gt; IO ()
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#save"><span class="hs-identifier hs-var hs-var">save</span></a></span></span><span> </span><span id="local-6989586621684156343"><span class="annot"><span class="annottext">obj :: Ptr Module
+</span><a href="#local-6989586621684156343"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span id="local-6989586621684156342"><span class="annot"><span class="annottext">file :: FilePath
+</span><a href="#local-6989586621684156342"><span class="hs-identifier hs-var">file</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FilePath -&gt; (Ptr CChar -&gt; IO ()) -&gt; IO ()
+forall a. FilePath -&gt; (Ptr CChar -&gt; IO a) -&gt; IO a
+</span><span class="hs-identifier hs-var">withCString</span></span><span> </span><span class="annot"><span class="annottext">FilePath
+</span><a href="#local-6989586621684156342"><span class="hs-identifier hs-var">file</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr CChar -&gt; IO ()) -&gt; IO ()) -&gt; (Ptr CChar -&gt; IO ()) -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621684156340"><span class="annot"><span class="annottext">cfile :: Ptr CChar
+</span><a href="#local-6989586621684156340"><span class="hs-identifier hs-var">cfile</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="">[C.throwBlock| void {
+    $(torch::jit::script::Module* obj)-&gt;save($(char* cfile));
+  }|]</span></span><span>
+</span><span id="line-74"></span><span>
+</span><span id="line-75"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#load"><span class="hs-identifier hs-type">load</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FilePath</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-76"></span><span id="load"><span class="annot"><span class="annottext">load :: FilePath -&gt; IO (Ptr Module)
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#load"><span class="hs-identifier hs-var hs-var">load</span></a></span></span><span> </span><span id="local-6989586621684156324"><span class="annot"><span class="annottext">file :: FilePath
+</span><a href="#local-6989586621684156324"><span class="hs-identifier hs-var">file</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FilePath -&gt; (Ptr CChar -&gt; IO (Ptr Module)) -&gt; IO (Ptr Module)
+forall a. FilePath -&gt; (Ptr CChar -&gt; IO a) -&gt; IO a
+</span><span class="hs-identifier hs-var">withCString</span></span><span> </span><span class="annot"><span class="annottext">FilePath
+</span><a href="#local-6989586621684156324"><span class="hs-identifier hs-var">file</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr CChar -&gt; IO (Ptr Module)) -&gt; IO (Ptr Module))
+-&gt; (Ptr CChar -&gt; IO (Ptr Module)) -&gt; IO (Ptr Module)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621684156323"><span class="annot"><span class="annottext">cfile :: Ptr CChar
+</span><a href="#local-6989586621684156323"><span class="hs-identifier hs-var">cfile</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="">[C.throwBlock| torch::jit::script::Module* {
+    return new torch::jit::script::Module(torch::jit::load($(char* cfile)));
+  }|]</span></span><span>
+</span><span id="line-79"></span><span>
+</span><span id="line-80"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#forward"><span class="hs-identifier hs-type">forward</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#StdVector"><span class="hs-identifier hs-type">StdVector</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-81"></span><span id="forward"><span class="annot"><span class="annottext">forward :: Ptr Module -&gt; Ptr (StdVector IValue) -&gt; IO (Ptr IValue)
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#forward"><span class="hs-identifier hs-var hs-var">forward</span></a></span></span><span> </span><span id="local-6989586621684156309"><span class="annot"><span class="annottext">obj :: Ptr Module
+</span><a href="#local-6989586621684156309"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span id="local-6989586621684156308"><span class="annot"><span class="annottext">inputs :: Ptr (StdVector IValue)
+</span><a href="#local-6989586621684156308"><span class="hs-identifier hs-var">inputs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[C.throwBlock| at::IValue* {
+    return new at::IValue($(torch::jit::script::Module* obj)-&gt;forward(*$(std::vector&lt;at::IValue&gt;* inputs)));
+  }|]</span></span><span>
+</span><span id="line-84"></span><span>
+</span><span id="line-85"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#registerParameter"><span class="hs-identifier hs-type">registerParameter</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-86"></span><span id="registerParameter"><span class="annot"><span class="annottext">registerParameter :: Ptr Module -&gt; Ptr StdString -&gt; Ptr Tensor -&gt; CBool -&gt; IO ()
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#registerParameter"><span class="hs-identifier hs-var hs-var">registerParameter</span></a></span></span><span> </span><span id="local-6989586621684156292"><span class="annot"><span class="annottext">obj :: Ptr Module
+</span><a href="#local-6989586621684156292"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span id="local-6989586621684156291"><span class="annot"><span class="annottext">name :: Ptr StdString
+</span><a href="#local-6989586621684156291"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span id="local-6989586621684156290"><span class="annot"><span class="annottext">v :: Ptr Tensor
+</span><a href="#local-6989586621684156290"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span id="local-6989586621684156289"><span class="annot"><span class="annottext">is_buffer :: CBool
+</span><a href="#local-6989586621684156289"><span class="hs-identifier hs-var">is_buffer</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[C.throwBlock| void {
+    $(torch::jit::script::Module* obj)-&gt;register_parameter(
+      *$(std::string* name)
+    , *$(at::Tensor* v)
+    , $(bool is_buffer)
+    );
+  }|]</span></span><span>
+</span><span id="line-93"></span><span>
+</span><span id="line-94"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#registerModule"><span class="hs-identifier hs-type">registerModule</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-95"></span><span id="registerModule"><span class="annot"><span class="annottext">registerModule :: Ptr Module -&gt; Ptr StdString -&gt; Ptr Module -&gt; IO ()
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#registerModule"><span class="hs-identifier hs-var hs-var">registerModule</span></a></span></span><span> </span><span id="local-6989586621684156269"><span class="annot"><span class="annottext">obj :: Ptr Module
+</span><a href="#local-6989586621684156269"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span id="local-6989586621684156268"><span class="annot"><span class="annottext">name :: Ptr StdString
+</span><a href="#local-6989586621684156268"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span id="local-6989586621684156267"><span class="annot"><span class="annottext">v :: Ptr Module
+</span><a href="#local-6989586621684156267"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[C.throwBlock| void {
+    $(torch::jit::script::Module* obj)-&gt;register_module(
+      *$(std::string* name)
+    , *$(torch::jit::script::Module* v)
+    );
+  }|]</span></span><span>
+</span><span id="line-101"></span><span>
+</span><span id="line-102"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#train"><span class="hs-identifier hs-type">train</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-103"></span><span id="train"><span class="annot"><span class="annottext">train :: Ptr Module -&gt; CBool -&gt; IO ()
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#train"><span class="hs-identifier hs-var hs-var">train</span></a></span></span><span> </span><span id="local-6989586621684156249"><span class="annot"><span class="annottext">obj :: Ptr Module
+</span><a href="#local-6989586621684156249"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span id="local-6989586621684156248"><span class="annot"><span class="annottext">on :: CBool
+</span><a href="#local-6989586621684156248"><span class="hs-identifier hs-var">on</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[C.throwBlock| void {
+    $(torch::jit::script::Module* obj)-&gt;train(
+      $(bool on)
+    );
+  }|]</span></span><span>
+</span><span id="line-108"></span><span>
+</span><span id="line-109"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#runMethod"><span class="hs-identifier hs-type">runMethod</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#C10List"><span class="hs-identifier hs-type">C10List</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-110"></span><span id="runMethod"><span class="annot"><span class="annottext">runMethod :: Ptr Module
+-&gt; Ptr StdString -&gt; Ptr (C10List IValue) -&gt; IO (Ptr IValue)
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#runMethod"><span class="hs-identifier hs-var hs-var">runMethod</span></a></span></span><span> </span><span id="local-6989586621684156232"><span class="annot"><span class="annottext">obj :: Ptr Module
+</span><a href="#local-6989586621684156232"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span id="local-6989586621684156231"><span class="annot"><span class="annottext">method_name :: Ptr StdString
+</span><a href="#local-6989586621684156231"><span class="hs-identifier hs-var">method_name</span></a></span></span><span> </span><span id="local-6989586621684156230"><span class="annot"><span class="annottext">args :: Ptr (C10List IValue)
+</span><a href="#local-6989586621684156230"><span class="hs-identifier hs-var">args</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[C.throwBlock| at::IValue* {
+    return new at::IValue($(torch::jit::script::Module* obj)-&gt;run_method(
+      *$(std::string* method_name)
+    , *$(c10::List&lt;at::IValue&gt;* args)
+    ));
+  }|]</span></span><span>
+</span><span id="line-116"></span><span>
+</span><span id="line-117"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#runMethod1"><span class="hs-identifier hs-type">runMethod1</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-118"></span><span id="runMethod1"><span class="annot"><span class="annottext">runMethod1 :: Ptr Module -&gt; Ptr StdString -&gt; Ptr IValue -&gt; IO (Ptr IValue)
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#runMethod1"><span class="hs-identifier hs-var hs-var">runMethod1</span></a></span></span><span> </span><span id="local-6989586621684156212"><span class="annot"><span class="annottext">obj :: Ptr Module
+</span><a href="#local-6989586621684156212"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span id="local-6989586621684156211"><span class="annot"><span class="annottext">method_name :: Ptr StdString
+</span><a href="#local-6989586621684156211"><span class="hs-identifier hs-var">method_name</span></a></span></span><span> </span><span id="local-6989586621684156210"><span class="annot"><span class="annottext">args :: Ptr IValue
+</span><a href="#local-6989586621684156210"><span class="hs-identifier hs-var">args</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[C.throwBlock| at::IValue* {
+    return new at::IValue($(torch::jit::script::Module* obj)-&gt;run_method(
+      *$(std::string* method_name)
+    , *$(at::IValue* args)
+    ));
+  }|]</span></span><span>
+</span><span id="line-124"></span><span>
+</span><span id="line-125"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#getParameters"><span class="hs-identifier hs-type">getParameters</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-126"></span><span id="getParameters"><span class="annot"><span class="annottext">getParameters :: Ptr Module -&gt; IO (Ptr TensorList)
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#getParameters"><span class="hs-identifier hs-var hs-var">getParameters</span></a></span></span><span> </span><span id="local-6989586621684156192"><span class="annot"><span class="annottext">obj :: Ptr Module
+</span><a href="#local-6989586621684156192"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[C.throwBlock| std::vector&lt;at::Tensor&gt;* {
+    std::vector&lt;at::Tensor&gt;* vec_parameters = new std::vector&lt;at::Tensor&gt;();
+    auto parameters = $(torch::jit::script::Module* obj)-&gt;parameters();
+    for(auto p : parameters) {
+      vec_parameters-&gt;push_back(p);
+    }
+    return vec_parameters;
+  }|]</span></span><span>
+</span><span id="line-134"></span><span>
+</span><span id="line-135"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#setParameters"><span class="hs-identifier hs-type">setParameters</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-136"></span><span id="setParameters"><span class="annot"><span class="annottext">setParameters :: Ptr Module -&gt; Ptr TensorList -&gt; IO ()
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#setParameters"><span class="hs-identifier hs-var hs-var">setParameters</span></a></span></span><span> </span><span id="local-6989586621684156178"><span class="annot"><span class="annottext">obj :: Ptr Module
+</span><a href="#local-6989586621684156178"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span id="local-6989586621684156177"><span class="annot"><span class="annottext">params :: Ptr TensorList
+</span><a href="#local-6989586621684156177"><span class="hs-identifier hs-var">params</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[C.throwBlock| void {
+    auto module = $(torch::jit::script::Module* obj);
+    auto parameters = module-&gt;named_parameters();
+    auto vec = $(std::vector&lt;at::Tensor&gt;* params);
+    int i=0; 
+    for(auto p : parameters) {
+      module-&gt;register_parameter(p.name,(*vec)[i],false);
+    }
+  }|]</span></span><span>
+</span><span id="line-145"></span><span>
+</span><span id="line-146"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#toDevice"><span class="hs-identifier hs-type">toDevice</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#DeviceType"><span class="hs-identifier hs-type">DeviceType</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int16</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-147"></span><span id="toDevice"><span class="annot"><span class="annottext">toDevice :: Ptr Module -&gt; DeviceType -&gt; DeviceType -&gt; IO ()
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#toDevice"><span class="hs-identifier hs-var hs-var">toDevice</span></a></span></span><span> </span><span id="local-6989586621684156161"><span class="annot"><span class="annottext">obj :: Ptr Module
+</span><a href="#local-6989586621684156161"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span id="local-6989586621684156160"><span class="annot"><span class="annottext">device :: DeviceType
+</span><a href="#local-6989586621684156160"><span class="hs-identifier hs-var">device</span></a></span></span><span> </span><span id="local-6989586621684156159"><span class="annot"><span class="annottext">device_index :: DeviceType
+</span><a href="#local-6989586621684156159"><span class="hs-identifier hs-var">device_index</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[C.throwBlock| void {
+    $(torch::jit::script::Module* obj)-&gt;to(torch::Device($(at::DeviceType device), $(int16_t device_index)));
+  }|]</span></span><span>
+</span><span id="line-150"></span><span>
+</span><span id="line-151"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#clone"><span class="hs-identifier hs-type">clone</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-152"></span><span id="clone"><span class="annot"><span class="annottext">clone :: Ptr Module -&gt; IO (Ptr Module)
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#clone"><span class="hs-identifier hs-var hs-var">clone</span></a></span></span><span> </span><span id="local-6989586621684156141"><span class="annot"><span class="annottext">obj :: Ptr Module
+</span><a href="#local-6989586621684156141"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[C.throwBlock| torch::jit::script::Module* {
+    return new torch::jit::script::Module($(torch::jit::script::Module* obj)-&gt;clone());
+  }|]</span></span><span>
+</span><span id="line-155"></span><span>
+</span><span id="line-156"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#define"><span class="hs-identifier hs-type">define</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-157"></span><span id="define"><span class="annot"><span class="annottext">define :: Ptr Module -&gt; Ptr StdString -&gt; IO ()
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#define"><span class="hs-identifier hs-var hs-var">define</span></a></span></span><span> </span><span id="local-6989586621684156127"><span class="annot"><span class="annottext">obj :: Ptr Module
+</span><a href="#local-6989586621684156127"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span id="local-6989586621684156126"><span class="annot"><span class="annottext">src :: Ptr StdString
+</span><a href="#local-6989586621684156126"><span class="hs-identifier hs-var">src</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[C.throwBlock| void {
+    $(torch::jit::script::Module* obj)-&gt;define(
+      *$(std::string* src)
+    );
+  }|]</span></span><span>
+</span><span id="line-162"></span><span>
+</span><span id="line-163"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#trace"><span class="hs-identifier hs-type">trace</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CString</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CString</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-164"></span><span id="trace"><span class="annot"><span class="annottext">trace :: Ptr CChar
+-&gt; Ptr CChar
+-&gt; (Ptr TensorList -&gt; IO (Ptr TensorList))
+-&gt; Ptr TensorList
+-&gt; IO (Ptr Module)
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#trace"><span class="hs-identifier hs-var hs-var">trace</span></a></span></span><span> </span><span id="local-6989586621684156109"><span class="annot"><span class="annottext">moduleName :: Ptr CChar
+</span><a href="#local-6989586621684156109"><span class="hs-identifier hs-var">moduleName</span></a></span></span><span> </span><span id="local-6989586621684156108"><span class="annot"><span class="annottext">functionName :: Ptr CChar
+</span><a href="#local-6989586621684156108"><span class="hs-identifier hs-var">functionName</span></a></span></span><span> </span><span id="local-6989586621684156107"><span class="annot"><span class="annottext">func :: Ptr TensorList -&gt; IO (Ptr TensorList)
+</span><a href="#local-6989586621684156107"><span class="hs-identifier hs-var">func</span></a></span></span><span> </span><span id="local-6989586621684156106"><span class="annot"><span class="annottext">inputs :: Ptr TensorList
+</span><a href="#local-6989586621684156106"><span class="hs-identifier hs-var">inputs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-165"></span><span>  </span><span class="annot"><span class="annottext">IO (FunPtr (Ptr () -&gt; IO (Ptr ())))
+-&gt; (FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ())
+-&gt; (FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO (Ptr Module))
+-&gt; IO (Ptr Module)
+forall (m :: * -&gt; *) a b c.
+MonadMask m =&gt;
+m a -&gt; (a -&gt; m b) -&gt; (a -&gt; m c) -&gt; m c
+</span><a href="../file:///nix/store/ipnvp1661ppcyizvbflqkqa5zqv8g8sf-safe-exceptions-lib-safe-exceptions-0.1.7.0-doc/share/doc/safe-exceptions/html/src"><span class="hs-identifier hs-var">bracket</span></a></span><span>
+</span><span id="line-166"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Ptr () -&gt; IO (Ptr ())) -&gt; IO (FunPtr (Ptr () -&gt; IO (Ptr ())))
+</span><a href="../../../../libtorch-ffi-helper/html/src"><span class="hs-identifier hs-var">callbackHelper</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr () -&gt; IO (Ptr ())) -&gt; IO (FunPtr (Ptr () -&gt; IO (Ptr ()))))
+-&gt; (Ptr () -&gt; IO (Ptr ())) -&gt; IO (FunPtr (Ptr () -&gt; IO (Ptr ())))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621684156104"><span class="annot"><span class="annottext">inputs' :: Ptr ()
+</span><a href="#local-6989586621684156104"><span class="hs-identifier hs-var">inputs'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Ptr TensorList -&gt; Ptr ()
+forall a b. Ptr a -&gt; Ptr b
+</span><span class="hs-identifier hs-var">castPtr</span></span><span> </span><span class="annot"><span class="annottext">(Ptr TensorList -&gt; Ptr ()) -&gt; IO (Ptr TensorList) -&gt; IO (Ptr ())
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Ptr TensorList -&gt; IO (Ptr TensorList)
+</span><a href="#local-6989586621684156107"><span class="hs-identifier hs-var">func</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ptr () -&gt; Ptr TensorList
+forall a b. Ptr a -&gt; Ptr b
+</span><span class="hs-identifier hs-var">castPtr</span></span><span> </span><span class="annot"><span class="annottext">Ptr ()
+</span><a href="#local-6989586621684156104"><span class="hs-identifier hs-var">inputs'</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-167"></span><span>    </span><span class="annot"><span class="annottext">FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ()
+forall a. FunPtr a -&gt; IO ()
+</span><span class="hs-identifier hs-var">freeHaskellFunPtr</span></span><span>
+</span><span id="line-168"></span><span>    </span><span class="annot"><span class="annottext">((FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO (Ptr Module))
+ -&gt; IO (Ptr Module))
+-&gt; (FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO (Ptr Module))
+-&gt; IO (Ptr Module)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621684156100"><span class="annot"><span class="annottext">funcPtr :: FunPtr (Ptr () -&gt; IO (Ptr ()))
+</span><a href="#local-6989586621684156100"><span class="hs-identifier hs-var">funcPtr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-169"></span><span>      </span><span class="annot"><span class="">[C.throwBlock| torch::jit::script::Module* {
+        torch::jit::script::Module self($(char* moduleName));
+        auto vars_in = *$(std::vector&lt;at::Tensor&gt;* inputs);
+        auto tfunc = $(void* (*funcPtr)(void*));
+        typedef std::vector&lt;at::Tensor&gt;* (*Func)(std::vector&lt;at::Tensor&gt;*);
+        auto func = (Func)tfunc;
+        auto graph = torch::jit::tracer::trace(
+          c10::fmap&lt;c10::IValue&gt;(vars_in),
+          [&amp;func](c10::Stack in) -&gt; c10::Stack {
+            std::vector&lt;at::Tensor&gt;* ivalue_inps = new std::vector&lt;at::Tensor&gt;(c10::fmap(in, [](const c10::IValue&amp; v){
+              return torch::autograd::Variable(v.toTensor());
+            }));
+            std::vector&lt;at::Tensor&gt; out = *(func(ivalue_inps));
+            return c10::fmap&lt;c10::IValue&gt;(out);
+          },
+          [](const torch::autograd::Variable&amp; var) { return &quot;&quot;;}
+        ).first-&gt;graph;
+        auto v = graph-&gt;insertInput(0, &quot;self&quot;);
+        v-&gt;setType(self._ivalue()-&gt;type());
+        const auto name = c10::QualifiedName(*self.type()-&gt;name(), $(char* functionName));
+        auto fn2 = self._ivalue()-&gt;compilation_unit()-&gt;create_function(name,graph);
+        self.type()-&gt;addMethod(fn2);
+        return new torch::jit::script::Module(self);
+      }|]</span></span><span>
+</span><span id="line-193"></span><span>
+</span><span id="line-194"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#traceAsGraph"><span class="hs-identifier hs-type">traceAsGraph</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#SharedPtr"><span class="hs-identifier hs-type">SharedPtr</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitGraph"><span class="hs-identifier hs-type">JitGraph</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-195"></span><span id="traceAsGraph"><span class="annot"><span class="annottext">traceAsGraph :: (Ptr TensorList -&gt; IO (Ptr TensorList))
+-&gt; Ptr TensorList -&gt; IO (Ptr (SharedPtr JitGraph))
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#traceAsGraph"><span class="hs-identifier hs-var hs-var">traceAsGraph</span></a></span></span><span> </span><span id="local-6989586621684156080"><span class="annot"><span class="annottext">func :: Ptr TensorList -&gt; IO (Ptr TensorList)
+</span><a href="#local-6989586621684156080"><span class="hs-identifier hs-var">func</span></a></span></span><span> </span><span id="local-6989586621684156079"><span class="annot"><span class="annottext">inputs :: Ptr TensorList
+</span><a href="#local-6989586621684156079"><span class="hs-identifier hs-var">inputs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-196"></span><span>  </span><span class="annot"><span class="annottext">IO (FunPtr (Ptr () -&gt; IO (Ptr ())))
+-&gt; (FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ())
+-&gt; (FunPtr (Ptr () -&gt; IO (Ptr ()))
+    -&gt; IO (Ptr (SharedPtr JitGraph)))
+-&gt; IO (Ptr (SharedPtr JitGraph))
+forall (m :: * -&gt; *) a b c.
+MonadMask m =&gt;
+m a -&gt; (a -&gt; m b) -&gt; (a -&gt; m c) -&gt; m c
+</span><a href="../file:///nix/store/ipnvp1661ppcyizvbflqkqa5zqv8g8sf-safe-exceptions-lib-safe-exceptions-0.1.7.0-doc/share/doc/safe-exceptions/html/src"><span class="hs-identifier hs-var">bracket</span></a></span><span>
+</span><span id="line-197"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Ptr () -&gt; IO (Ptr ())) -&gt; IO (FunPtr (Ptr () -&gt; IO (Ptr ())))
+</span><a href="../../../../libtorch-ffi-helper/html/src"><span class="hs-identifier hs-var">callbackHelper</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr () -&gt; IO (Ptr ())) -&gt; IO (FunPtr (Ptr () -&gt; IO (Ptr ()))))
+-&gt; (Ptr () -&gt; IO (Ptr ())) -&gt; IO (FunPtr (Ptr () -&gt; IO (Ptr ())))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621684156078"><span class="annot"><span class="annottext">inputs' :: Ptr ()
+</span><a href="#local-6989586621684156078"><span class="hs-identifier hs-var">inputs'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Ptr TensorList -&gt; Ptr ()
+forall a b. Ptr a -&gt; Ptr b
+</span><span class="hs-identifier hs-var">castPtr</span></span><span> </span><span class="annot"><span class="annottext">(Ptr TensorList -&gt; Ptr ()) -&gt; IO (Ptr TensorList) -&gt; IO (Ptr ())
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Ptr TensorList -&gt; IO (Ptr TensorList)
+</span><a href="#local-6989586621684156080"><span class="hs-identifier hs-var">func</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ptr () -&gt; Ptr TensorList
+forall a b. Ptr a -&gt; Ptr b
+</span><span class="hs-identifier hs-var">castPtr</span></span><span> </span><span class="annot"><span class="annottext">Ptr ()
+</span><a href="#local-6989586621684156078"><span class="hs-identifier hs-var">inputs'</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-198"></span><span>    </span><span class="annot"><span class="annottext">FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ()
+forall a. FunPtr a -&gt; IO ()
+</span><span class="hs-identifier hs-var">freeHaskellFunPtr</span></span><span>
+</span><span id="line-199"></span><span>    </span><span class="annot"><span class="annottext">((FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO (Ptr (SharedPtr JitGraph)))
+ -&gt; IO (Ptr (SharedPtr JitGraph)))
+-&gt; (FunPtr (Ptr () -&gt; IO (Ptr ()))
+    -&gt; IO (Ptr (SharedPtr JitGraph)))
+-&gt; IO (Ptr (SharedPtr JitGraph))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621684156077"><span class="annot"><span class="annottext">funcPtr :: FunPtr (Ptr () -&gt; IO (Ptr ()))
+</span><a href="#local-6989586621684156077"><span class="hs-identifier hs-var">funcPtr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-200"></span><span>      </span><span class="annot"><span class="">[C.throwBlock| std::shared_ptr&lt;torch::jit::Graph&gt;* {
+        torch::jit::script::Module self(&quot;MyModule&quot;);
+        auto vars_in = *$(std::vector&lt;at::Tensor&gt;* inputs);
+        auto tfunc = $(void* (*funcPtr)(void*));
+        typedef std::vector&lt;at::Tensor&gt;* (*Func)(std::vector&lt;at::Tensor&gt;*);
+        auto func = (Func)tfunc;
+        auto graph = torch::jit::tracer::trace(
+          c10::fmap&lt;c10::IValue&gt;(vars_in),
+          [&amp;func](c10::Stack in) -&gt; c10::Stack {
+            std::vector&lt;at::Tensor&gt;* ivalue_inps = new std::vector&lt;at::Tensor&gt;(c10::fmap(in, [](const c10::IValue&amp; v){
+              return torch::autograd::Variable(v.toTensor());
+            }));
+            std::vector&lt;at::Tensor&gt; out = *(func(ivalue_inps));
+            return c10::fmap&lt;c10::IValue&gt;(out);
+          },
+          [](const torch::autograd::Variable&amp; var) { return &quot;&quot;;}
+        ).first-&gt;graph;
+        return new std::shared_ptr&lt;torch::jit::Graph&gt;(graph);
+      }|]</span></span><span>
+</span><span id="line-219"></span><span>
+</span><span id="line-220"></span><span id="local-6989586621684156062"><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#withJitGraph"><span class="hs-identifier hs-type">withJitGraph</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#SharedPtr"><span class="hs-identifier hs-type">SharedPtr</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitGraph"><span class="hs-identifier hs-type">JitGraph</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitGraph"><span class="hs-identifier hs-type">JitGraph</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621684156062"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621684156062"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-221"></span><span id="withJitGraph"><span class="annot"><span class="annottext">withJitGraph :: Ptr (SharedPtr JitGraph) -&gt; (Ptr JitGraph -&gt; IO a) -&gt; IO a
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#withJitGraph"><span class="hs-identifier hs-var hs-var">withJitGraph</span></a></span></span><span> </span><span id="local-6989586621684156060"><span class="annot"><span class="annottext">graph :: Ptr (SharedPtr JitGraph)
+</span><a href="#local-6989586621684156060"><span class="hs-identifier hs-var">graph</span></a></span></span><span> </span><span id="local-6989586621684156059"><span class="annot"><span class="annottext">callback :: Ptr JitGraph -&gt; IO a
+</span><a href="#local-6989586621684156059"><span class="hs-identifier hs-var">callback</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-222"></span><span>  </span><span id="local-6989586621684156058"><span class="annot"><span class="annottext">Ptr JitGraph
+</span><a href="#local-6989586621684156058"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="">[C.throwBlock| torch::jit::Graph* {
+         return (*$(std::shared_ptr&lt;torch::jit::Graph&gt;* graph)).get();
+       }|]</span></span><span>
+</span><span id="line-225"></span><span>  </span><span class="annot"><span class="annottext">Ptr JitGraph -&gt; IO a
+</span><a href="#local-6989586621684156059"><span class="hs-identifier hs-var">callback</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr JitGraph
+</span><a href="#local-6989586621684156058"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-226"></span><span>
+</span><span id="line-227"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#graphOutputs"><span class="hs-identifier hs-type">graphOutputs</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitGraph"><span class="hs-identifier hs-type">JitGraph</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#JitValue"><span class="hs-identifier hs-type">JitValue</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-228"></span><span id="graphOutputs"><span class="annot"><span class="annottext">graphOutputs :: Ptr JitGraph -&gt; IO [Ptr JitValue]
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#graphOutputs"><span class="hs-identifier hs-var hs-var">graphOutputs</span></a></span></span><span> </span><span id="local-6989586621684156044"><span class="annot"><span class="annottext">graph :: Ptr JitGraph
+</span><a href="#local-6989586621684156044"><span class="hs-identifier hs-var">graph</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-229"></span><span>  </span><span id="local-6989586621684156043"><span class="annot"><span class="annottext">IORef [Ptr JitValue]
+</span><a href="#local-6989586621684156043"><span class="hs-identifier hs-var">nodes</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[Ptr JitValue] -&gt; IO (IORef [Ptr JitValue])
+forall a. a -&gt; IO (IORef a)
+</span><span class="hs-identifier hs-var">newIORef</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-230"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621684156041"><span class="annot"><span class="annottext">func :: Ptr JitValue -&gt; IO (Ptr JitValue)
+</span><a href="#local-6989586621684156041"><span class="hs-identifier hs-var hs-var">func</span></a></span></span><span> </span><span id="local-6989586621684156040"><span class="annot"><span class="annottext">v :: Ptr JitValue
+</span><a href="#local-6989586621684156040"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-231"></span><span>        </span><span id="local-6989586621684156039"><span class="annot"><span class="annottext">[Ptr JitValue]
+</span><a href="#local-6989586621684156039"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitValue] -&gt; IO [Ptr JitValue]
+forall a. IORef a -&gt; IO a
+</span><span class="hs-identifier hs-var">readIORef</span></span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitValue]
+</span><a href="#local-6989586621684156043"><span class="hs-identifier hs-var">nodes</span></a></span><span>
+</span><span id="line-232"></span><span>        </span><span class="annot"><span class="annottext">IORef [Ptr JitValue] -&gt; [Ptr JitValue] -&gt; IO ()
+forall a. IORef a -&gt; a -&gt; IO ()
+</span><span class="hs-identifier hs-var">writeIORef</span></span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitValue]
+</span><a href="#local-6989586621684156043"><span class="hs-identifier hs-var">nodes</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ptr JitValue
+</span><a href="#local-6989586621684156040"><span class="hs-identifier hs-var">v</span></a></span><span class="annot"><span class="annottext">Ptr JitValue -&gt; [Ptr JitValue] -&gt; [Ptr JitValue]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span class="annot"><span class="annottext">[Ptr JitValue]
+</span><a href="#local-6989586621684156039"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-233"></span><span>        </span><span class="annot"><span class="annottext">Ptr JitValue -&gt; IO (Ptr JitValue)
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">Ptr JitValue
+</span><a href="#local-6989586621684156040"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-234"></span><span>  </span><span class="annot"><span class="annottext">IO (FunPtr (Ptr () -&gt; IO (Ptr ())))
+-&gt; (FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ())
+-&gt; (FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ())
+-&gt; IO ()
+forall (m :: * -&gt; *) a b c.
+MonadMask m =&gt;
+m a -&gt; (a -&gt; m b) -&gt; (a -&gt; m c) -&gt; m c
+</span><a href="../file:///nix/store/ipnvp1661ppcyizvbflqkqa5zqv8g8sf-safe-exceptions-lib-safe-exceptions-0.1.7.0-doc/share/doc/safe-exceptions/html/src"><span class="hs-identifier hs-var">bracket</span></a></span><span>
+</span><span id="line-235"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Ptr () -&gt; IO (Ptr ())) -&gt; IO (FunPtr (Ptr () -&gt; IO (Ptr ())))
+</span><a href="../../../../libtorch-ffi-helper/html/src"><span class="hs-identifier hs-var">callbackHelper</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr () -&gt; IO (Ptr ())) -&gt; IO (FunPtr (Ptr () -&gt; IO (Ptr ()))))
+-&gt; (Ptr () -&gt; IO (Ptr ())) -&gt; IO (FunPtr (Ptr () -&gt; IO (Ptr ())))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621684156036"><span class="annot"><span class="annottext">inputs' :: Ptr ()
+</span><a href="#local-6989586621684156036"><span class="hs-identifier hs-var">inputs'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Ptr JitValue -&gt; Ptr ()
+forall a b. Ptr a -&gt; Ptr b
+</span><span class="hs-identifier hs-var">castPtr</span></span><span> </span><span class="annot"><span class="annottext">(Ptr JitValue -&gt; Ptr ()) -&gt; IO (Ptr JitValue) -&gt; IO (Ptr ())
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Ptr JitValue -&gt; IO (Ptr JitValue)
+</span><a href="#local-6989586621684156041"><span class="hs-identifier hs-var">func</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ptr () -&gt; Ptr JitValue
+forall a b. Ptr a -&gt; Ptr b
+</span><span class="hs-identifier hs-var">castPtr</span></span><span> </span><span class="annot"><span class="annottext">Ptr ()
+</span><a href="#local-6989586621684156036"><span class="hs-identifier hs-var">inputs'</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-236"></span><span>    </span><span class="annot"><span class="annottext">FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ()
+forall a. FunPtr a -&gt; IO ()
+</span><span class="hs-identifier hs-var">freeHaskellFunPtr</span></span><span>
+</span><span id="line-237"></span><span>    </span><span class="annot"><span class="annottext">((FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ()) -&gt; IO ())
+-&gt; (FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ()) -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621684156035"><span class="annot"><span class="annottext">funcPtr :: FunPtr (Ptr () -&gt; IO (Ptr ()))
+</span><a href="#local-6989586621684156035"><span class="hs-identifier hs-var">funcPtr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-238"></span><span>      </span><span class="annot"><span class="">[C.throwBlock| void {
+        auto tfunc = $(void* (*funcPtr)(void*));
+        typedef torch::jit::Value* (*Func)(torch::jit::Value*);
+        auto func = (Func)tfunc;
+        for(auto i : (*$(torch::jit::Graph* graph)).outputs()){
+          func(i);
+        }
+      }|]</span></span><span>
+</span><span id="line-246"></span><span>  </span><span class="annot"><span class="annottext">[Ptr JitValue] -&gt; [Ptr JitValue]
+forall a. [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">reverse</span></span><span> </span><span class="annot"><span class="annottext">([Ptr JitValue] -&gt; [Ptr JitValue])
+-&gt; IO [Ptr JitValue] -&gt; IO [Ptr JitValue]
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitValue] -&gt; IO [Ptr JitValue]
+forall a. IORef a -&gt; IO a
+</span><span class="hs-identifier hs-var">readIORef</span></span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitValue]
+</span><a href="#local-6989586621684156043"><span class="hs-identifier hs-var">nodes</span></a></span><span>
+</span><span id="line-247"></span><span>
+</span><span id="line-248"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#graphInputs"><span class="hs-identifier hs-type">graphInputs</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitGraph"><span class="hs-identifier hs-type">JitGraph</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#JitValue"><span class="hs-identifier hs-type">JitValue</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-249"></span><span id="graphInputs"><span class="annot"><span class="annottext">graphInputs :: Ptr JitGraph -&gt; IO [Ptr JitValue]
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#graphInputs"><span class="hs-identifier hs-var hs-var">graphInputs</span></a></span></span><span> </span><span id="local-6989586621684156018"><span class="annot"><span class="annottext">graph :: Ptr JitGraph
+</span><a href="#local-6989586621684156018"><span class="hs-identifier hs-var">graph</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-250"></span><span>  </span><span id="local-6989586621684156017"><span class="annot"><span class="annottext">IORef [Ptr JitValue]
+</span><a href="#local-6989586621684156017"><span class="hs-identifier hs-var">nodes</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[Ptr JitValue] -&gt; IO (IORef [Ptr JitValue])
+forall a. a -&gt; IO (IORef a)
+</span><span class="hs-identifier hs-var">newIORef</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-251"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621684156016"><span class="annot"><span class="annottext">func :: Ptr JitValue -&gt; IO (Ptr JitValue)
+</span><a href="#local-6989586621684156016"><span class="hs-identifier hs-var hs-var">func</span></a></span></span><span> </span><span id="local-6989586621684156015"><span class="annot"><span class="annottext">v :: Ptr JitValue
+</span><a href="#local-6989586621684156015"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-252"></span><span>        </span><span id="local-6989586621684156014"><span class="annot"><span class="annottext">[Ptr JitValue]
+</span><a href="#local-6989586621684156014"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitValue] -&gt; IO [Ptr JitValue]
+forall a. IORef a -&gt; IO a
+</span><span class="hs-identifier hs-var">readIORef</span></span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitValue]
+</span><a href="#local-6989586621684156017"><span class="hs-identifier hs-var">nodes</span></a></span><span>
+</span><span id="line-253"></span><span>        </span><span class="annot"><span class="annottext">IORef [Ptr JitValue] -&gt; [Ptr JitValue] -&gt; IO ()
+forall a. IORef a -&gt; a -&gt; IO ()
+</span><span class="hs-identifier hs-var">writeIORef</span></span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitValue]
+</span><a href="#local-6989586621684156017"><span class="hs-identifier hs-var">nodes</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ptr JitValue
+</span><a href="#local-6989586621684156015"><span class="hs-identifier hs-var">v</span></a></span><span class="annot"><span class="annottext">Ptr JitValue -&gt; [Ptr JitValue] -&gt; [Ptr JitValue]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span class="annot"><span class="annottext">[Ptr JitValue]
+</span><a href="#local-6989586621684156014"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-254"></span><span>        </span><span class="annot"><span class="annottext">Ptr JitValue -&gt; IO (Ptr JitValue)
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">Ptr JitValue
+</span><a href="#local-6989586621684156015"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-255"></span><span>  </span><span class="annot"><span class="annottext">IO (FunPtr (Ptr () -&gt; IO (Ptr ())))
+-&gt; (FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ())
+-&gt; (FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ())
+-&gt; IO ()
+forall (m :: * -&gt; *) a b c.
+MonadMask m =&gt;
+m a -&gt; (a -&gt; m b) -&gt; (a -&gt; m c) -&gt; m c
+</span><a href="../file:///nix/store/ipnvp1661ppcyizvbflqkqa5zqv8g8sf-safe-exceptions-lib-safe-exceptions-0.1.7.0-doc/share/doc/safe-exceptions/html/src"><span class="hs-identifier hs-var">bracket</span></a></span><span>
+</span><span id="line-256"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Ptr () -&gt; IO (Ptr ())) -&gt; IO (FunPtr (Ptr () -&gt; IO (Ptr ())))
+</span><a href="../../../../libtorch-ffi-helper/html/src"><span class="hs-identifier hs-var">callbackHelper</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr () -&gt; IO (Ptr ())) -&gt; IO (FunPtr (Ptr () -&gt; IO (Ptr ()))))
+-&gt; (Ptr () -&gt; IO (Ptr ())) -&gt; IO (FunPtr (Ptr () -&gt; IO (Ptr ())))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621684156013"><span class="annot"><span class="annottext">inputs' :: Ptr ()
+</span><a href="#local-6989586621684156013"><span class="hs-identifier hs-var">inputs'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Ptr JitValue -&gt; Ptr ()
+forall a b. Ptr a -&gt; Ptr b
+</span><span class="hs-identifier hs-var">castPtr</span></span><span> </span><span class="annot"><span class="annottext">(Ptr JitValue -&gt; Ptr ()) -&gt; IO (Ptr JitValue) -&gt; IO (Ptr ())
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Ptr JitValue -&gt; IO (Ptr JitValue)
+</span><a href="#local-6989586621684156016"><span class="hs-identifier hs-var">func</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ptr () -&gt; Ptr JitValue
+forall a b. Ptr a -&gt; Ptr b
+</span><span class="hs-identifier hs-var">castPtr</span></span><span> </span><span class="annot"><span class="annottext">Ptr ()
+</span><a href="#local-6989586621684156013"><span class="hs-identifier hs-var">inputs'</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-257"></span><span>    </span><span class="annot"><span class="annottext">FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ()
+forall a. FunPtr a -&gt; IO ()
+</span><span class="hs-identifier hs-var">freeHaskellFunPtr</span></span><span>
+</span><span id="line-258"></span><span>    </span><span class="annot"><span class="annottext">((FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ()) -&gt; IO ())
+-&gt; (FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ()) -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621684156012"><span class="annot"><span class="annottext">funcPtr :: FunPtr (Ptr () -&gt; IO (Ptr ()))
+</span><a href="#local-6989586621684156012"><span class="hs-identifier hs-var">funcPtr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-259"></span><span>      </span><span class="annot"><span class="">[C.throwBlock| void {
+        auto tfunc = $(void* (*funcPtr)(void*));
+        typedef torch::jit::Value* (*Func)(torch::jit::Value*);
+        auto func = (Func)tfunc;
+        for(auto i : (*$(torch::jit::Graph* graph)).inputs()){
+          func(i);
+        }
+      }|]</span></span><span>
+</span><span id="line-267"></span><span>  </span><span class="annot"><span class="annottext">[Ptr JitValue] -&gt; [Ptr JitValue]
+forall a. [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">reverse</span></span><span> </span><span class="annot"><span class="annottext">([Ptr JitValue] -&gt; [Ptr JitValue])
+-&gt; IO [Ptr JitValue] -&gt; IO [Ptr JitValue]
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitValue] -&gt; IO [Ptr JitValue]
+forall a. IORef a -&gt; IO a
+</span><span class="hs-identifier hs-var">readIORef</span></span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitValue]
+</span><a href="#local-6989586621684156017"><span class="hs-identifier hs-var">nodes</span></a></span><span>
+</span><span id="line-268"></span><span>
+</span><span id="line-269"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#graphNodes"><span class="hs-identifier hs-type">graphNodes</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitGraph"><span class="hs-identifier hs-type">JitGraph</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#JitNode"><span class="hs-identifier hs-type">JitNode</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-270"></span><span id="graphNodes"><span class="annot"><span class="annottext">graphNodes :: Ptr JitGraph -&gt; IO [Ptr JitNode]
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#graphNodes"><span class="hs-identifier hs-var hs-var">graphNodes</span></a></span></span><span> </span><span id="local-6989586621684155996"><span class="annot"><span class="annottext">graph :: Ptr JitGraph
+</span><a href="#local-6989586621684155996"><span class="hs-identifier hs-var">graph</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-271"></span><span>  </span><span id="local-6989586621684155995"><span class="annot"><span class="annottext">IORef [Ptr JitNode]
+</span><a href="#local-6989586621684155995"><span class="hs-identifier hs-var">nodes</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[Ptr JitNode] -&gt; IO (IORef [Ptr JitNode])
+forall a. a -&gt; IO (IORef a)
+</span><span class="hs-identifier hs-var">newIORef</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-272"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621684155994"><span class="annot"><span class="annottext">func :: Ptr JitNode -&gt; IO (Ptr JitNode)
+</span><a href="#local-6989586621684155994"><span class="hs-identifier hs-var hs-var">func</span></a></span></span><span> </span><span id="local-6989586621684155993"><span class="annot"><span class="annottext">v :: Ptr JitNode
+</span><a href="#local-6989586621684155993"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-273"></span><span>        </span><span id="local-6989586621684155992"><span class="annot"><span class="annottext">[Ptr JitNode]
+</span><a href="#local-6989586621684155992"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitNode] -&gt; IO [Ptr JitNode]
+forall a. IORef a -&gt; IO a
+</span><span class="hs-identifier hs-var">readIORef</span></span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitNode]
+</span><a href="#local-6989586621684155995"><span class="hs-identifier hs-var">nodes</span></a></span><span>
+</span><span id="line-274"></span><span>        </span><span class="annot"><span class="annottext">IORef [Ptr JitNode] -&gt; [Ptr JitNode] -&gt; IO ()
+forall a. IORef a -&gt; a -&gt; IO ()
+</span><span class="hs-identifier hs-var">writeIORef</span></span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitNode]
+</span><a href="#local-6989586621684155995"><span class="hs-identifier hs-var">nodes</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ptr JitNode
+</span><a href="#local-6989586621684155993"><span class="hs-identifier hs-var">v</span></a></span><span class="annot"><span class="annottext">Ptr JitNode -&gt; [Ptr JitNode] -&gt; [Ptr JitNode]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span class="annot"><span class="annottext">[Ptr JitNode]
+</span><a href="#local-6989586621684155992"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-275"></span><span>        </span><span class="annot"><span class="annottext">Ptr JitNode -&gt; IO (Ptr JitNode)
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">Ptr JitNode
+</span><a href="#local-6989586621684155993"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-276"></span><span>  </span><span class="annot"><span class="annottext">IO (FunPtr (Ptr () -&gt; IO (Ptr ())))
+-&gt; (FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ())
+-&gt; (FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ())
+-&gt; IO ()
+forall (m :: * -&gt; *) a b c.
+MonadMask m =&gt;
+m a -&gt; (a -&gt; m b) -&gt; (a -&gt; m c) -&gt; m c
+</span><a href="../file:///nix/store/ipnvp1661ppcyizvbflqkqa5zqv8g8sf-safe-exceptions-lib-safe-exceptions-0.1.7.0-doc/share/doc/safe-exceptions/html/src"><span class="hs-identifier hs-var">bracket</span></a></span><span>
+</span><span id="line-277"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Ptr () -&gt; IO (Ptr ())) -&gt; IO (FunPtr (Ptr () -&gt; IO (Ptr ())))
+</span><a href="../../../../libtorch-ffi-helper/html/src"><span class="hs-identifier hs-var">callbackHelper</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr () -&gt; IO (Ptr ())) -&gt; IO (FunPtr (Ptr () -&gt; IO (Ptr ()))))
+-&gt; (Ptr () -&gt; IO (Ptr ())) -&gt; IO (FunPtr (Ptr () -&gt; IO (Ptr ())))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621684155991"><span class="annot"><span class="annottext">inputs' :: Ptr ()
+</span><a href="#local-6989586621684155991"><span class="hs-identifier hs-var">inputs'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Ptr JitNode -&gt; Ptr ()
+forall a b. Ptr a -&gt; Ptr b
+</span><span class="hs-identifier hs-var">castPtr</span></span><span> </span><span class="annot"><span class="annottext">(Ptr JitNode -&gt; Ptr ()) -&gt; IO (Ptr JitNode) -&gt; IO (Ptr ())
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Ptr JitNode -&gt; IO (Ptr JitNode)
+</span><a href="#local-6989586621684155994"><span class="hs-identifier hs-var">func</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ptr () -&gt; Ptr JitNode
+forall a b. Ptr a -&gt; Ptr b
+</span><span class="hs-identifier hs-var">castPtr</span></span><span> </span><span class="annot"><span class="annottext">Ptr ()
+</span><a href="#local-6989586621684155991"><span class="hs-identifier hs-var">inputs'</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-278"></span><span>    </span><span class="annot"><span class="annottext">FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ()
+forall a. FunPtr a -&gt; IO ()
+</span><span class="hs-identifier hs-var">freeHaskellFunPtr</span></span><span>
+</span><span id="line-279"></span><span>    </span><span class="annot"><span class="annottext">((FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ()) -&gt; IO ())
+-&gt; (FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ()) -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621684155990"><span class="annot"><span class="annottext">funcPtr :: FunPtr (Ptr () -&gt; IO (Ptr ()))
+</span><a href="#local-6989586621684155990"><span class="hs-identifier hs-var">funcPtr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-280"></span><span>      </span><span class="annot"><span class="">[C.throwBlock| void {
+        auto tfunc = $(void* (*funcPtr)(void*));
+        typedef torch::jit::Node* (*Func)(torch::jit::Node*);
+        auto func = (Func)tfunc;
+        for(auto i : (*$(torch::jit::Graph* graph)).block()-&gt;nodes()){
+          func(i);
+        }
+      }|]</span></span><span>
+</span><span id="line-288"></span><span>  </span><span class="annot"><span class="annottext">[Ptr JitNode] -&gt; [Ptr JitNode]
+forall a. [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">reverse</span></span><span> </span><span class="annot"><span class="annottext">([Ptr JitNode] -&gt; [Ptr JitNode])
+-&gt; IO [Ptr JitNode] -&gt; IO [Ptr JitNode]
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitNode] -&gt; IO [Ptr JitNode]
+forall a. IORef a -&gt; IO a
+</span><span class="hs-identifier hs-var">readIORef</span></span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitNode]
+</span><a href="#local-6989586621684155995"><span class="hs-identifier hs-var">nodes</span></a></span><span>
+</span><span id="line-289"></span><span>
+</span><span id="line-290"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#nodeInputs"><span class="hs-identifier hs-type">nodeInputs</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitNode"><span class="hs-identifier hs-type">JitNode</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#JitValue"><span class="hs-identifier hs-type">JitValue</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-291"></span><span id="nodeInputs"><span class="annot"><span class="annottext">nodeInputs :: Ptr JitNode -&gt; IO [Ptr JitValue]
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#nodeInputs"><span class="hs-identifier hs-var hs-var">nodeInputs</span></a></span></span><span> </span><span id="local-6989586621684155974"><span class="annot"><span class="annottext">node :: Ptr JitNode
+</span><a href="#local-6989586621684155974"><span class="hs-identifier hs-var">node</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-292"></span><span>  </span><span id="local-6989586621684155973"><span class="annot"><span class="annottext">IORef [Ptr JitValue]
+</span><a href="#local-6989586621684155973"><span class="hs-identifier hs-var">values</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[Ptr JitValue] -&gt; IO (IORef [Ptr JitValue])
+forall a. a -&gt; IO (IORef a)
+</span><span class="hs-identifier hs-var">newIORef</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-293"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621684155972"><span class="annot"><span class="annottext">func :: Ptr JitValue -&gt; IO (Ptr JitValue)
+</span><a href="#local-6989586621684155972"><span class="hs-identifier hs-var hs-var">func</span></a></span></span><span> </span><span id="local-6989586621684155971"><span class="annot"><span class="annottext">v :: Ptr JitValue
+</span><a href="#local-6989586621684155971"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-294"></span><span>        </span><span id="local-6989586621684155970"><span class="annot"><span class="annottext">[Ptr JitValue]
+</span><a href="#local-6989586621684155970"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitValue] -&gt; IO [Ptr JitValue]
+forall a. IORef a -&gt; IO a
+</span><span class="hs-identifier hs-var">readIORef</span></span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitValue]
+</span><a href="#local-6989586621684155973"><span class="hs-identifier hs-var">values</span></a></span><span>
+</span><span id="line-295"></span><span>        </span><span class="annot"><span class="annottext">IORef [Ptr JitValue] -&gt; [Ptr JitValue] -&gt; IO ()
+forall a. IORef a -&gt; a -&gt; IO ()
+</span><span class="hs-identifier hs-var">writeIORef</span></span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitValue]
+</span><a href="#local-6989586621684155973"><span class="hs-identifier hs-var">values</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ptr JitValue
+</span><a href="#local-6989586621684155971"><span class="hs-identifier hs-var">v</span></a></span><span class="annot"><span class="annottext">Ptr JitValue -&gt; [Ptr JitValue] -&gt; [Ptr JitValue]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span class="annot"><span class="annottext">[Ptr JitValue]
+</span><a href="#local-6989586621684155970"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-296"></span><span>        </span><span class="annot"><span class="annottext">Ptr JitValue -&gt; IO (Ptr JitValue)
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">Ptr JitValue
+</span><a href="#local-6989586621684155971"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-297"></span><span>  </span><span class="annot"><span class="annottext">IO (FunPtr (Ptr () -&gt; IO (Ptr ())))
+-&gt; (FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ())
+-&gt; (FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ())
+-&gt; IO ()
+forall (m :: * -&gt; *) a b c.
+MonadMask m =&gt;
+m a -&gt; (a -&gt; m b) -&gt; (a -&gt; m c) -&gt; m c
+</span><a href="../file:///nix/store/ipnvp1661ppcyizvbflqkqa5zqv8g8sf-safe-exceptions-lib-safe-exceptions-0.1.7.0-doc/share/doc/safe-exceptions/html/src"><span class="hs-identifier hs-var">bracket</span></a></span><span>
+</span><span id="line-298"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Ptr () -&gt; IO (Ptr ())) -&gt; IO (FunPtr (Ptr () -&gt; IO (Ptr ())))
+</span><a href="../../../../libtorch-ffi-helper/html/src"><span class="hs-identifier hs-var">callbackHelper</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr () -&gt; IO (Ptr ())) -&gt; IO (FunPtr (Ptr () -&gt; IO (Ptr ()))))
+-&gt; (Ptr () -&gt; IO (Ptr ())) -&gt; IO (FunPtr (Ptr () -&gt; IO (Ptr ())))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621684155969"><span class="annot"><span class="annottext">inputs' :: Ptr ()
+</span><a href="#local-6989586621684155969"><span class="hs-identifier hs-var">inputs'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Ptr JitValue -&gt; Ptr ()
+forall a b. Ptr a -&gt; Ptr b
+</span><span class="hs-identifier hs-var">castPtr</span></span><span> </span><span class="annot"><span class="annottext">(Ptr JitValue -&gt; Ptr ()) -&gt; IO (Ptr JitValue) -&gt; IO (Ptr ())
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Ptr JitValue -&gt; IO (Ptr JitValue)
+</span><a href="#local-6989586621684155972"><span class="hs-identifier hs-var">func</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ptr () -&gt; Ptr JitValue
+forall a b. Ptr a -&gt; Ptr b
+</span><span class="hs-identifier hs-var">castPtr</span></span><span> </span><span class="annot"><span class="annottext">Ptr ()
+</span><a href="#local-6989586621684155969"><span class="hs-identifier hs-var">inputs'</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-299"></span><span>    </span><span class="annot"><span class="annottext">FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ()
+forall a. FunPtr a -&gt; IO ()
+</span><span class="hs-identifier hs-var">freeHaskellFunPtr</span></span><span>
+</span><span id="line-300"></span><span>    </span><span class="annot"><span class="annottext">((FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ()) -&gt; IO ())
+-&gt; (FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ()) -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621684155968"><span class="annot"><span class="annottext">funcPtr :: FunPtr (Ptr () -&gt; IO (Ptr ()))
+</span><a href="#local-6989586621684155968"><span class="hs-identifier hs-var">funcPtr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-301"></span><span>      </span><span class="annot"><span class="">[C.throwBlock| void {
+        auto tfunc = $(void* (*funcPtr)(void*));
+        typedef torch::jit::Value* (*Func)(torch::jit::Value*);
+        auto func = (Func)tfunc;
+        for(auto i : (*$(torch::jit::Node* node)).inputs()){
+          func(i);
+        }
+      }|]</span></span><span>
+</span><span id="line-309"></span><span>  </span><span class="annot"><span class="annottext">[Ptr JitValue] -&gt; [Ptr JitValue]
+forall a. [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">reverse</span></span><span> </span><span class="annot"><span class="annottext">([Ptr JitValue] -&gt; [Ptr JitValue])
+-&gt; IO [Ptr JitValue] -&gt; IO [Ptr JitValue]
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitValue] -&gt; IO [Ptr JitValue]
+forall a. IORef a -&gt; IO a
+</span><span class="hs-identifier hs-var">readIORef</span></span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitValue]
+</span><a href="#local-6989586621684155973"><span class="hs-identifier hs-var">values</span></a></span><span>
+</span><span id="line-310"></span><span>
+</span><span id="line-311"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#nodeOutputs"><span class="hs-identifier hs-type">nodeOutputs</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitNode"><span class="hs-identifier hs-type">JitNode</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#JitValue"><span class="hs-identifier hs-type">JitValue</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-312"></span><span id="nodeOutputs"><span class="annot"><span class="annottext">nodeOutputs :: Ptr JitNode -&gt; IO [Ptr JitValue]
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#nodeOutputs"><span class="hs-identifier hs-var hs-var">nodeOutputs</span></a></span></span><span> </span><span id="local-6989586621684155952"><span class="annot"><span class="annottext">node :: Ptr JitNode
+</span><a href="#local-6989586621684155952"><span class="hs-identifier hs-var">node</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-313"></span><span>  </span><span id="local-6989586621684155951"><span class="annot"><span class="annottext">IORef [Ptr JitValue]
+</span><a href="#local-6989586621684155951"><span class="hs-identifier hs-var">values</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[Ptr JitValue] -&gt; IO (IORef [Ptr JitValue])
+forall a. a -&gt; IO (IORef a)
+</span><span class="hs-identifier hs-var">newIORef</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-314"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621684155950"><span class="annot"><span class="annottext">func :: Ptr JitValue -&gt; IO (Ptr JitValue)
+</span><a href="#local-6989586621684155950"><span class="hs-identifier hs-var hs-var">func</span></a></span></span><span> </span><span id="local-6989586621684155949"><span class="annot"><span class="annottext">v :: Ptr JitValue
+</span><a href="#local-6989586621684155949"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-315"></span><span>        </span><span id="local-6989586621684155948"><span class="annot"><span class="annottext">[Ptr JitValue]
+</span><a href="#local-6989586621684155948"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitValue] -&gt; IO [Ptr JitValue]
+forall a. IORef a -&gt; IO a
+</span><span class="hs-identifier hs-var">readIORef</span></span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitValue]
+</span><a href="#local-6989586621684155951"><span class="hs-identifier hs-var">values</span></a></span><span>
+</span><span id="line-316"></span><span>        </span><span class="annot"><span class="annottext">IORef [Ptr JitValue] -&gt; [Ptr JitValue] -&gt; IO ()
+forall a. IORef a -&gt; a -&gt; IO ()
+</span><span class="hs-identifier hs-var">writeIORef</span></span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitValue]
+</span><a href="#local-6989586621684155951"><span class="hs-identifier hs-var">values</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ptr JitValue
+</span><a href="#local-6989586621684155949"><span class="hs-identifier hs-var">v</span></a></span><span class="annot"><span class="annottext">Ptr JitValue -&gt; [Ptr JitValue] -&gt; [Ptr JitValue]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span class="annot"><span class="annottext">[Ptr JitValue]
+</span><a href="#local-6989586621684155948"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-317"></span><span>        </span><span class="annot"><span class="annottext">Ptr JitValue -&gt; IO (Ptr JitValue)
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">Ptr JitValue
+</span><a href="#local-6989586621684155949"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-318"></span><span>  </span><span class="annot"><span class="annottext">IO (FunPtr (Ptr () -&gt; IO (Ptr ())))
+-&gt; (FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ())
+-&gt; (FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ())
+-&gt; IO ()
+forall (m :: * -&gt; *) a b c.
+MonadMask m =&gt;
+m a -&gt; (a -&gt; m b) -&gt; (a -&gt; m c) -&gt; m c
+</span><a href="../file:///nix/store/ipnvp1661ppcyizvbflqkqa5zqv8g8sf-safe-exceptions-lib-safe-exceptions-0.1.7.0-doc/share/doc/safe-exceptions/html/src"><span class="hs-identifier hs-var">bracket</span></a></span><span>
+</span><span id="line-319"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Ptr () -&gt; IO (Ptr ())) -&gt; IO (FunPtr (Ptr () -&gt; IO (Ptr ())))
+</span><a href="../../../../libtorch-ffi-helper/html/src"><span class="hs-identifier hs-var">callbackHelper</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr () -&gt; IO (Ptr ())) -&gt; IO (FunPtr (Ptr () -&gt; IO (Ptr ()))))
+-&gt; (Ptr () -&gt; IO (Ptr ())) -&gt; IO (FunPtr (Ptr () -&gt; IO (Ptr ())))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621684155947"><span class="annot"><span class="annottext">inputs' :: Ptr ()
+</span><a href="#local-6989586621684155947"><span class="hs-identifier hs-var">inputs'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Ptr JitValue -&gt; Ptr ()
+forall a b. Ptr a -&gt; Ptr b
+</span><span class="hs-identifier hs-var">castPtr</span></span><span> </span><span class="annot"><span class="annottext">(Ptr JitValue -&gt; Ptr ()) -&gt; IO (Ptr JitValue) -&gt; IO (Ptr ())
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Ptr JitValue -&gt; IO (Ptr JitValue)
+</span><a href="#local-6989586621684155950"><span class="hs-identifier hs-var">func</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ptr () -&gt; Ptr JitValue
+forall a b. Ptr a -&gt; Ptr b
+</span><span class="hs-identifier hs-var">castPtr</span></span><span> </span><span class="annot"><span class="annottext">Ptr ()
+</span><a href="#local-6989586621684155947"><span class="hs-identifier hs-var">inputs'</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-320"></span><span>    </span><span class="annot"><span class="annottext">FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ()
+forall a. FunPtr a -&gt; IO ()
+</span><span class="hs-identifier hs-var">freeHaskellFunPtr</span></span><span>
+</span><span id="line-321"></span><span>    </span><span class="annot"><span class="annottext">((FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ()) -&gt; IO ())
+-&gt; (FunPtr (Ptr () -&gt; IO (Ptr ())) -&gt; IO ()) -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621684155946"><span class="annot"><span class="annottext">funcPtr :: FunPtr (Ptr () -&gt; IO (Ptr ()))
+</span><a href="#local-6989586621684155946"><span class="hs-identifier hs-var">funcPtr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-322"></span><span>      </span><span class="annot"><span class="">[C.throwBlock| void {
+        auto tfunc = $(void* (*funcPtr)(void*));
+        typedef torch::jit::Value* (*Func)(torch::jit::Value*);
+        auto func = (Func)tfunc;
+        for(auto i : (*$(torch::jit::Node* node)).outputs()){
+          func(i);
+        }
+      }|]</span></span><span>
+</span><span id="line-330"></span><span>  </span><span class="annot"><span class="annottext">[Ptr JitValue] -&gt; [Ptr JitValue]
+forall a. [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">reverse</span></span><span> </span><span class="annot"><span class="annottext">([Ptr JitValue] -&gt; [Ptr JitValue])
+-&gt; IO [Ptr JitValue] -&gt; IO [Ptr JitValue]
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitValue] -&gt; IO [Ptr JitValue]
+forall a. IORef a -&gt; IO a
+</span><span class="hs-identifier hs-var">readIORef</span></span><span> </span><span class="annot"><span class="annottext">IORef [Ptr JitValue]
+</span><a href="#local-6989586621684155951"><span class="hs-identifier hs-var">values</span></a></span><span>
+</span><span id="line-331"></span><span>
+</span><span id="line-332"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#nodeKind"><span class="hs-identifier hs-type">nodeKind</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitNode"><span class="hs-identifier hs-type">JitNode</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-333"></span><span id="nodeKind"><span class="annot"><span class="annottext">nodeKind :: Ptr JitNode -&gt; IO (Ptr StdString)
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#nodeKind"><span class="hs-identifier hs-var hs-var">nodeKind</span></a></span></span><span> </span><span id="local-6989586621684155930"><span class="annot"><span class="annottext">node :: Ptr JitNode
+</span><a href="#local-6989586621684155930"><span class="hs-identifier hs-var">node</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-334"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| std::string* {
+    return new std::string((*$(torch::jit::Node* node)).kind().toQualString());
+  }|]</span></span><span>
+</span><span id="line-337"></span><span>
+</span><span id="line-338"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#valueId"><span class="hs-identifier hs-type">valueId</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitValue"><span class="hs-identifier hs-type">JitValue</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">CInt</span></span><span>
+</span><span id="line-339"></span><span id="valueId"><span class="annot"><span class="annottext">valueId :: Ptr JitValue -&gt; IO CInt
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#valueId"><span class="hs-identifier hs-var hs-var">valueId</span></a></span></span><span> </span><span id="local-6989586621684155916"><span class="annot"><span class="annottext">value :: Ptr JitValue
+</span><a href="#local-6989586621684155916"><span class="hs-identifier hs-var">value</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-340"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| int {
+    return (*$(torch::jit::Value* value)).unique();
+  }|]</span></span><span>
+</span><span id="line-343"></span><span>
+</span><span id="line-344"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#valueType"><span class="hs-identifier hs-type">valueType</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitValue"><span class="hs-identifier hs-type">JitValue</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-345"></span><span id="valueType"><span class="annot"><span class="annottext">valueType :: Ptr JitValue -&gt; IO (Ptr StdString)
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#valueType"><span class="hs-identifier hs-var hs-var">valueType</span></a></span></span><span> </span><span id="local-6989586621684155902"><span class="annot"><span class="annottext">node :: Ptr JitValue
+</span><a href="#local-6989586621684155902"><span class="hs-identifier hs-var">node</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-346"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| std::string* {
+    return new std::string((*$(torch::jit::Value* node)).type()-&gt;str());
+  }|]</span></span><span>
+</span><span id="line-349"></span><span>
+</span><span id="line-350"></span><span>
+</span><span id="line-351"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#printGraph"><span class="hs-identifier hs-type">printGraph</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#SharedPtr"><span class="hs-identifier hs-type">SharedPtr</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitGraph"><span class="hs-identifier hs-type">JitGraph</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-352"></span><span id="printGraph"><span class="annot"><span class="annottext">printGraph :: Ptr (SharedPtr JitGraph) -&gt; IO (Ptr StdString)
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#printGraph"><span class="hs-identifier hs-var hs-var">printGraph</span></a></span></span><span> </span><span id="local-6989586621684155888"><span class="annot"><span class="annottext">graph :: Ptr (SharedPtr JitGraph)
+</span><a href="#local-6989586621684155888"><span class="hs-identifier hs-var">graph</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-353"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| std::string* {
+    return new std::string((**$(std::shared_ptr&lt;torch::jit::Graph&gt;* graph)).toString());
+  }|]</span></span><span>
+</span><span id="line-356"></span><span>
+</span><span id="line-357"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#printOnnx"><span class="hs-identifier hs-type">printOnnx</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#SharedPtr"><span class="hs-identifier hs-type">SharedPtr</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitGraph"><span class="hs-identifier hs-type">JitGraph</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-358"></span><span id="printOnnx"><span class="annot"><span class="annottext">printOnnx :: Ptr (SharedPtr JitGraph) -&gt; IO (Ptr StdString)
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#printOnnx"><span class="hs-identifier hs-var hs-var">printOnnx</span></a></span></span><span> </span><span id="local-6989586621684155874"><span class="annot"><span class="annottext">graph :: Ptr (SharedPtr JitGraph)
+</span><a href="#local-6989586621684155874"><span class="hs-identifier hs-var">graph</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-359"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| std::string* {
+    auto graph_str = torch::jit::pretty_print_onnx(
+        *$(std::shared_ptr&lt;torch::jit::Graph&gt;* graph),
+        std::map&lt;std::string, at::Tensor&gt;{},
+        9,
+        false);
+    return new std::string(graph_str);
+  }|]</span></span><span>
+</span><span id="line-367"></span><span>
+</span><span id="line-368"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html#dumpToStr"><span class="hs-identifier hs-type">dumpToStr</span></a></span><span>
+</span><span id="line-369"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span>
+</span><span id="line-370"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span>
+</span><span id="line-371"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span>
+</span><span id="line-372"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span>
+</span><span id="line-373"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CInt</span></span><span>
+</span><span id="line-374"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-375"></span><span id="dumpToStr"><span class="annot"><span class="annottext">dumpToStr :: Ptr Module -&gt; CBool -&gt; CBool -&gt; CBool -&gt; CInt -&gt; IO (Ptr StdString)
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#dumpToStr"><span class="hs-identifier hs-var hs-var">dumpToStr</span></a></span></span><span> </span><span id="local-6989586621684155860"><span class="annot"><span class="annottext">obj :: Ptr Module
+</span><a href="#local-6989586621684155860"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span id="local-6989586621684155859"><span class="annot"><span class="annottext">print_method_bodies :: CBool
+</span><a href="#local-6989586621684155859"><span class="hs-identifier hs-var">print_method_bodies</span></a></span></span><span> </span><span id="local-6989586621684155858"><span class="annot"><span class="annottext">print_attr_values :: CBool
+</span><a href="#local-6989586621684155858"><span class="hs-identifier hs-var">print_attr_values</span></a></span></span><span> </span><span id="local-6989586621684155857"><span class="annot"><span class="annottext">print_param_values :: CBool
+</span><a href="#local-6989586621684155857"><span class="hs-identifier hs-var">print_param_values</span></a></span></span><span> </span><span id="local-6989586621684155856"><span class="annot"><span class="annottext">level :: CInt
+</span><a href="#local-6989586621684155856"><span class="hs-identifier hs-var">level</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-376"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| std::string* {
+    return new std::string($(torch::jit::script::Module* obj)-&gt;dump_to_str(
+      $(bool print_method_bodies)
+    , $(bool print_attr_values)
+    , $(bool print_param_values)
+    , $(int level)
+    ));
+  }|]</span></span><span>
+</span><span id="line-384"></span></pre></body></html>

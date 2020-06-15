@@ -1,0 +1,139 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DataKinds #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE RankNTypes #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE PolyKinds #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE TypeFamilies #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE TypeOperators #-}</span><span>
+</span><span id="line-7"></span><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><span id="line-8"></span><span class="hs-pragma">{-# LANGUAGE FunctionalDependencies #-}</span><span>
+</span><span id="line-9"></span><span class="hs-pragma">{-# LANGUAGE FlexibleInstances #-}</span><span>
+</span><span id="line-10"></span><span class="hs-pragma">{-# LANGUAGE UndecidableInstances #-}</span><span>
+</span><span id="line-11"></span><span class="hs-pragma">{-# LANGUAGE NoStarIsType #-}</span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.Typed.Autograd</span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.Typed.Autograd.html#HasGrad"><span class="hs-identifier">Torch.Typed.Autograd.HasGrad</span></a></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Autograd.html#grad"><span class="hs-identifier">Torch.Typed.Autograd.grad</span></a></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Data.Kind</span></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="Torch.HList.html"><span class="hs-identifier">Torch.HList</span></a></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">GHC.TypeLits</span></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">System.IO.Unsafe</span></span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">Torch.Internal.Cast</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">ATen</span></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">Torch.Internal.Class</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">ATen</span></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">Torch.Internal.Managed.Autograd</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">LibTorch</span></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.DType.html"><span class="hs-identifier">Torch.DType</span></a></span><span>                   </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.Device.html"><span class="hs-identifier">Torch.Device</span></a></span><span>                  </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.Tensor.html"><span class="hs-identifier">Torch.Tensor</span></a></span><span>                  </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="Torch.Typed.Tensor.html"><span class="hs-identifier">Torch.Typed.Tensor</span></a></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="Torch.Typed.Parameter.html"><span class="hs-identifier">Torch.Typed.Parameter</span></a></span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="hs-keyword">class</span><span> </span><span id="HasGrad"><span class="annot"><a href="Torch.Typed.Autograd.html#HasGrad"><span class="hs-identifier hs-var">HasGrad</span></a></span></span><span> </span><span id="local-6989586621679731625"><span class="annot"><a href="#local-6989586621679731625"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span id="local-6989586621679731624"><span class="annot"><a href="#local-6989586621679731624"><span class="hs-identifier hs-type">b</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><a href="#local-6989586621679731625"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679731624"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-comment">-- | calculate gradients of a zero-dimensional tensor with respect to a list of parameters</span><span>
+</span><span id="line-35"></span><span>  </span><span id="grad"><span class="annot"><a href="Torch.Typed.Autograd.html#grad"><span class="hs-identifier hs-type">grad</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679731627"><span class="annot"><a href="#local-6989586621679731627"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span id="local-6989586621679731628"><span class="annot"><a href="#local-6989586621679731628"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span class="hs-operator">.</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731628"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731627"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679731625"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679731624"><span class="hs-identifier hs-type">b</span></a></span><span>
+</span><span id="line-36"></span><span>  </span><span id="toDependent"><span class="annot"><a href="Torch.Typed.Autograd.html#toDependent"><span class="hs-identifier hs-type">toDependent</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679731625"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679731624"><span class="hs-identifier hs-type">b</span></a></span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="hs-comment">-- instance HasGrad (Tensor device dtype shape) (Tensor device dtype shape) where</span><span>
+</span><span id="line-39"></span><span class="hs-comment">--   grad loss input = head . unsafePerformIO $ ATen.cast2</span><span>
+</span><span id="line-40"></span><span class="hs-comment">--     Torch.Managed.Autograd.grad</span><span>
+</span><span id="line-41"></span><span class="hs-comment">--     loss</span><span>
+</span><span id="line-42"></span><span class="hs-comment">--     [Torch.Typed.Autograd.toDependent input]</span><span>
+</span><span id="line-43"></span><span class="hs-comment">--   toDependent = id</span><span>
+</span><span id="line-44"></span><span>
+</span><span id="line-45"></span><span id="local-6989586621679731584"><span id="local-6989586621679731585"><span id="local-6989586621679731586"><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Typed.Autograd.html#HasGrad"><span class="hs-identifier hs-type">HasGrad</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Parameter.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731586"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731585"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731584"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731586"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731585"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731584"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-46"></span><span>  </span><span id="local-6989586621679731580"><span class="annot"><span class="annottext">grad :: Tensor device dtype '[]
+-&gt; Parameter device dtype shape -&gt; Tensor device dtype shape
+</span><a href="#local-6989586621679731580"><span class="hs-identifier hs-var hs-var hs-var hs-var">grad</span></a></span></span><span> </span><span id="local-6989586621679731579"><span class="annot"><span class="annottext">loss :: Tensor device dtype '[]
+</span><a href="#local-6989586621679731579"><span class="hs-identifier hs-var">loss</span></a></span></span><span> </span><span id="local-6989586621679731578"><span class="annot"><span class="annottext">input :: Parameter device dtype shape
+</span><a href="#local-6989586621679731578"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Tensor device dtype shape] -&gt; Tensor device dtype shape
+forall a. [a] -&gt; a
+</span><span class="hs-identifier hs-var">head</span></span><span> </span><span class="annot"><span class="annottext">([Tensor device dtype shape] -&gt; Tensor device dtype shape)
+-&gt; (IO [Tensor device dtype shape] -&gt; [Tensor device dtype shape])
+-&gt; IO [Tensor device dtype shape]
+-&gt; Tensor device dtype shape
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">IO [Tensor device dtype shape] -&gt; [Tensor device dtype shape]
+forall a. IO a -&gt; a
+</span><span class="hs-identifier hs-var">unsafePerformIO</span></span><span> </span><span class="annot"><span class="annottext">(IO [Tensor device dtype shape] -&gt; Tensor device dtype shape)
+-&gt; IO [Tensor device dtype shape] -&gt; Tensor device dtype shape
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(ForeignPtr Tensor
+ -&gt; ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList))
+-&gt; Tensor device dtype '[]
+-&gt; [Tensor device dtype shape]
+-&gt; IO [Tensor device dtype shape]
+forall a ca x1 cx1 y cy.
+(Castable a ca, Castable x1 cx1, Castable y cy) =&gt;
+(ca -&gt; cx1 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; IO y
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.cast2</span></a></span><span>
+</span><span id="line-47"></span><span>    </span><span class="annot"><span class="annottext">ForeignPtr Tensor
+-&gt; ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList)
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">LibTorch.grad</span></a></span><span>
+</span><span id="line-48"></span><span>    </span><span class="annot"><span class="annottext">Tensor device dtype '[]
+</span><a href="#local-6989586621679731579"><span class="hs-identifier hs-var">loss</span></a></span><span>
+</span><span id="line-49"></span><span>    </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Parameter device dtype shape -&gt; Tensor device dtype shape
+forall a b. HasGrad a b =&gt; a -&gt; b
+</span><a href="Torch.Typed.Autograd.html#toDependent"><span class="hs-identifier hs-var">Torch.Typed.Autograd.toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">Parameter device dtype shape
+</span><a href="#local-6989586621679731578"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-50"></span><span>  </span><span id="local-6989586621679731572"><span class="annot"><span class="annottext">toDependent :: Parameter device dtype shape -&gt; Tensor device dtype shape
+</span><a href="#local-6989586621679731572"><span class="hs-identifier hs-var hs-var hs-var hs-var">toDependent</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parameter device dtype shape -&gt; Tensor device dtype shape
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Parameter device dtype shape -&gt; Tensor device dtype shape
+</span><a href="Torch.Typed.Parameter.html#toDependent"><span class="hs-identifier hs-var">Torch.Typed.Parameter.toDependent</span></a></span></span></span></span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Typed.Autograd.html#HasGrad"><span class="hs-identifier hs-type">HasGrad</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.HList.html#HList"><span class="hs-identifier hs-type">HList</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Type</span></span><span class="hs-special">]</span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.HList.html#HList"><span class="hs-identifier hs-type">HList</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Type</span></span><span class="hs-special">]</span><span class="hs-special">)</span><span class="hs-special">)</span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-53"></span><span>  </span><span id="local-6989586621679731568"><span class="annot"><span class="annottext">grad :: Tensor device dtype '[] -&gt; HList '[] -&gt; HList '[]
+</span><a href="#local-6989586621679731568"><span class="hs-identifier hs-var hs-var hs-var hs-var">grad</span></a></span></span><span> </span><span class="hs-identifier">_</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">HList '[] -&gt; HList '[]
+forall a. a -&gt; a
+</span><span class="hs-identifier hs-var">id</span></span><span>
+</span><span id="line-54"></span><span>  </span><span id="local-6989586621679731566"><span class="annot"><span class="annottext">toDependent :: HList '[] -&gt; HList '[]
+</span><a href="#local-6989586621679731566"><span class="hs-identifier hs-var hs-var hs-var hs-var">toDependent</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">HList '[] -&gt; HList '[]
+forall a. a -&gt; a
+</span><span class="hs-identifier hs-var">id</span></span><span>
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span id="local-6989586621679731562"><span id="local-6989586621679731563"><span id="local-6989586621679731564"><span id="local-6989586621679731565"><span class="hs-keyword">instance</span><span>
+</span><span id="line-57"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.Typed.Autograd.html#HasGrad"><span class="hs-identifier hs-type">HasGrad</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731565"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731564"><span class="hs-identifier hs-type">b</span></a></span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Autograd.html#HasGrad"><span class="hs-identifier hs-type">HasGrad</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.HList.html#HList"><span class="hs-identifier hs-type">HList</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731563"><span class="hs-keyword hs-type">as</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.HList.html#HList"><span class="hs-identifier hs-type">HList</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731562"><span class="hs-identifier hs-type">bs</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Castable</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.HList.html#HList"><span class="hs-identifier hs-type">HList</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679731564"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-glyph">:</span><span> </span><span class="annot"><a href="#local-6989586621679731562"><span class="hs-identifier hs-type">bs</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Torch.Tensor.html#ATenTensor"><span class="hs-identifier hs-type">D.ATenTensor</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.Typed.Autograd.html#HasGrad"><span class="hs-identifier hs-type">HasGrad</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.HList.html#HList"><span class="hs-identifier hs-type">HList</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679731565"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-glyph">:</span><span> </span><span class="annot"><a href="#local-6989586621679731563"><span class="hs-keyword hs-type">as</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.HList.html#HList"><span class="hs-identifier hs-type">HList</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679731564"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-glyph">:</span><span> </span><span class="annot"><a href="#local-6989586621679731562"><span class="hs-identifier hs-type">bs</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-61"></span><span>  </span><span id="local-6989586621679731558"><span class="annot"><span class="annottext">grad :: Tensor device dtype '[] -&gt; HList (a : as) -&gt; HList (b : bs)
+</span><a href="#local-6989586621679731558"><span class="hs-identifier hs-var hs-var hs-var hs-var">grad</span></a></span></span><span> </span><span id="local-6989586621679731557"><span class="annot"><span class="annottext">loss :: Tensor device dtype '[]
+</span><a href="#local-6989586621679731557"><span class="hs-identifier hs-var">loss</span></a></span></span><span> </span><span id="local-6989586621679731556"><span class="annot"><span class="annottext">inputs :: HList (a : as)
+</span><a href="#local-6989586621679731556"><span class="hs-identifier hs-var">inputs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO (HList (b : bs)) -&gt; HList (b : bs)
+forall a. IO a -&gt; a
+</span><span class="hs-identifier hs-var">unsafePerformIO</span></span><span> </span><span class="annot"><span class="annottext">(IO (HList (b : bs)) -&gt; HList (b : bs))
+-&gt; IO (HList (b : bs)) -&gt; HList (b : bs)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(ForeignPtr Tensor
+ -&gt; ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList))
+-&gt; Tensor device dtype '[] -&gt; HList (b : bs) -&gt; IO (HList (b : bs))
+forall a ca x1 cx1 y cy.
+(Castable a ca, Castable x1 cx1, Castable y cy) =&gt;
+(ca -&gt; cx1 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; IO y
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.cast2</span></a></span><span>
+</span><span id="line-62"></span><span>    </span><span class="annot"><span class="annottext">ForeignPtr Tensor
+-&gt; ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList)
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">LibTorch.grad</span></a></span><span>
+</span><span id="line-63"></span><span>    </span><span class="annot"><span class="annottext">Tensor device dtype '[]
+</span><a href="#local-6989586621679731557"><span class="hs-identifier hs-var">loss</span></a></span><span>
+</span><span id="line-64"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">HList (a : as) -&gt; HList (b : bs)
+forall a b. HasGrad a b =&gt; a -&gt; b
+</span><a href="Torch.Typed.Autograd.html#toDependent"><span class="hs-identifier hs-var">Torch.Typed.Autograd.toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">HList (a : as)
+</span><a href="#local-6989586621679731556"><span class="hs-identifier hs-var">inputs</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-65"></span><span>  </span><span id="local-6989586621679731555"><span class="annot"><span class="annottext">toDependent :: HList (a : as) -&gt; HList (b : bs)
+</span><a href="#local-6989586621679731555"><span class="hs-identifier hs-var hs-var hs-var hs-var">toDependent</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731554"><span class="annot"><span class="annottext">a :: a
+</span><a href="#local-6989586621679731554"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="annot"><a href="Torch.HList.html#%3A."><span class="hs-operator hs-type">:.</span></a></span><span> </span><span id="local-6989586621679731552"><span class="annot"><span class="annottext">as :: HList as
+</span><a href="#local-6989586621679731552"><span class="hs-keyword hs-var">as</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-66"></span><span>    </span><span class="annot"><span class="annottext">a -&gt; b
+forall a b. HasGrad a b =&gt; a -&gt; b
+</span><a href="Torch.Typed.Autograd.html#toDependent"><span class="hs-identifier hs-var">Torch.Typed.Autograd.toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679731554"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">b -&gt; HList bs -&gt; HList (b : bs)
+forall x (xs :: [Type]). x -&gt; HList xs -&gt; HList (x : xs)
+</span><a href="Torch.HList.html#%3A."><span class="hs-operator hs-var">:.</span></a></span><span> </span><span class="annot"><span class="annottext">HList as -&gt; HList bs
+forall a b. HasGrad a b =&gt; a -&gt; b
+</span><a href="Torch.Typed.Autograd.html#toDependent"><span class="hs-identifier hs-var">Torch.Typed.Autograd.toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">HList as
+</span><a href="#local-6989586621679731552"><span class="hs-keyword hs-var">as</span></a></span></span></span></span></span><span>
+</span><span id="line-67"></span></pre></body></html>

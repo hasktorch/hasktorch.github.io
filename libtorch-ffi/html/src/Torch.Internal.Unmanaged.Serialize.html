@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DataKinds #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE PolyKinds #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE TemplateHaskell #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE QuasiQuotes #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.Internal.Unmanaged.Serialize</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Foreign.Ptr</span></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Foreign.C.String</span></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/myq28agg45arrr187hbw7ggsf0js8pwf-inline-c-cpp-lib-inline-c-cpp-0.4.0.2-doc/share/doc/inline-c-cpp/html/src"><span class="hs-identifier">Language.C.Inline.Cpp</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">C</span></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/myq28agg45arrr187hbw7ggsf0js8pwf-inline-c-cpp-lib-inline-c-cpp-0.4.0.2-doc/share/doc/inline-c-cpp/html/src"><span class="hs-identifier">Language.C.Inline.Cpp.Exceptions</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">C</span></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/3cyp38ah96r9r93hixkc294xsx2wa3h5-inline-c-lib-inline-c-0.9.1.0-doc/share/doc/inline-c/html/src"><span class="hs-identifier">Language.C.Inline.Context</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">C</span></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/3cyp38ah96r9r93hixkc294xsx2wa3h5-inline-c-lib-inline-c-0.9.1.0-doc/share/doc/inline-c/html/src"><span class="hs-identifier">Language.C.Types</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">C</span></span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.Internal.Type.html"><span class="hs-identifier">Torch.Internal.Type</span></a></span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="hs-identifier">C.context</span><span> </span><span class="hs-operator">$</span><span> </span><span class="hs-identifier">C.cppCtx</span><span> </span><span class="hs-operator">&lt;&gt;</span><span> </span><span class="hs-identifier">mempty</span><span> </span><span class="hs-special">{</span><span> </span><span class="hs-identifier">C.ctxTypesTable</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier">typeTable</span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="hs-identifier">C.include</span><span> </span><span class="hs-string">&quot;&lt;vector&gt;&quot;</span><span>
+</span><span id="line-22"></span><span class="hs-identifier">C.include</span><span> </span><span class="hs-string">&quot;&lt;torch/serialize.h&gt;&quot;</span><span>
+</span><span id="line-23"></span><span class="hs-identifier">C.include</span><span> </span><span class="hs-string">&quot;&lt;ATen/ATen.h&gt;&quot;</span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Serialize.html#save"><span class="hs-identifier hs-type">save</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FilePath</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span id="save"><span class="annot"><span class="annottext">save :: Ptr TensorList -&gt; FilePath -&gt; IO ()
+</span><a href="Torch.Internal.Unmanaged.Serialize.html#save"><span class="hs-identifier hs-var hs-var">save</span></a></span></span><span> </span><span id="local-6989586621684150093"><span class="annot"><span class="annottext">inputs :: Ptr TensorList
+</span><a href="#local-6989586621684150093"><span class="hs-identifier hs-var">inputs</span></a></span></span><span> </span><span id="local-6989586621684150092"><span class="annot"><span class="annottext">file :: FilePath
+</span><a href="#local-6989586621684150092"><span class="hs-identifier hs-var">file</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FilePath -&gt; (CString -&gt; IO ()) -&gt; IO ()
+forall a. FilePath -&gt; (CString -&gt; IO a) -&gt; IO a
+</span><span class="hs-identifier hs-var">withCString</span></span><span> </span><span class="annot"><span class="annottext">FilePath
+</span><a href="#local-6989586621684150092"><span class="hs-identifier hs-var">file</span></a></span><span> </span><span class="annot"><span class="annottext">((CString -&gt; IO ()) -&gt; IO ()) -&gt; (CString -&gt; IO ()) -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621684150090"><span class="annot"><span class="annottext">cfile :: CString
+</span><a href="#local-6989586621684150090"><span class="hs-identifier hs-var">cfile</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="">[C.throwBlock| void {
+    torch::save(*$(std::vector&lt;at::Tensor&gt;* inputs),$(char* cfile));
+  }|]</span></span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Serialize.html#load"><span class="hs-identifier hs-type">load</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FilePath</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span id="load"><span class="annot"><span class="annottext">load :: FilePath -&gt; IO (Ptr TensorList)
+</span><a href="Torch.Internal.Unmanaged.Serialize.html#load"><span class="hs-identifier hs-var hs-var">load</span></a></span></span><span> </span><span id="local-6989586621684150068"><span class="annot"><span class="annottext">file :: FilePath
+</span><a href="#local-6989586621684150068"><span class="hs-identifier hs-var">file</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FilePath -&gt; (CString -&gt; IO (Ptr TensorList)) -&gt; IO (Ptr TensorList)
+forall a. FilePath -&gt; (CString -&gt; IO a) -&gt; IO a
+</span><span class="hs-identifier hs-var">withCString</span></span><span> </span><span class="annot"><span class="annottext">FilePath
+</span><a href="#local-6989586621684150068"><span class="hs-identifier hs-var">file</span></a></span><span> </span><span class="annot"><span class="annottext">((CString -&gt; IO (Ptr TensorList)) -&gt; IO (Ptr TensorList))
+-&gt; (CString -&gt; IO (Ptr TensorList)) -&gt; IO (Ptr TensorList)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621684150067"><span class="annot"><span class="annottext">cfile :: CString
+</span><a href="#local-6989586621684150067"><span class="hs-identifier hs-var">cfile</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="">[C.throwBlock| std::vector&lt;at::Tensor&gt;* {
+    std::vector&lt;at::Tensor&gt; tensor_vec;                                                
+    torch::load(tensor_vec,$(char* cfile));
+    return new std::vector&lt;at::Tensor&gt;(tensor_vec);
+  }|]</span></span><span>
+</span><span id="line-36"></span></pre></body></html>

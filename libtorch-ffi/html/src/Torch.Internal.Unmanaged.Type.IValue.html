@@ -1,0 +1,666 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DataKinds #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE PolyKinds #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE TemplateHaskell #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE QuasiQuotes #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-7"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-8"></span><span class="hs-pragma">{-# LANGUAGE TypeFamilies #-}</span><span>
+</span><span id="line-9"></span><span class="hs-pragma">{-# LANGUAGE FlexibleInstances #-}</span><span>
+</span><span id="line-10"></span><span class="hs-pragma">{-# LANGUAGE MultiParamTypeClasses #-}</span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.Internal.Unmanaged.Type.IValue</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/myq28agg45arrr187hbw7ggsf0js8pwf-inline-c-cpp-lib-inline-c-cpp-0.4.0.2-doc/share/doc/inline-c-cpp/html/src"><span class="hs-identifier">Language.C.Inline.Cpp</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">C</span></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/myq28agg45arrr187hbw7ggsf0js8pwf-inline-c-cpp-lib-inline-c-cpp-0.4.0.2-doc/share/doc/inline-c-cpp/html/src"><span class="hs-identifier">Language.C.Inline.Cpp.Exceptions</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">C</span></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/3cyp38ah96r9r93hixkc294xsx2wa3h5-inline-c-lib-inline-c-0.9.1.0-doc/share/doc/inline-c/html/src"><span class="hs-identifier">Language.C.Inline.Context</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">C</span></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/3cyp38ah96r9r93hixkc294xsx2wa3h5-inline-c-lib-inline-c-0.9.1.0-doc/share/doc/inline-c/html/src"><span class="hs-identifier">Language.C.Types</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">C</span></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Map</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Map</span></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Foreign.C.String</span></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Foreign.C.Types</span></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Foreign</span></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.Internal.Type.html"><span class="hs-identifier">Torch.Internal.Type</span></a></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.Internal.Class.html"><span class="hs-identifier">Torch.Internal.Class</span></a></span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="hs-identifier">C.context</span><span> </span><span class="hs-operator">$</span><span> </span><span class="hs-identifier">C.cppCtx</span><span> </span><span class="hs-operator">&lt;&gt;</span><span> </span><span class="hs-identifier">mempty</span><span> </span><span class="hs-special">{</span><span> </span><span class="hs-identifier">C.ctxTypesTable</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier">typeTable</span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="hs-identifier">C.include</span><span> </span><span class="hs-string">&quot;&lt;ATen/ATen.h&gt;&quot;</span><span>
+</span><span id="line-30"></span><span class="hs-identifier">C.include</span><span> </span><span class="hs-string">&quot;&lt;vector&gt;&quot;</span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">class</span><span> </span><span id="IValueLike"><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#IValueLike"><span class="hs-identifier hs-var">IValueLike</span></a></span></span><span> </span><span id="local-6989586621684155596"><span class="annot"><a href="#local-6989586621684155596"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span id="local-6989586621684155595"><span class="annot"><a href="#local-6989586621684155595"><span class="hs-identifier hs-type">b</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-33"></span><span>  </span><span id="toIValue"><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#toIValue"><span class="hs-identifier hs-type">toIValue</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621684155596"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621684155595"><span class="hs-identifier hs-type">b</span></a></span><span>
+</span><span id="line-34"></span><span>  </span><span id="fromIValue"><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#fromIValue"><span class="hs-identifier hs-type">fromIValue</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621684155595"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621684155596"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#IValueLike"><span class="hs-identifier hs-type">IValueLike</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-37"></span><span>  </span><span id="local-6989586621684155543"><span class="annot"><span class="annottext">toIValue :: Ptr IValue -&gt; IO (Ptr IValue)
+</span><a href="#local-6989586621684155543"><span class="hs-identifier hs-var hs-var hs-var hs-var">toIValue</span></a></span></span><span> </span><span id="local-6989586621684155542"><span class="annot"><span class="annottext">_x :: Ptr IValue
+</span><a href="#local-6989586621684155542"><span class="hs-identifier hs-var">_x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-38"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue(
+      *$(at::IValue* _x));
+    }|]</span></span><span>
+</span><span id="line-41"></span><span>  </span><span id="local-6989586621684155523"><span class="annot"><span class="annottext">fromIValue :: Ptr IValue -&gt; IO (Ptr IValue)
+</span><a href="#local-6989586621684155523"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromIValue</span></a></span></span><span> </span><span id="local-6989586621684155522"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684155522"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-42"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue((*$(at::IValue* _obj)).toIValue(
+      ));
+    }|]</span></span><span>
+</span><span id="line-45"></span><span>
+</span><span id="line-46"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#IValueLike"><span class="hs-identifier hs-type">IValueLike</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-47"></span><span>  </span><span id="local-6989586621684155507"><span class="annot"><span class="annottext">toIValue :: Ptr Tensor -&gt; IO (Ptr IValue)
+</span><a href="#local-6989586621684155507"><span class="hs-identifier hs-var hs-var hs-var hs-var">toIValue</span></a></span></span><span> </span><span id="local-6989586621684155506"><span class="annot"><span class="annottext">_x :: Ptr Tensor
+</span><a href="#local-6989586621684155506"><span class="hs-identifier hs-var">_x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-48"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue(
+      *$(at::Tensor* _x));
+    }|]</span></span><span>
+</span><span id="line-51"></span><span>  </span><span id="local-6989586621684155493"><span class="annot"><span class="annottext">fromIValue :: Ptr IValue -&gt; IO (Ptr Tensor)
+</span><a href="#local-6989586621684155493"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromIValue</span></a></span></span><span> </span><span id="local-6989586621684155492"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684155492"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-52"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::Tensor* { return new at::Tensor((*$(at::IValue* _obj)).toTensor(
+      ));
+    }|]</span></span><span>
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#IValueLike"><span class="hs-identifier hs-type">IValueLike</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#C10Ptr"><span class="hs-identifier hs-type">C10Ptr</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IVTuple"><span class="hs-identifier hs-type">IVTuple</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-57"></span><span>  </span><span id="local-6989586621684155477"><span class="annot"><span class="annottext">toIValue :: Ptr (C10Ptr IVTuple) -&gt; IO (Ptr IValue)
+</span><a href="#local-6989586621684155477"><span class="hs-identifier hs-var hs-var hs-var hs-var">toIValue</span></a></span></span><span> </span><span id="local-6989586621684155476"><span class="annot"><span class="annottext">_x :: Ptr (C10Ptr IVTuple)
+</span><a href="#local-6989586621684155476"><span class="hs-identifier hs-var">_x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-58"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue(
+      *$(c10::intrusive_ptr&lt;at::ivalue::Tuple&gt;* _x));
+    }|]</span></span><span>
+</span><span id="line-61"></span><span>  </span><span id="local-6989586621684155463"><span class="annot"><span class="annottext">fromIValue :: Ptr IValue -&gt; IO (Ptr (C10Ptr IVTuple))
+</span><a href="#local-6989586621684155463"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromIValue</span></a></span></span><span> </span><span id="local-6989586621684155462"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684155462"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-62"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| c10::intrusive_ptr&lt;at::ivalue::Tuple&gt;* { return new c10::intrusive_ptr&lt;at::ivalue::Tuple&gt;((*$(at::IValue* _obj)).toTuple(
+      ));
+    }|]</span></span><span>
+</span><span id="line-65"></span><span>
+</span><span id="line-66"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#IValueLike"><span class="hs-identifier hs-type">IValueLike</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#C10Dict"><span class="hs-identifier hs-type">C10Dict</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">,</span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-67"></span><span>  </span><span id="local-6989586621684155447"><span class="annot"><span class="annottext">toIValue :: Ptr (C10Dict '(IValue, IValue)) -&gt; IO (Ptr IValue)
+</span><a href="#local-6989586621684155447"><span class="hs-identifier hs-var hs-var hs-var hs-var">toIValue</span></a></span></span><span> </span><span id="local-6989586621684155446"><span class="annot"><span class="annottext">_x :: Ptr (C10Dict '(IValue, IValue))
+</span><a href="#local-6989586621684155446"><span class="hs-identifier hs-var">_x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-68"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue(
+      *$(c10::Dict&lt;at::IValue,at::IValue&gt;* _x));
+    }|]</span></span><span>
+</span><span id="line-71"></span><span>  </span><span id="local-6989586621684155433"><span class="annot"><span class="annottext">fromIValue :: Ptr IValue -&gt; IO (Ptr (C10Dict '(IValue, IValue)))
+</span><a href="#local-6989586621684155433"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromIValue</span></a></span></span><span> </span><span id="local-6989586621684155432"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684155432"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-72"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| c10::Dict&lt;at::IValue,at::IValue&gt;* { return new c10::Dict&lt;at::IValue,at::IValue&gt;((*$(at::IValue* _obj)).toGenericDict(
+      ));
+    }|]</span></span><span>
+</span><span id="line-75"></span><span>
+</span><span id="line-76"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#IValueLike"><span class="hs-identifier hs-type">IValueLike</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#C10List"><span class="hs-identifier hs-type">C10List</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-77"></span><span>  </span><span id="local-6989586621684155417"><span class="annot"><span class="annottext">toIValue :: Ptr (C10List IValue) -&gt; IO (Ptr IValue)
+</span><a href="#local-6989586621684155417"><span class="hs-identifier hs-var hs-var hs-var hs-var">toIValue</span></a></span></span><span> </span><span id="local-6989586621684155416"><span class="annot"><span class="annottext">_x :: Ptr (C10List IValue)
+</span><a href="#local-6989586621684155416"><span class="hs-identifier hs-var">_x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-78"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue(
+      *$(c10::List&lt;at::IValue&gt;* _x));
+    }|]</span></span><span>
+</span><span id="line-81"></span><span>  </span><span id="local-6989586621684155403"><span class="annot"><span class="annottext">fromIValue :: Ptr IValue -&gt; IO (Ptr (C10List IValue))
+</span><a href="#local-6989586621684155403"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromIValue</span></a></span></span><span> </span><span id="local-6989586621684155402"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684155402"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-82"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| c10::List&lt;at::IValue&gt;* { return new c10::List&lt;at::IValue&gt;((*$(at::IValue* _obj)).toList(
+      ));
+    }|]</span></span><span>
+</span><span id="line-85"></span><span>
+</span><span id="line-86"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#IValueLike"><span class="hs-identifier hs-type">IValueLike</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#C10List"><span class="hs-identifier hs-type">C10List</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-87"></span><span>  </span><span id="local-6989586621684155387"><span class="annot"><span class="annottext">toIValue :: Ptr (C10List Tensor) -&gt; IO (Ptr IValue)
+</span><a href="#local-6989586621684155387"><span class="hs-identifier hs-var hs-var hs-var hs-var">toIValue</span></a></span></span><span> </span><span id="local-6989586621684155386"><span class="annot"><span class="annottext">_x :: Ptr (C10List Tensor)
+</span><a href="#local-6989586621684155386"><span class="hs-identifier hs-var">_x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-88"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue(
+      *$(c10::List&lt;at::Tensor&gt;* _x));
+    }|]</span></span><span>
+</span><span id="line-91"></span><span>  </span><span id="local-6989586621684155373"><span class="annot"><span class="annottext">fromIValue :: Ptr IValue -&gt; IO (Ptr (C10List Tensor))
+</span><a href="#local-6989586621684155373"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromIValue</span></a></span></span><span> </span><span id="local-6989586621684155372"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684155372"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-92"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| c10::List&lt;at::Tensor&gt;* { return new c10::List&lt;at::Tensor&gt;((*$(at::IValue* _obj)).toTensorList(
+      ));
+    }|]</span></span><span>
+</span><span id="line-95"></span><span>
+</span><span id="line-96"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#IValueLike"><span class="hs-identifier hs-type">IValueLike</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#C10List"><span class="hs-identifier hs-type">C10List</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-97"></span><span>  </span><span id="local-6989586621684155357"><span class="annot"><span class="annottext">toIValue :: Ptr (C10List CBool) -&gt; IO (Ptr IValue)
+</span><a href="#local-6989586621684155357"><span class="hs-identifier hs-var hs-var hs-var hs-var">toIValue</span></a></span></span><span> </span><span id="local-6989586621684155356"><span class="annot"><span class="annottext">_x :: Ptr (C10List CBool)
+</span><a href="#local-6989586621684155356"><span class="hs-identifier hs-var">_x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-98"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue(
+      *$(c10::List&lt;bool&gt;* _x));
+    }|]</span></span><span>
+</span><span id="line-101"></span><span>  </span><span id="local-6989586621684155343"><span class="annot"><span class="annottext">fromIValue :: Ptr IValue -&gt; IO (Ptr (C10List CBool))
+</span><a href="#local-6989586621684155343"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromIValue</span></a></span></span><span> </span><span id="local-6989586621684155342"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684155342"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-102"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| c10::List&lt;bool&gt;* { return new c10::List&lt;bool&gt;((*$(at::IValue* _obj)).toBoolList(
+      ));
+    }|]</span></span><span>
+</span><span id="line-105"></span><span>
+</span><span id="line-106"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#IValueLike"><span class="hs-identifier hs-type">IValueLike</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#C10List"><span class="hs-identifier hs-type">C10List</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-107"></span><span>  </span><span id="local-6989586621684155327"><span class="annot"><span class="annottext">toIValue :: Ptr (C10List Int64) -&gt; IO (Ptr IValue)
+</span><a href="#local-6989586621684155327"><span class="hs-identifier hs-var hs-var hs-var hs-var">toIValue</span></a></span></span><span> </span><span id="local-6989586621684155326"><span class="annot"><span class="annottext">_x :: Ptr (C10List Int64)
+</span><a href="#local-6989586621684155326"><span class="hs-identifier hs-var">_x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-108"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue(
+      *$(c10::List&lt;int64_t&gt;* _x));
+    }|]</span></span><span>
+</span><span id="line-111"></span><span>  </span><span id="local-6989586621684155313"><span class="annot"><span class="annottext">fromIValue :: Ptr IValue -&gt; IO (Ptr (C10List Int64))
+</span><a href="#local-6989586621684155313"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromIValue</span></a></span></span><span> </span><span id="local-6989586621684155312"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684155312"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-112"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| c10::List&lt;int64_t&gt;* { return new c10::List&lt;int64_t&gt;((*$(at::IValue* _obj)).toIntList(
+      ));
+    }|]</span></span><span>
+</span><span id="line-115"></span><span>
+</span><span id="line-116"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#IValueLike"><span class="hs-identifier hs-type">IValueLike</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#C10List"><span class="hs-identifier hs-type">C10List</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">CDouble</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-117"></span><span>  </span><span id="local-6989586621684155297"><span class="annot"><span class="annottext">toIValue :: Ptr (C10List CDouble) -&gt; IO (Ptr IValue)
+</span><a href="#local-6989586621684155297"><span class="hs-identifier hs-var hs-var hs-var hs-var">toIValue</span></a></span></span><span> </span><span id="local-6989586621684155296"><span class="annot"><span class="annottext">_x :: Ptr (C10List CDouble)
+</span><a href="#local-6989586621684155296"><span class="hs-identifier hs-var">_x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-118"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue(
+      *$(c10::List&lt;double&gt;* _x));
+    }|]</span></span><span>
+</span><span id="line-121"></span><span>  </span><span id="local-6989586621684155283"><span class="annot"><span class="annottext">fromIValue :: Ptr IValue -&gt; IO (Ptr (C10List CDouble))
+</span><a href="#local-6989586621684155283"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromIValue</span></a></span></span><span> </span><span id="local-6989586621684155282"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684155282"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-122"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| c10::List&lt;double&gt;* { return new c10::List&lt;double&gt;((*$(at::IValue* _obj)).toDoubleList(
+      ));
+    }|]</span></span><span>
+</span><span id="line-125"></span><span>
+</span><span id="line-126"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#IValueLike"><span class="hs-identifier hs-type">IValueLike</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#C10Ptr"><span class="hs-identifier hs-type">C10Ptr</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IVObject"><span class="hs-identifier hs-type">IVObject</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-127"></span><span>  </span><span id="local-6989586621684155267"><span class="annot"><span class="annottext">toIValue :: Ptr (C10Ptr IVObject) -&gt; IO (Ptr IValue)
+</span><a href="#local-6989586621684155267"><span class="hs-identifier hs-var hs-var hs-var hs-var">toIValue</span></a></span></span><span> </span><span id="local-6989586621684155266"><span class="annot"><span class="annottext">_x :: Ptr (C10Ptr IVObject)
+</span><a href="#local-6989586621684155266"><span class="hs-identifier hs-var">_x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-128"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue(
+      *$(c10::intrusive_ptr&lt;at::ivalue::Object&gt;* _x));
+    }|]</span></span><span>
+</span><span id="line-131"></span><span>  </span><span id="local-6989586621684155253"><span class="annot"><span class="annottext">fromIValue :: Ptr IValue -&gt; IO (Ptr (C10Ptr IVObject))
+</span><a href="#local-6989586621684155253"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromIValue</span></a></span></span><span> </span><span id="local-6989586621684155252"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684155252"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-132"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| c10::intrusive_ptr&lt;at::ivalue::Object&gt;* { return new c10::intrusive_ptr&lt;at::ivalue::Object&gt;((*$(at::IValue* _obj)).toObject(
+      ));
+    }|]</span></span><span>
+</span><span id="line-135"></span><span>
+</span><span id="line-136"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#IValueLike"><span class="hs-identifier hs-type">IValueLike</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#C10Ptr"><span class="hs-identifier hs-type">C10Ptr</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IVFuture"><span class="hs-identifier hs-type">IVFuture</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-137"></span><span>  </span><span id="local-6989586621684155237"><span class="annot"><span class="annottext">toIValue :: Ptr (C10Ptr IVFuture) -&gt; IO (Ptr IValue)
+</span><a href="#local-6989586621684155237"><span class="hs-identifier hs-var hs-var hs-var hs-var">toIValue</span></a></span></span><span> </span><span id="local-6989586621684155236"><span class="annot"><span class="annottext">_x :: Ptr (C10Ptr IVFuture)
+</span><a href="#local-6989586621684155236"><span class="hs-identifier hs-var">_x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-138"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue(
+      *$(c10::intrusive_ptr&lt;at::ivalue::Future&gt;* _x));
+    }|]</span></span><span>
+</span><span id="line-141"></span><span>  </span><span id="local-6989586621684155223"><span class="annot"><span class="annottext">fromIValue :: Ptr IValue -&gt; IO (Ptr (C10Ptr IVFuture))
+</span><a href="#local-6989586621684155223"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromIValue</span></a></span></span><span> </span><span id="local-6989586621684155222"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684155222"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-142"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| c10::intrusive_ptr&lt;at::ivalue::Future&gt;* { return new c10::intrusive_ptr&lt;at::ivalue::Future&gt;((*$(at::IValue* _obj)).toFuture(
+      ));
+    }|]</span></span><span>
+</span><span id="line-145"></span><span>
+</span><span id="line-146"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#IValueLike"><span class="hs-identifier hs-type">IValueLike</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#C10Ptr"><span class="hs-identifier hs-type">C10Ptr</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IVConstantString"><span class="hs-identifier hs-type">IVConstantString</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-147"></span><span>  </span><span id="local-6989586621684155207"><span class="annot"><span class="annottext">toIValue :: Ptr (C10Ptr IVConstantString) -&gt; IO (Ptr IValue)
+</span><a href="#local-6989586621684155207"><span class="hs-identifier hs-var hs-var hs-var hs-var">toIValue</span></a></span></span><span> </span><span id="local-6989586621684155206"><span class="annot"><span class="annottext">_x :: Ptr (C10Ptr IVConstantString)
+</span><a href="#local-6989586621684155206"><span class="hs-identifier hs-var">_x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-148"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue(
+      *$(c10::intrusive_ptr&lt;at::ivalue::ConstantString&gt;* _x));
+    }|]</span></span><span>
+</span><span id="line-151"></span><span>  </span><span id="local-6989586621684155193"><span class="annot"><span class="annottext">fromIValue :: Ptr IValue -&gt; IO (Ptr (C10Ptr IVConstantString))
+</span><a href="#local-6989586621684155193"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromIValue</span></a></span></span><span> </span><span id="local-6989586621684155192"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684155192"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-152"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| c10::intrusive_ptr&lt;at::ivalue::ConstantString&gt;* { return new c10::intrusive_ptr&lt;at::ivalue::ConstantString&gt;((*$(at::IValue* _obj)).toString(
+      ));
+    }|]</span></span><span>
+</span><span id="line-155"></span><span>
+</span><span id="line-156"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#IValueLike"><span class="hs-identifier hs-type">IValueLike</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-157"></span><span>  </span><span id="local-6989586621684155177"><span class="annot"><span class="annottext">toIValue :: Ptr StdString -&gt; IO (Ptr IValue)
+</span><a href="#local-6989586621684155177"><span class="hs-identifier hs-var hs-var hs-var hs-var">toIValue</span></a></span></span><span> </span><span id="local-6989586621684155176"><span class="annot"><span class="annottext">_x :: Ptr StdString
+</span><a href="#local-6989586621684155176"><span class="hs-identifier hs-var">_x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-158"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue(
+      *$(std::string* _x));
+    }|]</span></span><span>
+</span><span id="line-161"></span><span>  </span><span id="local-6989586621684155163"><span class="annot"><span class="annottext">fromIValue :: Ptr IValue -&gt; IO (Ptr StdString)
+</span><a href="#local-6989586621684155163"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromIValue</span></a></span></span><span> </span><span id="local-6989586621684155162"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684155162"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-162"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| std::string* { return new std::string((*$(at::IValue* _obj)).toStringRef(
+      ));
+    }|]</span></span><span>
+</span><span id="line-165"></span><span>
+</span><span id="line-166"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#IValueLike"><span class="hs-identifier hs-type">IValueLike</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Scalar"><span class="hs-identifier hs-type">Scalar</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-167"></span><span>  </span><span id="local-6989586621684155147"><span class="annot"><span class="annottext">toIValue :: Ptr Scalar -&gt; IO (Ptr IValue)
+</span><a href="#local-6989586621684155147"><span class="hs-identifier hs-var hs-var hs-var hs-var">toIValue</span></a></span></span><span> </span><span id="local-6989586621684155146"><span class="annot"><span class="annottext">_x :: Ptr Scalar
+</span><a href="#local-6989586621684155146"><span class="hs-identifier hs-var">_x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-168"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue(
+      *$(at::Scalar* _x));
+    }|]</span></span><span>
+</span><span id="line-171"></span><span>  </span><span id="local-6989586621684155133"><span class="annot"><span class="annottext">fromIValue :: Ptr IValue -&gt; IO (Ptr Scalar)
+</span><a href="#local-6989586621684155133"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromIValue</span></a></span></span><span> </span><span id="local-6989586621684155132"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684155132"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-172"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::Scalar* { return new at::Scalar((*$(at::IValue* _obj)).toScalar(
+      ));
+    }|]</span></span><span>
+</span><span id="line-175"></span><span>
+</span><span id="line-176"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#IValueLike"><span class="hs-identifier hs-type">IValueLike</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#C10Ptr"><span class="hs-identifier hs-type">C10Ptr</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Capsule"><span class="hs-identifier hs-type">Capsule</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-177"></span><span>  </span><span id="local-6989586621684155117"><span class="annot"><span class="annottext">toIValue :: Ptr (C10Ptr Capsule) -&gt; IO (Ptr IValue)
+</span><a href="#local-6989586621684155117"><span class="hs-identifier hs-var hs-var hs-var hs-var">toIValue</span></a></span></span><span> </span><span id="local-6989586621684155116"><span class="annot"><span class="annottext">_x :: Ptr (C10Ptr Capsule)
+</span><a href="#local-6989586621684155116"><span class="hs-identifier hs-var">_x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-178"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue(
+      *$(c10::intrusive_ptr&lt;torch::jit::CustomClassHolder&gt;* _x));
+    }|]</span></span><span>
+</span><span id="line-181"></span><span>  </span><span id="local-6989586621684155103"><span class="annot"><span class="annottext">fromIValue :: Ptr IValue -&gt; IO (Ptr (C10Ptr Capsule))
+</span><a href="#local-6989586621684155103"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromIValue</span></a></span></span><span> </span><span id="local-6989586621684155102"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684155102"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-182"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| c10::intrusive_ptr&lt;torch::jit::CustomClassHolder&gt;* { return new c10::intrusive_ptr&lt;torch::jit::CustomClassHolder&gt;((*$(at::IValue* _obj)).toCapsule(
+      ));
+    }|]</span></span><span>
+</span><span id="line-185"></span><span>
+</span><span id="line-186"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#IValueLike"><span class="hs-identifier hs-type">IValueLike</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#C10Ptr"><span class="hs-identifier hs-type">C10Ptr</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Blob"><span class="hs-identifier hs-type">Blob</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-187"></span><span>  </span><span id="local-6989586621684155087"><span class="annot"><span class="annottext">toIValue :: Ptr (C10Ptr Blob) -&gt; IO (Ptr IValue)
+</span><a href="#local-6989586621684155087"><span class="hs-identifier hs-var hs-var hs-var hs-var">toIValue</span></a></span></span><span> </span><span id="local-6989586621684155086"><span class="annot"><span class="annottext">_x :: Ptr (C10Ptr Blob)
+</span><a href="#local-6989586621684155086"><span class="hs-identifier hs-var">_x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-188"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue(
+      *$(c10::intrusive_ptr&lt;caffe2::Blob&gt;* _x));
+    }|]</span></span><span>
+</span><span id="line-191"></span><span>  </span><span id="local-6989586621684155073"><span class="annot"><span class="annottext">fromIValue :: Ptr IValue -&gt; IO (Ptr (C10Ptr Blob))
+</span><a href="#local-6989586621684155073"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromIValue</span></a></span></span><span> </span><span id="local-6989586621684155072"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684155072"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-192"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| c10::intrusive_ptr&lt;caffe2::Blob&gt;* { return new c10::intrusive_ptr&lt;caffe2::Blob&gt;((*$(at::IValue* _obj)).toBlob(
+      ));
+    }|]</span></span><span>
+</span><span id="line-195"></span><span>
+</span><span id="line-196"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#IValueLike"><span class="hs-identifier hs-type">IValueLike</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">CDouble</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-197"></span><span>  </span><span id="local-6989586621684155057"><span class="annot"><span class="annottext">toIValue :: CDouble -&gt; IO (Ptr IValue)
+</span><a href="#local-6989586621684155057"><span class="hs-identifier hs-var hs-var hs-var hs-var">toIValue</span></a></span></span><span> </span><span id="local-6989586621684155056"><span class="annot"><span class="annottext">_x :: CDouble
+</span><a href="#local-6989586621684155056"><span class="hs-identifier hs-var">_x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-198"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue(
+      $(double _x));
+    }|]</span></span><span>
+</span><span id="line-201"></span><span>  </span><span id="local-6989586621684155043"><span class="annot"><span class="annottext">fromIValue :: Ptr IValue -&gt; IO CDouble
+</span><a href="#local-6989586621684155043"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromIValue</span></a></span></span><span> </span><span id="local-6989586621684155042"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684155042"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-202"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| double { return ((*$(at::IValue* _obj)).toDouble(
+      ));
+    }|]</span></span><span>
+</span><span id="line-205"></span><span>
+</span><span id="line-206"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#IValueLike"><span class="hs-identifier hs-type">IValueLike</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-207"></span><span>  </span><span id="local-6989586621684155027"><span class="annot"><span class="annottext">toIValue :: Int64 -&gt; IO (Ptr IValue)
+</span><a href="#local-6989586621684155027"><span class="hs-identifier hs-var hs-var hs-var hs-var">toIValue</span></a></span></span><span> </span><span id="local-6989586621684155026"><span class="annot"><span class="annottext">_x :: Int64
+</span><a href="#local-6989586621684155026"><span class="hs-identifier hs-var">_x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-208"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue(
+      $(int64_t _x));
+    }|]</span></span><span>
+</span><span id="line-211"></span><span>  </span><span id="local-6989586621684155013"><span class="annot"><span class="annottext">fromIValue :: Ptr IValue -&gt; IO Int64
+</span><a href="#local-6989586621684155013"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromIValue</span></a></span></span><span> </span><span id="local-6989586621684155012"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684155012"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-212"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| int64_t { return ((*$(at::IValue* _obj)).toInt(
+      ));
+    }|]</span></span><span>
+</span><span id="line-215"></span><span>
+</span><span id="line-216"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#IValueLike"><span class="hs-identifier hs-type">IValueLike</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int32</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-217"></span><span>  </span><span id="local-6989586621684154997"><span class="annot"><span class="annottext">toIValue :: Int32 -&gt; IO (Ptr IValue)
+</span><a href="#local-6989586621684154997"><span class="hs-identifier hs-var hs-var hs-var hs-var">toIValue</span></a></span></span><span> </span><span id="local-6989586621684154996"><span class="annot"><span class="annottext">_x :: Int32
+</span><a href="#local-6989586621684154996"><span class="hs-identifier hs-var">_x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-218"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue(
+      $(int32_t _x));
+    }|]</span></span><span>
+</span><span id="line-221"></span><span>  </span><span id="local-6989586621684154983"><span class="annot"><span class="annottext">fromIValue :: Ptr IValue -&gt; IO Int32
+</span><a href="#local-6989586621684154983"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromIValue</span></a></span></span><span> </span><span id="local-6989586621684154982"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154982"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-222"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| int32_t { return ((*$(at::IValue* _obj)).toInt(
+      ));
+    }|]</span></span><span>
+</span><span id="line-225"></span><span>
+</span><span id="line-226"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#IValueLike"><span class="hs-identifier hs-type">IValueLike</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-227"></span><span>  </span><span id="local-6989586621684154967"><span class="annot"><span class="annottext">toIValue :: CBool -&gt; IO (Ptr IValue)
+</span><a href="#local-6989586621684154967"><span class="hs-identifier hs-var hs-var hs-var hs-var">toIValue</span></a></span></span><span> </span><span id="local-6989586621684154966"><span class="annot"><span class="annottext">_x :: CBool
+</span><a href="#local-6989586621684154966"><span class="hs-identifier hs-var">_x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-228"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue(
+      $(bool _x));
+    }|]</span></span><span>
+</span><span id="line-231"></span><span>  </span><span id="local-6989586621684154953"><span class="annot"><span class="annottext">fromIValue :: Ptr IValue -&gt; IO CBool
+</span><a href="#local-6989586621684154953"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromIValue</span></a></span></span><span> </span><span id="local-6989586621684154952"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154952"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-232"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| bool { return ((*$(at::IValue* _obj)).toBool(
+      ));
+    }|]</span></span><span>
+</span><span id="line-235"></span><span>
+</span><span id="line-236"></span><span>
+</span><span id="line-237"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#IValueLike"><span class="hs-identifier hs-type">IValueLike</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Device"><span class="hs-identifier hs-type">Device</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-238"></span><span>  </span><span id="local-6989586621684154937"><span class="annot"><span class="annottext">toIValue :: Ptr Device -&gt; IO (Ptr IValue)
+</span><a href="#local-6989586621684154937"><span class="hs-identifier hs-var hs-var hs-var hs-var">toIValue</span></a></span></span><span> </span><span id="local-6989586621684154936"><span class="annot"><span class="annottext">_x :: Ptr Device
+</span><a href="#local-6989586621684154936"><span class="hs-identifier hs-var">_x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-239"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue(
+      *$(c10::Device* _x));
+    }|]</span></span><span>
+</span><span id="line-242"></span><span>  </span><span id="local-6989586621684154923"><span class="annot"><span class="annottext">fromIValue :: Ptr IValue -&gt; IO (Ptr Device)
+</span><a href="#local-6989586621684154923"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromIValue</span></a></span></span><span> </span><span id="local-6989586621684154922"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154922"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-243"></span><span>    </span><span class="annot"><span class="">[C.throwBlock| c10::Device* { return new c10::Device((*$(at::IValue* _obj)).toDevice(
+      ));
+    }|]</span></span><span>
+</span><span id="line-246"></span><span>
+</span><span id="line-247"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#newIValue"><span class="hs-identifier hs-type">newIValue</span></a></span><span>
+</span><span id="line-248"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-249"></span><span id="newIValue"><span class="annot"><span class="annottext">newIValue :: IO (Ptr IValue)
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#newIValue"><span class="hs-identifier hs-var hs-var">newIValue</span></a></span></span><span>  </span><span class="hs-glyph">=</span><span>
+</span><span id="line-250"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| at::IValue* { return new at::IValue() ; }|]</span></span><span>
+</span><span id="line-251"></span><span>
+</span><span id="line-252"></span><span>
+</span><span id="line-253"></span><span class="hs-keyword">foreign</span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-keyword">ccall</span></span><span> </span><span class="annot"><span class="hs-keyword">unsafe</span></span><span> </span><span class="annot"><span class="hs-string">&quot;hasktorch_finalizer.h &amp;delete_ivalue&quot;</span></span><span>
+</span><span id="line-254"></span><span>  </span><span id="c_delete_ivalue"><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#c_delete_ivalue"><span class="hs-identifier hs-var">c_delete_ivalue</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FunPtr</span></span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-255"></span><span>
+</span><span id="line-256"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Internal.Class.html#CppObject"><span class="hs-identifier hs-type">CppObject</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-257"></span><span>  </span><span id="local-6989586621684154895"><span class="annot"><span class="annottext">fromPtr :: Ptr IValue -&gt; IO (ForeignPtr IValue)
+</span><a href="Torch.Internal.Class.html#fromPtr"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromPtr</span></a></span></span><span> </span><span id="local-6989586621684154893"><span class="annot"><span class="annottext">ptr :: Ptr IValue
+</span><a href="#local-6989586621684154893"><span class="hs-identifier hs-var">ptr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FinalizerPtr IValue -&gt; Ptr IValue -&gt; IO (ForeignPtr IValue)
+forall a. FinalizerPtr a -&gt; Ptr a -&gt; IO (ForeignPtr a)
+</span><span class="hs-identifier hs-var">newForeignPtr</span></span><span> </span><span class="annot"><span class="annottext">FinalizerPtr IValue
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#c_delete_ivalue"><span class="hs-identifier hs-var">c_delete_ivalue</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr IValue
+</span><a href="#local-6989586621684154893"><span class="hs-identifier hs-var">ptr</span></a></span><span>
+</span><span id="line-258"></span><span>
+</span><span id="line-259"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isAliasOf_V"><span class="hs-identifier hs-type">iValue_isAliasOf_V</span></a></span><span>
+</span><span id="line-260"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-261"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-262"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-263"></span><span id="iValue_isAliasOf_V"><span class="annot"><span class="annottext">iValue_isAliasOf_V :: Ptr IValue -&gt; Ptr IValue -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isAliasOf_V"><span class="hs-identifier hs-var hs-var">iValue_isAliasOf_V</span></a></span></span><span> </span><span id="local-6989586621684154890"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154890"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span id="local-6989586621684154889"><span class="annot"><span class="annottext">_rhs :: Ptr IValue
+</span><a href="#local-6989586621684154889"><span class="hs-identifier hs-var">_rhs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-264"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| bool { return (*$(at::IValue* _obj)).isAliasOf(
+    *$(at::IValue* _rhs));
+  }|]</span></span><span>
+</span><span id="line-267"></span><span>
+</span><span id="line-268"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_use_count"><span class="hs-identifier hs-type">iValue_use_count</span></a></span><span>
+</span><span id="line-269"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-270"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CSize</span></span><span class="hs-special">)</span><span>
+</span><span id="line-271"></span><span id="iValue_use_count"><span class="annot"><span class="annottext">iValue_use_count :: Ptr IValue -&gt; IO CSize
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_use_count"><span class="hs-identifier hs-var hs-var">iValue_use_count</span></a></span></span><span> </span><span id="local-6989586621684154873"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154873"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-272"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| size_t { return (*$(at::IValue* _obj)).use_count(
+    );
+  }|]</span></span><span>
+</span><span id="line-275"></span><span>
+</span><span id="line-276"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_swap_V"><span class="hs-identifier hs-type">iValue_swap_V</span></a></span><span>
+</span><span id="line-277"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-278"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-279"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-280"></span><span id="iValue_swap_V"><span class="annot"><span class="annottext">iValue_swap_V :: Ptr IValue -&gt; Ptr IValue -&gt; IO ()
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_swap_V"><span class="hs-identifier hs-var hs-var">iValue_swap_V</span></a></span></span><span> </span><span id="local-6989586621684154859"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154859"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span id="local-6989586621684154858"><span class="annot"><span class="annottext">_rhs :: Ptr IValue
+</span><a href="#local-6989586621684154858"><span class="hs-identifier hs-var">_rhs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-281"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| void {  (*$(at::IValue* _obj)).swap(
+    *$(at::IValue* _rhs));
+  }|]</span></span><span>
+</span><span id="line-284"></span><span>
+</span><span id="line-285"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isTensor"><span class="hs-identifier hs-type">iValue_isTensor</span></a></span><span>
+</span><span id="line-286"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-287"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-288"></span><span id="iValue_isTensor"><span class="annot"><span class="annottext">iValue_isTensor :: Ptr IValue -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isTensor"><span class="hs-identifier hs-var hs-var">iValue_isTensor</span></a></span></span><span> </span><span id="local-6989586621684154842"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154842"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-289"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| bool { return (*$(at::IValue* _obj)).isTensor(
+    );
+  }|]</span></span><span>
+</span><span id="line-292"></span><span>
+</span><span id="line-293"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isBlob"><span class="hs-identifier hs-type">iValue_isBlob</span></a></span><span>
+</span><span id="line-294"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-295"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-296"></span><span id="iValue_isBlob"><span class="annot"><span class="annottext">iValue_isBlob :: Ptr IValue -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isBlob"><span class="hs-identifier hs-var hs-var">iValue_isBlob</span></a></span></span><span> </span><span id="local-6989586621684154828"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154828"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-297"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| bool { return (*$(at::IValue* _obj)).isBlob(
+    );
+  }|]</span></span><span>
+</span><span id="line-300"></span><span>
+</span><span id="line-301"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isCapsule"><span class="hs-identifier hs-type">iValue_isCapsule</span></a></span><span>
+</span><span id="line-302"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-303"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-304"></span><span id="iValue_isCapsule"><span class="annot"><span class="annottext">iValue_isCapsule :: Ptr IValue -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isCapsule"><span class="hs-identifier hs-var hs-var">iValue_isCapsule</span></a></span></span><span> </span><span id="local-6989586621684154814"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154814"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-305"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| bool { return (*$(at::IValue* _obj)).isCapsule(
+    );
+  }|]</span></span><span>
+</span><span id="line-308"></span><span>
+</span><span id="line-309"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isTuple"><span class="hs-identifier hs-type">iValue_isTuple</span></a></span><span>
+</span><span id="line-310"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-311"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-312"></span><span id="iValue_isTuple"><span class="annot"><span class="annottext">iValue_isTuple :: Ptr IValue -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isTuple"><span class="hs-identifier hs-var hs-var">iValue_isTuple</span></a></span></span><span> </span><span id="local-6989586621684154800"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154800"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-313"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| bool { return (*$(at::IValue* _obj)).isTuple(
+    );
+  }|]</span></span><span>
+</span><span id="line-316"></span><span>
+</span><span id="line-317"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isDouble"><span class="hs-identifier hs-type">iValue_isDouble</span></a></span><span>
+</span><span id="line-318"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-319"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-320"></span><span id="iValue_isDouble"><span class="annot"><span class="annottext">iValue_isDouble :: Ptr IValue -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isDouble"><span class="hs-identifier hs-var hs-var">iValue_isDouble</span></a></span></span><span> </span><span id="local-6989586621684154786"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154786"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-321"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| bool { return (*$(at::IValue* _obj)).isDouble(
+    );
+  }|]</span></span><span>
+</span><span id="line-324"></span><span>
+</span><span id="line-325"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isFuture"><span class="hs-identifier hs-type">iValue_isFuture</span></a></span><span>
+</span><span id="line-326"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-327"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-328"></span><span id="iValue_isFuture"><span class="annot"><span class="annottext">iValue_isFuture :: Ptr IValue -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isFuture"><span class="hs-identifier hs-var hs-var">iValue_isFuture</span></a></span></span><span> </span><span id="local-6989586621684154772"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154772"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-329"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| bool { return (*$(at::IValue* _obj)).isFuture(
+    );
+  }|]</span></span><span>
+</span><span id="line-332"></span><span>
+</span><span id="line-333"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isInt"><span class="hs-identifier hs-type">iValue_isInt</span></a></span><span>
+</span><span id="line-334"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-335"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-336"></span><span id="iValue_isInt"><span class="annot"><span class="annottext">iValue_isInt :: Ptr IValue -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isInt"><span class="hs-identifier hs-var hs-var">iValue_isInt</span></a></span></span><span> </span><span id="local-6989586621684154758"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154758"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-337"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| bool { return (*$(at::IValue* _obj)).isInt(
+    );
+  }|]</span></span><span>
+</span><span id="line-340"></span><span>
+</span><span id="line-341"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isIntList"><span class="hs-identifier hs-type">iValue_isIntList</span></a></span><span>
+</span><span id="line-342"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-343"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-344"></span><span id="iValue_isIntList"><span class="annot"><span class="annottext">iValue_isIntList :: Ptr IValue -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isIntList"><span class="hs-identifier hs-var hs-var">iValue_isIntList</span></a></span></span><span> </span><span id="local-6989586621684154744"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154744"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-345"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| bool { return (*$(at::IValue* _obj)).isIntList(
+    );
+  }|]</span></span><span>
+</span><span id="line-348"></span><span>
+</span><span id="line-349"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isString"><span class="hs-identifier hs-type">iValue_isString</span></a></span><span>
+</span><span id="line-350"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-351"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-352"></span><span id="iValue_isString"><span class="annot"><span class="annottext">iValue_isString :: Ptr IValue -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isString"><span class="hs-identifier hs-var hs-var">iValue_isString</span></a></span></span><span> </span><span id="local-6989586621684154730"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154730"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-353"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| bool { return (*$(at::IValue* _obj)).isString(
+    );
+  }|]</span></span><span>
+</span><span id="line-356"></span><span>
+</span><span id="line-357"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_toStringRef"><span class="hs-identifier hs-type">iValue_toStringRef</span></a></span><span>
+</span><span id="line-358"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-359"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-360"></span><span id="iValue_toStringRef"><span class="annot"><span class="annottext">iValue_toStringRef :: Ptr IValue -&gt; IO (Ptr StdString)
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_toStringRef"><span class="hs-identifier hs-var hs-var">iValue_toStringRef</span></a></span></span><span> </span><span id="local-6989586621684154716"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154716"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-361"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| std::string* { return new std::string((*$(at::IValue* _obj)).toStringRef(
+    ));
+  }|]</span></span><span>
+</span><span id="line-364"></span><span>
+</span><span id="line-365"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isDoubleList"><span class="hs-identifier hs-type">iValue_isDoubleList</span></a></span><span>
+</span><span id="line-366"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-367"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-368"></span><span id="iValue_isDoubleList"><span class="annot"><span class="annottext">iValue_isDoubleList :: Ptr IValue -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isDoubleList"><span class="hs-identifier hs-var hs-var">iValue_isDoubleList</span></a></span></span><span> </span><span id="local-6989586621684154702"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154702"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-369"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| bool { return (*$(at::IValue* _obj)).isDoubleList(
+    );
+  }|]</span></span><span>
+</span><span id="line-372"></span><span>
+</span><span id="line-373"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isBool"><span class="hs-identifier hs-type">iValue_isBool</span></a></span><span>
+</span><span id="line-374"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-375"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-376"></span><span id="iValue_isBool"><span class="annot"><span class="annottext">iValue_isBool :: Ptr IValue -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isBool"><span class="hs-identifier hs-var hs-var">iValue_isBool</span></a></span></span><span> </span><span id="local-6989586621684154688"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154688"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-377"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| bool { return (*$(at::IValue* _obj)).isBool(
+    );
+  }|]</span></span><span>
+</span><span id="line-380"></span><span>
+</span><span id="line-381"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isObject"><span class="hs-identifier hs-type">iValue_isObject</span></a></span><span>
+</span><span id="line-382"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-383"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-384"></span><span id="iValue_isObject"><span class="annot"><span class="annottext">iValue_isObject :: Ptr IValue -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isObject"><span class="hs-identifier hs-var hs-var">iValue_isObject</span></a></span></span><span> </span><span id="local-6989586621684154674"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154674"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-385"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| bool { return (*$(at::IValue* _obj)).isObject(
+    );
+  }|]</span></span><span>
+</span><span id="line-388"></span><span>
+</span><span id="line-389"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isBoolList"><span class="hs-identifier hs-type">iValue_isBoolList</span></a></span><span>
+</span><span id="line-390"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-391"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-392"></span><span id="iValue_isBoolList"><span class="annot"><span class="annottext">iValue_isBoolList :: Ptr IValue -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isBoolList"><span class="hs-identifier hs-var hs-var">iValue_isBoolList</span></a></span></span><span> </span><span id="local-6989586621684154660"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154660"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-393"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| bool { return (*$(at::IValue* _obj)).isBoolList(
+    );
+  }|]</span></span><span>
+</span><span id="line-396"></span><span>
+</span><span id="line-397"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isTensorList"><span class="hs-identifier hs-type">iValue_isTensorList</span></a></span><span>
+</span><span id="line-398"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-399"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-400"></span><span id="iValue_isTensorList"><span class="annot"><span class="annottext">iValue_isTensorList :: Ptr IValue -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isTensorList"><span class="hs-identifier hs-var hs-var">iValue_isTensorList</span></a></span></span><span> </span><span id="local-6989586621684154646"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154646"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-401"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| bool { return (*$(at::IValue* _obj)).isTensorList(
+    );
+  }|]</span></span><span>
+</span><span id="line-404"></span><span>
+</span><span id="line-405"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isList"><span class="hs-identifier hs-type">iValue_isList</span></a></span><span>
+</span><span id="line-406"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-407"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-408"></span><span id="iValue_isList"><span class="annot"><span class="annottext">iValue_isList :: Ptr IValue -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isList"><span class="hs-identifier hs-var hs-var">iValue_isList</span></a></span></span><span> </span><span id="local-6989586621684154632"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154632"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-409"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| bool { return (*$(at::IValue* _obj)).isList(
+    );
+  }|]</span></span><span>
+</span><span id="line-412"></span><span>
+</span><span id="line-413"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isGenericDict"><span class="hs-identifier hs-type">iValue_isGenericDict</span></a></span><span>
+</span><span id="line-414"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-415"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-416"></span><span id="iValue_isGenericDict"><span class="annot"><span class="annottext">iValue_isGenericDict :: Ptr IValue -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isGenericDict"><span class="hs-identifier hs-var hs-var">iValue_isGenericDict</span></a></span></span><span> </span><span id="local-6989586621684154618"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154618"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-417"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| bool { return (*$(at::IValue* _obj)).isGenericDict(
+    );
+  }|]</span></span><span>
+</span><span id="line-420"></span><span>
+</span><span id="line-421"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isNone"><span class="hs-identifier hs-type">iValue_isNone</span></a></span><span>
+</span><span id="line-422"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-423"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-424"></span><span id="iValue_isNone"><span class="annot"><span class="annottext">iValue_isNone :: Ptr IValue -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isNone"><span class="hs-identifier hs-var hs-var">iValue_isNone</span></a></span></span><span> </span><span id="local-6989586621684154604"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154604"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-425"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| bool { return (*$(at::IValue* _obj)).isNone(
+    );
+  }|]</span></span><span>
+</span><span id="line-428"></span><span>
+</span><span id="line-429"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_toNone"><span class="hs-identifier hs-type">iValue_toNone</span></a></span><span>
+</span><span id="line-430"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-431"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-432"></span><span id="iValue_toNone"><span class="annot"><span class="annottext">iValue_toNone :: Ptr IValue -&gt; IO (Ptr StdString)
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_toNone"><span class="hs-identifier hs-var hs-var">iValue_toNone</span></a></span></span><span> </span><span id="local-6989586621684154590"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154590"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-433"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| std::string* { return new std::string((*$(at::IValue* _obj)).toNone(
+    ));
+  }|]</span></span><span>
+</span><span id="line-436"></span><span>
+</span><span id="line-437"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isScalar"><span class="hs-identifier hs-type">iValue_isScalar</span></a></span><span>
+</span><span id="line-438"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-439"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-440"></span><span id="iValue_isScalar"><span class="annot"><span class="annottext">iValue_isScalar :: Ptr IValue -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isScalar"><span class="hs-identifier hs-var hs-var">iValue_isScalar</span></a></span></span><span> </span><span id="local-6989586621684154576"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154576"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-441"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| bool { return (*$(at::IValue* _obj)).isScalar(
+    );
+  }|]</span></span><span>
+</span><span id="line-444"></span><span>
+</span><span id="line-445"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isDevice"><span class="hs-identifier hs-type">iValue_isDevice</span></a></span><span>
+</span><span id="line-446"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-447"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-448"></span><span id="iValue_isDevice"><span class="annot"><span class="annottext">iValue_isDevice :: Ptr IValue -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isDevice"><span class="hs-identifier hs-var hs-var">iValue_isDevice</span></a></span></span><span> </span><span id="local-6989586621684154562"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154562"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-449"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| bool { return (*$(at::IValue* _obj)).isDevice(
+    );
+  }|]</span></span><span>
+</span><span id="line-452"></span><span>
+</span><span id="line-453"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_toScalarType"><span class="hs-identifier hs-type">iValue_toScalarType</span></a></span><span>
+</span><span id="line-454"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-455"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#ScalarType"><span class="hs-identifier hs-type">ScalarType</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-456"></span><span id="iValue_toScalarType"><span class="annot"><span class="annottext">iValue_toScalarType :: Ptr IValue -&gt; IO ScalarType
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_toScalarType"><span class="hs-identifier hs-var hs-var">iValue_toScalarType</span></a></span></span><span> </span><span id="local-6989586621684154548"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154548"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-457"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| at::ScalarType { return (*$(at::IValue* _obj)).toScalarType(
+    );
+  }|]</span></span><span>
+</span><span id="line-460"></span><span>
+</span><span id="line-461"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_toLayout"><span class="hs-identifier hs-type">iValue_toLayout</span></a></span><span>
+</span><span id="line-462"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-463"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#Layout"><span class="hs-identifier hs-type">Layout</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-464"></span><span id="iValue_toLayout"><span class="annot"><span class="annottext">iValue_toLayout :: Ptr IValue -&gt; IO ScalarType
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_toLayout"><span class="hs-identifier hs-var hs-var">iValue_toLayout</span></a></span></span><span> </span><span id="local-6989586621684154533"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154533"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-465"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| at::Layout { return (*$(at::IValue* _obj)).toLayout(
+    );
+  }|]</span></span><span>
+</span><span id="line-468"></span><span>
+</span><span id="line-469"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_toMemoryFormat"><span class="hs-identifier hs-type">iValue_toMemoryFormat</span></a></span><span>
+</span><span id="line-470"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-471"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#MemoryFormat"><span class="hs-identifier hs-type">MemoryFormat</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-472"></span><span id="iValue_toMemoryFormat"><span class="annot"><span class="annottext">iValue_toMemoryFormat :: Ptr IValue -&gt; IO ScalarType
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_toMemoryFormat"><span class="hs-identifier hs-var hs-var">iValue_toMemoryFormat</span></a></span></span><span> </span><span id="local-6989586621684154518"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154518"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-473"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| at::MemoryFormat { return (*$(at::IValue* _obj)).toMemoryFormat(
+    );
+  }|]</span></span><span>
+</span><span id="line-476"></span><span>
+</span><span id="line-477"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_toQScheme"><span class="hs-identifier hs-type">iValue_toQScheme</span></a></span><span>
+</span><span id="line-478"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-479"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#QScheme"><span class="hs-identifier hs-type">QScheme</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-480"></span><span id="iValue_toQScheme"><span class="annot"><span class="annottext">iValue_toQScheme :: Ptr IValue -&gt; IO ScalarType
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_toQScheme"><span class="hs-identifier hs-var hs-var">iValue_toQScheme</span></a></span></span><span> </span><span id="local-6989586621684154503"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154503"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-481"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| at::QScheme { return (*$(at::IValue* _obj)).toQScheme(
+    );
+  }|]</span></span><span>
+</span><span id="line-484"></span><span>
+</span><span id="line-485"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_tagKind"><span class="hs-identifier hs-type">iValue_tagKind</span></a></span><span>
+</span><span id="line-486"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-487"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-488"></span><span id="iValue_tagKind"><span class="annot"><span class="annottext">iValue_tagKind :: Ptr IValue -&gt; IO (Ptr StdString)
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_tagKind"><span class="hs-identifier hs-var hs-var">iValue_tagKind</span></a></span></span><span> </span><span id="local-6989586621684154489"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154489"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-489"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| std::string* { return new std::string((*$(at::IValue* _obj)).tagKind(
+    ));
+  }|]</span></span><span>
+</span><span id="line-492"></span><span>
+</span><span id="line-493"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isSameIdentity_V"><span class="hs-identifier hs-type">iValue_isSameIdentity_V</span></a></span><span>
+</span><span id="line-494"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-495"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-496"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-497"></span><span id="iValue_isSameIdentity_V"><span class="annot"><span class="annottext">iValue_isSameIdentity_V :: Ptr IValue -&gt; Ptr IValue -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isSameIdentity_V"><span class="hs-identifier hs-var hs-var">iValue_isSameIdentity_V</span></a></span></span><span> </span><span id="local-6989586621684154475"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154475"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span id="local-6989586621684154474"><span class="annot"><span class="annottext">_rhs :: Ptr IValue
+</span><a href="#local-6989586621684154474"><span class="hs-identifier hs-var">_rhs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-498"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| bool { return (*$(at::IValue* _obj)).isSameIdentity(
+    *$(at::IValue* _rhs));
+  }|]</span></span><span>
+</span><span id="line-501"></span><span>
+</span><span id="line-502"></span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isPtrType"><span class="hs-identifier hs-type">iValue_isPtrType</span></a></span><span>
+</span><span id="line-503"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span>
+</span><span id="line-504"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-505"></span><span id="iValue_isPtrType"><span class="annot"><span class="annottext">iValue_isPtrType :: Ptr IValue -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.IValue.html#iValue_isPtrType"><span class="hs-identifier hs-var hs-var">iValue_isPtrType</span></a></span></span><span> </span><span id="local-6989586621684154458"><span class="annot"><span class="annottext">_obj :: Ptr IValue
+</span><a href="#local-6989586621684154458"><span class="hs-identifier hs-var">_obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-506"></span><span>  </span><span class="annot"><span class="">[C.throwBlock| bool { return (*$(at::IValue* _obj)).isPtrType(
+    );
+  }|]</span></span><span>
+</span><span id="line-509"></span><span>
+</span><span id="line-510"></span></pre></body></html>
