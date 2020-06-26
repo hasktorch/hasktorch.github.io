@@ -1912,8 +1912,9 @@ flattenParameters :: Parameterized f => f -> [Parameter]
 flattenParameters :: (Parameterized f, Generic f, Parameterized' (Rep f)) => f -> [Parameter]
 replaceOwnParameters :: Parameterized f => f -> ParamStream f
 replaceOwnParameters :: (Parameterized f, Generic f, Parameterized' (Rep f)) => f -> ParamStream f
-forward :: Parameterized f => f -> Tensor -> Tensor
-forward :: Parameterized f => f -> Tensor -> Tensor
+class HasForward f a b | f a -> b
+forward :: HasForward f a b => f -> a -> b
+forwardStoch :: HasForward f a b => f -> a -> IO b
 class Parameterized' f
 flattenParameters' :: Parameterized' f => f a -> [Parameter]
 replaceOwnParameters' :: Parameterized' f => f a -> ParamStream (f a)
@@ -5207,62 +5208,62 @@ instance Torch.Typed.Device.HasToDevice device' device (Torch.HList.HList '[]) (
 instance (Torch.Typed.Device.HasToDevice device' device x x', Torch.Typed.Device.HasToDevice device' device (Torch.HList.HList xs) (Torch.HList.HList xs')) => Torch.Typed.Device.HasToDevice device' device (Torch.HList.HList (x : xs)) (Torch.HList.HList (x' : xs'))
 
 module Torch.Typed.NN
-class HasForward f a b | f a -> b
-forward :: HasForward f a b => f -> a -> b
-forwardStoch :: HasForward f a b => f -> a -> IO b
-data LinearSpec (inputFeatures :: Nat) (outputFeatures :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
-LinearSpec :: LinearSpec (inputFeatures :: Nat) (outputFeatures :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
-data Linear (inputFeatures :: Nat) (outputFeatures :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
-[Linear] :: forall inputFeatures outputFeatures dtype device. {linearWeight :: Parameter device dtype '[outputFeatures, inputFeatures], linearBias :: Parameter device dtype '[outputFeatures]} -> Linear inputFeatures outputFeatures dtype device
-
--- | linear The constraints on this one are _very_ involved, so the partial
---   signatures make the code significantly cleaner.
-linear :: _ => Linear _ _ _ _ -> Tensor _ _ _ -> Tensor _ _ _
-data DropoutSpec
-[DropoutSpec] :: {dropoutProbSpec :: Double} -> DropoutSpec
-data Dropout
-[Dropout] :: {dropoutProb :: Double} -> Dropout
-dropout :: forall shape dtype device. Dropout -> Bool -> Tensor device dtype shape -> IO (Tensor device dtype shape)
-data EmbeddingType
-Constant :: EmbeddingType
-Learned :: EmbeddingType
+data LayerNorm (normalizedShape :: [Nat]) (dtype :: DType) (device :: (DeviceType, Nat))
+[LayerNorm] :: {layerNormWeight :: Parameter device dtype normalizedShape, layerNormBias :: Parameter device dtype normalizedShape, layerNormEps :: Double} -> LayerNorm normalizedShape dtype device
+data LayerNormSpec (normalizedShape :: [Nat]) (dtype :: DType) (device :: (DeviceType, Nat))
+[LayerNormSpec] :: forall normalizedShape dtype device. {layerNormEpsSpec :: Double} -> LayerNormSpec normalizedShape dtype device
+data Conv3d (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+[Conv3d] :: forall inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device. {conv3dWeight :: Parameter device dtype '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1, kernelSize2], conv3dBias :: Parameter device dtype '[outputChannelSize]} -> Conv3d inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device
+data Conv3dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+Conv3dSpec :: Conv3dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+data Conv2d (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+[Conv2d] :: forall inputChannelSize outputChannelSize kernelSize0 kernelSize1 dtype device. {conv2dWeight :: Parameter device dtype '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1], conv2dBias :: Parameter device dtype '[outputChannelSize]} -> Conv2d inputChannelSize outputChannelSize kernelSize0 kernelSize1 dtype device
+data Conv2dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+Conv2dSpec :: Conv2dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+data Conv1d (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+[Conv1d] :: forall inputChannelSize outputChannelSize kernelSize dtype device. {conv1dWeight :: Parameter device dtype '[outputChannelSize, inputChannelSize, kernelSize], conv1dBias :: Parameter device dtype '[outputChannelSize]} -> Conv1d inputChannelSize outputChannelSize kernelSize dtype device
+data Conv1dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+Conv1dSpec :: Conv1dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+data Embedding (paddingIdx :: Maybe Nat) (numEmbeds :: Nat) (embedSize :: Nat) (embeddingType :: EmbeddingType) (dtype :: DType) (device :: (DeviceType, Nat))
+[ConstEmbedding] :: forall paddingIdx numEmbeds embedSize dtype device. {constEmbedWeights :: Tensor device dtype '[numEmbeds, embedSize]} -> Embedding paddingIdx numEmbeds embedSize 'Constant dtype device
+[LearnedEmbedding] :: forall paddingIdx numEmbeds embedSize dtype device. {learnedEmbedWeights :: Parameter device dtype '[numEmbeds, embedSize]} -> Embedding paddingIdx numEmbeds embedSize 'Learned dtype device
 data EmbeddingSpec (paddingIdx :: Maybe Nat) (numEmbeds :: Nat) (embedSize :: Nat) (embeddingType :: EmbeddingType) (dtype :: DType) (device :: (DeviceType, Nat))
 [ConstEmbeddingSpec] :: forall paddingIdx numEmbeds embedSize dtype device. Tensor device dtype '[numEmbeds, embedSize] -> EmbeddingSpec paddingIdx numEmbeds embedSize 'Constant dtype device
 [LearnedEmbeddingWithRandomInitSpec] :: forall paddingIdx numEmbeds embedSize dtype device. EmbeddingSpec paddingIdx numEmbeds embedSize 'Learned dtype device
 [LearnedEmbeddingWithCustomInitSpec] :: forall paddingIdx numEmbeds embedSize dtype device. Tensor device dtype '[numEmbeds, embedSize] -> EmbeddingSpec paddingIdx numEmbeds embedSize 'Learned dtype device
-data Embedding (paddingIdx :: Maybe Nat) (numEmbeds :: Nat) (embedSize :: Nat) (embeddingType :: EmbeddingType) (dtype :: DType) (device :: (DeviceType, Nat))
-[ConstEmbedding] :: forall paddingIdx numEmbeds embedSize dtype device. {constEmbedWeights :: Tensor device dtype '[numEmbeds, embedSize]} -> Embedding paddingIdx numEmbeds embedSize 'Constant dtype device
-[LearnedEmbedding] :: forall paddingIdx numEmbeds embedSize dtype device. {learnedEmbedWeights :: Parameter device dtype '[numEmbeds, embedSize]} -> Embedding paddingIdx numEmbeds embedSize 'Learned dtype device
+data EmbeddingType
+Constant :: EmbeddingType
+Learned :: EmbeddingType
+data Dropout
+[Dropout] :: {dropoutProb :: Double} -> Dropout
+data DropoutSpec
+[DropoutSpec] :: {dropoutProbSpec :: Double} -> DropoutSpec
+data Linear (inputFeatures :: Nat) (outputFeatures :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+[Linear] :: forall inputFeatures outputFeatures dtype device. {linearWeight :: Parameter device dtype '[outputFeatures, inputFeatures], linearBias :: Parameter device dtype '[outputFeatures]} -> Linear inputFeatures outputFeatures dtype device
+data LinearSpec (inputFeatures :: Nat) (outputFeatures :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+LinearSpec :: LinearSpec (inputFeatures :: Nat) (outputFeatures :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+
+-- | linear The constraints on this one are _very_ involved, so the partial
+--   signatures make the code significantly cleaner.
+linear :: _ => Linear _ _ _ _ -> Tensor _ _ _ -> Tensor _ _ _
+dropout :: forall shape dtype device. Dropout -> Bool -> Tensor device dtype shape -> IO (Tensor device dtype shape)
 embed :: forall paddingIdx shape numEmbeds embedSize embeddingType dtype device shape'. (KnownMaybeNat paddingIdx, PaddingIdxCheck paddingIdx numEmbeds, shape' ~ Reverse (embedSize : Reverse shape)) => Embedding paddingIdx numEmbeds embedSize embeddingType dtype device -> Tensor device 'Int64 shape -> Tensor device dtype shape'
-data Conv1dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
-Conv1dSpec :: Conv1dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
-data Conv1d (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
-[Conv1d] :: forall inputChannelSize outputChannelSize kernelSize dtype device. {conv1dWeight :: Parameter device dtype '[outputChannelSize, inputChannelSize, kernelSize], conv1dBias :: Parameter device dtype '[outputChannelSize]} -> Conv1d inputChannelSize outputChannelSize kernelSize dtype device
 
 -- | conv1d The constraints on this one are _very_ involved, so the partial
 --   signatures make the code significantly cleaner.
 conv1d :: forall stride padding. _ => Conv1d _ _ _ _ _ -> Tensor _ _ _ -> Tensor _ _ _
-data Conv2dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
-Conv2dSpec :: Conv2dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
-data Conv2d (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
-[Conv2d] :: forall inputChannelSize outputChannelSize kernelSize0 kernelSize1 dtype device. {conv2dWeight :: Parameter device dtype '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1], conv2dBias :: Parameter device dtype '[outputChannelSize]} -> Conv2d inputChannelSize outputChannelSize kernelSize0 kernelSize1 dtype device
 
 -- | conv2d The constraints on this one are _very_ involved, so the partial
 --   signatures make the code significantly cleaner.
 conv2d :: forall stride padding. _ => Conv2d _ _ _ _ _ _ -> Tensor _ _ _ -> Tensor _ _ _
-data Conv3dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
-Conv3dSpec :: Conv3dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
-data Conv3d (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
-[Conv3d] :: forall inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device. {conv3dWeight :: Parameter device dtype '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1, kernelSize2], conv3dBias :: Parameter device dtype '[outputChannelSize]} -> Conv3d inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device
 
 -- | conv3d The constraints on this one are _very_ involved, so the partial
 --   signatures make the code significantly cleaner.
 conv3d :: forall stride padding. _ => Conv3d _ _ _ _ _ _ _ -> Tensor _ _ _ -> Tensor _ _ _
-data LayerNormSpec (normalizedShape :: [Nat]) (dtype :: DType) (device :: (DeviceType, Nat))
-[LayerNormSpec] :: forall normalizedShape dtype device. {layerNormEpsSpec :: Double} -> LayerNormSpec normalizedShape dtype device
-data LayerNorm (normalizedShape :: [Nat]) (dtype :: DType) (device :: (DeviceType, Nat))
-[LayerNorm] :: {layerNormWeight :: Parameter device dtype normalizedShape, layerNormBias :: Parameter device dtype normalizedShape, layerNormEps :: Double} -> LayerNorm normalizedShape dtype device
 layerNorm :: forall normalizedShape shape dtype device. (EndsWith shape normalizedShape, KnownShape normalizedShape) => LayerNorm normalizedShape dtype device -> Tensor device dtype shape -> Tensor device dtype shape
+class HasForward f a b | f a -> b
+forward :: HasForward f a b => f -> a -> b
+forwardStoch :: HasForward f a b => f -> a -> IO b
 instance GHC.Generics.Generic (Torch.Typed.NN.LayerNorm normalizedShape dtype device)
 instance GHC.Show.Show (Torch.Typed.NN.LayerNorm normalizedShape dtype device)
 instance GHC.Classes.Eq (Torch.Typed.NN.LayerNormSpec normalizedShape dtype device)
@@ -5291,22 +5292,22 @@ instance GHC.Classes.Eq (Torch.Typed.NN.LinearSpec inputFeatures outputFeatures 
 instance GHC.Show.Show (Torch.Typed.NN.LinearSpec inputFeatures outputFeatures dtype device)
 instance GHC.Show.Show (Torch.Typed.NN.EmbeddingSpec paddingIdx numEmbeds embedSize embeddingType dtype device)
 instance GHC.Show.Show (Torch.Typed.NN.Embedding paddingIdx numEmbeds embedSize embeddingType dtype device)
-instance (Torch.Typed.Functional.EndsWith shape normalizedShape, Torch.Typed.Tensor.KnownShape normalizedShape) => Torch.Typed.NN.HasForward (Torch.Typed.NN.LayerNorm normalizedShape dtype device) (Torch.Typed.Tensor.Tensor device dtype shape) (Torch.Typed.Tensor.Tensor device dtype shape)
+instance (Torch.Typed.Functional.EndsWith shape normalizedShape, Torch.Typed.Tensor.KnownShape normalizedShape) => Torch.NN.HasForward (Torch.Typed.NN.LayerNorm normalizedShape dtype device) (Torch.Typed.Tensor.Tensor device dtype shape) (Torch.Typed.Tensor.Tensor device dtype shape)
 instance (Torch.Typed.Tensor.TensorOptions normalizedShape dtype device, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.LayerNormSpec normalizedShape dtype device) (Torch.Typed.NN.LayerNorm normalizedShape dtype device)
 instance (GHC.TypeNats.KnownNat inputChannelSize, GHC.TypeNats.KnownNat outputChannelSize, GHC.TypeNats.KnownNat kernelSize0, GHC.TypeNats.KnownNat kernelSize1, GHC.TypeNats.KnownNat kernelSize2, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.Conv3dSpec inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device) (Torch.Typed.NN.Conv3d inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device)
-instance (Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[Torch.Typed.Aux.Fst stride, Torch.Typed.Aux.Snd stride, Torch.Typed.Aux.Fst padding, Torch.Typed.Aux.Snd padding, inputChannelSize, outputChannelSize, kernelSize0, kernelSize1, inputSize0, inputSize1, batchSize, outputSize0, outputSize1], Torch.Typed.Functional.ConvSideCheck inputSize0 kernelSize0 (Torch.Typed.Aux.Fst stride) (Torch.Typed.Aux.Fst padding) outputSize0, Torch.Typed.Functional.ConvSideCheck inputSize1 kernelSize1 (Torch.Typed.Aux.Snd stride) (Torch.Typed.Aux.Snd padding) outputSize1) => Torch.Typed.NN.HasForward (Torch.Typed.NN.Conv2d inputChannelSize outputChannelSize kernelSize0 kernelSize1 dtype device) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, inputChannelSize, inputSize0, inputSize1], Data.Proxy.Proxy stride, Data.Proxy.Proxy padding) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, outputChannelSize, outputSize0, outputSize1])
+instance (Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[Torch.Typed.Aux.Fst stride, Torch.Typed.Aux.Snd stride, Torch.Typed.Aux.Fst padding, Torch.Typed.Aux.Snd padding, inputChannelSize, outputChannelSize, kernelSize0, kernelSize1, inputSize0, inputSize1, batchSize, outputSize0, outputSize1], Torch.Typed.Functional.ConvSideCheck inputSize0 kernelSize0 (Torch.Typed.Aux.Fst stride) (Torch.Typed.Aux.Fst padding) outputSize0, Torch.Typed.Functional.ConvSideCheck inputSize1 kernelSize1 (Torch.Typed.Aux.Snd stride) (Torch.Typed.Aux.Snd padding) outputSize1) => Torch.NN.HasForward (Torch.Typed.NN.Conv2d inputChannelSize outputChannelSize kernelSize0 kernelSize1 dtype device) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, inputChannelSize, inputSize0, inputSize1], Data.Proxy.Proxy stride, Data.Proxy.Proxy padding) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, outputChannelSize, outputSize0, outputSize1])
 instance (GHC.TypeNats.KnownNat inputChannelSize, GHC.TypeNats.KnownNat outputChannelSize, GHC.TypeNats.KnownNat kernelSize0, GHC.TypeNats.KnownNat kernelSize1, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.Conv2dSpec inputChannelSize outputChannelSize kernelSize0 kernelSize1 dtype device) (Torch.Typed.NN.Conv2d inputChannelSize outputChannelSize kernelSize0 kernelSize1 dtype device)
-instance (Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[stride, padding, inputChannelSize, outputChannelSize, kernelSize, inputSize, batchSize, outputSize], Torch.Typed.Functional.ConvSideCheck inputSize kernelSize stride padding outputSize) => Torch.Typed.NN.HasForward (Torch.Typed.NN.Conv1d inputChannelSize outputChannelSize kernelSize dtype device) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, inputChannelSize, inputSize], Data.Proxy.Proxy stride, Data.Proxy.Proxy padding) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, outputChannelSize, outputSize])
+instance (Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[stride, padding, inputChannelSize, outputChannelSize, kernelSize, inputSize, batchSize, outputSize], Torch.Typed.Functional.ConvSideCheck inputSize kernelSize stride padding outputSize) => Torch.NN.HasForward (Torch.Typed.NN.Conv1d inputChannelSize outputChannelSize kernelSize dtype device) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, inputChannelSize, inputSize], Data.Proxy.Proxy stride, Data.Proxy.Proxy padding) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, outputChannelSize, outputSize])
 instance (GHC.TypeNats.KnownNat inputChannelSize, GHC.TypeNats.KnownNat outputChannelSize, GHC.TypeNats.KnownNat kernelSize, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.Conv1dSpec inputChannelSize outputChannelSize kernelSize dtype device) (Torch.Typed.NN.Conv1d inputChannelSize outputChannelSize kernelSize dtype device)
 instance GHC.Generics.Generic (Torch.Typed.NN.Embedding paddingIdx numEmbeds embedSize 'Torch.Typed.NN.Constant dtype device)
 instance GHC.Generics.Generic (Torch.Typed.NN.Embedding paddingIdx numEmbeds embedSize 'Torch.Typed.NN.Learned dtype device)
-instance (Torch.Typed.Functional.KnownMaybeNat paddingIdx, Torch.Typed.Functional.PaddingIdxCheck paddingIdx numEmbeds, shape' GHC.Types.~ Torch.Typed.Aux.Reverse (embedSize : Torch.Typed.Aux.Reverse shape)) => Torch.Typed.NN.HasForward (Torch.Typed.NN.Embedding paddingIdx numEmbeds embedSize embeddingType dtype device) (Torch.Typed.Tensor.Tensor device 'Torch.DType.Int64 shape) (Torch.Typed.Tensor.Tensor device dtype shape')
+instance (Torch.Typed.Functional.KnownMaybeNat paddingIdx, Torch.Typed.Functional.PaddingIdxCheck paddingIdx numEmbeds, shape' GHC.Types.~ Torch.Typed.Aux.Reverse (embedSize : Torch.Typed.Aux.Reverse shape)) => Torch.NN.HasForward (Torch.Typed.NN.Embedding paddingIdx numEmbeds embedSize embeddingType dtype device) (Torch.Typed.Tensor.Tensor device 'Torch.DType.Int64 shape) (Torch.Typed.Tensor.Tensor device dtype shape')
 instance Torch.NN.Randomizable (Torch.Typed.NN.EmbeddingSpec paddingIdx numEmbeds embedSize 'Torch.Typed.NN.Constant dtype device) (Torch.Typed.NN.Embedding paddingIdx numEmbeds embedSize 'Torch.Typed.NN.Constant dtype device)
 instance (GHC.TypeNats.KnownNat numEmbeds, GHC.TypeNats.KnownNat embedSize, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.EmbeddingSpec 'GHC.Maybe.Nothing numEmbeds embedSize 'Torch.Typed.NN.Learned dtype device) (Torch.Typed.NN.Embedding 'GHC.Maybe.Nothing numEmbeds embedSize 'Torch.Typed.NN.Learned dtype device)
 instance (paddingIdx GHC.TypeNats.<= numEmbeds, 1 GHC.TypeNats.<= (numEmbeds GHC.TypeNats.- paddingIdx), (((numEmbeds GHC.TypeNats.- paddingIdx) GHC.TypeNats.- 1) GHC.TypeNats.+ (1 GHC.TypeNats.+ paddingIdx)) GHC.Types.~ numEmbeds, GHC.TypeNats.KnownNat paddingIdx, GHC.TypeNats.KnownNat numEmbeds, GHC.TypeNats.KnownNat embedSize, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.EmbeddingSpec ('GHC.Maybe.Just paddingIdx) numEmbeds embedSize 'Torch.Typed.NN.Learned dtype device) (Torch.Typed.NN.Embedding ('GHC.Maybe.Just paddingIdx) numEmbeds embedSize 'Torch.Typed.NN.Learned dtype device)
-instance Torch.Typed.NN.HasForward Torch.Typed.NN.Dropout (Torch.Typed.Tensor.Tensor device dtype shape) (Torch.Typed.Tensor.Tensor device dtype shape)
+instance Torch.NN.HasForward Torch.Typed.NN.Dropout (Torch.Typed.Tensor.Tensor device dtype shape) (Torch.Typed.Tensor.Tensor device dtype shape)
 instance Torch.NN.Randomizable Torch.Typed.NN.DropoutSpec Torch.Typed.NN.Dropout
-instance (shape'' GHC.Types.~ Torch.Typed.Tensor.MatMul shape '[inputFeatures, outputFeatures], shape' GHC.Types.~ Torch.Typed.Tensor.Broadcast shape'' shape'') => Torch.Typed.NN.HasForward (Torch.Typed.NN.Linear inputFeatures outputFeatures dtype device) (Torch.Typed.Tensor.Tensor device dtype shape) (Torch.Typed.Tensor.Tensor device dtype shape')
+instance (shape'' GHC.Types.~ Torch.Typed.Tensor.MatMul shape '[inputFeatures, outputFeatures], shape' GHC.Types.~ Torch.Typed.Tensor.Broadcast shape'' shape'') => Torch.NN.HasForward (Torch.Typed.NN.Linear inputFeatures outputFeatures dtype device) (Torch.Typed.Tensor.Tensor device dtype shape) (Torch.Typed.Tensor.Tensor device dtype shape')
 instance (GHC.TypeNats.KnownNat inputFeatures, GHC.TypeNats.KnownNat outputFeatures, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.LinearSpec inputFeatures outputFeatures dtype device) (Torch.Typed.NN.Linear inputFeatures outputFeatures dtype device)
 
 module Torch.Typed.NN.Transformer
@@ -5349,7 +5350,7 @@ instance GHC.Show.Show (Torch.Typed.NN.Transformer.MultiheadAttention embedDim n
 instance GHC.Classes.Eq (Torch.Typed.NN.Transformer.MultiheadAttentionSpec embedDim numHeads dtype device)
 instance GHC.Show.Show (Torch.Typed.NN.Transformer.MultiheadAttentionSpec embedDim numHeads dtype device)
 instance (1 GHC.TypeNats.<= numHeads, embedDim GHC.Types.~ (headDim GHC.TypeNats.* numHeads), GHC.TypeNats.Mod (embedDim GHC.TypeNats.* 3) 3 GHC.Types.~ 0, GHC.TypeNats.Div (embedDim GHC.TypeNats.* 3) 3 GHC.Types.~ embedDim, Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[embedDim, numHeads, seqLen, batchSize, headDim], Torch.Typed.Functional.EndsWith '[batchSize, seqLen, embedDim] '[embedDim], Torch.Typed.Tensor.KnownDType dtype, dtype GHC.Types.~ Torch.Typed.Functional.SumDType dtype, Torch.Typed.Aux.StandardFloatingPointDTypeValidation device dtype, Torch.Typed.Tensor.MatMulDTypeIsValid device dtype, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype, Torch.Typed.Functional.SumDTypeIsValid device dtype, Torch.Typed.Tensor.KnownDevice device) => Torch.HList.Apply' (Torch.Typed.NN.Transformer.FoldLayers batchSize seqLen dtype device) (Torch.Typed.NN.Transformer.TransformerLayer embedDim numHeads ffnDim dtype device, GHC.Types.IO (Torch.Typed.Tensor.Tensor device dtype '[batchSize, seqLen, embedDim])) (GHC.Types.IO (Torch.Typed.Tensor.Tensor device dtype '[batchSize, seqLen, embedDim]))
-instance (Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[paddingIdx, embedDim, seqLen, batchSize], (paddingIdx GHC.TypeNats.+ 1) GHC.TypeNats.<= numEmbeds, 1 GHC.TypeNats.<= seqLen, Torch.HList.HFoldrM GHC.Types.IO (Torch.Typed.NN.Transformer.FoldLayers batchSize seqLen dtype device) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, seqLen, embedDim]) (Torch.HList.HReplicateR numAttnLayers (Torch.Typed.NN.Transformer.TransformerLayer embedDim numHeads ffnDim dtype device)) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, seqLen, embedDim]), Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype, Torch.Typed.Tensor.ComparisonDTypeIsValid device dtype, Torch.Typed.Tensor.ComparisonDTypeIsValid device 'Torch.DType.Int64, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device) => Torch.Typed.NN.HasForward (Torch.Typed.NN.Transformer.TransformerLM numAttnLayers numHeads ffnDim paddingIdx numEmbeds embedDim dtype device) (Torch.Typed.Tensor.Tensor device 'Torch.DType.Int64 '[batchSize, seqLen]) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, seqLen, numEmbeds])
+instance (Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[paddingIdx, embedDim, seqLen, batchSize], (paddingIdx GHC.TypeNats.+ 1) GHC.TypeNats.<= numEmbeds, 1 GHC.TypeNats.<= seqLen, Torch.HList.HFoldrM GHC.Types.IO (Torch.Typed.NN.Transformer.FoldLayers batchSize seqLen dtype device) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, seqLen, embedDim]) (Torch.HList.HReplicateR numAttnLayers (Torch.Typed.NN.Transformer.TransformerLayer embedDim numHeads ffnDim dtype device)) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, seqLen, embedDim]), Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device dtype, Torch.Typed.Tensor.ComparisonDTypeIsValid device dtype, Torch.Typed.Tensor.ComparisonDTypeIsValid device 'Torch.DType.Int64, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device) => Torch.NN.HasForward (Torch.Typed.NN.Transformer.TransformerLM numAttnLayers numHeads ffnDim paddingIdx numEmbeds embedDim dtype device) (Torch.Typed.Tensor.Tensor device 'Torch.DType.Int64 '[batchSize, seqLen]) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, seqLen, numEmbeds])
 instance (paddingIdx GHC.TypeNats.<= numEmbeds, 1 GHC.TypeNats.<= (numEmbeds GHC.TypeNats.- paddingIdx), (((numEmbeds GHC.TypeNats.- paddingIdx) GHC.TypeNats.- 1) GHC.TypeNats.+ (1 GHC.TypeNats.+ paddingIdx)) GHC.Types.~ numEmbeds, (GHC.TypeNats.Div embedDim 2 GHC.TypeNats.* 2) GHC.Types.~ embedDim, Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[ffnDim, paddingIdx, numEmbeds, embedDim], Torch.HList.HReplicate numAttnLayers (Torch.Typed.NN.Transformer.TransformerLayerSpec embedDim numHeads ffnDim dtype device), Torch.NN.Randomizable (Torch.HList.HList (Torch.HList.HReplicateR numAttnLayers (Torch.Typed.NN.Transformer.TransformerLayerSpec embedDim numHeads ffnDim dtype device))) (Torch.HList.HList (Torch.HList.HReplicateR numAttnLayers (Torch.Typed.NN.Transformer.TransformerLayer embedDim numHeads ffnDim dtype device))), Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Factories.RandDTypeIsValid device dtype, Torch.Typed.Aux.StandardFloatingPointDTypeValidation device 'Torch.DType.Float, Torch.Typed.Tensor.BasicArithmeticDTypeIsValid device 'Torch.DType.Float, Torch.Typed.Tensor.KnownDevice device) => Torch.NN.Randomizable (Torch.Typed.NN.Transformer.TransformerLMSpec numAttnLayers numHeads ffnDim paddingIdx numEmbeds embedDim dtype device) (Torch.Typed.NN.Transformer.TransformerLM numAttnLayers numHeads ffnDim paddingIdx numEmbeds embedDim dtype device)
 instance (Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[embedDim, numHeads, ffnDim], Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.Transformer.TransformerLayerSpec embedDim numHeads ffnDim dtype device) (Torch.Typed.NN.Transformer.TransformerLayer embedDim numHeads ffnDim dtype device)
 instance (Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[embedDim, ffnDim], Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.Transformer.TransformerMLPSpec embedDim ffnDim dtype device) (Torch.Typed.NN.Transformer.TransformerMLP embedDim ffnDim dtype device)
@@ -5834,7 +5835,7 @@ instance forall k (device' :: (Torch.Device.DeviceType, GHC.Types.Nat)) (device 
 instance forall k1 k2 (parameters :: [k1]) (losses :: [k1]) (gradients' :: [k1]) (device' :: (Torch.Device.DeviceType, GHC.Types.Nat)) (devices :: [(Torch.Device.DeviceType, GHC.Types.Nat)]) (gradients :: [k2]). (Torch.HList.HZipWithM Control.Concurrent.Async.Concurrently Torch.Typed.NN.DataParallel.GradConcurrentlyF parameters losses gradients', Torch.Typed.NN.DataParallel.ReduceGradients device' devices gradients' gradients) => Torch.Typed.NN.DataParallel.HasGradConcurrently device' devices parameters losses gradients
 instance forall k (device' :: (Torch.Device.DeviceType, GHC.Types.Nat)) (device :: (Torch.Device.DeviceType, GHC.Types.Nat)) (xs :: [*]) (ys :: [k]). Torch.Typed.Device.HasToDevice device' device (Torch.HList.HList xs) (Torch.HList.HList ys) => Torch.Typed.NN.DataParallel.ReduceGradients device' '[device] '[Torch.HList.HList xs] ys
 instance forall k1 k2 (parameters :: [k1]) (gradients :: [k2]) (device :: (Torch.Device.DeviceType, GHC.Types.Nat)) (dtype :: Torch.DType.DType). (Torch.Typed.Autograd.HasGrad (Torch.HList.HList parameters) (Torch.HList.HList gradients), Torch.Internal.Class.Castable (Torch.HList.HList gradients) [Torch.Tensor.ATenTensor]) => Torch.HList.Apply' Torch.Typed.NN.DataParallel.GradConcurrentlyF (Torch.HList.HList parameters, Torch.Typed.Optim.Loss device dtype) (Control.Concurrent.Async.Concurrently (Torch.HList.HList gradients))
-instance Torch.Typed.NN.HasForward model input output => Torch.HList.Apply' Torch.Typed.NN.DataParallel.ForwardConcurrentlyF (model, input) (Control.Concurrent.Async.Concurrently output)
+instance Torch.NN.HasForward model input output => Torch.HList.Apply' Torch.Typed.NN.DataParallel.ForwardConcurrentlyF (model, input) (Control.Concurrent.Async.Concurrently output)
 
 module Torch.Typed.Vision
 data MnistData
@@ -5879,8 +5880,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679618674 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679618699 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679616760 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679616785 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
