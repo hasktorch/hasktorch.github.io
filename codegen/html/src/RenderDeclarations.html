@@ -1,0 +1,570 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DeriveAnyClass #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE RecordWildCards #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE QuasiQuotes #-}</span><span>
+</span><span id="line-7"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">RenderDeclarations</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/rqjngq2619zmma5zq1fzfx0c6n0ppcmf-yaml-lib-yaml-0.11.4.0-doc/share/doc/yaml/html/src"><span class="hs-identifier">Data.Yaml</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/rqjngq2619zmma5zq1fzfx0c6n0ppcmf-yaml-lib-yaml-0.11.4.0-doc/share/doc/yaml/html/src"><span class="hs-identifier">ParseException</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/rqjngq2619zmma5zq1fzfx0c6n0ppcmf-yaml-lib-yaml-0.11.4.0-doc/share/doc/yaml/html/src"><span class="hs-identifier">Data.Yaml</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Y</span></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/ldzjfrallrxsllmkd7dy8g8mldsznlys-shakespeare-lib-shakespeare-2.0.24-doc/share/doc/shakespeare/html/src"><span class="hs-identifier">Text.Shakespeare.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/ldzjfrallrxsllmkd7dy8g8mldsznlys-shakespeare-lib-shakespeare-2.0.24-doc/share/doc/shakespeare/html/src"><span class="hs-identifier">st</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">replace</span></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text.IO</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Set</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">S</span></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">System.Directory</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">createDirectoryIfMissing</span></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="ParseDeclarations.html"><span class="hs-identifier">ParseDeclarations</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="ParseFunctionSig.html"><span class="hs-identifier">ParseFunctionSig</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">P</span></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="RenderCommon.html"><span class="hs-identifier">RenderCommon</span></a></span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="annot"><a href="RenderDeclarations.html#dropGenerator"><span class="hs-identifier hs-type">dropGenerator</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="ParseFunctionSig.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="ParseFunctionSig.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-22"></span><span id="dropGenerator"><span class="annot"><span class="annottext">dropGenerator :: [Parameter] -&gt; [Parameter]
+</span><a href="RenderDeclarations.html#dropGenerator"><span class="hs-identifier hs-var hs-var">dropGenerator</span></a></span></span><span> </span><span id="local-6989586621679321694"><span class="annot"><span class="annottext">params :: [Parameter]
+</span><a href="#local-6989586621679321694"><span class="hs-identifier hs-var">params</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Parameter -&gt; Bool) -&gt; [Parameter] -&gt; [Parameter]
+forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">filter</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679321693"><span class="annot"><span class="annottext">v' :: Parameter
+</span><a href="#local-6989586621679321693"><span class="hs-identifier hs-var">v'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Parameter -&gt; Parsable
+</span><a href="ParseFunctionSig.html#ptype"><span class="hs-identifier hs-var hs-var">ptype</span></a></span><span> </span><span class="annot"><span class="annottext">Parameter
+</span><a href="#local-6989586621679321693"><span class="hs-identifier hs-var">v'</span></a></span><span> </span><span class="annot"><span class="annottext">Parsable -&gt; Parsable -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">/=</span></span><span> </span><span class="annot"><span class="annottext">Parsable -&gt; Parsable
+</span><a href="ParseFunctionSig.html#Ptr"><span class="hs-identifier hs-var">Ptr</span></a></span><span> </span><span class="annot"><span class="annottext">Parsable
+</span><a href="ParseFunctionSig.html#GeneratorType"><span class="hs-identifier hs-var">GeneratorType</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Parameter]
+</span><a href="#local-6989586621679321694"><span class="hs-identifier hs-var">params</span></a></span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="annot"><a href="RenderDeclarations.html#addFunctionWithDefaultArguments"><span class="hs-identifier hs-type">addFunctionWithDefaultArguments</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="ParseDeclarations.html#Declaration"><span class="hs-identifier hs-type">D.Declaration</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="ParseDeclarations.html#Declaration"><span class="hs-identifier hs-type">D.Declaration</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-25"></span><span id="addFunctionWithDefaultArguments"><span class="annot"><span class="annottext">addFunctionWithDefaultArguments :: Declaration -&gt; [Declaration]
+</span><a href="RenderDeclarations.html#addFunctionWithDefaultArguments"><span class="hs-identifier hs-var hs-var">addFunctionWithDefaultArguments</span></a></span></span><span> </span><span id="local-6989586621679321687"><span class="annot"><span class="annottext">dl :: Declaration
+</span><a href="#local-6989586621679321687"><span class="hs-identifier hs-var">dl</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([Type] -&gt; Declaration) -&gt; [[Type]] -&gt; [Declaration]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679321686"><span class="annot"><span class="annottext">args :: [Type]
+</span><a href="#local-6989586621679321686"><span class="hs-identifier hs-var">args</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Declaration
+</span><a href="#local-6989586621679321687"><span class="hs-identifier hs-var">dl</span></a></span><span class="hs-special">{</span><span class="annot"><span class="annottext">arguments :: [Type]
+</span><a href="ParseDeclarations.html#arguments"><span class="hs-identifier hs-var">D.arguments</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Type]
+</span><a href="#local-6989586621679321686"><span class="hs-identifier hs-var">args</span></a></span><span class="hs-special">}</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[[Type]]
+</span><a href="#local-6989586621679321684"><span class="hs-identifier hs-var">genArgsWithDefault'</span></a></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-27"></span><span>    </span><span id="local-6989586621679321683"><span class="annot"><span class="annottext">genArgsWithDefault :: [Type] -&gt; [[Type]]
+</span><a href="#local-6989586621679321683"><span class="hs-identifier hs-var hs-var">genArgsWithDefault</span></a></span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-28"></span><span>    </span><span class="annot"><a href="#local-6989586621679321683"><span class="hs-identifier hs-var">genArgsWithDefault</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679321682"><span class="annot"><span class="annottext">x :: Type
+</span><a href="#local-6989586621679321682"><span class="hs-identifier hs-var">x</span></a></span></span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span id="local-6989586621679321681"><span class="annot"><span class="annottext">xs :: [Type]
+</span><a href="#local-6989586621679321681"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Type -&gt; Maybe String
+</span><a href="ParseDeclarations.html#default%27"><span class="hs-identifier hs-var hs-var">D.default'</span></a></span><span> </span><span class="annot"><span class="annottext">Type
+</span><a href="#local-6989586621679321682"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe String -&gt; Maybe String -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">/=</span></span><span> </span><span class="annot"><span class="annottext">Maybe String
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Type
+</span><a href="#local-6989586621679321682"><span class="hs-identifier hs-var">x</span></a></span><span class="annot"><span class="annottext">Type -&gt; [Type] -&gt; [Type]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span class="annot"><span class="annottext">[Type]
+</span><a href="#local-6989586621679321681"><span class="hs-identifier hs-var">xs</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Type] -&gt; [[Type]] -&gt; [[Type]]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span> </span><span class="annot"><span class="annottext">[Type] -&gt; [[Type]]
+</span><a href="#local-6989586621679321683"><span class="hs-identifier hs-var">genArgsWithDefault</span></a></span><span> </span><span class="annot"><span class="annottext">[Type]
+</span><a href="#local-6989586621679321681"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><span id="line-29"></span><span>                              </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Type
+</span><a href="#local-6989586621679321682"><span class="hs-identifier hs-var">x</span></a></span><span class="annot"><span class="annottext">Type -&gt; [Type] -&gt; [Type]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span class="annot"><span class="annottext">[Type]
+</span><a href="#local-6989586621679321681"><span class="hs-identifier hs-var">xs</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-30"></span><span>    </span><span id="local-6989586621679321684"><span class="annot"><span class="annottext">genArgsWithDefault' :: [[Type]]
+</span><a href="#local-6989586621679321684"><span class="hs-identifier hs-var hs-var">genArgsWithDefault'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([Type] -&gt; [Type]) -&gt; [[Type]] -&gt; [[Type]]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">[Type] -&gt; [Type]
+forall a. [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">reverse</span></span><span> </span><span class="annot"><span class="annottext">([[Type]] -&gt; [[Type]]) -&gt; [[Type]] -&gt; [[Type]]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Type] -&gt; [[Type]]
+</span><a href="#local-6989586621679321683"><span class="hs-identifier hs-var">genArgsWithDefault</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Type] -&gt; [Type]
+forall a. [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">reverse</span></span><span> </span><span class="annot"><span class="annottext">([Type] -&gt; [Type]) -&gt; [Type] -&gt; [Type]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Declaration -&gt; [Type]
+</span><a href="ParseDeclarations.html#arguments"><span class="hs-identifier hs-var hs-var">D.arguments</span></a></span><span> </span><span class="annot"><span class="annottext">Declaration
+</span><a href="#local-6989586621679321687"><span class="hs-identifier hs-var">dl</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="annot"><a href="RenderDeclarations.html#toFunction"><span class="hs-identifier hs-type">toFunction</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="ParseDeclarations.html#Declaration"><span class="hs-identifier hs-type">D.Declaration</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ParseFunctionSig.html#Function"><span class="hs-identifier hs-type">P.Function</span></a></span><span>
+</span><span id="line-34"></span><span id="toFunction"><span class="annot"><span class="annottext">toFunction :: Declaration -&gt; Function
+</span><a href="RenderDeclarations.html#toFunction"><span class="hs-identifier hs-var hs-var">toFunction</span></a></span></span><span> </span><span id="local-6989586621679321677"><span class="annot"><span class="annottext">dl :: Declaration
+</span><a href="#local-6989586621679321677"><span class="hs-identifier hs-var">dl</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Function :: String -&gt; [Parameter] -&gt; Parsable -&gt; Variants -&gt; Function
+</span><a href="ParseFunctionSig.html#Function"><span class="hs-identifier hs-type hs-type">P.Function</span></a></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">name :: String
+</span><a href="ParseFunctionSig.html#name"><span class="hs-identifier hs-var">P.name</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Declaration -&gt; String
+</span><a href="ParseDeclarations.html#name"><span class="hs-identifier hs-var hs-var">D.name</span></a></span><span> </span><span class="annot"><span class="annottext">Declaration
+</span><a href="#local-6989586621679321677"><span class="hs-identifier hs-var">dl</span></a></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">parameters :: [Parameter]
+</span><a href="ParseFunctionSig.html#parameters"><span class="hs-identifier hs-var">P.parameters</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Type -&gt; Parameter) -&gt; [Type] -&gt; [Parameter]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679321671"><span class="annot"><span class="annottext">a :: Type
+</span><a href="#local-6989586621679321671"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Parsable -&gt; String -&gt; Maybe DefaultValue -&gt; Parameter
+</span><a href="ParseFunctionSig.html#Parameter"><span class="hs-identifier hs-var">P.Parameter</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Type -&gt; Parsable
+</span><a href="ParseDeclarations.html#type2type"><span class="hs-identifier hs-var">D.type2type</span></a></span><span> </span><span class="annot"><span class="annottext">Type
+</span><a href="#local-6989586621679321671"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Type -&gt; String
+</span><a href="ParseDeclarations.html#name%27"><span class="hs-identifier hs-var hs-var">D.name'</span></a></span><span> </span><span class="annot"><span class="annottext">Type
+</span><a href="#local-6989586621679321671"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Maybe DefaultValue
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">([Type] -&gt; [Parameter]) -&gt; [Type] -&gt; [Parameter]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Declaration -&gt; [Type]
+</span><a href="ParseDeclarations.html#arguments"><span class="hs-identifier hs-var hs-var">D.arguments</span></a></span><span> </span><span class="annot"><span class="annottext">Declaration
+</span><a href="#local-6989586621679321677"><span class="hs-identifier hs-var">dl</span></a></span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">retType :: Parsable
+</span><a href="ParseFunctionSig.html#retType"><span class="hs-identifier hs-var">P.retType</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Declaration -&gt; [Type]
+</span><a href="ParseDeclarations.html#returns"><span class="hs-identifier hs-var hs-var">D.returns</span></a></span><span> </span><span class="annot"><span class="annottext">Declaration
+</span><a href="#local-6989586621679321677"><span class="hs-identifier hs-var">dl</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-38"></span><span>      </span><span class="hs-special">[</span><span id="local-6989586621679321665"><span class="annot"><span class="annottext">a :: Type
+</span><a href="#local-6989586621679321665"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Type -&gt; Parsable
+</span><a href="ParseDeclarations.html#type2type"><span class="hs-identifier hs-var">D.type2type</span></a></span><span> </span><span class="annot"><span class="annottext">Type
+</span><a href="#local-6989586621679321665"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-39"></span><span>      </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">CType -&gt; Parsable
+</span><a href="ParseFunctionSig.html#CType"><span class="hs-identifier hs-var">P.CType</span></a></span><span> </span><span class="annot"><span class="annottext">CType
+</span><a href="ParseFunctionSig.html#CVoid"><span class="hs-identifier hs-var">P.CVoid</span></a></span><span>
+</span><span id="line-40"></span><span>      </span><span id="local-6989586621679321662"><span class="annot"><span class="annottext">ax :: [Type]
+</span><a href="#local-6989586621679321662"><span class="hs-identifier hs-var">ax</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">[Parsable] -&gt; Parsable
+</span><a href="ParseFunctionSig.html#Tuple"><span class="hs-identifier hs-var">P.Tuple</span></a></span><span> </span><span class="annot"><span class="annottext">([Parsable] -&gt; Parsable) -&gt; [Parsable] -&gt; Parsable
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(Type -&gt; Parsable) -&gt; [Type] -&gt; [Parsable]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">Type -&gt; Parsable
+</span><a href="ParseDeclarations.html#type2type"><span class="hs-identifier hs-var">D.type2type</span></a></span><span> </span><span class="annot"><span class="annottext">[Type]
+</span><a href="#local-6989586621679321662"><span class="hs-identifier hs-var">ax</span></a></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">variant :: Variants
+</span><a href="ParseFunctionSig.html#variant"><span class="hs-identifier hs-var">P.variant</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Variants
+</span><a href="ParseFunctionSig.html#VFunction"><span class="hs-identifier hs-var">P.VFunction</span></a></span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span id="local-6989586621679321717"><span id="local-6989586621679321718"><span class="annot"><a href="RenderDeclarations.html#uniqFilter"><span class="hs-identifier hs-type">uniqFilter</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621679321718"><span class="hs-identifier hs-type">n</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679321717"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679321718"><span class="hs-identifier hs-type">n</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679321717"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679321717"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span></span></span><span>
+</span><span id="line-45"></span><span id="uniqFilter"><span class="annot"><span class="annottext">uniqFilter :: (a -&gt; n) -&gt; [a] -&gt; [a]
+</span><a href="RenderDeclarations.html#uniqFilter"><span class="hs-identifier hs-var hs-var">uniqFilter</span></a></span></span><span> </span><span id="local-6989586621679321657"><span class="annot"><span class="annottext">item :: a -&gt; n
+</span><a href="#local-6989586621679321657"><span class="hs-identifier hs-var">item</span></a></span></span><span> </span><span id="local-6989586621679321656"><span class="annot"><span class="annottext">xs :: [a]
+</span><a href="#local-6989586621679321656"><span class="hs-identifier hs-var">xs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; Set n -&gt; [a]
+</span><a href="#local-6989586621679321655"><span class="hs-identifier hs-var">uniqFilter'</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679321656"><span class="hs-identifier hs-var">xs</span></a></span><span> </span><span class="annot"><span class="annottext">Set n
+forall a. Set a
+</span><span class="hs-identifier hs-var">S.empty</span></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-47"></span><span>    </span><span id="local-6989586621679321655"><span class="annot"><span class="annottext">uniqFilter' :: [a] -&gt; Set n -&gt; [a]
+</span><a href="#local-6989586621679321655"><span class="hs-identifier hs-var hs-var">uniqFilter'</span></a></span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-identifier">_</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-48"></span><span>    </span><span class="annot"><a href="#local-6989586621679321655"><span class="hs-identifier hs-var">uniqFilter'</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679321653"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679321653"><span class="hs-identifier hs-var">x</span></a></span></span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span id="local-6989586621679321652"><span class="annot"><span class="annottext">xs' :: [a]
+</span><a href="#local-6989586621679321652"><span class="hs-identifier hs-var">xs'</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679321651"><span class="annot"><span class="annottext">ids :: Set n
+</span><a href="#local-6989586621679321651"><span class="hs-identifier hs-var">ids</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">n -&gt; Set n -&gt; Bool
+forall a. Ord a =&gt; a -&gt; Set a -&gt; Bool
+</span><span class="hs-identifier hs-var">S.member</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; n
+</span><a href="#local-6989586621679321657"><span class="hs-identifier hs-var">item</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679321653"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Set n
+</span><a href="#local-6989586621679321651"><span class="hs-identifier hs-var">ids</span></a></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; Set n -&gt; [a]
+</span><a href="#local-6989586621679321655"><span class="hs-identifier hs-var">uniqFilter'</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679321652"><span class="hs-identifier hs-var">xs'</span></a></span><span> </span><span class="annot"><span class="annottext">Set n
+</span><a href="#local-6989586621679321651"><span class="hs-identifier hs-var">ids</span></a></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679321653"><span class="hs-identifier hs-var">x</span></a></span><span class="annot"><span class="annottext">a -&gt; [a] -&gt; [a]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span class="hs-special">(</span><span class="annot"><span class="annottext">[a] -&gt; Set n -&gt; [a]
+</span><a href="#local-6989586621679321655"><span class="hs-identifier hs-var">uniqFilter'</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679321656"><span class="hs-identifier hs-var">xs</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">n -&gt; Set n -&gt; Set n
+forall a. Ord a =&gt; a -&gt; Set a -&gt; Set a
+</span><span class="hs-identifier hs-var">S.insert</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; n
+</span><a href="#local-6989586621679321657"><span class="hs-identifier hs-var">item</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679321653"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Set n
+</span><a href="#local-6989586621679321651"><span class="hs-identifier hs-var">ids</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span>
+</span><span id="line-50"></span><span class="annot"><a href="RenderDeclarations.html#renderFunctions"><span class="hs-identifier hs-type">renderFunctions</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="ParseDeclarations.html#Declaration"><span class="hs-identifier hs-type">D.Declaration</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-51"></span><span id="renderFunctions"><span class="annot"><span class="annottext">renderFunctions :: Bool -&gt; Bool -&gt; String -&gt; [Declaration] -&gt; Text
+</span><a href="RenderDeclarations.html#renderFunctions"><span class="hs-identifier hs-var hs-var">renderFunctions</span></a></span></span><span> </span><span id="local-6989586621679321647"><span class="annot"><span class="annottext">is_managed :: Bool
+</span><a href="#local-6989586621679321647"><span class="hs-identifier hs-var">is_managed</span></a></span></span><span> </span><span id="local-6989586621679321646"><span class="annot"><span class="annottext">enb_type_initials :: Bool
+</span><a href="#local-6989586621679321646"><span class="hs-identifier hs-var">enb_type_initials</span></a></span></span><span> </span><span id="local-6989586621679321645"><span class="annot"><span class="annottext">namespace :: String
+</span><a href="#local-6989586621679321645"><span class="hs-identifier hs-var">namespace</span></a></span></span><span> </span><span id="local-6989586621679321644"><span class="annot"><span class="annottext">nfs :: [Declaration]
+</span><a href="#local-6989586621679321644"><span class="hs-identifier hs-var">nfs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-52"></span><span>  </span><span class="annot"><span class="annottext">[Text] -&gt; Text
+forall a. Monoid a =&gt; [a] -&gt; a
+</span><span class="hs-identifier hs-var">mconcat</span></span><span> </span><span class="annot"><span class="annottext">([Text] -&gt; Text) -&gt; [Text] -&gt; Text
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-53"></span><span>  </span><span class="annot"><span class="annottext">(Function -&gt; Text) -&gt; [Function] -&gt; [Text]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679321643"><span class="annot"><span class="annottext">nf :: Function
+</span><a href="#local-6989586621679321643"><span class="hs-identifier hs-var">nf</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; String -&gt; String -&gt; Function -&gt; Text
+</span><a href="RenderCommon.html#functionToCpp"><span class="hs-identifier hs-var">functionToCpp</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679321647"><span class="hs-identifier hs-var">is_managed</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679321646"><span class="hs-identifier hs-var">enb_type_initials</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679321645"><span class="hs-identifier hs-var">namespace</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;&quot;</span></span><span> </span><span class="annot"><span class="annottext">Function
+</span><a href="#local-6989586621679321643"><span class="hs-identifier hs-var">nf</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">([Function] -&gt; [Text]) -&gt; [Function] -&gt; [Text]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-54"></span><span>  </span><span class="annot"><span class="annottext">(Function -&gt; String) -&gt; [Function] -&gt; [Function]
+forall n a. Ord n =&gt; (a -&gt; n) -&gt; [a] -&gt; [a]
+</span><a href="RenderDeclarations.html#uniqFilter"><span class="hs-identifier hs-var">uniqFilter</span></a></span><span> </span><span class="annot"><span class="annottext">Function -&gt; String
+</span><a href="RenderCommon.html#getSignatures"><span class="hs-identifier hs-var">getSignatures</span></a></span><span> </span><span class="annot"><span class="annottext">([Function] -&gt; [Function]) -&gt; [Function] -&gt; [Function]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-55"></span><span>  </span><span class="annot"><span class="annottext">(Declaration -&gt; Function) -&gt; [Declaration] -&gt; [Function]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">Declaration -&gt; Function
+</span><a href="RenderDeclarations.html#toFunction"><span class="hs-identifier hs-var">toFunction</span></a></span><span> </span><span class="annot"><span class="annottext">[Declaration]
+</span><a href="#local-6989586621679321644"><span class="hs-identifier hs-var">nfs</span></a></span><span>
+</span><span id="line-56"></span><span>  </span><span>
+</span><span id="line-57"></span><span class="annot"><a href="RenderDeclarations.html#decodeAndCodeGen"><span class="hs-identifier hs-type">decodeAndCodeGen</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-58"></span><span id="decodeAndCodeGen"><span class="annot"><span class="annottext">decodeAndCodeGen :: String -&gt; String -&gt; IO ()
+</span><a href="RenderDeclarations.html#decodeAndCodeGen"><span class="hs-identifier hs-var hs-var">decodeAndCodeGen</span></a></span></span><span> </span><span id="local-6989586621679321639"><span class="annot"><span class="annottext">basedir :: String
+</span><a href="#local-6989586621679321639"><span class="hs-identifier hs-var">basedir</span></a></span></span><span> </span><span id="local-6989586621679321638"><span class="annot"><span class="annottext">fileName :: String
+</span><a href="#local-6989586621679321638"><span class="hs-identifier hs-var">fileName</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-59"></span><span>  </span><span id="local-6989586621679321637"><span class="annot"><span class="annottext">Either ParseException [Declaration]
+</span><a href="#local-6989586621679321637"><span class="hs-identifier hs-var">funcs</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; IO (Either ParseException [Declaration])
+forall a. FromJSON a =&gt; String -&gt; IO (Either ParseException a)
+</span><a href="../file:///nix/store/rqjngq2619zmma5zq1fzfx0c6n0ppcmf-yaml-lib-yaml-0.11.4.0-doc/share/doc/yaml/html/src"><span class="hs-identifier hs-var">Y.decodeFileEither</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679321638"><span class="hs-identifier hs-var">fileName</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="../file:///nix/store/rqjngq2619zmma5zq1fzfx0c6n0ppcmf-yaml-lib-yaml-0.11.4.0-doc/share/doc/yaml/html/src"><span class="hs-identifier hs-type">ParseException</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="ParseDeclarations.html#Declaration"><span class="hs-identifier hs-type">D.Declaration</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Either ParseException [Declaration]
+</span><a href="#local-6989586621679321637"><span class="hs-identifier hs-var">funcs</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-61"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679321635"><span class="annot"><span class="annottext">err' :: ParseException
+</span><a href="#local-6989586621679321635"><span class="hs-identifier hs-var">err'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ParseException -&gt; IO ()
+forall a. Show a =&gt; a -&gt; IO ()
+</span><span class="hs-identifier hs-var">print</span></span><span> </span><span class="annot"><span class="annottext">ParseException
+</span><a href="#local-6989586621679321635"><span class="hs-identifier hs-var">err'</span></a></span><span>
+</span><span id="line-62"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679321634"><span class="annot"><span class="annottext">fns' :: [Declaration]
+</span><a href="#local-6989586621679321634"><span class="hs-identifier hs-var">fns'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-63"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679321633"><span class="annot"><span class="annottext">fns :: [Declaration]
+</span><a href="#local-6989586621679321633"><span class="hs-identifier hs-var hs-var">fns</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[[Declaration]] -&gt; [Declaration]
+forall (t :: * -&gt; *) a. Foldable t =&gt; t [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">concat</span></span><span> </span><span class="annot"><span class="annottext">([[Declaration]] -&gt; [Declaration])
+-&gt; [[Declaration]] -&gt; [Declaration]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(Declaration -&gt; [Declaration]) -&gt; [Declaration] -&gt; [[Declaration]]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">Declaration -&gt; [Declaration]
+</span><a href="RenderDeclarations.html#addFunctionWithDefaultArguments"><span class="hs-identifier hs-var">addFunctionWithDefaultArguments</span></a></span><span> </span><span class="annot"><span class="annottext">[Declaration]
+</span><a href="#local-6989586621679321634"><span class="hs-identifier hs-var">fns'</span></a></span><span> </span><span>
+</span><span id="line-64"></span><span>      </span><span class="annot"><span class="annottext">Bool -&gt; String -&gt; IO ()
+</span><span class="hs-identifier hs-var">createDirectoryIfMissing</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679321639"><span class="hs-identifier hs-var">basedir</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="hs-string">&quot;/Torch&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-65"></span><span>      </span><span class="annot"><span class="annottext">Bool -&gt; String -&gt; IO ()
+</span><span class="hs-identifier hs-var">createDirectoryIfMissing</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679321639"><span class="hs-identifier hs-var">basedir</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="hs-string">&quot;/Torch/Internal&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-66"></span><span>      </span><span class="hs-comment">--T.writeFile (basedir &lt;&gt; &quot;/Torch/Internal/Type.hs&quot;) $</span><span>
+</span><span id="line-67"></span><span>      </span><span class="hs-comment">--  typeTemplate</span><span>
+</span><span id="line-68"></span><span>      </span><span class="annot"><span class="annottext">String -&gt; Text -&gt; IO ()
+</span><span class="hs-identifier hs-var">T.writeFile</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679321639"><span class="hs-identifier hs-var">basedir</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="hs-string">&quot;/Torch/Internal/Managed/Native.hs&quot;</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Text -&gt; IO ()) -&gt; Text -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-69"></span><span>        </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Text -&gt; Text -&gt; Text
+</span><a href="RenderDeclarations.html#template"><span class="hs-identifier hs-var">template</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="hs-string">&quot;Torch.Internal.Managed.Native&quot;</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Text) -&gt; Text -&gt; Text
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-70"></span><span>        </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; String -&gt; [Declaration] -&gt; Text
+</span><a href="RenderDeclarations.html#renderFunctions"><span class="hs-identifier hs-var">renderFunctions</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="hs-string">&quot;at::&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Declaration -&gt; Bool) -&gt; [Declaration] -&gt; [Declaration]
+forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">filter</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679321629"><span class="annot"><span class="annottext">a :: Declaration
+</span><a href="#local-6989586621679321629"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Declaration -&gt; Mode
+</span><a href="ParseDeclarations.html#mode"><span class="hs-identifier hs-var hs-var">D.mode</span></a></span><span> </span><span class="annot"><span class="annottext">Declaration
+</span><a href="#local-6989586621679321629"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Mode -&gt; Mode -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Mode
+</span><a href="ParseDeclarations.html#Native"><span class="hs-identifier hs-var">D.Native</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="hs-string">&quot;namespace&quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; [String] -&gt; Bool
+forall (t :: * -&gt; *) a. (Foldable t, Eq a) =&gt; a -&gt; t a -&gt; Bool
+</span><span class="hs-operator hs-var">`elem`</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Declaration -&gt; [String]
+</span><a href="ParseDeclarations.html#method_of"><span class="hs-identifier hs-var hs-var">D.method_of</span></a></span><span> </span><span class="annot"><span class="annottext">Declaration
+</span><a href="#local-6989586621679321629"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Declaration]
+</span><a href="#local-6989586621679321633"><span class="hs-identifier hs-var">fns</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-71"></span><span>      </span><span class="annot"><span class="annottext">String -&gt; Text -&gt; IO ()
+</span><span class="hs-identifier hs-var">T.writeFile</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679321639"><span class="hs-identifier hs-var">basedir</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="hs-string">&quot;/Torch/Internal/Unmanaged/Native.hs&quot;</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Text -&gt; IO ()) -&gt; Text -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-72"></span><span>        </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Text -&gt; Text -&gt; Text
+</span><a href="RenderDeclarations.html#template"><span class="hs-identifier hs-var">template</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="annot"><span class="hs-string">&quot;Torch.Internal.Unmanaged.Native&quot;</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Text) -&gt; Text -&gt; Text
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-73"></span><span>        </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; String -&gt; [Declaration] -&gt; Text
+</span><a href="RenderDeclarations.html#renderFunctions"><span class="hs-identifier hs-var">renderFunctions</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="hs-string">&quot;at::&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Declaration -&gt; Bool) -&gt; [Declaration] -&gt; [Declaration]
+forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">filter</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679321623"><span class="annot"><span class="annottext">a :: Declaration
+</span><a href="#local-6989586621679321623"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Declaration -&gt; Mode
+</span><a href="ParseDeclarations.html#mode"><span class="hs-identifier hs-var hs-var">D.mode</span></a></span><span> </span><span class="annot"><span class="annottext">Declaration
+</span><a href="#local-6989586621679321623"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Mode -&gt; Mode -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Mode
+</span><a href="ParseDeclarations.html#Native"><span class="hs-identifier hs-var">D.Native</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="hs-string">&quot;namespace&quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; [String] -&gt; Bool
+forall (t :: * -&gt; *) a. (Foldable t, Eq a) =&gt; a -&gt; t a -&gt; Bool
+</span><span class="hs-operator hs-var">`elem`</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Declaration -&gt; [String]
+</span><a href="ParseDeclarations.html#method_of"><span class="hs-identifier hs-var hs-var">D.method_of</span></a></span><span> </span><span class="annot"><span class="annottext">Declaration
+</span><a href="#local-6989586621679321623"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Declaration]
+</span><a href="#local-6989586621679321633"><span class="hs-identifier hs-var">fns</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-74"></span><span>
+</span><span id="line-75"></span><span>      </span><span class="annot"><span class="annottext">Bool -&gt; String -&gt; IO ()
+</span><span class="hs-identifier hs-var">createDirectoryIfMissing</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679321639"><span class="hs-identifier hs-var">basedir</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="hs-string">&quot;/Torch/Internal/Managed&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-76"></span><span>      </span><span class="annot"><span class="annottext">Bool -&gt; String -&gt; IO ()
+</span><span class="hs-identifier hs-var">createDirectoryIfMissing</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679321639"><span class="hs-identifier hs-var">basedir</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="hs-string">&quot;/Torch/Internal/Unmanaged&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-77"></span><span>      </span><span class="annot"><span class="annottext">String -&gt; Text -&gt; IO ()
+</span><span class="hs-identifier hs-var">T.writeFile</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679321639"><span class="hs-identifier hs-var">basedir</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="hs-string">&quot;/Torch/Internal/Managed/TensorFactories.hs&quot;</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Text -&gt; IO ()) -&gt; Text -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-78"></span><span>        </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Text -&gt; Text -&gt; Text
+</span><a href="RenderDeclarations.html#template"><span class="hs-identifier hs-var">template</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="hs-string">&quot;Torch.Internal.Managed.TensorFactories&quot;</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Text) -&gt; Text -&gt; Text
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-79"></span><span>        </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; String -&gt; [Declaration] -&gt; Text
+</span><a href="RenderDeclarations.html#renderFunctions"><span class="hs-identifier hs-var">renderFunctions</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="hs-string">&quot;torch::&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Declaration -&gt; Bool) -&gt; [Declaration] -&gt; [Declaration]
+forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">filter</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679321622"><span class="annot"><span class="annottext">a :: Declaration
+</span><a href="#local-6989586621679321622"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Declaration -&gt; Mode
+</span><a href="ParseDeclarations.html#mode"><span class="hs-identifier hs-var hs-var">D.mode</span></a></span><span> </span><span class="annot"><span class="annottext">Declaration
+</span><a href="#local-6989586621679321622"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Mode -&gt; Mode -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Mode
+</span><a href="ParseDeclarations.html#Native"><span class="hs-identifier hs-var">D.Native</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="hs-string">&quot;namespace&quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; [String] -&gt; Bool
+forall (t :: * -&gt; *) a. (Foldable t, Eq a) =&gt; a -&gt; t a -&gt; Bool
+</span><span class="hs-operator hs-var">`elem`</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Declaration -&gt; [String]
+</span><a href="ParseDeclarations.html#method_of"><span class="hs-identifier hs-var hs-var">D.method_of</span></a></span><span> </span><span class="annot"><span class="annottext">Declaration
+</span><a href="#local-6989586621679321622"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">Declaration -&gt; Maybe Bool
+</span><a href="ParseDeclarations.html#is_factory_method"><span class="hs-identifier hs-var hs-var">D.is_factory_method</span></a></span><span> </span><span class="annot"><span class="annottext">Declaration
+</span><a href="#local-6989586621679321622"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe Bool -&gt; Maybe Bool -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Maybe Bool
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Declaration]
+</span><a href="#local-6989586621679321633"><span class="hs-identifier hs-var">fns</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-80"></span><span>      </span><span class="annot"><span class="annottext">String -&gt; Text -&gt; IO ()
+</span><span class="hs-identifier hs-var">T.writeFile</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679321639"><span class="hs-identifier hs-var">basedir</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="hs-string">&quot;/Torch/Internal/Unmanaged/TensorFactories.hs&quot;</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Text -&gt; IO ()) -&gt; Text -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-81"></span><span>        </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Text -&gt; Text -&gt; Text
+</span><a href="RenderDeclarations.html#template"><span class="hs-identifier hs-var">template</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="annot"><span class="hs-string">&quot;Torch.Internal.Unmanaged.TensorFactories&quot;</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Text) -&gt; Text -&gt; Text
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-82"></span><span>        </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; String -&gt; [Declaration] -&gt; Text
+</span><a href="RenderDeclarations.html#renderFunctions"><span class="hs-identifier hs-var">renderFunctions</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="hs-string">&quot;torch::&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Declaration -&gt; Bool) -&gt; [Declaration] -&gt; [Declaration]
+forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">filter</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679321620"><span class="annot"><span class="annottext">a :: Declaration
+</span><a href="#local-6989586621679321620"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Declaration -&gt; Mode
+</span><a href="ParseDeclarations.html#mode"><span class="hs-identifier hs-var hs-var">D.mode</span></a></span><span> </span><span class="annot"><span class="annottext">Declaration
+</span><a href="#local-6989586621679321620"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Mode -&gt; Mode -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Mode
+</span><a href="ParseDeclarations.html#Native"><span class="hs-identifier hs-var">D.Native</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="hs-string">&quot;namespace&quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; [String] -&gt; Bool
+forall (t :: * -&gt; *) a. (Foldable t, Eq a) =&gt; a -&gt; t a -&gt; Bool
+</span><span class="hs-operator hs-var">`elem`</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Declaration -&gt; [String]
+</span><a href="ParseDeclarations.html#method_of"><span class="hs-identifier hs-var hs-var">D.method_of</span></a></span><span> </span><span class="annot"><span class="annottext">Declaration
+</span><a href="#local-6989586621679321620"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">Declaration -&gt; Maybe Bool
+</span><a href="ParseDeclarations.html#is_factory_method"><span class="hs-identifier hs-var hs-var">D.is_factory_method</span></a></span><span> </span><span class="annot"><span class="annottext">Declaration
+</span><a href="#local-6989586621679321620"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe Bool -&gt; Maybe Bool -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Maybe Bool
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Declaration]
+</span><a href="#local-6989586621679321633"><span class="hs-identifier hs-var">fns</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-83"></span><span>
+</span><span id="line-84"></span><span>
+</span><span id="line-85"></span><span>
+</span><span id="line-86"></span><span>
+</span><span id="line-87"></span><span class="annot"><a href="RenderDeclarations.html#renderImport"><span class="hs-identifier hs-type">renderImport</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-88"></span><span id="renderImport"><span class="annot"><span class="annottext">renderImport :: Bool -&gt; Bool -&gt; Text -&gt; Text
+</span><a href="RenderDeclarations.html#renderImport"><span class="hs-identifier hs-var hs-var">renderImport</span></a></span></span><span> </span><span id="local-6989586621679321618"><span class="annot"><span class="annottext">is_torch_factory_method :: Bool
+</span><a href="#local-6989586621679321618"><span class="hs-identifier hs-var">is_torch_factory_method</span></a></span></span><span> </span><span id="local-6989586621679321617"><span class="annot"><span class="annottext">is_managed :: Bool
+</span><a href="#local-6989586621679321617"><span class="hs-identifier hs-var">is_managed</span></a></span></span><span> </span><span id="local-6989586621679321616"><span class="annot"><span class="annottext">module_name :: Text
+</span><a href="#local-6989586621679321616"><span class="hs-identifier hs-var">module_name</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679321617"><span class="hs-identifier hs-var">is_managed</span></a></span><span> </span><span class="hs-keyword">then</span><span>  </span><span class="annot"><span class="">[st|
+import Foreign.C.String
+import Foreign.C.Types
+import Foreign
+import Torch.Internal.Type
+import Torch.Internal.Class
+import Torch.Internal.Cast
+import qualified #{replace &quot;Managed&quot; &quot;Unmanaged&quot; module_name} as Unmanaged
+import Torch.Internal.Unmanaged.Type.Generator
+import Torch.Internal.Unmanaged.Type.IntArray
+import Torch.Internal.Unmanaged.Type.Scalar
+import Torch.Internal.Unmanaged.Type.Storage
+import Torch.Internal.Unmanaged.Type.Tensor
+import Torch.Internal.Unmanaged.Type.TensorList
+import Torch.Internal.Unmanaged.Type.TensorOptions
+import Torch.Internal.Unmanaged.Type.Tuple
+import Torch.Internal.Unmanaged.Type.StdString
+import Torch.Internal.Unmanaged.Type.StdArray
+import Torch.Internal.Unmanaged.Type.Dimname
+import Torch.Internal.Unmanaged.Type.DimnameList
+|]</span></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="">[st|
+import Foreign.C.String
+import Foreign.C.Types
+import Foreign
+import Torch.Internal.Type
+import Torch.Internal.Class
+
+import qualified Language.C.Inline.Cpp as C
+import qualified Language.C.Inline.Cpp.Exceptions as C
+import qualified Language.C.Inline.Context as C
+import qualified Language.C.Types as C
+import qualified Data.Map as Map
+
+C.context $ C.cppCtx &lt;&gt; mempty { C.ctxTypesTable = typeTable }
+
+C.include &quot;&lt;vector&gt;&quot;
+C.include &quot;&lt;ATen/ATen.h&gt;&quot;
+|]</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679321618"><span class="hs-identifier hs-var">is_torch_factory_method</span></a></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="">[st|
+C.include &quot;&lt;torch/torch.h&gt;&quot;
+|]</span></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="hs-string">&quot;&quot;</span></span><span>
+</span><span id="line-128"></span><span>
+</span><span id="line-129"></span><span>
+</span><span id="line-130"></span><span class="annot"><a href="RenderDeclarations.html#template"><span class="hs-identifier hs-type">template</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-131"></span><span id="template"><span class="annot"><span class="annottext">template :: Bool -&gt; Bool -&gt; Text -&gt; Text -&gt; Text
+</span><a href="RenderDeclarations.html#template"><span class="hs-identifier hs-var hs-var">template</span></a></span></span><span> </span><span id="local-6989586621679321608"><span class="annot"><span class="annottext">is_torch_factory_method :: Bool
+</span><a href="#local-6989586621679321608"><span class="hs-identifier hs-var">is_torch_factory_method</span></a></span></span><span> </span><span id="local-6989586621679321607"><span class="annot"><span class="annottext">is_managed :: Bool
+</span><a href="#local-6989586621679321607"><span class="hs-identifier hs-var">is_managed</span></a></span></span><span> </span><span id="local-6989586621679321606"><span class="annot"><span class="annottext">module_name :: Text
+</span><a href="#local-6989586621679321606"><span class="hs-identifier hs-var">module_name</span></a></span></span><span> </span><span id="local-6989586621679321605"><span class="annot"><span class="annottext">functions :: Text
+</span><a href="#local-6989586621679321605"><span class="hs-identifier hs-var">functions</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[st|
+-- generated by using spec/Declarations.yaml
+
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings #-}
+
+module #{module_name} where
+
+#{renderImport is_torch_factory_method is_managed module_name}
+#{functions}
+|]</span></span><span>
+</span><span id="line-146"></span><span>
+</span><span id="line-147"></span><span class="annot"><a href="RenderDeclarations.html#typeTemplate"><span class="hs-identifier hs-type">typeTemplate</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-148"></span><span id="typeTemplate"><span class="annot"><span class="annottext">typeTemplate :: Text
+</span><a href="RenderDeclarations.html#typeTemplate"><span class="hs-identifier hs-var hs-var">typeTemplate</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[st|
+-- generated by using spec/Declarations.yaml
+
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings #-}
+
+module Torch.Internal.Type where
+
+import qualified Language.C.Inline.Cpp as C
+import qualified Language.C.Inline.Cpp.Exceptions as C
+import qualified Language.C.Inline.Context as C
+import qualified Language.C.Types as C
+import qualified Data.Map as Map
+
+import Foreign.C.String
+import Foreign.C.Types
+import Foreign
+
+type ScalarType = Int8
+type DeviceType = Int16
+type Backend = CInt
+type Layout = Int8
+type MemoryFormat = Int8
+type QScheme = Int8
+
+data Tensor
+data Scalar
+data TensorOptions
+data TensorList
+data IntArrayRef
+data IntArray
+data TensorAVector
+data Storage
+data StdArray a b
+data StdString
+data Generator
+data Device
+data Context
+data ConstQuantizerPtr
+data Dimname
+data DimnameList
+data Symbol
+data IValue
+
+typeTable = Map.fromList [
+        (C.TypeName &quot;at::Scalar&quot;, #{bra}t|Scalar|#{cket})
+      , (C.TypeName &quot;at::Tensor&quot;, #{bra}t|Tensor|#{cket})
+      , (C.TypeName &quot;at::TensorOptions&quot;, #{bra}t|TensorOptions|#{cket})
+      , (C.TypeName &quot;std::vector&lt;at::Tensor&gt;&quot;, #{bra}t|TensorList|#{cket})
+      , (C.TypeName &quot;at::IntArrayRef&quot;, #{bra}t|IntArrayRef|#{cket})
+      , (C.TypeName &quot;std::vector&lt;int64_t&gt;&quot;, #{bra}t|IntArray|#{cket})
+      , (C.TypeName &quot;at::ScalarType&quot;, #{bra}t|ScalarType|#{cket})
+      , (C.TypeName &quot;at::DeviceType&quot;, #{bra}t|DeviceType|#{cket})
+      , (C.TypeName &quot;at::Storage&quot;, #{bra}t|Storage|#{cket})
+      , (C.TypeName &quot;at::Device&quot;, #{bra}t|Device|#{cket})
+      , (C.TypeName &quot;at::Generator&quot;, #{bra}t|Generator|#{cket})
+      , (C.TypeName &quot;std::string&quot;, #{bra}t|StdString|#{cket})
+      , (C.TypeName &quot;std::array&lt;bool,2&gt;&quot;, #{bra}t|StdArray CBool 2|#{cket})
+      , (C.TypeName &quot;std::array&lt;bool,3&gt;&quot;, #{bra}t|StdArray CBool 3|#{cket})
+      , (C.TypeName &quot;std::array&lt;bool,4&gt;&quot;, #{bra}t|StdArray CBool 4|#{cket})
+      , (C.TypeName &quot;std::tuple&lt;at::Tensor,at::Tensor&gt;&quot;, #{bra}t|(Tensor,Tensor)|#{cket})
+      , (C.TypeName &quot;std::tuple&lt;at::Tensor,at::Tensor,at::Tensor&gt;&quot;, #{bra}t|(Tensor,Tensor,Tensor)|#{cket})
+      , (C.TypeName &quot;std::tuple&lt;at::Tensor,at::Tensor,at::Tensor,at::Tensor&gt;&quot;, #{bra}t|(Tensor,Tensor,Tensor,Tensor)|#{cket})
+      , (C.TypeName &quot;std::tuple&lt;at::Tensor,at::Tensor,at::Tensor,at::Tensor,at::Tensor&gt;&quot;, #{bra}t|(Tensor,Tensor,Tensor,Tensor,Tensor)|#{cket})
+      , (C.TypeName &quot;std::tuple&lt;at::Tensor,at::Tensor,at::Tensor,std::vector&lt;at::Tensor&gt;&gt;&quot;, #{bra}t|(Tensor,Tensor,Tensor,TensorList)|#{cket})
+      , (C.TypeName &quot;std::tuple&lt;at::Tensor,at::Tensor,double,int64_t&gt;&quot;, #{bra}t|(Tensor,Tensor,CDouble,Int64)|#{cket})
+      , (C.TypeName &quot;std::tuple&lt;at::Tensor,at::Tensor,float,int&gt;&quot;, #{bra}t|(Tensor,Tensor,CFloat,CInt)|#{cket})
+      , (C.TypeName &quot;std::tuple&lt;at::Tensor,at::Tensor,at::Tensor,int64_t&gt;&quot;, #{bra}t|(Tensor,Tensor,Tensor,Int64)|#{cket})
+      , (C.TypeName &quot;at::Backend&quot;, #{bra}t|Backend|#{cket})
+      , (C.TypeName &quot;at::Layout&quot;, #{bra}t|Layout|#{cket})
+      , (C.TypeName &quot;at::MemoryFormat&quot;, #{bra}t|MemoryFormat|#{cket})
+      , (C.TypeName &quot;at::Context&quot;, #{bra}t|Context|#{cket})
+      , (C.TypeName &quot;at::ConstQuantizerPtr&quot;, #{bra}t|ConstQuantizerPtr|#{cket})
+      , (C.TypeName &quot;at::QScheme&quot;, #{bra}t|QScheme|#{cket})
+      , (C.TypeName &quot;at::Dimname&quot;, #{bra}t|Dimname|#{cket})
+      , (C.TypeName &quot;std::vector&lt;at::Dimname&gt;&quot;, #{bra}t|DimnameList|#{cket})
+      , (C.TypeName &quot;at::Symbol&quot;, #{bra}t|Symbol|#{cket})
+      , (C.TypeName &quot;at::IValue&quot;, #{bra}t|IValue|#{cket})
+    ]
+|]</span></span><span>
+</span><span id="line-232"></span></pre></body></html>
