@@ -2253,6 +2253,7 @@ type Reverse l = ReverseImpl l '[]
 type family ExtractDim (dim :: Nat) (shape :: [Nat]) :: Maybe Nat
 type family ReplaceDim (dim :: Nat) (shape :: [Nat]) (n :: Nat) :: Maybe [Nat]
 type family If c t e
+type family AllDimsPositive (shape :: [Nat]) :: Constraint
 type family IsAtLeast (n :: Nat) (m :: Nat) (cmp :: Ordering) :: Constraint
 type (>=) (n :: Nat) (m :: Nat) = (IsAtLeast n m (CmpNat n m), KnownNat (n - m))
 type family CmpDType (dtype :: DType) (dtype' :: DType) :: Ordering
@@ -2264,6 +2265,7 @@ type family DTypeIsNotHalf (device :: (DeviceType, Nat)) (dtype :: DType) :: Con
 type family DTypeIsNotBool (device :: (DeviceType, Nat)) (dtype :: DType) :: Constraint
 type family UnsupportedDTypeForDevice (deviceType :: DeviceType) (dtype :: DType) :: Constraint
 type family StandardFloatingPointDTypeValidation (device :: (DeviceType, Nat)) (dtype :: DType) :: Constraint
+type family StandardDTypeValidation (device :: (DeviceType, Nat)) (dtype :: DType) :: Constraint
 
 module Torch.Typed.Tensor
 class KnownShape (shape :: [Nat])
@@ -2471,7 +2473,7 @@ sumDim :: forall d shape shape' dtype dtype' device. (KnownNat d, shape' ~ DropV
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ abs (ones :: CPUTensor 'D.Float '[2,2])
 --   (Float,[2,2])
 --   </pre>
-abs :: forall shape dtype device. (DTypeIsNotHalf device dtype, DTypeIsNotBool device dtype) => Tensor device dtype shape -> Tensor device dtype shape
+abs :: forall shape dtype device. StandardDTypeValidation device dtype => Tensor device dtype shape -> Tensor device dtype shape
 
 -- | ceil
 --   
@@ -2488,8 +2490,7 @@ ceil :: forall shape dtype device. StandardFloatingPointDTypeValidation device d
 --   (Float,[2,2])
 --   </pre>
 floor :: forall shape dtype device. StandardFloatingPointDTypeValidation device dtype => Tensor device dtype shape -> Tensor device dtype shape
-type family AllDimsPositive (shape :: [Nat]) :: Constraint
-type family AggregationDTypeIsValid (device :: (DeviceType, Nat)) (dtype :: DType) :: Constraint
+type family MinMaxDTypeIsValid (device :: (DeviceType, Nat)) (dtype :: DType) :: Constraint
 
 -- | min
 --   
@@ -2497,7 +2498,7 @@ type family AggregationDTypeIsValid (device :: (DeviceType, Nat)) (dtype :: DTyp
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ min (ones :: CPUTensor 'D.Float '[2,2])
 --   (Float,[])
 --   </pre>
-min :: forall shape dtype device. (AggregationDTypeIsValid device dtype, AllDimsPositive shape) => Tensor device dtype shape -> Tensor device dtype '[]
+min :: forall shape dtype device. (MinMaxDTypeIsValid device dtype, AllDimsPositive shape) => Tensor device dtype shape -> Tensor device dtype '[]
 
 -- | max
 --   
@@ -2505,23 +2506,124 @@ min :: forall shape dtype device. (AggregationDTypeIsValid device dtype, AllDims
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ max (ones :: CPUTensor 'D.Float '[2,2])
 --   (Float,[])
 --   </pre>
-max :: forall shape dtype device. (AggregationDTypeIsValid device dtype, AllDimsPositive shape) => Tensor device dtype shape -> Tensor device dtype '[]
+max :: forall shape dtype device. (MinMaxDTypeIsValid device dtype, AllDimsPositive shape) => Tensor device dtype shape -> Tensor device dtype '[]
+type family MeanDTypeValidation (device :: (DeviceType, Nat)) (dtype :: DType) :: Constraint
 
--- | median
+-- | Computes the mean while carrying out a full reduction of all tensor
+--   dimensions.
 --   
 --   <pre>
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ median (ones :: CPUTensor 'D.Float '[2,2])
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ meanAll (ones :: CPUTensor 'D.Float '[2,2])
 --   (Float,[])
 --   </pre>
-median :: forall shape dtype device. (AggregationDTypeIsValid device dtype, AllDimsPositive shape) => Tensor device dtype shape -> Tensor device dtype '[]
+meanAll :: forall shape dtype device. (MeanDTypeValidation device dtype, AllDimsPositive shape) => Tensor device dtype shape -> Tensor device dtype '[]
 
--- | mean
+-- | Computes the mean and reduces the tensor over the specified dimension.
 --   
 --   <pre>
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ mean (ones :: CPUTensor 'D.Float '[2,2])
+--   &gt;&gt;&gt; t = ones :: CPUTensor 'D.Float '[3,4,5]
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ meanDim @0 t
+--   (Float,[4,5])
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ meanDim @1 t
+--   (Float,[3,5])
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ meanDim @2 t
+--   (Float,[3,4])
+--   </pre>
+meanDim :: forall dim shape' shape dtype device. (KnownNat dim, shape' ~ DropValue shape dim, MeanDTypeValidation device dtype, AllDimsPositive shape) => Tensor device dtype shape -> Tensor device dtype shape'
+
+-- | Computes the mean and optionally reduces the tensor over the specified
+--   dimension.
+--   
+--   See <a>https://pytorch.org/docs/stable/torch.html#torch.mean</a> for
+--   more information.
+--   
+--   <pre>
+--   &gt;&gt;&gt; t = fromJust [[5, 1], [3, 2], [4, 1], [2, 7]] :: CPUTensor 'D.Float '[4, 2]
+--   
+--   &gt;&gt;&gt; mean @0 @KeepDim t
+--   Tensor Float [1,2] [[ 3.5000   ,  2.7500   ]]
+--   </pre>
+mean :: forall dim keepOrDropDim shape' shape dtype device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim, shape' ~ ConditionalDropDimension shape dim keepOrDropDim, MeanDTypeValidation device dtype, AllDimsPositive shape) => Tensor device dtype shape -> Tensor device dtype shape'
+
+-- | Computes the median while carrying out a full reduction of all tensor
+--   dimensions.
+--   
+--   <pre>
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ medianAll (ones :: CPUTensor 'D.Float '[2,2])
 --   (Float,[])
 --   </pre>
-mean :: forall shape dtype device. (AggregationDTypeIsValid device dtype, AllDimsPositive shape) => Tensor device dtype shape -> Tensor device dtype '[]
+medianAll :: forall shape dtype device. (StandardDTypeValidation device dtype, AllDimsPositive shape) => Tensor device dtype shape -> Tensor device dtype '[]
+
+-- | Computes the median and reduces the tensor over the specified
+--   dimension.
+--   
+--   <pre>
+--   &gt;&gt;&gt; t = ones :: CPUTensor 'D.Float '[3,4,5]
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ fst $ medianDim @0 t
+--   (Float,[4,5])
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ fst $ medianDim @1 t
+--   (Float,[3,5])
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ fst $ medianDim @2 t
+--   (Float,[3,4])
+--   </pre>
+medianDim :: forall dim shape' shape dtype device. (KnownNat dim, shape' ~ DropValue shape dim, StandardDTypeValidation device dtype, AllDimsPositive shape) => Tensor device dtype shape -> (Tensor device dtype shape', Tensor device 'Int64 shape')
+
+-- | Computes the median and optionally reduces the tensor over the
+--   specified dimension.
+--   
+--   See <a>https://pytorch.org/docs/stable/torch.html#torch.median</a> for
+--   more information.
+--   
+--   <pre>
+--   &gt;&gt;&gt; t = fromJust [[5, 1], [3, 2], [4, 1], [2, 7]] :: CPUTensor 'D.Float '[4, 2]
+--   
+--   &gt;&gt;&gt; median @0 @KeepDim t
+--   (Tensor Float [1,2] [[ 3.0000   ,  1.0000   ]],Tensor Int64 [1,2] [[ 1,  0]])
+--   </pre>
+median :: forall dim keepOrDropDim shape' shape dtype device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim, shape' ~ ConditionalDropDimension shape dim keepOrDropDim, StandardDTypeValidation device dtype, AllDimsPositive shape) => Tensor device dtype shape -> (Tensor device dtype shape', Tensor device 'Int64 shape')
+
+-- | Returns a tuple '(modes, indices)' where <tt>modes</tt> is the mode
+--   value of each row of the <tt>input</tt> tensor in the given dimension
+--   <a>dim</a>, i.e. a value which appears most often in that row, and
+--   <tt>indices</tt> is the index location of each mode value found.
+--   
+--   See <a>https://pytorch.org/docs/stable/torch.html#torch.mode</a> for
+--   more information.
+--   
+--   <pre>
+--   &gt;&gt;&gt; t = fromJust [[0, 5], [0, 2], [3, 5]] :: CPUTensor 'D.Int64 '[3, 2]
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; (modes :: CPUTensor 'D.Int64 '[2], indices :: CPUTensor 'D.Int64 '[2]) = mode @0 @DropDim t
+--   
+--   &gt;&gt;&gt; (dtype modes, shape modes, D.asValue (toDynamic modes) :: [Int])
+--   (Int64,[2],[0,5])
+--   
+--   &gt;&gt;&gt; (dtype indices, shape indices, D.asValue (toDynamic indices) :: [Int])
+--   (Int64,[2],[1,2])
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; t = fromJust [[0, 0], [0, 1], [3, 3]] :: CPUTensor 'D.Float '[3, 2]
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; (modes :: CPUTensor 'D.Float '[3,1], indices :: CPUTensor 'D.Int64 '[3,1]) = mode @1 @KeepDim t
+--   
+--   &gt;&gt;&gt; (dtype modes, shape modes, D.asValue (toDynamic modes) :: [[Float]])
+--   (Float,[3,1],[[0.0],[0.0],[3.0]])
+--   
+--   &gt;&gt;&gt; (dtype indices, shape indices, D.asValue (toDynamic indices) :: [[Int]])
+--   (Int64,[3,1],[[1],[0],[1]])
+--   </pre>
+mode :: forall dim keepOrDropDim shape' shape dtype device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim, shape' ~ ConditionalDropDimension shape dim keepOrDropDim, StandardDTypeValidation device dtype, AllDimsPositive shape) => Tensor device dtype shape -> (Tensor device dtype shape', Tensor device 'Int64 shape')
 
 -- | addScalar TODO: what dtypes is this defined for? TODO: what scalar
 --   types is this defined for?
@@ -3355,37 +3457,6 @@ addr :: forall shape' shape n m dtype device. (KnownNat n, KnownNat m, shape' ~ 
 --   </pre>
 allclose :: forall shape dtype device. Double -> Double -> Bool -> Tensor device dtype shape -> Tensor device dtype shape -> Bool
 
--- | mode See <a>https://pytorch.org/docs/stable/torch.html#torch.mode</a>.
---   
---   <pre>
---   &gt;&gt;&gt; t = fromJust [[0, 5], [0, 2], [3, 5]] :: CPUTensor 'D.Int64 '[3, 2]
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; (modes :: CPUTensor 'D.Int64 '[2], indicies :: CPUTensor 'D.Int64 '[2]) = mode @0 @DropDim t
---   
---   &gt;&gt;&gt; (dtype modes, shape modes, D.asValue (toDynamic modes) :: [Int])
---   (Int64,[2],[0,5])
---   
---   &gt;&gt;&gt; (dtype indicies, shape indicies, D.asValue (toDynamic indicies) :: [Int])
---   (Int64,[2],[1,2])
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; t = fromJust [[0, 0], [0, 1], [3, 3]] :: CPUTensor 'D.Float '[3, 2]
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; (modes :: CPUTensor 'D.Float '[3,1], indicies :: CPUTensor 'D.Int64 '[3,1]) = mode @1 @KeepDim t
---   
---   &gt;&gt;&gt; (dtype modes, shape modes, D.asValue (toDynamic modes) :: [[Float]])
---   (Float,[3,1],[[0.0],[0.0],[3.0]])
---   
---   &gt;&gt;&gt; (dtype indicies, shape indicies, D.asValue (toDynamic indicies) :: [[Int]])
---   (Int64,[3,1],[[1],[0],[1]])
---   </pre>
-mode :: forall dim keepOrDropDim shape' shape dtype device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim, shape' ~ ConditionalDropDimension shape dim keepOrDropDim, DTypeIsNotBool device dtype) => Tensor device dtype shape -> (Tensor device dtype shape', Tensor device 'Int64 shape')
-
 -- | argmax See
 --   <a>https://pytorch.org/docs/stable/torch.html#torch.argmax</a>.
 --   
@@ -3412,7 +3483,7 @@ mode :: forall dim keepOrDropDim shape' shape dtype device. (KnownNat dim, Known
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [[Int]]) $ argmax @0 @KeepDim t
 --   (Int64,([1,2],[[3,1]]))
 --   </pre>
-argmax :: forall dim keepOrDropDim shape' shape dtype device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim, shape' ~ ConditionalDropDimension shape dim keepOrDropDim) => Tensor device dtype shape -> Tensor device 'Int64 shape'
+argmax :: forall dim keepOrDropDim shape' shape dtype device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim, shape' ~ ConditionalDropDimension shape dim keepOrDropDim, StandardDTypeValidation device dtype) => Tensor device dtype shape -> Tensor device 'Int64 shape'
 
 -- | argmin See
 --   <a>https://pytorch.org/docs/stable/torch.html#torch.argmin</a>.
@@ -3440,7 +3511,7 @@ argmax :: forall dim keepOrDropDim shape' shape dtype device. (KnownNat dim, Kno
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [[Int]]) $ argmin @0 @KeepDim t
 --   (Int64,([1,2],[[1,3]]))
 --   </pre>
-argmin :: forall dim keepOrDropDim shape' shape dtype device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim, shape' ~ ConditionalDropDimension shape dim keepOrDropDim) => Tensor device dtype shape -> Tensor device 'Int64 shape'
+argmin :: forall dim keepOrDropDim shape' shape dtype device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim, shape' ~ ConditionalDropDimension shape dim keepOrDropDim, StandardDTypeValidation device dtype) => Tensor device dtype shape -> Tensor device 'Int64 shape'
 
 -- | asin
 --   
@@ -4743,75 +4814,6 @@ maxAll :: forall shape dtype device. Tensor device dtype shape -> Tensor device 
 --   (Float,[3,4])
 --   </pre>
 maxDim :: forall d shape dtype device. KnownNat d => Tensor device dtype shape -> (Tensor device dtype (DropValue shape d), Tensor device 'Int64 (DropValue shape d))
-
--- | medianAll
---   
---   <pre>
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ medianAll (ones :: CPUTensor 'D.Float '[2,2])
---   (Float,[])
---   </pre>
-medianAll :: forall shape dtype device. Tensor device dtype shape -> Tensor device dtype '[]
-
--- | medianDim
---   
---   <pre>
---   &gt;&gt;&gt; t = ones :: CPUTensor 'D.Float '[3,4,5]
---   
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ fst $ medianDim @0 t
---   (Float,[4,5])
---   
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ fst $ medianDim @1 t
---   (Float,[3,5])
---   
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ fst $ medianDim @2 t
---   (Float,[3,4])
---   </pre>
-medianDim :: forall d shape dtype device. KnownNat d => Tensor device dtype shape -> (Tensor device dtype (DropValue shape d), Tensor device 'Int64 (DropValue shape d))
-
--- | median See
---   <a>https://pytorch.org/docs/stable/torch.html#torch.median</a>.
---   
---   <pre>
---   &gt;&gt;&gt; t = fromJust [[5, 1], [3, 2], [4, 1], [2, 7]] :: CPUTensor 'D.Float '[4, 2]
---   
---   &gt;&gt;&gt; median' @0 @KeepDim t
---   (Tensor Float [1,2] [[ 3.0000   ,  1.0000   ]],Tensor Int64 [1,2] [[ 1,  0]])
---   </pre>
-median' :: forall dim keepOrDropDim shape dtype device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim) => Tensor device dtype shape -> (Tensor device dtype (ConditionalDropDimension shape dim keepOrDropDim), Tensor device 'Int64 (ConditionalDropDimension shape dim keepOrDropDim))
-
--- | meanAll
---   
---   <pre>
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ meanAll (ones :: CPUTensor 'D.Float '[2,2])
---   (Float,[])
---   </pre>
-meanAll :: forall shape dtype device. Tensor device dtype shape -> Tensor device dtype '[]
-
--- | meanDim
---   
---   <pre>
---   &gt;&gt;&gt; t = ones :: CPUTensor 'D.Float '[3,4,5]
---   
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ meanDim @0 t
---   (Float,[4,5])
---   
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ meanDim @1 t
---   (Float,[3,5])
---   
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ meanDim @2 t
---   (Float,[3,4])
---   </pre>
-meanDim :: forall d shape dtype device. KnownNat d => Tensor device dtype shape -> Tensor device dtype (DropValue shape d)
-
--- | mean See <a>https://pytorch.org/docs/stable/torch.html#torch.mean</a>.
---   
---   <pre>
---   &gt;&gt;&gt; t = fromJust [[5, 1], [3, 2], [4, 1], [2, 7]] :: CPUTensor 'D.Float '[4, 2]
---   
---   &gt;&gt;&gt; mean' @0 @KeepDim t
---   Tensor Float [1,2] [[ 3.5000   ,  2.7500   ]]
---   </pre>
-mean' :: forall dim keepOrDropDim shape dtype device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim) => Tensor device dtype shape -> Tensor device dtype (ConditionalDropDimension shape dim keepOrDropDim)
 type family TopKCheck (k :: Nat) (shape :: [Nat]) (dim :: Nat) (satd :: Maybe Nat) (result :: Maybe a) :: a
 type TopK k shape dim = TopKCheck k shape dim (ExtractDim dim shape) (ReplaceDim dim shape k)
 type family TopKDeviceAndDTypeCheck dtype (device :: (DeviceType, Nat)) :: Constraint
@@ -4830,7 +4832,7 @@ type family TopKDeviceAndDTypeCheck dtype (device :: (DeviceType, Nat)) :: Const
 --                       []],Tensor Int64 [2,0] [[],
 --                       []])
 --   </pre>
-topk :: forall k dim shape dtype device. (KnownNat k, KnownNat dim, All KnownNat shape, TopKDeviceAndDTypeCheck dtype device) => Bool -> Bool -> Tensor device dtype shape -> (Tensor device dtype (TopK k shape dim), Tensor device 'Int64 (TopK k shape dim))
+topk :: forall k dim shape' shape dtype device. (KnownNat k, KnownNat dim, All KnownNat shape, TopKDeviceAndDTypeCheck dtype device, shape' ~ TopK k shape dim) => Bool -> Bool -> Tensor device dtype shape -> (Tensor device dtype shape', Tensor device 'Int64 shape')
 
 -- | alias
 --   
@@ -5880,8 +5882,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679616760 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679616785 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679617037 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679617062 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
