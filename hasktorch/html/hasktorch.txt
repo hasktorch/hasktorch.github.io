@@ -3354,6 +3354,37 @@ addr :: forall shape' shape n m dtype device. (KnownNat n, KnownNat m, shape' ~ 
 --   </pre>
 allclose :: forall shape dtype device. Double -> Double -> Bool -> Tensor device dtype shape -> Tensor device dtype shape -> Bool
 
+-- | mode See <a>https://pytorch.org/docs/stable/torch.html#torch.mode</a>.
+--   
+--   <pre>
+--   &gt;&gt;&gt; t = fromJust [[0, 5], [0, 2], [3, 5]] :: CPUTensor 'D.Int64 '[3, 2]
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; (modes :: CPUTensor 'D.Int64 '[2], indicies :: CPUTensor 'D.Int64 '[2]) = mode @0 @DropDim t
+--   
+--   &gt;&gt;&gt; (dtype modes, shape modes, D.asValue (toDynamic modes) :: [Int])
+--   (Int64,[2],[0,5])
+--   
+--   &gt;&gt;&gt; (dtype indicies, shape indicies, D.asValue (toDynamic indicies) :: [Int])
+--   (Int64,[2],[1,2])
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; t = fromJust [[0, 0], [0, 1], [3, 3]] :: CPUTensor 'D.Float '[3, 2]
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; (modes :: CPUTensor 'D.Float '[3,1], indicies :: CPUTensor 'D.Int64 '[3,1]) = mode @1 @KeepDim t
+--   
+--   &gt;&gt;&gt; (dtype modes, shape modes, D.asValue (toDynamic modes) :: [[Float]])
+--   (Float,[3,1],[[0.0],[0.0],[3.0]])
+--   
+--   &gt;&gt;&gt; (dtype indicies, shape indicies, D.asValue (toDynamic indicies) :: [[Int]])
+--   (Int64,[3,1],[[1],[0],[1]])
+--   </pre>
+mode :: forall dim keepOrDropDim shape' shape dtype device. (KnownNat dim, KnownKeepOrDropDim keepOrDropDim, shape' ~ ConditionalDropDimension shape dim keepOrDropDim, DTypeIsNotBool device dtype) => Tensor device dtype shape -> (Tensor device dtype shape', Tensor device 'Int64 shape')
+
 -- | argmax See
 --   <a>https://pytorch.org/docs/stable/torch.html#torch.argmax</a>.
 --   
@@ -5848,8 +5879,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679618383 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679618408 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679618674 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679618699 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
