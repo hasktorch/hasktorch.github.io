@@ -1,0 +1,2592 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DataKinds #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE TypeApplications #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE AllowAmbiguousTypes #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE RankNTypes #-}</span><span>
+</span><span id="line-7"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-8"></span><span class="hs-pragma">{-# LANGUAGE RecordWildCards #-}</span><span>
+</span><span id="line-9"></span><span class="hs-pragma">{-# LANGUAGE GADTs #-}</span><span>
+</span><span id="line-10"></span><span class="hs-pragma">{-# LANGUAGE FlexibleInstances #-}</span><span>
+</span><span id="line-11"></span><span class="hs-pragma">{-# LANGUAGE UndecidableInstances #-}</span><span>
+</span><span id="line-12"></span><span class="hs-pragma">{-# LANGUAGE TypeInType #-}</span><span>
+</span><span id="line-13"></span><span class="hs-pragma">{-# LANGUAGE FunctionalDependencies #-}</span><span>
+</span><span id="line-14"></span><span class="hs-pragma">{-# LANGUAGE DefaultSignatures #-}</span><span>
+</span><span id="line-15"></span><span class="hs-pragma">{-# LANGUAGE PartialTypeSignatures #-}</span><span>
+</span><span id="line-16"></span><span class="hs-pragma">{-# OPTIONS_GHC -Wno-partial-type-signatures #-}</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.Typed.NN.Convolution</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Data.Proxy</span></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">GHC.TypeLits</span></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="Torch.NN.html"><span class="hs-identifier">Torch.NN</span></a></span><span>                     </span><span class="hs-special">(</span><span class="annot"><a href="Torch.NN.html#Randomizable"><span class="hs-identifier">Randomizable</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.NN.html#HasForward"><span class="hs-identifier">HasForward</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.DType.html"><span class="hs-identifier">Torch.DType</span></a></span><span>                   </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.Device.html"><span class="hs-identifier">Torch.Device</span></a></span><span>                  </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="Torch.Typed.Aux.html"><span class="hs-identifier">Torch.Typed.Aux</span></a></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="Torch.Typed.Factories.html"><span class="hs-identifier">Torch.Typed.Factories</span></a></span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="Torch.Typed.Functional.html"><span class="hs-identifier">Torch.Typed.Functional</span></a></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="Torch.Typed.Tensor.html"><span class="hs-identifier">Torch.Typed.Tensor</span></a></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="Torch.Typed.Parameter.html"><span class="hs-identifier">Torch.Typed.Parameter</span></a></span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="hs-keyword">data</span><span> </span><span id="Conv1dSpec"><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv1dSpec"><span class="hs-identifier hs-var">Conv1dSpec</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731383"><span class="annot"><a href="#local-6989586621679731383"><span class="hs-identifier hs-type">inputChannelSize</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731382"><span class="annot"><a href="#local-6989586621679731382"><span class="hs-identifier hs-type">outputChannelSize</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span>                </span><span class="hs-special">(</span><span id="local-6989586621679731381"><span class="annot"><a href="#local-6989586621679731381"><span class="hs-identifier hs-type">kernelSize</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span>                </span><span class="hs-special">(</span><span id="local-6989586621679731380"><span class="annot"><a href="#local-6989586621679731380"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.DType.html#DType"><span class="hs-identifier hs-type">D.DType</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>                </span><span class="hs-special">(</span><span id="local-6989586621679731379"><span class="annot"><a href="#local-6989586621679731379"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Device.html#DeviceType"><span class="hs-identifier hs-type">D.DeviceType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="Conv1dSpec"><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv1dSpec"><span class="hs-identifier hs-var">Conv1dSpec</span></a></span></span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731372"><span id="local-6989586621679731374"><span id="local-6989586621679731376"><span class="annot"><span class="annottext">Int
+-&gt; Conv1dSpec
+     inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; ShowS
+[Conv1dSpec
+   inputChannelSize outputChannelSize kernelSize dtype device]
+-&gt; ShowS
+Conv1dSpec
+  inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; String
+(Int
+ -&gt; Conv1dSpec
+      inputChannelSize outputChannelSize kernelSize dtype device
+ -&gt; ShowS)
+-&gt; (Conv1dSpec
+      inputChannelSize outputChannelSize kernelSize dtype device
+    -&gt; String)
+-&gt; ([Conv1dSpec
+       inputChannelSize outputChannelSize kernelSize dtype device]
+    -&gt; ShowS)
+-&gt; Show
+     (Conv1dSpec
+        inputChannelSize outputChannelSize kernelSize dtype device)
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)).
+Int
+-&gt; Conv1dSpec
+     inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; ShowS
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)).
+[Conv1dSpec
+   inputChannelSize outputChannelSize kernelSize dtype device]
+-&gt; ShowS
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)).
+Conv1dSpec
+  inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; String
+showList :: [Conv1dSpec
+   inputChannelSize outputChannelSize kernelSize dtype device]
+-&gt; ShowS
+$cshowList :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)).
+[Conv1dSpec
+   inputChannelSize outputChannelSize kernelSize dtype device]
+-&gt; ShowS
+show :: Conv1dSpec
+  inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; String
+$cshow :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)).
+Conv1dSpec
+  inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; String
+showsPrec :: Int
+-&gt; Conv1dSpec
+     inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; ShowS
+$cshowsPrec :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)).
+Int
+-&gt; Conv1dSpec
+     inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679731367"><span id="local-6989586621679731369"><span class="annot"><span class="annottext">Conv1dSpec
+  inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; Conv1dSpec
+     inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; Bool
+(Conv1dSpec
+   inputChannelSize outputChannelSize kernelSize dtype device
+ -&gt; Conv1dSpec
+      inputChannelSize outputChannelSize kernelSize dtype device
+ -&gt; Bool)
+-&gt; (Conv1dSpec
+      inputChannelSize outputChannelSize kernelSize dtype device
+    -&gt; Conv1dSpec
+         inputChannelSize outputChannelSize kernelSize dtype device
+    -&gt; Bool)
+-&gt; Eq
+     (Conv1dSpec
+        inputChannelSize outputChannelSize kernelSize dtype device)
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)).
+Conv1dSpec
+  inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; Conv1dSpec
+     inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; Bool
+/= :: Conv1dSpec
+  inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; Conv1dSpec
+     inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; Bool
+$c/= :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)).
+Conv1dSpec
+  inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; Conv1dSpec
+     inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; Bool
+== :: Conv1dSpec
+  inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; Conv1dSpec
+     inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; Bool
+$c== :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)).
+Conv1dSpec
+  inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; Conv1dSpec
+     inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span id="local-6989586621679731364"><span id="local-6989586621679731365"></span></span><span class="hs-keyword">data</span><span> </span><span id="Conv1d"><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv1d"><span class="hs-identifier hs-var">Conv1d</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731363"><span class="annot"><a href="#local-6989586621679731363"><span class="hs-identifier hs-type">inputChannelSize</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731362"><span class="annot"><a href="#local-6989586621679731362"><span class="hs-identifier hs-type">outputChannelSize</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679731361"><span class="annot"><a href="#local-6989586621679731361"><span class="hs-identifier hs-type">kernelSize</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679731360"><span class="annot"><a href="#local-6989586621679731360"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.DType.html#DType"><span class="hs-identifier hs-type">D.DType</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-42"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679731359"><span class="annot"><a href="#local-6989586621679731359"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Device.html#DeviceType"><span class="hs-identifier hs-type">D.DeviceType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-43"></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-44"></span><span>  </span><span id="Conv1d"><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv1d"><span class="hs-identifier hs-var">Conv1d</span></a></span></span><span>
+</span><span id="line-45"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679731644"><span class="annot"><a href="#local-6989586621679731644"><span class="hs-identifier hs-type">inputChannelSize</span></a></span></span><span> </span><span id="local-6989586621679731643"><span class="annot"><a href="#local-6989586621679731643"><span class="hs-identifier hs-type">outputChannelSize</span></a></span></span><span> </span><span id="local-6989586621679731642"><span class="annot"><a href="#local-6989586621679731642"><span class="hs-identifier hs-type">kernelSize</span></a></span></span><span> </span><span id="local-6989586621679731641"><span class="annot"><a href="#local-6989586621679731641"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span id="local-6989586621679731640"><span class="annot"><a href="#local-6989586621679731640"><span class="hs-identifier hs-type">device</span></a></span></span><span>
+</span><span id="line-46"></span><span>     </span><span class="hs-operator">.</span><span> </span><span class="hs-special">{</span><span> </span><span id="conv1dWeight"><span class="annot"><span class="annottext">Conv1d inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; Parameter
+     device dtype '[outputChannelSize, inputChannelSize, kernelSize]
+</span><a href="Torch.Typed.NN.Convolution.html#conv1dWeight"><span class="hs-identifier hs-var hs-var">conv1dWeight</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Typed.Parameter.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731640"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731641"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679731643"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731644"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731642"><span class="hs-identifier hs-type">kernelSize</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-47"></span><span>       </span><span class="hs-special">,</span><span> </span><span id="conv1dBias"><span class="annot"><span class="annottext">Conv1d inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; Parameter device dtype '[outputChannelSize]
+</span><a href="Torch.Typed.NN.Convolution.html#conv1dBias"><span class="hs-identifier hs-var hs-var">conv1dBias</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Typed.Parameter.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731640"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731641"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679731643"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-48"></span><span>       </span><span class="hs-special">}</span><span>
+</span><span id="line-49"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv1d"><span class="hs-identifier hs-type">Conv1d</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731644"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731643"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731642"><span class="hs-identifier hs-type">kernelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731641"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731640"><span class="hs-identifier hs-type">device</span></a></span><span>
+</span><span id="line-50"></span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731350"><span id="local-6989586621679731352"><span id="local-6989586621679731354"><span class="annot"><span class="annottext">Int
+-&gt; Conv1d
+     inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; ShowS
+[Conv1d inputChannelSize outputChannelSize kernelSize dtype device]
+-&gt; ShowS
+Conv1d inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; String
+(Int
+ -&gt; Conv1d
+      inputChannelSize outputChannelSize kernelSize dtype device
+ -&gt; ShowS)
+-&gt; (Conv1d
+      inputChannelSize outputChannelSize kernelSize dtype device
+    -&gt; String)
+-&gt; ([Conv1d
+       inputChannelSize outputChannelSize kernelSize dtype device]
+    -&gt; ShowS)
+-&gt; Show
+     (Conv1d inputChannelSize outputChannelSize kernelSize dtype device)
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)).
+Int
+-&gt; Conv1d
+     inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; ShowS
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)).
+[Conv1d inputChannelSize outputChannelSize kernelSize dtype device]
+-&gt; ShowS
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)).
+Conv1d inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; String
+showList :: [Conv1d inputChannelSize outputChannelSize kernelSize dtype device]
+-&gt; ShowS
+$cshowList :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)).
+[Conv1d inputChannelSize outputChannelSize kernelSize dtype device]
+-&gt; ShowS
+show :: Conv1d inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; String
+$cshow :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)).
+Conv1d inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; String
+showsPrec :: Int
+-&gt; Conv1d
+     inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; ShowS
+$cshowsPrec :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)).
+Int
+-&gt; Conv1d
+     inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(forall x.
+ Conv1d inputChannelSize outputChannelSize kernelSize dtype device
+ -&gt; Rep
+      (Conv1d inputChannelSize outputChannelSize kernelSize dtype device)
+      x)
+-&gt; (forall x.
+    Rep
+      (Conv1d inputChannelSize outputChannelSize kernelSize dtype device)
+      x
+    -&gt; Conv1d
+         inputChannelSize outputChannelSize kernelSize dtype device)
+-&gt; Generic
+     (Conv1d inputChannelSize outputChannelSize kernelSize dtype device)
+forall x.
+Rep
+  (Conv1d inputChannelSize outputChannelSize kernelSize dtype device)
+  x
+-&gt; Conv1d
+     inputChannelSize outputChannelSize kernelSize dtype device
+forall x.
+Conv1d inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; Rep
+     (Conv1d inputChannelSize outputChannelSize kernelSize dtype device)
+     x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+       x.
+Rep
+  (Conv1d inputChannelSize outputChannelSize kernelSize dtype device)
+  x
+-&gt; Conv1d
+     inputChannelSize outputChannelSize kernelSize dtype device
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+       x.
+Conv1d inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; Rep
+     (Conv1d inputChannelSize outputChannelSize kernelSize dtype device)
+     x
+$cto :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+       x.
+Rep
+  (Conv1d inputChannelSize outputChannelSize kernelSize dtype device)
+  x
+-&gt; Conv1d
+     inputChannelSize outputChannelSize kernelSize dtype device
+$cfrom :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+       x.
+Conv1d inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; Rep
+     (Conv1d inputChannelSize outputChannelSize kernelSize dtype device)
+     x
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="hs-comment">-- | conv1d</span><span>
+</span><span id="line-53"></span><span class="hs-comment">-- The constraints on this one are _very_ involved, so the partial signatures</span><span>
+</span><span id="line-54"></span><span class="hs-comment">-- make the code significantly cleaner.</span><span>
+</span><span id="line-55"></span><span class="annot"><a href="Torch.Typed.NN.Convolution.html#conv1dForward"><span class="hs-identifier hs-type">conv1dForward</span></a></span><span>
+</span><span id="line-56"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679731345"><span class="annot"><a href="#local-6989586621679731345"><span class="hs-identifier hs-type">stride</span></a></span></span><span> </span><span id="local-6989586621679731344"><span class="annot"><a href="#local-6989586621679731344"><span class="hs-identifier hs-type">padding</span></a></span></span><span>
+</span><span id="line-57"></span><span>   </span><span class="hs-operator">.</span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv1d"><span class="hs-identifier hs-type">Conv1d</span></a></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span>
+</span><span id="line-61"></span><span id="conv1dForward"><span class="annot"><span class="annottext">conv1dForward :: Conv1d inputChannelSize outputChannelSize kernelSize _ _
+-&gt; Tensor _ _ '[batchSize, inputChannelSize, inputSize]
+-&gt; Tensor
+     _
+     _
+     '[batchSize, outputChannelSize,
+       Div ((inputSize + (2 * padding)) - kernelSize) stride + 1]
+</span><a href="Torch.Typed.NN.Convolution.html#conv1dForward"><span class="hs-identifier hs-var hs-var">conv1dForward</span></a></span></span><span> </span><span id="local-6989586621679731342"><span id="local-6989586621679731343"><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv1d"><span class="hs-identifier hs-type">Conv1d</span></a></span><span> </span><span class="hs-special">{</span><span class="hs-glyph">..</span><span class="hs-special">}</span></span></span><span> </span><span id="local-6989586621679731341"><span class="annot"><span class="annottext">input :: Tensor _ _ '[batchSize, inputChannelSize, inputSize]
+</span><a href="#local-6989586621679731341"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor _ _ '[outputChannelSize, inputChannelSize, kernelSize]
+-&gt; Tensor _ _ '[outputChannelSize]
+-&gt; Tensor _ _ '[batchSize, inputChannelSize, inputSize]
+-&gt; Tensor
+     _
+     _
+     '[batchSize, outputChannelSize,
+       Div ((inputSize + (2 * padding)) - kernelSize) stride + 1]
+forall (stride :: Nat) (padding :: Nat) (inputChannelSize :: Nat)
+       (outputChannelSize :: Nat) (kernelSize :: Nat) (inputSize :: Nat)
+       (batchSize :: Nat) (outputSize :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+(All
+   KnownNat
+   '[stride, padding, inputChannelSize, outputChannelSize, kernelSize,
+     inputSize, batchSize, outputSize],
+ ConvSideCheck inputSize kernelSize stride padding outputSize) =&gt;
+Tensor
+  device dtype '[outputChannelSize, inputChannelSize, kernelSize]
+-&gt; Tensor device dtype '[outputChannelSize]
+-&gt; Tensor device dtype '[batchSize, inputChannelSize, inputSize]
+-&gt; Tensor device dtype '[batchSize, outputChannelSize, outputSize]
+</span><a href="Torch.Typed.Functional.html#conv1d"><span class="hs-identifier hs-var">conv1d</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679731345"><span class="hs-identifier hs-type">stride</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679731344"><span class="hs-identifier hs-type">padding</span></a></span><span>
+</span><span id="line-62"></span><span>  </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parameter _ _ '[outputChannelSize, inputChannelSize, kernelSize]
+-&gt; Tensor _ _ '[outputChannelSize, inputChannelSize, kernelSize]
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Parameter device dtype shape -&gt; Tensor device dtype shape
+</span><a href="Torch.Typed.Parameter.html#toDependent"><span class="hs-identifier hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">Parameter _ _ '[outputChannelSize, inputChannelSize, kernelSize]
+</span><a href="#local-6989586621679731343"><span class="hs-identifier hs-var">conv1dWeight</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parameter _ _ '[outputChannelSize]
+-&gt; Tensor _ _ '[outputChannelSize]
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Parameter device dtype shape -&gt; Tensor device dtype shape
+</span><a href="Torch.Typed.Parameter.html#toDependent"><span class="hs-identifier hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">Parameter _ _ '[outputChannelSize]
+</span><a href="#local-6989586621679731342"><span class="hs-identifier hs-var">conv1dBias</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-64"></span><span>  </span><span class="annot"><span class="annottext">Tensor _ _ '[batchSize, inputChannelSize, inputSize]
+</span><a href="#local-6989586621679731341"><span class="hs-identifier hs-var">input</span></a></span><span>
+</span><span id="line-65"></span><span>
+</span><span id="line-66"></span><span id="local-6989586621679731329"><span id="local-6989586621679731330"><span id="local-6989586621679731331"><span id="local-6989586621679731332"><span id="local-6989586621679731333"><span id="local-6989586621679731334"><span id="local-6989586621679731335"><span id="local-6989586621679731336"><span id="local-6989586621679731337"><span id="local-6989586621679731338"><span class="hs-keyword">instance</span><span>
+</span><span id="line-67"></span><span>  </span><span id="local-6989586621679731326"><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#All"><span class="hs-identifier hs-type">All</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">KnownNat</span></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span> </span><span class="annot"><a href="#local-6989586621679731338"><span class="hs-identifier hs-type">stride</span></a></span><span>
+</span><span id="line-68"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731337"><span class="hs-identifier hs-type">padding</span></a></span><span>
+</span><span id="line-69"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731336"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731335"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span>
+</span><span id="line-70"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731334"><span class="hs-identifier hs-type">kernelSize</span></a></span><span>
+</span><span id="line-71"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731333"><span class="hs-identifier hs-type">inputSize</span></a></span><span>
+</span><span id="line-72"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731332"><span class="hs-identifier hs-type">batchSize</span></a></span><span>
+</span><span id="line-73"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731331"><span class="hs-identifier hs-type">outputSize</span></a></span><span>
+</span><span id="line-74"></span><span>                  </span><span class="hs-special">]</span><span>
+</span><span id="line-75"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Functional.html#ConvSideCheck"><span class="hs-identifier hs-type">ConvSideCheck</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731333"><span class="hs-identifier hs-type">inputSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731334"><span class="hs-identifier hs-type">kernelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731338"><span class="hs-identifier hs-type">stride</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731337"><span class="hs-identifier hs-type">padding</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731331"><span class="hs-identifier hs-type">outputSize</span></a></span><span>
+</span><span id="line-76"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.NN.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv1d"><span class="hs-identifier hs-type">Conv1d</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731336"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731335"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731334"><span class="hs-identifier hs-type">kernelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731330"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731329"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731329"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731330"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679731332"><span class="hs-identifier hs-type">batchSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731336"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731333"><span class="hs-identifier hs-type">inputSize</span></a></span><span class="hs-special">]</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Proxy</span></span><span> </span><span class="annot"><a href="#local-6989586621679731338"><span class="hs-identifier hs-type">stride</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Proxy</span></span><span> </span><span class="annot"><a href="#local-6989586621679731337"><span class="hs-identifier hs-type">padding</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731329"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731330"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679731332"><span class="hs-identifier hs-type">batchSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731335"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731331"><span class="hs-identifier hs-type">outputSize</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-77"></span><span>  </span><span id="local-6989586621679731324"><span class="annot"><span class="annottext">forward :: Conv1d inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; (Tensor device dtype '[batchSize, inputChannelSize, inputSize],
+    Proxy stride, Proxy padding)
+-&gt; Tensor device dtype '[batchSize, outputChannelSize, outputSize]
+</span><a href="Torch.NN.html#forward"><span class="hs-identifier hs-var hs-var hs-var hs-var">forward</span></a></span></span><span> </span><span id="local-6989586621679731322"><span class="annot"><span class="annottext">model :: Conv1d inputChannelSize outputChannelSize kernelSize dtype device
+</span><a href="#local-6989586621679731322"><span class="hs-identifier hs-var">model</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731321"><span class="annot"><span class="annottext">input :: Tensor device dtype '[batchSize, inputChannelSize, inputSize]
+</span><a href="#local-6989586621679731321"><span class="hs-identifier hs-var">input</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Proxy</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Proxy</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Conv1d inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; Tensor device dtype '[batchSize, inputChannelSize, inputSize]
+-&gt; Tensor
+     device
+     dtype
+     '[batchSize, outputChannelSize,
+       Div ((inputSize + (2 * padding)) - kernelSize) stride + 1]
+forall (stride :: Nat) (padding :: Nat) (inputSize :: Nat)
+       (kernelSize :: Nat) (batchSize :: Nat) (outputChannelSize :: Nat)
+       (inputChannelSize :: Nat) (_ :: DType) (_ :: (DeviceType, Nat)).
+(KnownNat padding, KnownNat inputSize, KnownNat kernelSize,
+ KnownNat stride, KnownNat batchSize, KnownNat outputChannelSize,
+ KnownNat inputChannelSize, (1 &lt;=? stride) ~ 'True,
+ (1 &lt;=? kernelSize) ~ 'True,
+ (kernelSize &lt;=? (inputSize + (2 * padding))) ~ 'True,
+ ((kernelSize - 1) &lt;=? (inputSize + (2 * padding))) ~ 'True) =&gt;
+Conv1d inputChannelSize outputChannelSize kernelSize _ _
+-&gt; Tensor _ _ '[batchSize, inputChannelSize, inputSize]
+-&gt; Tensor
+     _
+     _
+     '[batchSize, outputChannelSize,
+       Div ((inputSize + (2 * padding)) - kernelSize) stride + 1]
+</span><a href="Torch.Typed.NN.Convolution.html#conv1dForward"><span class="hs-identifier hs-var">conv1dForward</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679731338"><span class="hs-identifier hs-type">stride</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679731337"><span class="hs-identifier hs-type">padding</span></a></span><span> </span><span class="annot"><span class="annottext">Conv1d inputChannelSize outputChannelSize kernelSize dtype device
+</span><a href="#local-6989586621679731322"><span class="hs-identifier hs-var">model</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor device dtype '[batchSize, inputChannelSize, inputSize]
+</span><a href="#local-6989586621679731321"><span class="hs-identifier hs-var">input</span></a></span></span></span></span></span></span></span></span></span></span></span><span>
+</span><span id="line-78"></span><span>
+</span><span id="line-79"></span><span id="local-6989586621679731315"><span id="local-6989586621679731316"><span id="local-6989586621679731317"><span id="local-6989586621679731318"><span id="local-6989586621679731319"><span class="hs-keyword">instance</span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier hs-type">KnownNat</span></span><span> </span><span class="annot"><a href="#local-6989586621679731319"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span>
+</span><span id="line-80"></span><span>         </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">KnownNat</span></span><span> </span><span class="annot"><a href="#local-6989586621679731318"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span>
+</span><span id="line-81"></span><span>         </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">KnownNat</span></span><span> </span><span class="annot"><a href="#local-6989586621679731317"><span class="hs-identifier hs-type">kernelSize</span></a></span><span>
+</span><span id="line-82"></span><span>         </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#KnownDType"><span class="hs-identifier hs-type">KnownDType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731316"><span class="hs-identifier hs-type">dtype</span></a></span><span>
+</span><span id="line-83"></span><span>         </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#KnownDevice"><span class="hs-identifier hs-type">KnownDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731315"><span class="hs-identifier hs-type">device</span></a></span><span>
+</span><span id="line-84"></span><span>         </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Factories.html#RandDTypeIsValid"><span class="hs-identifier hs-type">RandDTypeIsValid</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731315"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731316"><span class="hs-identifier hs-type">dtype</span></a></span><span>
+</span><span id="line-85"></span><span>         </span><span class="hs-special">)</span><span>
+</span><span id="line-86"></span><span>  </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.NN.html#Randomizable"><span class="hs-identifier hs-type">Randomizable</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv1dSpec"><span class="hs-identifier hs-type">Conv1dSpec</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731319"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731318"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731317"><span class="hs-identifier hs-type">kernelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731316"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731315"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-87"></span><span>                  </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv1d"><span class="hs-identifier hs-type">Conv1d</span></a></span><span>     </span><span class="annot"><a href="#local-6989586621679731319"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731318"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731317"><span class="hs-identifier hs-type">kernelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731316"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731315"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-88"></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-89"></span><span>  </span><span id="local-6989586621679731312"><span class="annot"><span class="annottext">sample :: Conv1dSpec
+  inputChannelSize outputChannelSize kernelSize dtype device
+-&gt; IO
+     (Conv1d inputChannelSize outputChannelSize kernelSize dtype device)
+</span><a href="Torch.NN.html#sample"><span class="hs-identifier hs-var hs-var hs-var hs-var">sample</span></a></span></span><span> </span><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv1dSpec"><span class="hs-identifier hs-type">Conv1dSpec</span></a></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-90"></span><span>    </span><span class="annot"><span class="annottext">Parameter
+  device dtype '[outputChannelSize, inputChannelSize, kernelSize]
+-&gt; Parameter device dtype '[outputChannelSize]
+-&gt; Conv1d
+     inputChannelSize outputChannelSize kernelSize dtype device
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat)).
+Parameter
+  device dtype '[outputChannelSize, inputChannelSize, kernelSize]
+-&gt; Parameter device dtype '[outputChannelSize]
+-&gt; Conv1d
+     inputChannelSize outputChannelSize kernelSize dtype device
+</span><a href="Torch.Typed.NN.Convolution.html#Conv1d"><span class="hs-identifier hs-var">Conv1d</span></a></span><span> </span><span class="annot"><span class="annottext">(Parameter
+   device dtype '[outputChannelSize, inputChannelSize, kernelSize]
+ -&gt; Parameter device dtype '[outputChannelSize]
+ -&gt; Conv1d
+      inputChannelSize outputChannelSize kernelSize dtype device)
+-&gt; IO
+     (Parameter
+        device dtype '[outputChannelSize, inputChannelSize, kernelSize])
+-&gt; IO
+     (Parameter device dtype '[outputChannelSize]
+      -&gt; Conv1d
+           inputChannelSize outputChannelSize kernelSize dtype device)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+  device dtype '[outputChannelSize, inputChannelSize, kernelSize]
+-&gt; IO
+     (Parameter
+        device dtype '[outputChannelSize, inputChannelSize, kernelSize])
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Tensor device dtype shape -&gt; IO (Parameter device dtype shape)
+</span><a href="Torch.Typed.Parameter.html#makeIndependent"><span class="hs-identifier hs-var">makeIndependent</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor
+   device dtype '[outputChannelSize, inputChannelSize, kernelSize]
+ -&gt; IO
+      (Parameter
+         device dtype '[outputChannelSize, inputChannelSize, kernelSize]))
+-&gt; IO
+     (Tensor
+        device dtype '[outputChannelSize, inputChannelSize, kernelSize])
+-&gt; IO
+     (Parameter
+        device dtype '[outputChannelSize, inputChannelSize, kernelSize])
+forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
+</span><span class="hs-operator hs-var">=&lt;&lt;</span></span><span> </span><span class="annot"><span class="annottext">IO
+  (Tensor
+     device dtype '[outputChannelSize, inputChannelSize, kernelSize])
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+(TensorOptions shape dtype device,
+ RandDTypeIsValid device dtype) =&gt;
+IO (Tensor device dtype shape)
+</span><a href="Torch.Typed.Factories.html#randn"><span class="hs-identifier hs-var">randn</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">IO
+  (Parameter device dtype '[outputChannelSize]
+   -&gt; Conv1d
+        inputChannelSize outputChannelSize kernelSize dtype device)
+-&gt; IO (Parameter device dtype '[outputChannelSize])
+-&gt; IO
+     (Conv1d inputChannelSize outputChannelSize kernelSize dtype device)
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor device dtype '[outputChannelSize]
+-&gt; IO (Parameter device dtype '[outputChannelSize])
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Tensor device dtype shape -&gt; IO (Parameter device dtype shape)
+</span><a href="Torch.Typed.Parameter.html#makeIndependent"><span class="hs-identifier hs-var">makeIndependent</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor device dtype '[outputChannelSize]
+ -&gt; IO (Parameter device dtype '[outputChannelSize]))
+-&gt; IO (Tensor device dtype '[outputChannelSize])
+-&gt; IO (Parameter device dtype '[outputChannelSize])
+forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
+</span><span class="hs-operator hs-var">=&lt;&lt;</span></span><span> </span><span class="annot"><span class="annottext">IO (Tensor device dtype '[outputChannelSize])
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+(TensorOptions shape dtype device,
+ RandDTypeIsValid device dtype) =&gt;
+IO (Tensor device dtype shape)
+</span><a href="Torch.Typed.Factories.html#randn"><span class="hs-identifier hs-var">randn</span></a></span><span class="hs-special">)</span></span></span></span></span></span><span>
+</span><span id="line-91"></span><span>
+</span><span id="line-92"></span><span class="hs-keyword">data</span><span> </span><span id="Conv2dSpec"><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv2dSpec"><span class="hs-identifier hs-var">Conv2dSpec</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731306"><span class="annot"><a href="#local-6989586621679731306"><span class="hs-identifier hs-type">inputChannelSize</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731305"><span class="annot"><a href="#local-6989586621679731305"><span class="hs-identifier hs-type">outputChannelSize</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span>
+</span><span id="line-93"></span><span>                </span><span class="hs-special">(</span><span id="local-6989586621679731304"><span class="annot"><a href="#local-6989586621679731304"><span class="hs-identifier hs-type">kernelSize0</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731303"><span class="annot"><a href="#local-6989586621679731303"><span class="hs-identifier hs-type">kernelSize1</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span>
+</span><span id="line-94"></span><span>                </span><span class="hs-special">(</span><span id="local-6989586621679731302"><span class="annot"><a href="#local-6989586621679731302"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.DType.html#DType"><span class="hs-identifier hs-type">D.DType</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-95"></span><span>                </span><span class="hs-special">(</span><span id="local-6989586621679731301"><span class="annot"><a href="#local-6989586621679731301"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Device.html#DeviceType"><span class="hs-identifier hs-type">D.DeviceType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-96"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="Conv2dSpec"><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv2dSpec"><span class="hs-identifier hs-var">Conv2dSpec</span></a></span></span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731294"><span id="local-6989586621679731296"><span id="local-6989586621679731298"><span class="annot"><span class="annottext">Int
+-&gt; Conv2dSpec
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     dtype
+     device
+-&gt; ShowS
+[Conv2dSpec
+   inputChannelSize
+   outputChannelSize
+   kernelSize0
+   kernelSize1
+   dtype
+   device]
+-&gt; ShowS
+Conv2dSpec
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+-&gt; String
+(Int
+ -&gt; Conv2dSpec
+      inputChannelSize
+      outputChannelSize
+      kernelSize0
+      kernelSize1
+      dtype
+      device
+ -&gt; ShowS)
+-&gt; (Conv2dSpec
+      inputChannelSize
+      outputChannelSize
+      kernelSize0
+      kernelSize1
+      dtype
+      device
+    -&gt; String)
+-&gt; ([Conv2dSpec
+       inputChannelSize
+       outputChannelSize
+       kernelSize0
+       kernelSize1
+       dtype
+       device]
+    -&gt; ShowS)
+-&gt; Show
+     (Conv2dSpec
+        inputChannelSize
+        outputChannelSize
+        kernelSize0
+        kernelSize1
+        dtype
+        device)
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Int
+-&gt; Conv2dSpec
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     dtype
+     device
+-&gt; ShowS
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+[Conv2dSpec
+   inputChannelSize
+   outputChannelSize
+   kernelSize0
+   kernelSize1
+   dtype
+   device]
+-&gt; ShowS
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Conv2dSpec
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+-&gt; String
+showList :: [Conv2dSpec
+   inputChannelSize
+   outputChannelSize
+   kernelSize0
+   kernelSize1
+   dtype
+   device]
+-&gt; ShowS
+$cshowList :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+[Conv2dSpec
+   inputChannelSize
+   outputChannelSize
+   kernelSize0
+   kernelSize1
+   dtype
+   device]
+-&gt; ShowS
+show :: Conv2dSpec
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+-&gt; String
+$cshow :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Conv2dSpec
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+-&gt; String
+showsPrec :: Int
+-&gt; Conv2dSpec
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     dtype
+     device
+-&gt; ShowS
+$cshowsPrec :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Int
+-&gt; Conv2dSpec
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     dtype
+     device
+-&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679731290"><span id="local-6989586621679731292"><span class="annot"><span class="annottext">Conv2dSpec
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+-&gt; Conv2dSpec
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     dtype
+     device
+-&gt; Bool
+(Conv2dSpec
+   inputChannelSize
+   outputChannelSize
+   kernelSize0
+   kernelSize1
+   dtype
+   device
+ -&gt; Conv2dSpec
+      inputChannelSize
+      outputChannelSize
+      kernelSize0
+      kernelSize1
+      dtype
+      device
+ -&gt; Bool)
+-&gt; (Conv2dSpec
+      inputChannelSize
+      outputChannelSize
+      kernelSize0
+      kernelSize1
+      dtype
+      device
+    -&gt; Conv2dSpec
+         inputChannelSize
+         outputChannelSize
+         kernelSize0
+         kernelSize1
+         dtype
+         device
+    -&gt; Bool)
+-&gt; Eq
+     (Conv2dSpec
+        inputChannelSize
+        outputChannelSize
+        kernelSize0
+        kernelSize1
+        dtype
+        device)
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Conv2dSpec
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+-&gt; Conv2dSpec
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     dtype
+     device
+-&gt; Bool
+/= :: Conv2dSpec
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+-&gt; Conv2dSpec
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     dtype
+     device
+-&gt; Bool
+$c/= :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Conv2dSpec
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+-&gt; Conv2dSpec
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     dtype
+     device
+-&gt; Bool
+== :: Conv2dSpec
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+-&gt; Conv2dSpec
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     dtype
+     device
+-&gt; Bool
+$c== :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Conv2dSpec
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+-&gt; Conv2dSpec
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     dtype
+     device
+-&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-97"></span><span>
+</span><span id="line-98"></span><span id="local-6989586621679731288"><span id="local-6989586621679731289"></span></span><span class="hs-keyword">data</span><span> </span><span id="Conv2d"><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv2d"><span class="hs-identifier hs-var">Conv2d</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731287"><span class="annot"><a href="#local-6989586621679731287"><span class="hs-identifier hs-type">inputChannelSize</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731286"><span class="annot"><a href="#local-6989586621679731286"><span class="hs-identifier hs-type">outputChannelSize</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span>
+</span><span id="line-99"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679731285"><span class="annot"><a href="#local-6989586621679731285"><span class="hs-identifier hs-type">kernelSize0</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731284"><span class="annot"><a href="#local-6989586621679731284"><span class="hs-identifier hs-type">kernelSize1</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span>
+</span><span id="line-100"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679731283"><span class="annot"><a href="#local-6989586621679731283"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.DType.html#DType"><span class="hs-identifier hs-type">D.DType</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-101"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679731282"><span class="annot"><a href="#local-6989586621679731282"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Device.html#DeviceType"><span class="hs-identifier hs-type">D.DeviceType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-102"></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-103"></span><span>  </span><span id="Conv2d"><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv2d"><span class="hs-identifier hs-var">Conv2d</span></a></span></span><span>
+</span><span id="line-104"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679731529"><span class="annot"><a href="#local-6989586621679731529"><span class="hs-identifier hs-type">inputChannelSize</span></a></span></span><span> </span><span id="local-6989586621679731528"><span class="annot"><a href="#local-6989586621679731528"><span class="hs-identifier hs-type">outputChannelSize</span></a></span></span><span> </span><span id="local-6989586621679731527"><span class="annot"><a href="#local-6989586621679731527"><span class="hs-identifier hs-type">kernelSize0</span></a></span></span><span> </span><span id="local-6989586621679731526"><span class="annot"><a href="#local-6989586621679731526"><span class="hs-identifier hs-type">kernelSize1</span></a></span></span><span> </span><span id="local-6989586621679731525"><span class="annot"><a href="#local-6989586621679731525"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span id="local-6989586621679731524"><span class="annot"><a href="#local-6989586621679731524"><span class="hs-identifier hs-type">device</span></a></span></span><span>
+</span><span id="line-105"></span><span>     </span><span class="hs-operator">.</span><span> </span><span class="hs-special">{</span><span> </span><span id="conv2dWeight"><span class="annot"><span class="annottext">Conv2d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+-&gt; Parameter
+     device
+     dtype
+     '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1]
+</span><a href="Torch.Typed.NN.Convolution.html#conv2dWeight"><span class="hs-identifier hs-var hs-var">conv2dWeight</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Typed.Parameter.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731524"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731525"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679731528"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731529"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731527"><span class="hs-identifier hs-type">kernelSize0</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731526"><span class="hs-identifier hs-type">kernelSize1</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-106"></span><span>       </span><span class="hs-special">,</span><span> </span><span id="conv2dBias"><span class="annot"><span class="annottext">Conv2d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+-&gt; Parameter device dtype '[outputChannelSize]
+</span><a href="Torch.Typed.NN.Convolution.html#conv2dBias"><span class="hs-identifier hs-var hs-var">conv2dBias</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Typed.Parameter.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731524"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731525"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679731528"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-107"></span><span>       </span><span class="hs-special">}</span><span>
+</span><span id="line-108"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv2d"><span class="hs-identifier hs-type">Conv2d</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731529"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731528"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731527"><span class="hs-identifier hs-type">kernelSize0</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731526"><span class="hs-identifier hs-type">kernelSize1</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731525"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731524"><span class="hs-identifier hs-type">device</span></a></span><span>
+</span><span id="line-109"></span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731273"><span id="local-6989586621679731275"><span id="local-6989586621679731277"><span class="annot"><span class="annottext">Int
+-&gt; Conv2d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     dtype
+     device
+-&gt; ShowS
+[Conv2d
+   inputChannelSize
+   outputChannelSize
+   kernelSize0
+   kernelSize1
+   dtype
+   device]
+-&gt; ShowS
+Conv2d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+-&gt; String
+(Int
+ -&gt; Conv2d
+      inputChannelSize
+      outputChannelSize
+      kernelSize0
+      kernelSize1
+      dtype
+      device
+ -&gt; ShowS)
+-&gt; (Conv2d
+      inputChannelSize
+      outputChannelSize
+      kernelSize0
+      kernelSize1
+      dtype
+      device
+    -&gt; String)
+-&gt; ([Conv2d
+       inputChannelSize
+       outputChannelSize
+       kernelSize0
+       kernelSize1
+       dtype
+       device]
+    -&gt; ShowS)
+-&gt; Show
+     (Conv2d
+        inputChannelSize
+        outputChannelSize
+        kernelSize0
+        kernelSize1
+        dtype
+        device)
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Int
+-&gt; Conv2d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     dtype
+     device
+-&gt; ShowS
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+[Conv2d
+   inputChannelSize
+   outputChannelSize
+   kernelSize0
+   kernelSize1
+   dtype
+   device]
+-&gt; ShowS
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Conv2d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+-&gt; String
+showList :: [Conv2d
+   inputChannelSize
+   outputChannelSize
+   kernelSize0
+   kernelSize1
+   dtype
+   device]
+-&gt; ShowS
+$cshowList :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+[Conv2d
+   inputChannelSize
+   outputChannelSize
+   kernelSize0
+   kernelSize1
+   dtype
+   device]
+-&gt; ShowS
+show :: Conv2d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+-&gt; String
+$cshow :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Conv2d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+-&gt; String
+showsPrec :: Int
+-&gt; Conv2d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     dtype
+     device
+-&gt; ShowS
+$cshowsPrec :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Int
+-&gt; Conv2d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     dtype
+     device
+-&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(forall x.
+ Conv2d
+   inputChannelSize
+   outputChannelSize
+   kernelSize0
+   kernelSize1
+   dtype
+   device
+ -&gt; Rep
+      (Conv2d
+         inputChannelSize
+         outputChannelSize
+         kernelSize0
+         kernelSize1
+         dtype
+         device)
+      x)
+-&gt; (forall x.
+    Rep
+      (Conv2d
+         inputChannelSize
+         outputChannelSize
+         kernelSize0
+         kernelSize1
+         dtype
+         device)
+      x
+    -&gt; Conv2d
+         inputChannelSize
+         outputChannelSize
+         kernelSize0
+         kernelSize1
+         dtype
+         device)
+-&gt; Generic
+     (Conv2d
+        inputChannelSize
+        outputChannelSize
+        kernelSize0
+        kernelSize1
+        dtype
+        device)
+forall x.
+Rep
+  (Conv2d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     dtype
+     device)
+  x
+-&gt; Conv2d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     dtype
+     device
+forall x.
+Conv2d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+-&gt; Rep
+     (Conv2d
+        inputChannelSize
+        outputChannelSize
+        kernelSize0
+        kernelSize1
+        dtype
+        device)
+     x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)) x.
+Rep
+  (Conv2d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     dtype
+     device)
+  x
+-&gt; Conv2d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     dtype
+     device
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)) x.
+Conv2d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+-&gt; Rep
+     (Conv2d
+        inputChannelSize
+        outputChannelSize
+        kernelSize0
+        kernelSize1
+        dtype
+        device)
+     x
+$cto :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)) x.
+Rep
+  (Conv2d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     dtype
+     device)
+  x
+-&gt; Conv2d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     dtype
+     device
+$cfrom :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)) x.
+Conv2d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+-&gt; Rep
+     (Conv2d
+        inputChannelSize
+        outputChannelSize
+        kernelSize0
+        kernelSize1
+        dtype
+        device)
+     x
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-110"></span><span>
+</span><span id="line-111"></span><span class="hs-comment">-- | conv2d</span><span>
+</span><span id="line-112"></span><span class="hs-comment">-- The constraints on this one are _very_ involved, so the partial signatures</span><span>
+</span><span id="line-113"></span><span class="hs-comment">-- make the code significantly cleaner.</span><span>
+</span><span id="line-114"></span><span class="annot"><a href="Torch.Typed.NN.Convolution.html#conv2dForward"><span class="hs-identifier hs-type">conv2dForward</span></a></span><span>
+</span><span id="line-115"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679731269"><span class="annot"><a href="#local-6989586621679731269"><span class="hs-identifier hs-type">stride</span></a></span></span><span> </span><span id="local-6989586621679731268"><span class="annot"><a href="#local-6989586621679731268"><span class="hs-identifier hs-type">padding</span></a></span></span><span>
+</span><span id="line-116"></span><span>   </span><span class="hs-operator">.</span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span>
+</span><span id="line-117"></span><span>  </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv2d"><span class="hs-identifier hs-type">Conv2d</span></a></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span>
+</span><span id="line-118"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span>
+</span><span id="line-119"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span>
+</span><span id="line-120"></span><span id="conv2dForward"><span class="annot"><span class="annottext">conv2dForward :: Conv2d
+  inputChannelSize outputChannelSize kernelSize0 kernelSize1 _ _
+-&gt; Tensor
+     _ _ '[batchSize, inputChannelSize, inputSize0, inputSize1]
+-&gt; Tensor
+     _
+     _
+     '[batchSize, outputChannelSize,
+       Div ((inputSize0 + (2 * Fst padding)) - kernelSize0) (Fst stride)
+       + 1,
+       Div ((inputSize1 + (2 * Snd padding)) - kernelSize1) (Snd stride)
+       + 1]
+</span><a href="Torch.Typed.NN.Convolution.html#conv2dForward"><span class="hs-identifier hs-var hs-var">conv2dForward</span></a></span></span><span> </span><span id="local-6989586621679731266"><span id="local-6989586621679731267"><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv2d"><span class="hs-identifier hs-type">Conv2d</span></a></span><span> </span><span class="hs-special">{</span><span class="hs-glyph">..</span><span class="hs-special">}</span></span></span><span> </span><span id="local-6989586621679731265"><span class="annot"><span class="annottext">input :: Tensor _ _ '[batchSize, inputChannelSize, inputSize0, inputSize1]
+</span><a href="#local-6989586621679731265"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor
+  _
+  _
+  '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1]
+-&gt; Tensor _ _ '[outputChannelSize]
+-&gt; Tensor
+     _ _ '[batchSize, inputChannelSize, inputSize0, inputSize1]
+-&gt; Tensor
+     _
+     _
+     '[batchSize, outputChannelSize,
+       Div ((inputSize0 + (2 * Fst padding)) - kernelSize0) (Fst stride)
+       + 1,
+       Div ((inputSize1 + (2 * Snd padding)) - kernelSize1) (Snd stride)
+       + 1]
+forall (stride :: (Nat, Nat)) (padding :: (Nat, Nat))
+       (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (inputSize0 :: Nat)
+       (inputSize1 :: Nat) (batchSize :: Nat) (outputSize0 :: Nat)
+       (outputSize1 :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+(All
+   KnownNat
+   '[Fst stride, Snd stride, Fst padding, Snd padding,
+     inputChannelSize, outputChannelSize, kernelSize0, kernelSize1,
+     inputSize0, inputSize1, batchSize, outputSize0, outputSize1],
+ ConvSideCheck
+   inputSize0 kernelSize0 (Fst stride) (Fst padding) outputSize0,
+ ConvSideCheck
+   inputSize1 kernelSize1 (Snd stride) (Snd padding) outputSize1) =&gt;
+Tensor
+  device
+  dtype
+  '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1]
+-&gt; Tensor device dtype '[outputChannelSize]
+-&gt; Tensor
+     device dtype '[batchSize, inputChannelSize, inputSize0, inputSize1]
+-&gt; Tensor
+     device
+     dtype
+     '[batchSize, outputChannelSize, outputSize0, outputSize1]
+</span><a href="Torch.Typed.Functional.html#conv2d"><span class="hs-identifier hs-var">conv2d</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679731269"><span class="hs-identifier hs-type">stride</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679731268"><span class="hs-identifier hs-type">padding</span></a></span><span>
+</span><span id="line-121"></span><span>  </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parameter
+  _
+  _
+  '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1]
+-&gt; Tensor
+     _
+     _
+     '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1]
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Parameter device dtype shape -&gt; Tensor device dtype shape
+</span><a href="Torch.Typed.Parameter.html#toDependent"><span class="hs-identifier hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">Parameter
+  _
+  _
+  '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1]
+</span><a href="#local-6989586621679731267"><span class="hs-identifier hs-var">conv2dWeight</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-122"></span><span>  </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parameter _ _ '[outputChannelSize]
+-&gt; Tensor _ _ '[outputChannelSize]
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Parameter device dtype shape -&gt; Tensor device dtype shape
+</span><a href="Torch.Typed.Parameter.html#toDependent"><span class="hs-identifier hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">Parameter _ _ '[outputChannelSize]
+</span><a href="#local-6989586621679731266"><span class="hs-identifier hs-var">conv2dBias</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-123"></span><span>  </span><span class="annot"><span class="annottext">Tensor _ _ '[batchSize, inputChannelSize, inputSize0, inputSize1]
+</span><a href="#local-6989586621679731265"><span class="hs-identifier hs-var">input</span></a></span><span>
+</span><span id="line-124"></span><span>
+</span><span id="line-125"></span><span id="local-6989586621679731251"><span id="local-6989586621679731252"><span id="local-6989586621679731253"><span id="local-6989586621679731254"><span id="local-6989586621679731255"><span id="local-6989586621679731256"><span id="local-6989586621679731257"><span id="local-6989586621679731258"><span id="local-6989586621679731259"><span id="local-6989586621679731260"><span id="local-6989586621679731261"><span id="local-6989586621679731262"><span id="local-6989586621679731263"><span class="hs-keyword">instance</span><span>
+</span><span id="line-126"></span><span>  </span><span id="local-6989586621679731248"><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#All"><span class="hs-identifier hs-type">All</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">KnownNat</span></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span> </span><span class="annot"><a href="Torch.Typed.Aux.html#Fst"><span class="hs-identifier hs-type">Torch.Typed.Aux.Fst</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731263"><span class="hs-identifier hs-type">stride</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Aux.html#Snd"><span class="hs-identifier hs-type">Torch.Typed.Aux.Snd</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731263"><span class="hs-identifier hs-type">stride</span></a></span><span>
+</span><span id="line-127"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Aux.html#Fst"><span class="hs-identifier hs-type">Torch.Typed.Aux.Fst</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731262"><span class="hs-identifier hs-type">padding</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Aux.html#Snd"><span class="hs-identifier hs-type">Torch.Typed.Aux.Snd</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731262"><span class="hs-identifier hs-type">padding</span></a></span><span>
+</span><span id="line-128"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731261"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731260"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span>
+</span><span id="line-129"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731259"><span class="hs-identifier hs-type">kernelSize0</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731258"><span class="hs-identifier hs-type">kernelSize1</span></a></span><span>
+</span><span id="line-130"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731257"><span class="hs-identifier hs-type">inputSize0</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731256"><span class="hs-identifier hs-type">inputSize1</span></a></span><span>
+</span><span id="line-131"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731255"><span class="hs-identifier hs-type">batchSize</span></a></span><span>
+</span><span id="line-132"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731254"><span class="hs-identifier hs-type">outputSize0</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731253"><span class="hs-identifier hs-type">outputSize1</span></a></span><span>
+</span><span id="line-133"></span><span>                  </span><span class="hs-special">]</span><span>
+</span><span id="line-134"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Functional.html#ConvSideCheck"><span class="hs-identifier hs-type">ConvSideCheck</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731257"><span class="hs-identifier hs-type">inputSize0</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731259"><span class="hs-identifier hs-type">kernelSize0</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Aux.html#Fst"><span class="hs-identifier hs-type">Torch.Typed.Aux.Fst</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731263"><span class="hs-identifier hs-type">stride</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Aux.html#Fst"><span class="hs-identifier hs-type">Torch.Typed.Aux.Fst</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731262"><span class="hs-identifier hs-type">padding</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679731254"><span class="hs-identifier hs-type">outputSize0</span></a></span><span>
+</span><span id="line-135"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Functional.html#ConvSideCheck"><span class="hs-identifier hs-type">ConvSideCheck</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731256"><span class="hs-identifier hs-type">inputSize1</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731258"><span class="hs-identifier hs-type">kernelSize1</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Aux.html#Snd"><span class="hs-identifier hs-type">Torch.Typed.Aux.Snd</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731263"><span class="hs-identifier hs-type">stride</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Aux.html#Snd"><span class="hs-identifier hs-type">Torch.Typed.Aux.Snd</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731262"><span class="hs-identifier hs-type">padding</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679731253"><span class="hs-identifier hs-type">outputSize1</span></a></span><span>
+</span><span id="line-136"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.NN.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv2d"><span class="hs-identifier hs-type">Conv2d</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731261"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731260"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731259"><span class="hs-identifier hs-type">kernelSize0</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731258"><span class="hs-identifier hs-type">kernelSize1</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731252"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731251"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731251"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731252"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679731255"><span class="hs-identifier hs-type">batchSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731261"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731257"><span class="hs-identifier hs-type">inputSize0</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731256"><span class="hs-identifier hs-type">inputSize1</span></a></span><span class="hs-special">]</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Proxy</span></span><span> </span><span class="annot"><a href="#local-6989586621679731263"><span class="hs-identifier hs-type">stride</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Proxy</span></span><span> </span><span class="annot"><a href="#local-6989586621679731262"><span class="hs-identifier hs-type">padding</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731251"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731252"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679731255"><span class="hs-identifier hs-type">batchSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731260"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731254"><span class="hs-identifier hs-type">outputSize0</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731253"><span class="hs-identifier hs-type">outputSize1</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-137"></span><span>  </span><span id="local-6989586621679731247"><span class="annot"><span class="annottext">forward :: Conv2d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+-&gt; (Tensor
+      device
+      dtype
+      '[batchSize, inputChannelSize, inputSize0, inputSize1],
+    Proxy stride, Proxy padding)
+-&gt; Tensor
+     device
+     dtype
+     '[batchSize, outputChannelSize, outputSize0, outputSize1]
+</span><a href="#local-6989586621679731247"><span class="hs-identifier hs-var hs-var hs-var hs-var">forward</span></a></span></span><span> </span><span id="local-6989586621679731246"><span class="annot"><span class="annottext">model :: Conv2d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+</span><a href="#local-6989586621679731246"><span class="hs-identifier hs-var">model</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731245"><span class="annot"><span class="annottext">input :: Tensor
+  device dtype '[batchSize, inputChannelSize, inputSize0, inputSize1]
+</span><a href="#local-6989586621679731245"><span class="hs-identifier hs-var">input</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Proxy</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Proxy</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Conv2d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+-&gt; Tensor
+     device dtype '[batchSize, inputChannelSize, inputSize0, inputSize1]
+-&gt; Tensor
+     device
+     dtype
+     '[batchSize, outputChannelSize,
+       Div ((inputSize0 + (2 * Fst padding)) - kernelSize0) (Fst stride)
+       + 1,
+       Div ((inputSize1 + (2 * Snd padding)) - kernelSize1) (Snd stride)
+       + 1]
+forall (stride :: (Nat, Nat)) (padding :: (Nat, Nat))
+       (inputSize0 :: Nat) (inputSize1 :: Nat) (kernelSize0 :: Nat)
+       (kernelSize1 :: Nat) (inputChannelSize :: Nat)
+       (outputChannelSize :: Nat) (batchSize :: Nat) (_ :: DType)
+       (_ :: (DeviceType, Nat)).
+(KnownNat (Fst padding), KnownNat (Snd padding),
+ KnownNat inputSize0, KnownNat inputSize1, KnownNat kernelSize0,
+ KnownNat kernelSize1, KnownNat (Fst stride), KnownNat (Snd stride),
+ KnownNat inputChannelSize, KnownNat outputChannelSize,
+ KnownNat batchSize,
+ ((kernelSize0 - 1) &lt;=? (inputSize0 + (2 * Fst padding))) ~ 'True,
+ (kernelSize0 &lt;=? (inputSize0 + (2 * Fst padding))) ~ 'True,
+ (1 &lt;=? Fst stride) ~ 'True, (1 &lt;=? kernelSize1) ~ 'True,
+ (1 &lt;=? Snd stride) ~ 'True,
+ (kernelSize1 &lt;=? (inputSize1 + (2 * Snd padding))) ~ 'True,
+ (1 &lt;=? kernelSize0) ~ 'True,
+ ((kernelSize1 - 1) &lt;=? (inputSize1 + (2 * Snd padding)))
+ ~ 'True) =&gt;
+Conv2d
+  inputChannelSize outputChannelSize kernelSize0 kernelSize1 _ _
+-&gt; Tensor
+     _ _ '[batchSize, inputChannelSize, inputSize0, inputSize1]
+-&gt; Tensor
+     _
+     _
+     '[batchSize, outputChannelSize,
+       Div ((inputSize0 + (2 * Fst padding)) - kernelSize0) (Fst stride)
+       + 1,
+       Div ((inputSize1 + (2 * Snd padding)) - kernelSize1) (Snd stride)
+       + 1]
+</span><a href="Torch.Typed.NN.Convolution.html#conv2dForward"><span class="hs-identifier hs-var">conv2dForward</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679731263"><span class="hs-identifier hs-type">stride</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679731262"><span class="hs-identifier hs-type">padding</span></a></span><span> </span><span class="annot"><span class="annottext">Conv2d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+</span><a href="#local-6989586621679731246"><span class="hs-identifier hs-var">model</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+  device dtype '[batchSize, inputChannelSize, inputSize0, inputSize1]
+</span><a href="#local-6989586621679731245"><span class="hs-identifier hs-var">input</span></a></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span>
+</span><span id="line-138"></span><span>
+</span><span id="line-139"></span><span id="local-6989586621679731239"><span id="local-6989586621679731240"><span id="local-6989586621679731241"><span id="local-6989586621679731242"><span id="local-6989586621679731243"><span id="local-6989586621679731244"><span class="hs-keyword">instance</span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier hs-type">KnownNat</span></span><span> </span><span class="annot"><a href="#local-6989586621679731244"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span>
+</span><span id="line-140"></span><span>         </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">KnownNat</span></span><span> </span><span class="annot"><a href="#local-6989586621679731243"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span>
+</span><span id="line-141"></span><span>         </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">KnownNat</span></span><span> </span><span class="annot"><a href="#local-6989586621679731242"><span class="hs-identifier hs-type">kernelSize0</span></a></span><span>
+</span><span id="line-142"></span><span>         </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">KnownNat</span></span><span> </span><span class="annot"><a href="#local-6989586621679731241"><span class="hs-identifier hs-type">kernelSize1</span></a></span><span>
+</span><span id="line-143"></span><span>         </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#KnownDType"><span class="hs-identifier hs-type">KnownDType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731240"><span class="hs-identifier hs-type">dtype</span></a></span><span>
+</span><span id="line-144"></span><span>         </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#KnownDevice"><span class="hs-identifier hs-type">KnownDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731239"><span class="hs-identifier hs-type">device</span></a></span><span>
+</span><span id="line-145"></span><span>         </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Factories.html#RandDTypeIsValid"><span class="hs-identifier hs-type">RandDTypeIsValid</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731239"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731240"><span class="hs-identifier hs-type">dtype</span></a></span><span>
+</span><span id="line-146"></span><span>         </span><span class="hs-special">)</span><span>
+</span><span id="line-147"></span><span>  </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.NN.html#Randomizable"><span class="hs-identifier hs-type">Randomizable</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv2dSpec"><span class="hs-identifier hs-type">Conv2dSpec</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731244"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731243"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731242"><span class="hs-identifier hs-type">kernelSize0</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731241"><span class="hs-identifier hs-type">kernelSize1</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731240"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731239"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-148"></span><span>                  </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv2d"><span class="hs-identifier hs-type">Conv2d</span></a></span><span>     </span><span class="annot"><a href="#local-6989586621679731244"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731243"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731242"><span class="hs-identifier hs-type">kernelSize0</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731241"><span class="hs-identifier hs-type">kernelSize1</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731240"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731239"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-149"></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-150"></span><span>  </span><span id="local-6989586621679731237"><span class="annot"><span class="annottext">sample :: Conv2dSpec
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  dtype
+  device
+-&gt; IO
+     (Conv2d
+        inputChannelSize
+        outputChannelSize
+        kernelSize0
+        kernelSize1
+        dtype
+        device)
+</span><a href="#local-6989586621679731237"><span class="hs-identifier hs-var hs-var hs-var hs-var">sample</span></a></span></span><span> </span><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv2dSpec"><span class="hs-identifier hs-type">Conv2dSpec</span></a></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-151"></span><span>    </span><span class="annot"><span class="annottext">Parameter
+  device
+  dtype
+  '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1]
+-&gt; Parameter device dtype '[outputChannelSize]
+-&gt; Conv2d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     dtype
+     device
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Parameter
+  device
+  dtype
+  '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1]
+-&gt; Parameter device dtype '[outputChannelSize]
+-&gt; Conv2d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     dtype
+     device
+</span><a href="Torch.Typed.NN.Convolution.html#Conv2d"><span class="hs-identifier hs-var">Conv2d</span></a></span><span> </span><span class="annot"><span class="annottext">(Parameter
+   device
+   dtype
+   '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1]
+ -&gt; Parameter device dtype '[outputChannelSize]
+ -&gt; Conv2d
+      inputChannelSize
+      outputChannelSize
+      kernelSize0
+      kernelSize1
+      dtype
+      device)
+-&gt; IO
+     (Parameter
+        device
+        dtype
+        '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1])
+-&gt; IO
+     (Parameter device dtype '[outputChannelSize]
+      -&gt; Conv2d
+           inputChannelSize
+           outputChannelSize
+           kernelSize0
+           kernelSize1
+           dtype
+           device)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+  device
+  dtype
+  '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1]
+-&gt; IO
+     (Parameter
+        device
+        dtype
+        '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1])
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Tensor device dtype shape -&gt; IO (Parameter device dtype shape)
+</span><a href="Torch.Typed.Parameter.html#makeIndependent"><span class="hs-identifier hs-var">makeIndependent</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor
+   device
+   dtype
+   '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1]
+ -&gt; IO
+      (Parameter
+         device
+         dtype
+         '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1]))
+-&gt; IO
+     (Tensor
+        device
+        dtype
+        '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1])
+-&gt; IO
+     (Parameter
+        device
+        dtype
+        '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1])
+forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
+</span><span class="hs-operator hs-var">=&lt;&lt;</span></span><span> </span><span class="annot"><span class="annottext">IO
+  (Tensor
+     device
+     dtype
+     '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1])
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+(TensorOptions shape dtype device,
+ RandDTypeIsValid device dtype) =&gt;
+IO (Tensor device dtype shape)
+</span><a href="Torch.Typed.Factories.html#randn"><span class="hs-identifier hs-var">randn</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">IO
+  (Parameter device dtype '[outputChannelSize]
+   -&gt; Conv2d
+        inputChannelSize
+        outputChannelSize
+        kernelSize0
+        kernelSize1
+        dtype
+        device)
+-&gt; IO (Parameter device dtype '[outputChannelSize])
+-&gt; IO
+     (Conv2d
+        inputChannelSize
+        outputChannelSize
+        kernelSize0
+        kernelSize1
+        dtype
+        device)
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor device dtype '[outputChannelSize]
+-&gt; IO (Parameter device dtype '[outputChannelSize])
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Tensor device dtype shape -&gt; IO (Parameter device dtype shape)
+</span><a href="Torch.Typed.Parameter.html#makeIndependent"><span class="hs-identifier hs-var">makeIndependent</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor device dtype '[outputChannelSize]
+ -&gt; IO (Parameter device dtype '[outputChannelSize]))
+-&gt; IO (Tensor device dtype '[outputChannelSize])
+-&gt; IO (Parameter device dtype '[outputChannelSize])
+forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
+</span><span class="hs-operator hs-var">=&lt;&lt;</span></span><span> </span><span class="annot"><span class="annottext">IO (Tensor device dtype '[outputChannelSize])
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+(TensorOptions shape dtype device,
+ RandDTypeIsValid device dtype) =&gt;
+IO (Tensor device dtype shape)
+</span><a href="Torch.Typed.Factories.html#randn"><span class="hs-identifier hs-var">randn</span></a></span><span class="hs-special">)</span></span></span></span></span></span></span><span>
+</span><span id="line-152"></span><span>
+</span><span id="line-153"></span><span class="hs-keyword">data</span><span> </span><span id="Conv3dSpec"><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv3dSpec"><span class="hs-identifier hs-var">Conv3dSpec</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731236"><span class="annot"><a href="#local-6989586621679731236"><span class="hs-identifier hs-type">inputChannelSize</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731235"><span class="annot"><a href="#local-6989586621679731235"><span class="hs-identifier hs-type">outputChannelSize</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span>
+</span><span id="line-154"></span><span>                </span><span class="hs-special">(</span><span id="local-6989586621679731234"><span class="annot"><a href="#local-6989586621679731234"><span class="hs-identifier hs-type">kernelSize0</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731233"><span class="annot"><a href="#local-6989586621679731233"><span class="hs-identifier hs-type">kernelSize1</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731232"><span class="annot"><a href="#local-6989586621679731232"><span class="hs-identifier hs-type">kernelSize2</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span>
+</span><span id="line-155"></span><span>                </span><span class="hs-special">(</span><span id="local-6989586621679731231"><span class="annot"><a href="#local-6989586621679731231"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.DType.html#DType"><span class="hs-identifier hs-type">D.DType</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-156"></span><span>                </span><span class="hs-special">(</span><span id="local-6989586621679731230"><span class="annot"><a href="#local-6989586621679731230"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Device.html#DeviceType"><span class="hs-identifier hs-type">D.DeviceType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-157"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="Conv3dSpec"><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv3dSpec"><span class="hs-identifier hs-var">Conv3dSpec</span></a></span></span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731223"><span id="local-6989586621679731225"><span id="local-6989586621679731227"><span class="annot"><span class="annottext">Int
+-&gt; Conv3dSpec
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     kernelSize2
+     dtype
+     device
+-&gt; ShowS
+[Conv3dSpec
+   inputChannelSize
+   outputChannelSize
+   kernelSize0
+   kernelSize1
+   kernelSize2
+   dtype
+   device]
+-&gt; ShowS
+Conv3dSpec
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+-&gt; String
+(Int
+ -&gt; Conv3dSpec
+      inputChannelSize
+      outputChannelSize
+      kernelSize0
+      kernelSize1
+      kernelSize2
+      dtype
+      device
+ -&gt; ShowS)
+-&gt; (Conv3dSpec
+      inputChannelSize
+      outputChannelSize
+      kernelSize0
+      kernelSize1
+      kernelSize2
+      dtype
+      device
+    -&gt; String)
+-&gt; ([Conv3dSpec
+       inputChannelSize
+       outputChannelSize
+       kernelSize0
+       kernelSize1
+       kernelSize2
+       dtype
+       device]
+    -&gt; ShowS)
+-&gt; Show
+     (Conv3dSpec
+        inputChannelSize
+        outputChannelSize
+        kernelSize0
+        kernelSize1
+        kernelSize2
+        dtype
+        device)
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)).
+Int
+-&gt; Conv3dSpec
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     kernelSize2
+     dtype
+     device
+-&gt; ShowS
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)).
+[Conv3dSpec
+   inputChannelSize
+   outputChannelSize
+   kernelSize0
+   kernelSize1
+   kernelSize2
+   dtype
+   device]
+-&gt; ShowS
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)).
+Conv3dSpec
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+-&gt; String
+showList :: [Conv3dSpec
+   inputChannelSize
+   outputChannelSize
+   kernelSize0
+   kernelSize1
+   kernelSize2
+   dtype
+   device]
+-&gt; ShowS
+$cshowList :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)).
+[Conv3dSpec
+   inputChannelSize
+   outputChannelSize
+   kernelSize0
+   kernelSize1
+   kernelSize2
+   dtype
+   device]
+-&gt; ShowS
+show :: Conv3dSpec
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+-&gt; String
+$cshow :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)).
+Conv3dSpec
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+-&gt; String
+showsPrec :: Int
+-&gt; Conv3dSpec
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     kernelSize2
+     dtype
+     device
+-&gt; ShowS
+$cshowsPrec :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)).
+Int
+-&gt; Conv3dSpec
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     kernelSize2
+     dtype
+     device
+-&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679731219"><span id="local-6989586621679731221"><span class="annot"><span class="annottext">Conv3dSpec
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+-&gt; Conv3dSpec
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     kernelSize2
+     dtype
+     device
+-&gt; Bool
+(Conv3dSpec
+   inputChannelSize
+   outputChannelSize
+   kernelSize0
+   kernelSize1
+   kernelSize2
+   dtype
+   device
+ -&gt; Conv3dSpec
+      inputChannelSize
+      outputChannelSize
+      kernelSize0
+      kernelSize1
+      kernelSize2
+      dtype
+      device
+ -&gt; Bool)
+-&gt; (Conv3dSpec
+      inputChannelSize
+      outputChannelSize
+      kernelSize0
+      kernelSize1
+      kernelSize2
+      dtype
+      device
+    -&gt; Conv3dSpec
+         inputChannelSize
+         outputChannelSize
+         kernelSize0
+         kernelSize1
+         kernelSize2
+         dtype
+         device
+    -&gt; Bool)
+-&gt; Eq
+     (Conv3dSpec
+        inputChannelSize
+        outputChannelSize
+        kernelSize0
+        kernelSize1
+        kernelSize2
+        dtype
+        device)
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)).
+Conv3dSpec
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+-&gt; Conv3dSpec
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     kernelSize2
+     dtype
+     device
+-&gt; Bool
+/= :: Conv3dSpec
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+-&gt; Conv3dSpec
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     kernelSize2
+     dtype
+     device
+-&gt; Bool
+$c/= :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)).
+Conv3dSpec
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+-&gt; Conv3dSpec
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     kernelSize2
+     dtype
+     device
+-&gt; Bool
+== :: Conv3dSpec
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+-&gt; Conv3dSpec
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     kernelSize2
+     dtype
+     device
+-&gt; Bool
+$c== :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)).
+Conv3dSpec
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+-&gt; Conv3dSpec
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     kernelSize2
+     dtype
+     device
+-&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-158"></span><span>
+</span><span id="line-159"></span><span id="local-6989586621679731217"><span id="local-6989586621679731218"></span></span><span class="hs-keyword">data</span><span> </span><span id="Conv3d"><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv3d"><span class="hs-identifier hs-var">Conv3d</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731216"><span class="annot"><a href="#local-6989586621679731216"><span class="hs-identifier hs-type">inputChannelSize</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731215"><span class="annot"><a href="#local-6989586621679731215"><span class="hs-identifier hs-type">outputChannelSize</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span>
+</span><span id="line-160"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679731214"><span class="annot"><a href="#local-6989586621679731214"><span class="hs-identifier hs-type">kernelSize0</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731213"><span class="annot"><a href="#local-6989586621679731213"><span class="hs-identifier hs-type">kernelSize1</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731212"><span class="annot"><a href="#local-6989586621679731212"><span class="hs-identifier hs-type">kernelSize2</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span>
+</span><span id="line-161"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679731211"><span class="annot"><a href="#local-6989586621679731211"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.DType.html#DType"><span class="hs-identifier hs-type">D.DType</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-162"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679731210"><span class="annot"><a href="#local-6989586621679731210"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Device.html#DeviceType"><span class="hs-identifier hs-type">D.DeviceType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-163"></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-164"></span><span>  </span><span id="Conv3d"><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv3d"><span class="hs-identifier hs-var">Conv3d</span></a></span></span><span>
+</span><span id="line-165"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679731429"><span class="annot"><a href="#local-6989586621679731429"><span class="hs-identifier hs-type">inputChannelSize</span></a></span></span><span> </span><span id="local-6989586621679731428"><span class="annot"><a href="#local-6989586621679731428"><span class="hs-identifier hs-type">outputChannelSize</span></a></span></span><span> </span><span id="local-6989586621679731427"><span class="annot"><a href="#local-6989586621679731427"><span class="hs-identifier hs-type">kernelSize0</span></a></span></span><span> </span><span id="local-6989586621679731426"><span class="annot"><a href="#local-6989586621679731426"><span class="hs-identifier hs-type">kernelSize1</span></a></span></span><span> </span><span id="local-6989586621679731425"><span class="annot"><a href="#local-6989586621679731425"><span class="hs-identifier hs-type">kernelSize2</span></a></span></span><span> </span><span id="local-6989586621679731424"><span class="annot"><a href="#local-6989586621679731424"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span id="local-6989586621679731423"><span class="annot"><a href="#local-6989586621679731423"><span class="hs-identifier hs-type">device</span></a></span></span><span>
+</span><span id="line-166"></span><span>     </span><span class="hs-operator">.</span><span> </span><span class="hs-special">{</span><span> </span><span id="conv3dWeight"><span class="annot"><span class="annottext">Conv3d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+-&gt; Parameter
+     device
+     dtype
+     '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1,
+       kernelSize2]
+</span><a href="Torch.Typed.NN.Convolution.html#conv3dWeight"><span class="hs-identifier hs-var hs-var">conv3dWeight</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Typed.Parameter.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731423"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731424"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679731428"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731429"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731427"><span class="hs-identifier hs-type">kernelSize0</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731426"><span class="hs-identifier hs-type">kernelSize1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731425"><span class="hs-identifier hs-type">kernelSize2</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-167"></span><span>       </span><span class="hs-special">,</span><span> </span><span id="conv3dBias"><span class="annot"><span class="annottext">Conv3d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+-&gt; Parameter device dtype '[outputChannelSize]
+</span><a href="Torch.Typed.NN.Convolution.html#conv3dBias"><span class="hs-identifier hs-var hs-var">conv3dBias</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Typed.Parameter.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731423"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731424"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679731428"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-168"></span><span>       </span><span class="hs-special">}</span><span>
+</span><span id="line-169"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv3d"><span class="hs-identifier hs-type">Conv3d</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731429"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731428"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731427"><span class="hs-identifier hs-type">kernelSize0</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731426"><span class="hs-identifier hs-type">kernelSize1</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731425"><span class="hs-identifier hs-type">kernelSize2</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731424"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731423"><span class="hs-identifier hs-type">device</span></a></span><span>
+</span><span id="line-170"></span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731201"><span id="local-6989586621679731203"><span id="local-6989586621679731205"><span class="annot"><span class="annottext">Int
+-&gt; Conv3d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     kernelSize2
+     dtype
+     device
+-&gt; ShowS
+[Conv3d
+   inputChannelSize
+   outputChannelSize
+   kernelSize0
+   kernelSize1
+   kernelSize2
+   dtype
+   device]
+-&gt; ShowS
+Conv3d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+-&gt; String
+(Int
+ -&gt; Conv3d
+      inputChannelSize
+      outputChannelSize
+      kernelSize0
+      kernelSize1
+      kernelSize2
+      dtype
+      device
+ -&gt; ShowS)
+-&gt; (Conv3d
+      inputChannelSize
+      outputChannelSize
+      kernelSize0
+      kernelSize1
+      kernelSize2
+      dtype
+      device
+    -&gt; String)
+-&gt; ([Conv3d
+       inputChannelSize
+       outputChannelSize
+       kernelSize0
+       kernelSize1
+       kernelSize2
+       dtype
+       device]
+    -&gt; ShowS)
+-&gt; Show
+     (Conv3d
+        inputChannelSize
+        outputChannelSize
+        kernelSize0
+        kernelSize1
+        kernelSize2
+        dtype
+        device)
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)).
+Int
+-&gt; Conv3d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     kernelSize2
+     dtype
+     device
+-&gt; ShowS
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)).
+[Conv3d
+   inputChannelSize
+   outputChannelSize
+   kernelSize0
+   kernelSize1
+   kernelSize2
+   dtype
+   device]
+-&gt; ShowS
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)).
+Conv3d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+-&gt; String
+showList :: [Conv3d
+   inputChannelSize
+   outputChannelSize
+   kernelSize0
+   kernelSize1
+   kernelSize2
+   dtype
+   device]
+-&gt; ShowS
+$cshowList :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)).
+[Conv3d
+   inputChannelSize
+   outputChannelSize
+   kernelSize0
+   kernelSize1
+   kernelSize2
+   dtype
+   device]
+-&gt; ShowS
+show :: Conv3d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+-&gt; String
+$cshow :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)).
+Conv3d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+-&gt; String
+showsPrec :: Int
+-&gt; Conv3d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     kernelSize2
+     dtype
+     device
+-&gt; ShowS
+$cshowsPrec :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)).
+Int
+-&gt; Conv3d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     kernelSize2
+     dtype
+     device
+-&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(forall x.
+ Conv3d
+   inputChannelSize
+   outputChannelSize
+   kernelSize0
+   kernelSize1
+   kernelSize2
+   dtype
+   device
+ -&gt; Rep
+      (Conv3d
+         inputChannelSize
+         outputChannelSize
+         kernelSize0
+         kernelSize1
+         kernelSize2
+         dtype
+         device)
+      x)
+-&gt; (forall x.
+    Rep
+      (Conv3d
+         inputChannelSize
+         outputChannelSize
+         kernelSize0
+         kernelSize1
+         kernelSize2
+         dtype
+         device)
+      x
+    -&gt; Conv3d
+         inputChannelSize
+         outputChannelSize
+         kernelSize0
+         kernelSize1
+         kernelSize2
+         dtype
+         device)
+-&gt; Generic
+     (Conv3d
+        inputChannelSize
+        outputChannelSize
+        kernelSize0
+        kernelSize1
+        kernelSize2
+        dtype
+        device)
+forall x.
+Rep
+  (Conv3d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     kernelSize2
+     dtype
+     device)
+  x
+-&gt; Conv3d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     kernelSize2
+     dtype
+     device
+forall x.
+Conv3d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+-&gt; Rep
+     (Conv3d
+        inputChannelSize
+        outputChannelSize
+        kernelSize0
+        kernelSize1
+        kernelSize2
+        dtype
+        device)
+     x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)) x.
+Rep
+  (Conv3d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     kernelSize2
+     dtype
+     device)
+  x
+-&gt; Conv3d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     kernelSize2
+     dtype
+     device
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)) x.
+Conv3d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+-&gt; Rep
+     (Conv3d
+        inputChannelSize
+        outputChannelSize
+        kernelSize0
+        kernelSize1
+        kernelSize2
+        dtype
+        device)
+     x
+$cto :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)) x.
+Rep
+  (Conv3d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     kernelSize2
+     dtype
+     device)
+  x
+-&gt; Conv3d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     kernelSize2
+     dtype
+     device
+$cfrom :: forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)) x.
+Conv3d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+-&gt; Rep
+     (Conv3d
+        inputChannelSize
+        outputChannelSize
+        kernelSize0
+        kernelSize1
+        kernelSize2
+        dtype
+        device)
+     x
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-171"></span><span>
+</span><span id="line-172"></span><span class="hs-comment">-- | conv3d</span><span>
+</span><span id="line-173"></span><span class="hs-comment">-- The constraints on this one are _very_ involved, so the partial signatures</span><span>
+</span><span id="line-174"></span><span class="hs-comment">-- make the code significantly cleaner.</span><span>
+</span><span id="line-175"></span><span class="annot"><a href="Torch.Typed.NN.Convolution.html#conv3dForward"><span class="hs-identifier hs-type">conv3dForward</span></a></span><span>
+</span><span id="line-176"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679731197"><span class="annot"><a href="#local-6989586621679731197"><span class="hs-identifier hs-type">stride</span></a></span></span><span> </span><span id="local-6989586621679731196"><span class="annot"><a href="#local-6989586621679731196"><span class="hs-identifier hs-type">padding</span></a></span></span><span>
+</span><span id="line-177"></span><span>   </span><span class="hs-operator">.</span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span>
+</span><span id="line-178"></span><span>  </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv3d"><span class="hs-identifier hs-type">Conv3d</span></a></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span>
+</span><span id="line-179"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span>
+</span><span id="line-180"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span>
+</span><span id="line-181"></span><span id="conv3dForward"><span class="annot"><span class="annottext">conv3dForward :: Conv3d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  _
+  _
+-&gt; Tensor
+     _
+     _
+     '[batchSize, inputChannelSize, inputSize0, inputSize1, inputSize2]
+-&gt; Tensor
+     _
+     _
+     '[batchSize, outputChannelSize,
+       Div ((inputSize0 + (2 * Fst3 padding)) - kernelSize0) (Fst3 stride)
+       + 1,
+       Div ((inputSize1 + (2 * Snd3 padding)) - kernelSize1) (Snd3 stride)
+       + 1,
+       Div ((inputSize2 + (2 * Trd3 padding)) - kernelSize2) (Trd3 stride)
+       + 1]
+</span><a href="Torch.Typed.NN.Convolution.html#conv3dForward"><span class="hs-identifier hs-var hs-var">conv3dForward</span></a></span></span><span> </span><span id="local-6989586621679731194"><span id="local-6989586621679731195"><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv3d"><span class="hs-identifier hs-type">Conv3d</span></a></span><span> </span><span class="hs-special">{</span><span class="hs-glyph">..</span><span class="hs-special">}</span></span></span><span> </span><span id="local-6989586621679731193"><span class="annot"><span class="annottext">input :: Tensor
+  _
+  _
+  '[batchSize, inputChannelSize, inputSize0, inputSize1, inputSize2]
+</span><a href="#local-6989586621679731193"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor
+  _
+  _
+  '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1,
+    kernelSize2]
+-&gt; Tensor _ _ '[outputChannelSize]
+-&gt; Tensor
+     _
+     _
+     '[batchSize, inputChannelSize, inputSize0, inputSize1, inputSize2]
+-&gt; Tensor
+     _
+     _
+     '[batchSize, outputChannelSize,
+       Div ((inputSize0 + (2 * Fst3 padding)) - kernelSize0) (Fst3 stride)
+       + 1,
+       Div ((inputSize1 + (2 * Snd3 padding)) - kernelSize1) (Snd3 stride)
+       + 1,
+       Div ((inputSize2 + (2 * Trd3 padding)) - kernelSize2) (Trd3 stride)
+       + 1]
+forall (stride :: (Nat, Nat, Nat)) (padding :: (Nat, Nat, Nat))
+       (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat)
+       (inputSize0 :: Nat) (inputSize1 :: Nat) (inputSize2 :: Nat)
+       (batchSize :: Nat) (outputSize0 :: Nat) (outputSize1 :: Nat)
+       (outputSize2 :: Nat) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+(All
+   KnownNat
+   '[Fst3 stride, Snd3 stride, Trd3 stride, Fst3 padding,
+     Snd3 padding, Trd3 padding, inputChannelSize, outputChannelSize,
+     kernelSize0, kernelSize1, kernelSize2, inputSize0, inputSize1,
+     inputSize2, batchSize],
+ ConvSideCheck
+   inputSize0 kernelSize0 (Fst3 stride) (Fst3 padding) outputSize0,
+ ConvSideCheck
+   inputSize1 kernelSize1 (Snd3 stride) (Snd3 padding) outputSize1,
+ ConvSideCheck
+   inputSize2 kernelSize2 (Trd3 stride) (Trd3 padding) outputSize2) =&gt;
+Tensor
+  device
+  dtype
+  '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1,
+    kernelSize2]
+-&gt; Tensor device dtype '[outputChannelSize]
+-&gt; Tensor
+     device
+     dtype
+     '[batchSize, inputChannelSize, inputSize0, inputSize1, inputSize2]
+-&gt; Tensor
+     device
+     dtype
+     '[batchSize, outputChannelSize, outputSize0, outputSize1,
+       outputSize2]
+</span><a href="Torch.Typed.Functional.html#conv3d"><span class="hs-identifier hs-var">conv3d</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679731197"><span class="hs-identifier hs-type">stride</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679731196"><span class="hs-identifier hs-type">padding</span></a></span><span>
+</span><span id="line-182"></span><span>  </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parameter
+  _
+  _
+  '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1,
+    kernelSize2]
+-&gt; Tensor
+     _
+     _
+     '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1,
+       kernelSize2]
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Parameter device dtype shape -&gt; Tensor device dtype shape
+</span><a href="Torch.Typed.Parameter.html#toDependent"><span class="hs-identifier hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">Parameter
+  _
+  _
+  '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1,
+    kernelSize2]
+</span><a href="#local-6989586621679731195"><span class="hs-identifier hs-var">conv3dWeight</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-183"></span><span>  </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parameter _ _ '[outputChannelSize]
+-&gt; Tensor _ _ '[outputChannelSize]
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Parameter device dtype shape -&gt; Tensor device dtype shape
+</span><a href="Torch.Typed.Parameter.html#toDependent"><span class="hs-identifier hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">Parameter _ _ '[outputChannelSize]
+</span><a href="#local-6989586621679731194"><span class="hs-identifier hs-var">conv3dBias</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-184"></span><span>  </span><span class="annot"><span class="annottext">Tensor
+  _
+  _
+  '[batchSize, inputChannelSize, inputSize0, inputSize1, inputSize2]
+</span><a href="#local-6989586621679731193"><span class="hs-identifier hs-var">input</span></a></span><span>
+</span><span id="line-185"></span><span>
+</span><span id="line-186"></span><span id="local-6989586621679731176"><span id="local-6989586621679731177"><span id="local-6989586621679731178"><span id="local-6989586621679731179"><span id="local-6989586621679731180"><span id="local-6989586621679731181"><span id="local-6989586621679731182"><span id="local-6989586621679731183"><span id="local-6989586621679731184"><span id="local-6989586621679731185"><span id="local-6989586621679731186"><span id="local-6989586621679731187"><span id="local-6989586621679731188"><span id="local-6989586621679731189"><span id="local-6989586621679731190"><span id="local-6989586621679731191"><span class="hs-keyword">instance</span><span>
+</span><span id="line-187"></span><span>  </span><span id="local-6989586621679731173"><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#All"><span class="hs-identifier hs-type">All</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">KnownNat</span></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span> </span><span class="annot"><a href="Torch.Typed.Aux.html#Fst3"><span class="hs-identifier hs-type">Fst3</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731191"><span class="hs-identifier hs-type">stride</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Aux.html#Snd3"><span class="hs-identifier hs-type">Snd3</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731191"><span class="hs-identifier hs-type">stride</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Aux.html#Trd3"><span class="hs-identifier hs-type">Trd3</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731191"><span class="hs-identifier hs-type">stride</span></a></span><span>
+</span><span id="line-188"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Aux.html#Fst3"><span class="hs-identifier hs-type">Fst3</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731190"><span class="hs-identifier hs-type">padding</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Aux.html#Snd3"><span class="hs-identifier hs-type">Snd3</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731190"><span class="hs-identifier hs-type">padding</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Aux.html#Trd3"><span class="hs-identifier hs-type">Trd3</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731190"><span class="hs-identifier hs-type">padding</span></a></span><span>
+</span><span id="line-189"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731189"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731188"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span>
+</span><span id="line-190"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731187"><span class="hs-identifier hs-type">kernelSize0</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731186"><span class="hs-identifier hs-type">kernelSize1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731185"><span class="hs-identifier hs-type">kernelSize2</span></a></span><span>
+</span><span id="line-191"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731184"><span class="hs-identifier hs-type">inputSize0</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731183"><span class="hs-identifier hs-type">inputSize1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731182"><span class="hs-identifier hs-type">inputSize2</span></a></span><span>
+</span><span id="line-192"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731181"><span class="hs-identifier hs-type">batchSize</span></a></span><span>
+</span><span id="line-193"></span><span>                  </span><span class="hs-special">]</span><span>
+</span><span id="line-194"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Functional.html#ConvSideCheck"><span class="hs-identifier hs-type">ConvSideCheck</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731184"><span class="hs-identifier hs-type">inputSize0</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731187"><span class="hs-identifier hs-type">kernelSize0</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Aux.html#Fst3"><span class="hs-identifier hs-type">Fst3</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731191"><span class="hs-identifier hs-type">stride</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Aux.html#Fst3"><span class="hs-identifier hs-type">Fst3</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731190"><span class="hs-identifier hs-type">padding</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679731180"><span class="hs-identifier hs-type">outputSize0</span></a></span><span>
+</span><span id="line-195"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Functional.html#ConvSideCheck"><span class="hs-identifier hs-type">ConvSideCheck</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731183"><span class="hs-identifier hs-type">inputSize1</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731186"><span class="hs-identifier hs-type">kernelSize1</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Aux.html#Snd3"><span class="hs-identifier hs-type">Snd3</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731191"><span class="hs-identifier hs-type">stride</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Aux.html#Snd3"><span class="hs-identifier hs-type">Snd3</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731190"><span class="hs-identifier hs-type">padding</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679731179"><span class="hs-identifier hs-type">outputSize1</span></a></span><span>
+</span><span id="line-196"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Functional.html#ConvSideCheck"><span class="hs-identifier hs-type">ConvSideCheck</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731182"><span class="hs-identifier hs-type">inputSize2</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731185"><span class="hs-identifier hs-type">kernelSize2</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Aux.html#Trd3"><span class="hs-identifier hs-type">Trd3</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731191"><span class="hs-identifier hs-type">stride</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Aux.html#Trd3"><span class="hs-identifier hs-type">Trd3</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731190"><span class="hs-identifier hs-type">padding</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679731178"><span class="hs-identifier hs-type">outputSize2</span></a></span><span>
+</span><span id="line-197"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.NN.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv3d"><span class="hs-identifier hs-type">Conv3d</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731189"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731188"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731187"><span class="hs-identifier hs-type">kernelSize0</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731186"><span class="hs-identifier hs-type">kernelSize1</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731185"><span class="hs-identifier hs-type">kernelSize2</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731177"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731176"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731176"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731177"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679731181"><span class="hs-identifier hs-type">batchSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731189"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731184"><span class="hs-identifier hs-type">inputSize0</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731183"><span class="hs-identifier hs-type">inputSize1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731182"><span class="hs-identifier hs-type">inputSize2</span></a></span><span class="hs-special">]</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Proxy</span></span><span> </span><span class="annot"><a href="#local-6989586621679731191"><span class="hs-identifier hs-type">stride</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Proxy</span></span><span> </span><span class="annot"><a href="#local-6989586621679731190"><span class="hs-identifier hs-type">padding</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731176"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731177"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679731181"><span class="hs-identifier hs-type">batchSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731188"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731180"><span class="hs-identifier hs-type">outputSize0</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731179"><span class="hs-identifier hs-type">outputSize1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679731178"><span class="hs-identifier hs-type">outputSize2</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-198"></span><span>  </span><span id="local-6989586621679731172"><span class="annot"><span class="annottext">forward :: Conv3d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+-&gt; (Tensor
+      device
+      dtype
+      '[batchSize, inputChannelSize, inputSize0, inputSize1, inputSize2],
+    Proxy stride, Proxy padding)
+-&gt; Tensor
+     device
+     dtype
+     '[batchSize, outputChannelSize, outputSize0, outputSize1,
+       outputSize2]
+</span><a href="#local-6989586621679731172"><span class="hs-identifier hs-var hs-var hs-var hs-var">forward</span></a></span></span><span> </span><span id="local-6989586621679731171"><span class="annot"><span class="annottext">model :: Conv3d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+</span><a href="#local-6989586621679731171"><span class="hs-identifier hs-var">model</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679731170"><span class="annot"><span class="annottext">input :: Tensor
+  device
+  dtype
+  '[batchSize, inputChannelSize, inputSize0, inputSize1, inputSize2]
+</span><a href="#local-6989586621679731170"><span class="hs-identifier hs-var">input</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Proxy</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Proxy</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Conv3d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+-&gt; Tensor
+     device
+     dtype
+     '[batchSize, inputChannelSize, inputSize0, inputSize1, inputSize2]
+-&gt; Tensor
+     device
+     dtype
+     '[batchSize, outputChannelSize,
+       Div ((inputSize0 + (2 * Fst3 padding)) - kernelSize0) (Fst3 stride)
+       + 1,
+       Div ((inputSize1 + (2 * Snd3 padding)) - kernelSize1) (Snd3 stride)
+       + 1,
+       Div ((inputSize2 + (2 * Trd3 padding)) - kernelSize2) (Trd3 stride)
+       + 1]
+forall (stride :: (Nat, Nat, Nat)) (padding :: (Nat, Nat, Nat))
+       (inputSize1 :: Nat) (inputSize0 :: Nat) (inputSize2 :: Nat)
+       (kernelSize1 :: Nat) (kernelSize0 :: Nat) (kernelSize2 :: Nat)
+       (batchSize :: Nat) (outputChannelSize :: Nat)
+       (inputChannelSize :: Nat) (_ :: DType) (_ :: (DeviceType, Nat)).
+(KnownNat (Snd3 padding), KnownNat (Fst3 padding),
+ KnownNat (Trd3 padding), KnownNat inputSize1, KnownNat inputSize0,
+ KnownNat inputSize2, KnownNat kernelSize1, KnownNat kernelSize0,
+ KnownNat kernelSize2, KnownNat (Snd3 stride),
+ KnownNat (Fst3 stride), KnownNat (Trd3 stride), KnownNat batchSize,
+ KnownNat outputChannelSize, KnownNat inputChannelSize,
+ (1 &lt;=? Fst3 stride) ~ 'True, (1 &lt;=? kernelSize2) ~ 'True,
+ ((kernelSize1 - 1) &lt;=? (inputSize1 + (2 * Snd3 padding))) ~ 'True,
+ (1 &lt;=? Snd3 stride) ~ 'True,
+ (kernelSize2 &lt;=? (inputSize2 + (2 * Trd3 padding))) ~ 'True,
+ (1 &lt;=? Trd3 stride) ~ 'True, (1 &lt;=? kernelSize0) ~ 'True,
+ ((kernelSize0 - 1) &lt;=? (inputSize0 + (2 * Fst3 padding))) ~ 'True,
+ (kernelSize0 &lt;=? (inputSize0 + (2 * Fst3 padding))) ~ 'True,
+ (kernelSize1 &lt;=? (inputSize1 + (2 * Snd3 padding))) ~ 'True,
+ (1 &lt;=? kernelSize1) ~ 'True,
+ ((kernelSize2 - 1) &lt;=? (inputSize2 + (2 * Trd3 padding)))
+ ~ 'True) =&gt;
+Conv3d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  _
+  _
+-&gt; Tensor
+     _
+     _
+     '[batchSize, inputChannelSize, inputSize0, inputSize1, inputSize2]
+-&gt; Tensor
+     _
+     _
+     '[batchSize, outputChannelSize,
+       Div ((inputSize0 + (2 * Fst3 padding)) - kernelSize0) (Fst3 stride)
+       + 1,
+       Div ((inputSize1 + (2 * Snd3 padding)) - kernelSize1) (Snd3 stride)
+       + 1,
+       Div ((inputSize2 + (2 * Trd3 padding)) - kernelSize2) (Trd3 stride)
+       + 1]
+</span><a href="Torch.Typed.NN.Convolution.html#conv3dForward"><span class="hs-identifier hs-var">conv3dForward</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679731191"><span class="hs-identifier hs-type">stride</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679731190"><span class="hs-identifier hs-type">padding</span></a></span><span> </span><span class="annot"><span class="annottext">Conv3d
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+</span><a href="#local-6989586621679731171"><span class="hs-identifier hs-var">model</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+  device
+  dtype
+  '[batchSize, inputChannelSize, inputSize0, inputSize1, inputSize2]
+</span><a href="#local-6989586621679731170"><span class="hs-identifier hs-var">input</span></a></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span>
+</span><span id="line-199"></span><span>
+</span><span id="line-200"></span><span id="local-6989586621679731163"><span id="local-6989586621679731164"><span id="local-6989586621679731165"><span id="local-6989586621679731166"><span id="local-6989586621679731167"><span id="local-6989586621679731168"><span id="local-6989586621679731169"><span class="hs-keyword">instance</span><span>
+</span><span id="line-201"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier hs-type">KnownNat</span></span><span> </span><span class="annot"><a href="#local-6989586621679731169"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span>
+</span><span id="line-202"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">KnownNat</span></span><span> </span><span class="annot"><a href="#local-6989586621679731168"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span>
+</span><span id="line-203"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">KnownNat</span></span><span> </span><span class="annot"><a href="#local-6989586621679731167"><span class="hs-identifier hs-type">kernelSize0</span></a></span><span>
+</span><span id="line-204"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">KnownNat</span></span><span> </span><span class="annot"><a href="#local-6989586621679731166"><span class="hs-identifier hs-type">kernelSize1</span></a></span><span>
+</span><span id="line-205"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">KnownNat</span></span><span> </span><span class="annot"><a href="#local-6989586621679731165"><span class="hs-identifier hs-type">kernelSize2</span></a></span><span>
+</span><span id="line-206"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#KnownDType"><span class="hs-identifier hs-type">KnownDType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731164"><span class="hs-identifier hs-type">dtype</span></a></span><span>
+</span><span id="line-207"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#KnownDevice"><span class="hs-identifier hs-type">KnownDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731163"><span class="hs-identifier hs-type">device</span></a></span><span>
+</span><span id="line-208"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Typed.Factories.html#RandDTypeIsValid"><span class="hs-identifier hs-type">RandDTypeIsValid</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731163"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731164"><span class="hs-identifier hs-type">dtype</span></a></span><span>
+</span><span id="line-209"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.NN.html#Randomizable"><span class="hs-identifier hs-type">Randomizable</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv3dSpec"><span class="hs-identifier hs-type">Conv3dSpec</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731169"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731168"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731167"><span class="hs-identifier hs-type">kernelSize0</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731166"><span class="hs-identifier hs-type">kernelSize1</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731165"><span class="hs-identifier hs-type">kernelSize2</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731164"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731163"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-210"></span><span>                    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv3d"><span class="hs-identifier hs-type">Conv3d</span></a></span><span>     </span><span class="annot"><a href="#local-6989586621679731169"><span class="hs-identifier hs-type">inputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731168"><span class="hs-identifier hs-type">outputChannelSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731167"><span class="hs-identifier hs-type">kernelSize0</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731166"><span class="hs-identifier hs-type">kernelSize1</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731165"><span class="hs-identifier hs-type">kernelSize2</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731164"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679731163"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-211"></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-212"></span><span>  </span><span id="local-6989586621679731161"><span class="annot"><span class="annottext">sample :: Conv3dSpec
+  inputChannelSize
+  outputChannelSize
+  kernelSize0
+  kernelSize1
+  kernelSize2
+  dtype
+  device
+-&gt; IO
+     (Conv3d
+        inputChannelSize
+        outputChannelSize
+        kernelSize0
+        kernelSize1
+        kernelSize2
+        dtype
+        device)
+</span><a href="#local-6989586621679731161"><span class="hs-identifier hs-var hs-var hs-var hs-var">sample</span></a></span></span><span> </span><span class="annot"><a href="Torch.Typed.NN.Convolution.html#Conv3dSpec"><span class="hs-identifier hs-type">Conv3dSpec</span></a></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-213"></span><span>    </span><span class="annot"><span class="annottext">Parameter
+  device
+  dtype
+  '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1,
+    kernelSize2]
+-&gt; Parameter device dtype '[outputChannelSize]
+-&gt; Conv3d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     kernelSize2
+     dtype
+     device
+forall (inputChannelSize :: Nat) (outputChannelSize :: Nat)
+       (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)).
+Parameter
+  device
+  dtype
+  '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1,
+    kernelSize2]
+-&gt; Parameter device dtype '[outputChannelSize]
+-&gt; Conv3d
+     inputChannelSize
+     outputChannelSize
+     kernelSize0
+     kernelSize1
+     kernelSize2
+     dtype
+     device
+</span><a href="Torch.Typed.NN.Convolution.html#Conv3d"><span class="hs-identifier hs-var">Conv3d</span></a></span><span> </span><span class="annot"><span class="annottext">(Parameter
+   device
+   dtype
+   '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1,
+     kernelSize2]
+ -&gt; Parameter device dtype '[outputChannelSize]
+ -&gt; Conv3d
+      inputChannelSize
+      outputChannelSize
+      kernelSize0
+      kernelSize1
+      kernelSize2
+      dtype
+      device)
+-&gt; IO
+     (Parameter
+        device
+        dtype
+        '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1,
+          kernelSize2])
+-&gt; IO
+     (Parameter device dtype '[outputChannelSize]
+      -&gt; Conv3d
+           inputChannelSize
+           outputChannelSize
+           kernelSize0
+           kernelSize1
+           kernelSize2
+           dtype
+           device)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+  device
+  dtype
+  '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1,
+    kernelSize2]
+-&gt; IO
+     (Parameter
+        device
+        dtype
+        '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1,
+          kernelSize2])
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Tensor device dtype shape -&gt; IO (Parameter device dtype shape)
+</span><a href="Torch.Typed.Parameter.html#makeIndependent"><span class="hs-identifier hs-var">makeIndependent</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor
+   device
+   dtype
+   '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1,
+     kernelSize2]
+ -&gt; IO
+      (Parameter
+         device
+         dtype
+         '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1,
+           kernelSize2]))
+-&gt; IO
+     (Tensor
+        device
+        dtype
+        '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1,
+          kernelSize2])
+-&gt; IO
+     (Parameter
+        device
+        dtype
+        '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1,
+          kernelSize2])
+forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
+</span><span class="hs-operator hs-var">=&lt;&lt;</span></span><span> </span><span class="annot"><span class="annottext">IO
+  (Tensor
+     device
+     dtype
+     '[outputChannelSize, inputChannelSize, kernelSize0, kernelSize1,
+       kernelSize2])
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+(TensorOptions shape dtype device,
+ RandDTypeIsValid device dtype) =&gt;
+IO (Tensor device dtype shape)
+</span><a href="Torch.Typed.Factories.html#randn"><span class="hs-identifier hs-var">randn</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">IO
+  (Parameter device dtype '[outputChannelSize]
+   -&gt; Conv3d
+        inputChannelSize
+        outputChannelSize
+        kernelSize0
+        kernelSize1
+        kernelSize2
+        dtype
+        device)
+-&gt; IO (Parameter device dtype '[outputChannelSize])
+-&gt; IO
+     (Conv3d
+        inputChannelSize
+        outputChannelSize
+        kernelSize0
+        kernelSize1
+        kernelSize2
+        dtype
+        device)
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor device dtype '[outputChannelSize]
+-&gt; IO (Parameter device dtype '[outputChannelSize])
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+Tensor device dtype shape -&gt; IO (Parameter device dtype shape)
+</span><a href="Torch.Typed.Parameter.html#makeIndependent"><span class="hs-identifier hs-var">makeIndependent</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor device dtype '[outputChannelSize]
+ -&gt; IO (Parameter device dtype '[outputChannelSize]))
+-&gt; IO (Tensor device dtype '[outputChannelSize])
+-&gt; IO (Parameter device dtype '[outputChannelSize])
+forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
+</span><span class="hs-operator hs-var">=&lt;&lt;</span></span><span> </span><span class="annot"><span class="annottext">IO (Tensor device dtype '[outputChannelSize])
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+(TensorOptions shape dtype device,
+ RandDTypeIsValid device dtype) =&gt;
+IO (Tensor device dtype shape)
+</span><a href="Torch.Typed.Factories.html#randn"><span class="hs-identifier hs-var">randn</span></a></span><span class="hs-special">)</span></span></span></span></span></span></span></span><span>
+</span><span id="line-214"></span></pre></body></html>
