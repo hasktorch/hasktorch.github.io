@@ -4349,6 +4349,24 @@ mm :: forall n k m dtype device. Tensor device dtype '[n, k] -> Tensor device dt
 --   (Float,[3])
 --   </pre>
 mv :: forall n m dtype device. Tensor device dtype '[n, m] -> Tensor device dtype '[m] -> Tensor device dtype '[n]
+type family NarrowCheck (mbCurrent :: Maybe Nat) (mbUpdated :: Maybe [Nat]) (shape :: [Nat]) (dim :: Nat) (start :: Nat) (length :: Nat) :: [Nat]
+type family Narrow' (dim :: Nat) (shape :: [Nat]) (current :: Maybe Nat) (start :: Nat) (length :: Nat) :: Maybe [Nat]
+type family Narrow (shape :: [Nat]) (dim :: Nat) (start :: Nat) (length :: Nat) :: [Nat]
+
+-- | <a>Narrow</a> a tensor by returning a tensor that is a slice from
+--   <tt>start</tt> of length <a>length</a> along <a>dim</a>
+--   
+--   <pre>
+--   &gt;&gt;&gt; narrow @0 @0 @2 (ones :: CPUTensor 'D.Float '[3,3,3])
+--   Tensor Float [2,3,3] 
+--   
+--   &gt;&gt;&gt; narrow @1 @1 @2 (ones :: CPUTensor 'D.Half '[3,3,3])
+--   Tensor Half [3,2,3] 
+--   
+--   &gt;&gt;&gt; narrow @1 @1 @2 (ones :: CPUTensor 'D.Bool '[3,3,3])
+--   Tensor Bool [3,2,3]
+--   </pre>
+narrow :: forall dim start length shape mbSize mbNewShape dtype device. (All KnownNat '[dim, start, length], All KnownNat shape) => Tensor device dtype shape -> Tensor device dtype (Narrow shape dim start length)
 
 -- | onesLike
 --   
@@ -6044,8 +6062,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679618002 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679618027 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679618628 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679618653 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
