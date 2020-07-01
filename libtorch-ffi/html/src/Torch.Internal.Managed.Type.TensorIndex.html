@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DataKinds #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE PolyKinds #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE TemplateHaskell #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE QuasiQuotes #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-7"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-8"></span><span class="hs-pragma">{-# LANGUAGE TypeFamilies #-}</span><span>
+</span><span id="line-9"></span><span class="hs-pragma">{-# LANGUAGE FlexibleInstances #-}</span><span>
+</span><span id="line-10"></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.Internal.Managed.Type.TensorIndex</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Foreign.C.String</span></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Foreign.C.Types</span></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Foreign</span></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.Internal.Type.html"><span class="hs-identifier">Torch.Internal.Type</span></a></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.Internal.Class.html"><span class="hs-identifier">Torch.Internal.Class</span></a></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.Internal.Cast.html"><span class="hs-identifier">Torch.Internal.Cast</span></a></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Tensor.html"><span class="hs-identifier">Torch.Internal.Unmanaged.Type.Tensor</span></a></span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.TensorIndex.html"><span class="hs-identifier">Torch.Internal.Unmanaged.Type.TensorIndex</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Unmanaged</span></span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="annot"><a href="Torch.Internal.Managed.Type.TensorIndex.html#newTensorIndexList"><span class="hs-identifier hs-type">newTensorIndexList</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#StdVector"><span class="hs-identifier hs-type">StdVector</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorIndex"><span class="hs-identifier hs-type">TensorIndex</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span id="newTensorIndexList"><span class="annot"><span class="annottext">newTensorIndexList :: IO (ForeignPtr (StdVector TensorIndex))
+</span><a href="Torch.Internal.Managed.Type.TensorIndex.html#newTensorIndexList"><span class="hs-identifier hs-var hs-var">newTensorIndexList</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO (Ptr (StdVector TensorIndex))
+-&gt; IO (ForeignPtr (StdVector TensorIndex))
+forall a ca. Castable a ca =&gt; IO ca -&gt; IO a
+</span><a href="Torch.Internal.Cast.html#cast0"><span class="hs-identifier hs-var">cast0</span></a></span><span> </span><span class="annot"><span class="annottext">IO (Ptr (StdVector TensorIndex))
+</span><a href="Torch.Internal.Unmanaged.Type.TensorIndex.html#newTensorIndexList"><span class="hs-identifier hs-var">Unmanaged.newTensorIndexList</span></a></span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="annot"><a href="Torch.Internal.Managed.Type.TensorIndex.html#newTensorIndexWithInt"><span class="hs-identifier hs-type">newTensorIndexWithInt</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CInt</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorIndex"><span class="hs-identifier hs-type">TensorIndex</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span id="newTensorIndexWithInt"><span class="annot"><span class="annottext">newTensorIndexWithInt :: CInt -&gt; IO (ForeignPtr TensorIndex)
+</span><a href="Torch.Internal.Managed.Type.TensorIndex.html#newTensorIndexWithInt"><span class="hs-identifier hs-var hs-var">newTensorIndexWithInt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(CInt -&gt; IO (Ptr TensorIndex))
+-&gt; CInt -&gt; IO (ForeignPtr TensorIndex)
+forall a ca y cy.
+(Castable a ca, Castable y cy) =&gt;
+(ca -&gt; IO cy) -&gt; a -&gt; IO y
+</span><a href="Torch.Internal.Cast.html#cast1"><span class="hs-identifier hs-var">cast1</span></a></span><span> </span><span class="annot"><span class="annottext">CInt -&gt; IO (Ptr TensorIndex)
+</span><a href="Torch.Internal.Unmanaged.Type.TensorIndex.html#newTensorIndexWithInt"><span class="hs-identifier hs-var">Unmanaged.newTensorIndexWithInt</span></a></span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="annot"><a href="Torch.Internal.Managed.Type.TensorIndex.html#newTensorIndexWithBool"><span class="hs-identifier hs-type">newTensorIndexWithBool</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorIndex"><span class="hs-identifier hs-type">TensorIndex</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span id="newTensorIndexWithBool"><span class="annot"><span class="annottext">newTensorIndexWithBool :: CBool -&gt; IO (ForeignPtr TensorIndex)
+</span><a href="Torch.Internal.Managed.Type.TensorIndex.html#newTensorIndexWithBool"><span class="hs-identifier hs-var hs-var">newTensorIndexWithBool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(CBool -&gt; IO (Ptr TensorIndex))
+-&gt; CBool -&gt; IO (ForeignPtr TensorIndex)
+forall a ca y cy.
+(Castable a ca, Castable y cy) =&gt;
+(ca -&gt; IO cy) -&gt; a -&gt; IO y
+</span><a href="Torch.Internal.Cast.html#cast1"><span class="hs-identifier hs-var">cast1</span></a></span><span> </span><span class="annot"><span class="annottext">CBool -&gt; IO (Ptr TensorIndex)
+</span><a href="Torch.Internal.Unmanaged.Type.TensorIndex.html#newTensorIndexWithBool"><span class="hs-identifier hs-var">Unmanaged.newTensorIndexWithBool</span></a></span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="annot"><a href="Torch.Internal.Managed.Type.TensorIndex.html#newTensorIndexWithSlice"><span class="hs-identifier hs-type">newTensorIndexWithSlice</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CInt</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CInt</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CInt</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorIndex"><span class="hs-identifier hs-type">TensorIndex</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span id="newTensorIndexWithSlice"><span class="annot"><span class="annottext">newTensorIndexWithSlice :: CInt -&gt; CInt -&gt; CInt -&gt; IO (ForeignPtr TensorIndex)
+</span><a href="Torch.Internal.Managed.Type.TensorIndex.html#newTensorIndexWithSlice"><span class="hs-identifier hs-var hs-var">newTensorIndexWithSlice</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(CInt -&gt; CInt -&gt; CInt -&gt; IO (Ptr TensorIndex))
+-&gt; CInt -&gt; CInt -&gt; CInt -&gt; IO (ForeignPtr TensorIndex)
+forall a ca x1 cx1 x2 cx2 y cy.
+(Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable y cy) =&gt;
+(ca -&gt; cx1 -&gt; cx2 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; x2 -&gt; IO y
+</span><a href="Torch.Internal.Cast.html#cast3"><span class="hs-identifier hs-var">cast3</span></a></span><span> </span><span class="annot"><span class="annottext">CInt -&gt; CInt -&gt; CInt -&gt; IO (Ptr TensorIndex)
+</span><a href="Torch.Internal.Unmanaged.Type.TensorIndex.html#newTensorIndexWithSlice"><span class="hs-identifier hs-var">Unmanaged.newTensorIndexWithSlice</span></a></span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="annot"><a href="Torch.Internal.Managed.Type.TensorIndex.html#newTensorIndexWithTensor"><span class="hs-identifier hs-type">newTensorIndexWithTensor</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorIndex"><span class="hs-identifier hs-type">TensorIndex</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span id="newTensorIndexWithTensor"><span class="annot"><span class="annottext">newTensorIndexWithTensor :: ForeignPtr Tensor -&gt; IO (ForeignPtr TensorIndex)
+</span><a href="Torch.Internal.Managed.Type.TensorIndex.html#newTensorIndexWithTensor"><span class="hs-identifier hs-var hs-var">newTensorIndexWithTensor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr Tensor -&gt; IO (Ptr TensorIndex))
+-&gt; ForeignPtr Tensor -&gt; IO (ForeignPtr TensorIndex)
+forall a ca y cy.
+(Castable a ca, Castable y cy) =&gt;
+(ca -&gt; IO cy) -&gt; a -&gt; IO y
+</span><a href="Torch.Internal.Cast.html#cast1"><span class="hs-identifier hs-var">cast1</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Tensor -&gt; IO (Ptr TensorIndex)
+</span><a href="Torch.Internal.Unmanaged.Type.TensorIndex.html#newTensorIndexWithTensor"><span class="hs-identifier hs-var">Unmanaged.newTensorIndexWithTensor</span></a></span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="annot"><a href="Torch.Internal.Managed.Type.TensorIndex.html#newTensorIndexWithEllipsis"><span class="hs-identifier hs-type">newTensorIndexWithEllipsis</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorIndex"><span class="hs-identifier hs-type">TensorIndex</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span id="newTensorIndexWithEllipsis"><span class="annot"><span class="annottext">newTensorIndexWithEllipsis :: IO (ForeignPtr TensorIndex)
+</span><a href="Torch.Internal.Managed.Type.TensorIndex.html#newTensorIndexWithEllipsis"><span class="hs-identifier hs-var hs-var">newTensorIndexWithEllipsis</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO (Ptr TensorIndex) -&gt; IO (ForeignPtr TensorIndex)
+forall a ca. Castable a ca =&gt; IO ca -&gt; IO a
+</span><a href="Torch.Internal.Cast.html#cast0"><span class="hs-identifier hs-var">cast0</span></a></span><span> </span><span class="annot"><span class="annottext">IO (Ptr TensorIndex)
+</span><a href="Torch.Internal.Unmanaged.Type.TensorIndex.html#newTensorIndexWithEllipsis"><span class="hs-identifier hs-var">Unmanaged.newTensorIndexWithEllipsis</span></a></span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="annot"><a href="Torch.Internal.Managed.Type.TensorIndex.html#newTensorIndexWithNone"><span class="hs-identifier hs-type">newTensorIndexWithNone</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorIndex"><span class="hs-identifier hs-type">TensorIndex</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-44"></span><span id="newTensorIndexWithNone"><span class="annot"><span class="annottext">newTensorIndexWithNone :: IO (ForeignPtr TensorIndex)
+</span><a href="Torch.Internal.Managed.Type.TensorIndex.html#newTensorIndexWithNone"><span class="hs-identifier hs-var hs-var">newTensorIndexWithNone</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO (Ptr TensorIndex) -&gt; IO (ForeignPtr TensorIndex)
+forall a ca. Castable a ca =&gt; IO ca -&gt; IO a
+</span><a href="Torch.Internal.Cast.html#cast0"><span class="hs-identifier hs-var">cast0</span></a></span><span> </span><span class="annot"><span class="annottext">IO (Ptr TensorIndex)
+</span><a href="Torch.Internal.Unmanaged.Type.TensorIndex.html#newTensorIndexWithNone"><span class="hs-identifier hs-var">Unmanaged.newTensorIndexWithNone</span></a></span><span>
+</span><span id="line-45"></span><span>
+</span><span id="line-46"></span><span class="annot"><a href="Torch.Internal.Managed.Type.TensorIndex.html#tensorIndexList_empty"><span class="hs-identifier hs-type">tensorIndexList_empty</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#StdVector"><span class="hs-identifier hs-type">StdVector</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorIndex"><span class="hs-identifier hs-type">TensorIndex</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-47"></span><span id="tensorIndexList_empty"><span class="annot"><span class="annottext">tensorIndexList_empty :: ForeignPtr (StdVector TensorIndex) -&gt; IO CBool
+</span><a href="Torch.Internal.Managed.Type.TensorIndex.html#tensorIndexList_empty"><span class="hs-identifier hs-var hs-var">tensorIndexList_empty</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr (StdVector TensorIndex) -&gt; IO CBool)
+-&gt; ForeignPtr (StdVector TensorIndex) -&gt; IO CBool
+forall a ca y cy.
+(Castable a ca, Castable y cy) =&gt;
+(ca -&gt; IO cy) -&gt; a -&gt; IO y
+</span><a href="Torch.Internal.Cast.html#cast1"><span class="hs-identifier hs-var">cast1</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr (StdVector TensorIndex) -&gt; IO CBool
+</span><a href="Torch.Internal.Unmanaged.Type.TensorIndex.html#tensorIndexList_empty"><span class="hs-identifier hs-var">Unmanaged.tensorIndexList_empty</span></a></span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="annot"><a href="Torch.Internal.Managed.Type.TensorIndex.html#tensorIndexList_size"><span class="hs-identifier hs-type">tensorIndexList_size</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#StdVector"><span class="hs-identifier hs-type">StdVector</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorIndex"><span class="hs-identifier hs-type">TensorIndex</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">CSize</span></span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span id="tensorIndexList_size"><span class="annot"><span class="annottext">tensorIndexList_size :: ForeignPtr (StdVector TensorIndex) -&gt; IO CSize
+</span><a href="Torch.Internal.Managed.Type.TensorIndex.html#tensorIndexList_size"><span class="hs-identifier hs-var hs-var">tensorIndexList_size</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr (StdVector TensorIndex) -&gt; IO CSize)
+-&gt; ForeignPtr (StdVector TensorIndex) -&gt; IO CSize
+forall a ca y cy.
+(Castable a ca, Castable y cy) =&gt;
+(ca -&gt; IO cy) -&gt; a -&gt; IO y
+</span><a href="Torch.Internal.Cast.html#cast1"><span class="hs-identifier hs-var">cast1</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr (StdVector TensorIndex) -&gt; IO CSize
+</span><a href="Torch.Internal.Unmanaged.Type.TensorIndex.html#tensorIndexList_size"><span class="hs-identifier hs-var">Unmanaged.tensorIndexList_size</span></a></span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="annot"><a href="Torch.Internal.Managed.Type.TensorIndex.html#tensorIndexList_push_back"><span class="hs-identifier hs-type">tensorIndexList_push_back</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#StdVector"><span class="hs-identifier hs-type">StdVector</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorIndex"><span class="hs-identifier hs-type">TensorIndex</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorIndex"><span class="hs-identifier hs-type">TensorIndex</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span id="tensorIndexList_push_back"><span class="annot"><span class="annottext">tensorIndexList_push_back :: ForeignPtr (StdVector TensorIndex)
+-&gt; ForeignPtr TensorIndex -&gt; IO ()
+</span><a href="Torch.Internal.Managed.Type.TensorIndex.html#tensorIndexList_push_back"><span class="hs-identifier hs-var hs-var">tensorIndexList_push_back</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr (StdVector TensorIndex) -&gt; Ptr TensorIndex -&gt; IO ())
+-&gt; ForeignPtr (StdVector TensorIndex)
+-&gt; ForeignPtr TensorIndex
+-&gt; IO ()
+forall a ca x1 cx1 y cy.
+(Castable a ca, Castable x1 cx1, Castable y cy) =&gt;
+(ca -&gt; cx1 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; IO y
+</span><a href="Torch.Internal.Cast.html#cast2"><span class="hs-identifier hs-var">cast2</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr (StdVector TensorIndex) -&gt; Ptr TensorIndex -&gt; IO ()
+</span><a href="Torch.Internal.Unmanaged.Type.TensorIndex.html#tensorIndexList_push_back"><span class="hs-identifier hs-var">Unmanaged.tensorIndexList_push_back</span></a></span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="annot"><a href="Torch.Internal.Managed.Type.TensorIndex.html#index"><span class="hs-identifier hs-type">index</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#StdVector"><span class="hs-identifier hs-type">StdVector</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorIndex"><span class="hs-identifier hs-type">TensorIndex</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-56"></span><span id="index"><span class="annot"><span class="annottext">index :: ForeignPtr Tensor
+-&gt; ForeignPtr (StdVector TensorIndex) -&gt; IO (ForeignPtr Tensor)
+</span><a href="Torch.Internal.Managed.Type.TensorIndex.html#index"><span class="hs-identifier hs-var hs-var">index</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr Tensor -&gt; Ptr (StdVector TensorIndex) -&gt; IO (Ptr Tensor))
+-&gt; ForeignPtr Tensor
+-&gt; ForeignPtr (StdVector TensorIndex)
+-&gt; IO (ForeignPtr Tensor)
+forall a ca x1 cx1 y cy.
+(Castable a ca, Castable x1 cx1, Castable y cy) =&gt;
+(ca -&gt; cx1 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; IO y
+</span><a href="Torch.Internal.Cast.html#cast2"><span class="hs-identifier hs-var">cast2</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Tensor -&gt; Ptr (StdVector TensorIndex) -&gt; IO (Ptr Tensor)
+</span><a href="Torch.Internal.Unmanaged.Type.TensorIndex.html#index"><span class="hs-identifier hs-var">Unmanaged.index</span></a></span><span>
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span class="annot"><a href="Torch.Internal.Managed.Type.TensorIndex.html#index_put_"><span class="hs-identifier hs-type">index_put_</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#StdVector"><span class="hs-identifier hs-type">StdVector</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorIndex"><span class="hs-identifier hs-type">TensorIndex</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-59"></span><span id="index_put_"><span class="annot"><span class="annottext">index_put_ :: ForeignPtr Tensor
+-&gt; ForeignPtr (StdVector TensorIndex)
+-&gt; ForeignPtr Tensor
+-&gt; IO (ForeignPtr Tensor)
+</span><a href="Torch.Internal.Managed.Type.TensorIndex.html#index_put_"><span class="hs-identifier hs-var hs-var">index_put_</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr Tensor
+ -&gt; Ptr (StdVector TensorIndex) -&gt; Ptr Tensor -&gt; IO (Ptr Tensor))
+-&gt; ForeignPtr Tensor
+-&gt; ForeignPtr (StdVector TensorIndex)
+-&gt; ForeignPtr Tensor
+-&gt; IO (ForeignPtr Tensor)
+forall a ca x1 cx1 x2 cx2 y cy.
+(Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable y cy) =&gt;
+(ca -&gt; cx1 -&gt; cx2 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; x2 -&gt; IO y
+</span><a href="Torch.Internal.Cast.html#cast3"><span class="hs-identifier hs-var">cast3</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Tensor
+-&gt; Ptr (StdVector TensorIndex) -&gt; Ptr Tensor -&gt; IO (Ptr Tensor)
+</span><a href="Torch.Internal.Unmanaged.Type.TensorIndex.html#index_put_"><span class="hs-identifier hs-var">Unmanaged.index_put_</span></a></span><span>
+</span><span id="line-60"></span></pre></body></html>

@@ -303,6 +303,12 @@ select :: Tensor -> Int -> Int -> Tensor
 --   dim using the entries in index which is a LongTensor.
 indexSelect :: Tensor -> Int -> Tensor -> Tensor
 
+-- | Slices the input tensor along the selected dimension at the given
+--   range.
+slice :: Tensor -> Int -> Int -> Int -> Int -> Tensor
+isContiguous :: Tensor -> Bool
+contiguous :: Tensor -> Tensor
+
 -- | Returns a tensor with the same data and number of elements as input,
 --   but with the specified shape.
 reshape :: [Int] -> Tensor -> Tensor
@@ -311,9 +317,20 @@ toDense :: Tensor -> Tensor
 toMKLDNN :: Tensor -> Tensor
 toCPU :: Tensor -> Tensor
 toCUDA :: Tensor -> Tensor
+newtype RawTensorIndexList
+RawTensorIndexList :: ForeignPtr (StdVector TensorIndex) -> RawTensorIndexList
+newtype RawTensorIndex
+RawTensorIndex :: ForeignPtr TensorIndex -> RawTensorIndex
 (@@) :: TensorIndex a => Tensor -> a -> Tensor
+(@=) :: TensorIndex a => Tensor -> (a, Tensor) -> Tensor
+data None
+None :: None
+data Ellipsis
+Ellipsis :: Ellipsis
+data Slice a
+Slice :: a -> Slice a
 class TensorIndex a
-indexWith :: TensorIndex a => (Tensor, Int) -> a -> (Tensor, Int)
+pushIndex :: TensorIndex a => [RawTensorIndex] -> a -> [RawTensorIndex]
 class TensorLike a
 asTensor' :: TensorLike a => a -> TensorOptions -> Tensor
 asTensor :: TensorLike a => a -> Tensor
@@ -326,15 +343,36 @@ _pokeElemOff :: TensorLike a => Ptr () -> Int -> a -> IO ()
 int64_opts :: TensorOptions
 float_opts :: TensorOptions
 withTensor :: Tensor -> (Ptr () -> IO a) -> IO a
+instance GHC.Classes.Eq a => GHC.Classes.Eq (Torch.Tensor.Slice a)
+instance GHC.Show.Show a => GHC.Show.Show (Torch.Tensor.Slice a)
+instance GHC.Classes.Eq Torch.Tensor.Ellipsis
+instance GHC.Show.Show Torch.Tensor.Ellipsis
+instance GHC.Classes.Eq Torch.Tensor.None
+instance GHC.Show.Show Torch.Tensor.None
 instance (Data.Reflection.Reifies a Torch.DType.DType, Foreign.Storable.Storable a) => Torch.Tensor.TensorLike a
 instance Torch.Tensor.TensorLike GHC.Types.Bool
 instance Torch.Tensor.TensorLike a => Torch.Tensor.TensorLike [a]
+instance Torch.Tensor.TensorIndex Torch.Tensor.None
+instance Torch.Tensor.TensorIndex Torch.Tensor.Ellipsis
+instance Torch.Tensor.TensorIndex GHC.Types.Bool
+instance GHC.Real.Integral a => Torch.Tensor.TensorIndex (Torch.Tensor.Slice (a, a))
+instance GHC.Real.Integral a => Torch.Tensor.TensorIndex (Torch.Tensor.Slice (a, a, a))
+instance GHC.Real.Integral a => Torch.Tensor.TensorIndex (Torch.Tensor.Slice (Torch.Tensor.None, Torch.Tensor.None, a))
+instance GHC.Real.Integral a => Torch.Tensor.TensorIndex (Torch.Tensor.Slice a)
+instance GHC.Real.Integral a => Torch.Tensor.TensorIndex (Torch.Tensor.Slice (a, Torch.Tensor.None))
+instance GHC.Real.Integral a => Torch.Tensor.TensorIndex (Torch.Tensor.Slice (a, Torch.Tensor.None, a))
+instance GHC.Real.Integral a => Torch.Tensor.TensorIndex (Torch.Tensor.Slice (Torch.Tensor.None, a, a))
+instance GHC.Real.Integral a => Torch.Tensor.TensorIndex (Torch.Tensor.Slice (Torch.Tensor.None, a))
+instance Torch.Tensor.TensorIndex (Torch.Tensor.Slice ())
 instance Torch.Tensor.TensorIndex GHC.Types.Int
 instance Torch.Tensor.TensorIndex GHC.Integer.Type.Integer
+instance Torch.Tensor.TensorIndex Torch.Tensor.Tensor
 instance Torch.Tensor.TensorIndex ()
 instance (Torch.Tensor.TensorIndex a, Torch.Tensor.TensorIndex b) => Torch.Tensor.TensorIndex (a, b)
 instance (Torch.Tensor.TensorIndex a, Torch.Tensor.TensorIndex b, Torch.Tensor.TensorIndex c) => Torch.Tensor.TensorIndex (a, b, c)
 instance (Torch.Tensor.TensorIndex a, Torch.Tensor.TensorIndex b, Torch.Tensor.TensorIndex c, Torch.Tensor.TensorIndex d) => Torch.Tensor.TensorIndex (a, b, c, d)
+instance (Torch.Tensor.TensorIndex a, Torch.Tensor.TensorIndex b, Torch.Tensor.TensorIndex c, Torch.Tensor.TensorIndex d, Torch.Tensor.TensorIndex e) => Torch.Tensor.TensorIndex (a, b, c, d, e)
+instance Torch.Internal.Class.Castable Torch.Tensor.RawTensorIndex (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.TensorIndex)
 instance Torch.Internal.Class.Castable Torch.Tensor.Tensor Torch.Tensor.ATenTensor
 instance GHC.Show.Show Torch.Tensor.Tensor
 instance Torch.Internal.Class.Castable [Torch.Tensor.Tensor] (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.TensorList)
@@ -1831,7 +1869,6 @@ ger :: Tensor -> Tensor -> Tensor
 logdet :: Tensor -> Tensor
 lstsq :: Tensor -> Tensor -> (Tensor, Tensor)
 mv :: Tensor -> Tensor -> Tensor
-slice :: Tensor -> Int -> Int -> Int -> Int -> Tensor
 sumWithDimnames :: Tensor -> [Dimname] -> Bool -> DType -> Tensor
 instance GHC.Show.Show Torch.Functional.RNNParams
 instance GHC.Show.Show Torch.Functional.Offset
@@ -6062,8 +6099,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679618628 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679618653 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679628709 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679628734 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
