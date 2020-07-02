@@ -3233,6 +3233,23 @@ transpose :: forall n m shape shape' dtype device. (KnownNat n, KnownNat m, shap
 --   (Float,[2,3])
 --   </pre>
 transpose2D :: forall (i :: Nat) (j :: Nat) dtype device. Tensor device dtype '[i, j] -> Tensor device dtype '[j, i]
+class KnownTri (tri :: Tri)
+triVal :: KnownTri tri => Tri
+type family DiagShape (tri :: Tri) (index :: Nat) (shape :: [Nat]) :: [Nat]
+
+-- | diag
+--   
+--   <pre>
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ diag @'Upper @0 (ones :: CPUTensor 'D.Float '[3,2])
+--   (Float,[2])
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ diag @'Upper @1 (ones :: CPUTensor 'D.Float '[3,2])
+--   (Float,[1])
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ diag @'Lower @1 (ones :: CPUTensor 'D.Float '[3,2])
+--   (Float,[2])
+--   </pre>
+diag :: forall (tri :: Tri) (index :: Nat) (shape :: [Nat]) (shape' :: [Nat]) device dtype. (KnownTri tri, KnownNat index, StandardDTypeValidation device dtype, shape' ~ DiagShape tri index shape) => Tensor device dtype shape -> Tensor device dtype shape'
 
 -- | all See
 --   <a>https://pytorch.org/docs/stable/tensors.html#torch.BoolTensor.all</a>.
@@ -5199,6 +5216,8 @@ instance GHC.TypeNats.KnownNat n => Torch.Typed.Functional.KnownMaybeNat ('GHC.M
 instance Torch.Typed.Functional.KnownMaybeNat 'GHC.Maybe.Nothing
 instance Torch.Typed.Functional.KnownKeepOrDropDim 'Torch.Typed.Functional.KeepDim
 instance Torch.Typed.Functional.KnownKeepOrDropDim 'Torch.Typed.Functional.DropDim
+instance Torch.Typed.Functional.KnownTri 'Torch.Functional.Upper
+instance Torch.Typed.Functional.KnownTri 'Torch.Functional.Lower
 instance Torch.Typed.Functional.KnownReducedSVD 'Torch.Typed.Functional.ThinSVD
 instance Torch.Typed.Functional.KnownReducedSVD 'Torch.Typed.Functional.FullSVD
 instance Torch.Typed.Functional.KnownEigenVectors 'Torch.Typed.Functional.EnableEigenVectors
@@ -6099,8 +6118,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679628709 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679628734 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679629277 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679629302 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
