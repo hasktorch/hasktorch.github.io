@@ -5805,10 +5805,12 @@ instance (Torch.Typed.Device.HasToDevice device' device x x', Torch.Typed.Device
 module Torch.Typed.DType
 class HasToDType dtype' dtype f g | dtype' dtype f -> g, dtype' dtype g -> f
 toDType :: HasToDType dtype' dtype f g => f -> g
-type family PutDType (f :: k) (dtype' :: DType) (dtype :: DType) :: k
+type family ReplaceDType (f :: k) (dtype' :: DType) (dtype :: DType) :: k
+type family ReplaceDType' (f :: k) (dtype' :: DType) :: k
 class GHasToDType (dtype' :: DType) (dtype :: DType) (f :: Type -> Type) (g :: Type -> Type)
 gToDType :: forall a. GHasToDType dtype' dtype f g => f a -> g a
-instance (g GHC.Types.~ Torch.Typed.DType.PutDType f dtype' dtype, f GHC.Types.~ Torch.Typed.DType.PutDType g dtype dtype', GHC.Generics.Generic f, GHC.Generics.Generic g, Torch.Typed.DType.GHasToDType dtype' dtype (GHC.Generics.Rep f) (GHC.Generics.Rep g)) => Torch.Typed.DType.HasToDType dtype' dtype f g
+type family GetDType (f :: k) :: Maybe DType
+instance (g GHC.Types.~ Torch.Typed.DType.ReplaceDType f dtype' dtype, f GHC.Types.~ Torch.Typed.DType.ReplaceDType g dtype dtype', GHC.Generics.Generic f, GHC.Generics.Generic g, Torch.Typed.DType.GHasToDType dtype' dtype (GHC.Generics.Rep f) (GHC.Generics.Rep g)) => Torch.Typed.DType.HasToDType dtype' dtype f g
 instance (Torch.Typed.DType.GHasToDType dtype' dtype l l', Torch.Typed.DType.GHasToDType dtype' dtype r r') => Torch.Typed.DType.GHasToDType dtype' dtype (l GHC.Generics.:*: r) (l' GHC.Generics.:*: r')
 instance Torch.Typed.DType.HasToDType dtype' dtype f g => Torch.Typed.DType.GHasToDType dtype' dtype (GHC.Generics.K1 i f) (GHC.Generics.K1 i g)
 instance Torch.Typed.DType.GHasToDType dtype' dtype f g => Torch.Typed.DType.GHasToDType dtype' dtype (GHC.Generics.M1 i t f) (GHC.Generics.M1 i t g)
@@ -6118,8 +6120,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679629277 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679629302 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679629367 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679629392 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
