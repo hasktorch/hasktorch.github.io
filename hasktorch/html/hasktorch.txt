@@ -78,6 +78,36 @@ instance Data.Reflection.Reifies GHC.Types.Double Torch.DType.DType
 instance Data.Reflection.Reifies 'Torch.DType.Double Torch.DType.DType
 instance Torch.Internal.Class.Castable Torch.DType.DType Torch.Internal.Type.ScalarType
 
+module Torch.Data.Pipeline
+takeBatch :: MonadIO m => Input (Maybe batch) -> Producer batch m ()
+readBatches :: forall dataset batch m. Dataset m dataset batch => dataset -> Output (Maybe batch) -> Effect m ()
+readBatchesConcurrently :: forall dataset batch m. (MonadPlus m, ConcurrentDataset m dataset batch) => Int -> dataset -> Output (Maybe batch) -> Effect m ()
+makeFold' :: (Dataset m dataset batch, MonadIO m) => dataset -> m (FoldM m batch b -> m b, Async (StM m ()))
+makeFoldWithTransform' :: (MonadIO m, Dataset m dataset batch) => (batch -> batch') -> dataset -> m (FoldM m batch' b -> m b, Async (StM m ()))
+makeConcurrentFold' :: (MonadIO m, ConcurrentDataset m dataset batch') => (batch' -> batch) -> dataset -> Int -> m (FoldM m batch b -> m b, [Async (StM m ())])
+makeFold :: (Dataset m dataset batch, MonadIO m) => dataset -> m (FoldM m batch b -> m b)
+makeFoldWithTransform :: (MonadIO m, Dataset m dataset batch) => (batch -> batch') -> dataset -> m (FoldM m batch' b -> m b)
+makeConcurrentFold :: (MonadIO m, ConcurrentDataset m dataset batch') => (batch' -> batch) -> dataset -> Int -> m (FoldM m batch b -> m b)
+foldFromProducer :: Monad m => Producer batch m () -> FoldM m batch b -> m b
+
+-- | Like <a>Fold</a>, but monadic.
+--   
+--   A '<a>FoldM</a> m a b' processes elements of type <b>a</b> and results
+--   in a monadic value of type <b>m b</b>.
+data FoldM (m :: Type -> Type) a b
+
+-- | <tt>FoldM </tt> <tt> step </tt> <tt> initial </tt> <tt> extract</tt>
+FoldM :: (x -> a -> m x) -> m x -> (x -> m b) -> FoldM (m :: Type -> Type) a b
+class (MonadPlus m, MonadIO m, MonadBaseControl IO m) => Dataset m dataset batch
+getBatch :: Dataset m dataset batch => dataset -> Iter -> m batch
+numIters :: Dataset m dataset batch => dataset -> Int
+data DatasetMock m tensor
+DatasetMock :: (Int -> m tensor) -> Iter -> DatasetMock m tensor
+[getBatchMock] :: DatasetMock m tensor -> Int -> m tensor
+[numItersMock] :: DatasetMock m tensor -> Iter
+class Dataset m dataset batch => ConcurrentDataset m dataset batch
+getBatchConcurrently :: ConcurrentDataset m dataset batch => WorkerId -> dataset -> Iter -> m batch
+
 module Torch.Device
 data DeviceType
 CPU :: DeviceType
@@ -6120,8 +6150,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679629367 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679629392 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679643151 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679643176 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
