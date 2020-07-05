@@ -1401,6 +1401,9 @@ toDType :: DType -> Tensor -> Tensor
 -- | squeezeAll
 squeezeAll :: Tensor -> Tensor
 
+-- | squeezeDim
+squeezeDim :: Int -> Tensor -> Tensor
+
 -- | Function that measures the Binary Cross Entropy between the target and
 --   the output.
 binaryCrossEntropyLoss :: Reduction -> Tensor -> Tensor -> Tensor -> Tensor
@@ -1956,6 +1959,90 @@ kaimingUniform' :: [Int] -> IO Tensor
 kaimingNormal' :: [Int] -> IO Tensor
 xavierUniform' :: [Int] -> IO Tensor
 xavierNormal' :: [Int] -> IO Tensor
+
+module Torch.Distributions.Constraints
+type Constraint = Tensor -> Tensor
+dependent :: Constraint
+boolean :: Constraint
+integerInterval :: Int -> Int -> Constraint
+integerLessThan :: Int -> Constraint
+integerGreaterThan :: Int -> Constraint
+integerLessThanEq :: Int -> Constraint
+integerGreaterThanEq :: Int -> Constraint
+real :: Constraint
+greaterThan :: Float -> Constraint
+greaterThanEq :: Float -> Constraint
+lessThan :: Float -> Constraint
+lessThanEq :: Float -> Constraint
+interval :: Float -> Float -> Constraint
+halfOpenInterval :: Float -> Float -> Constraint
+simplex :: Constraint
+nonNegativeInteger :: Constraint
+positiveInteger :: Constraint
+positive :: Constraint
+unitInterval :: Constraint
+
+module Torch.Distributions.Distribution
+data Scale
+class Distribution a
+batchShape :: Distribution a => a -> [Int]
+eventShape :: Distribution a => a -> [Int]
+expand :: Distribution a => a -> [Int] -> a
+support :: Distribution a => a -> Constraint
+mean :: Distribution a => a -> Tensor
+variance :: Distribution a => a -> Tensor
+sample :: Distribution a => a -> [Int] -> IO Tensor
+logProb :: Distribution a => a -> Tensor -> Tensor
+entropy :: Distribution a => a -> Tensor
+enumerateSupport :: Distribution a => a -> Bool -> Tensor
+stddev :: Distribution a => a -> Tensor
+perplexity :: Distribution a => a -> Tensor
+
+-- | Converts a tensor of logits into probabilities. Note that for the |
+--   binary case, each value denotes log odds, whereas for the |
+--   multi-dimensional case, the values along the last dimension denote |
+--   the log probabilities (possibly unnormalized) of the events.
+logitsToProbs :: Bool -> Tensor -> Tensor
+clampProbs :: Tensor -> Tensor
+
+-- | Converts a tensor of probabilities into logits. For the binary case, |
+--   this denotes the probability of occurrence of the event indexed by
+--   `1`. | For the multi-dimensional case, the values along the last
+--   dimension | denote the probabilities of occurrence of each of the
+--   events.
+probsToLogits :: Bool -> Tensor -> Tensor
+
+-- | Returns the size of the sample returned by the distribution, given | a
+--   <tt>sampleShape</tt>. Note, that the batch and event shapes of a
+--   distribution | instance are fixed at the time of construction. If this
+--   is empty, the | returned shape is upcast to (1,). | Args: |
+--   sampleShape (torch.Size): the size of the sample to be drawn.
+extendedShape :: Distribution a => a -> [Int] -> [Int]
+
+module Torch.Distributions.Categorical
+
+-- | Creates a categorical distribution parameterized by either
+--   :attr:<a>probs</a> or | :attr:<a>logits</a> (but not both). | ..
+--   note:: | It is equivalent to the distribution that
+--   :func:`torch.multinomial` | samples from. | Samples are integers from
+--   :math:`{0, ldots, K-1}` where <tt>K</tt> is ``probs.size(-1)``. | If
+--   :attr:<a>probs</a> is 1D with length-<tt>K</tt>, each element is the
+--   relative | probability of sampling the class at that index. | If
+--   :attr:<a>probs</a> is 2D, it is treated as a batch of relative
+--   probability | vectors. | .. note:: :attr:<a>probs</a> must be
+--   non-negative, finite and have a non-zero sum, | and it will be
+--   normalized to sum to 1. | See also: `torch.multinomial` | Example:: |
+--   &gt;&gt;&gt; m = Categorical.fromProbs $ D.asTensor [ 0.25, 0.25,
+--   0.25, 0.25 ] | &gt;&gt;&gt; Distribution.sample m -- equal probability
+--   of 0, 1, 2, 3 | tensor(3)
+data Categorical
+Categorical :: Tensor -> Tensor -> Categorical
+[probs] :: Categorical -> Tensor
+[logits] :: Categorical -> Tensor
+fromProbs :: Tensor -> Categorical
+fromLogits :: Tensor -> Categorical
+instance GHC.Show.Show Torch.Distributions.Categorical.Categorical
+instance Torch.Distributions.Distribution.Distribution Torch.Distributions.Categorical.Categorical
 
 module Torch.Autograd
 
@@ -5798,6 +5885,16 @@ instance (GHC.TypeNats.KnownNat inputChannelSize, GHC.TypeNats.KnownNat outputCh
 instance (Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[stride, padding, inputChannelSize, outputChannelSize, kernelSize, inputSize, batchSize, outputSize], Torch.Typed.Functional.ConvSideCheck inputSize kernelSize stride padding outputSize) => Torch.NN.HasForward (Torch.Typed.NN.Convolution.Conv1d inputChannelSize outputChannelSize kernelSize dtype device) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, inputChannelSize, inputSize], Data.Proxy.Proxy stride, Data.Proxy.Proxy padding) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, outputChannelSize, outputSize])
 instance (GHC.TypeNats.KnownNat inputChannelSize, GHC.TypeNats.KnownNat outputChannelSize, GHC.TypeNats.KnownNat kernelSize, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.Convolution.Conv1dSpec inputChannelSize outputChannelSize kernelSize dtype device) (Torch.Typed.NN.Convolution.Conv1d inputChannelSize outputChannelSize kernelSize dtype device)
 
+module Torch.Distributions.Bernoulli
+data Bernoulli
+Bernoulli :: Tensor -> Tensor -> Bernoulli
+[probs] :: Bernoulli -> Tensor
+[logits] :: Bernoulli -> Tensor
+fromProbs :: Tensor -> Bernoulli
+fromLogits :: Tensor -> Bernoulli
+instance GHC.Show.Show Torch.Distributions.Bernoulli.Bernoulli
+instance Torch.Distributions.Distribution.Distribution Torch.Distributions.Bernoulli.Bernoulli
+
 module Torch.Typed.Device
 class HasToDevice (device' :: (DeviceType, Nat)) (device :: (DeviceType, Nat)) (f :: Type) (g :: Type) | device' device f -> g, device' device g -> f
 toDevice :: HasToDevice device' device f g => f -> g
@@ -6150,8 +6247,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679643151 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679643176 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679645415 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679645440 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
