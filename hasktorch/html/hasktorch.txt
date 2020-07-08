@@ -1116,10 +1116,6 @@ RNNParams :: Tensor -> Tensor -> Tensor -> Tensor -> RNNParams
 [weightHH] :: RNNParams -> Tensor
 [biasIH] :: RNNParams -> Tensor
 [biasHH] :: RNNParams -> Tensor
-data Offset
-OffsetMain :: Offset
-OffsetAbove :: Offset
-OffsetBelow :: Offset
 data Diag
 Diag :: Int -> Diag
 data KeepDim
@@ -1651,7 +1647,7 @@ transpose2D :: Tensor -> Tensor
 --   the main diagonal. If Int &gt; 0, it is above the main diagonal. If
 --   Int &lt; 0, it is below the main diagonal.
 diag :: Diag -> Tensor -> Tensor
-diagEmbed :: Offset -> Int -> Int -> Tensor -> Tensor
+diagEmbed :: Diag -> Dim -> Dim -> Tensor -> Tensor
 
 -- | If input is a vector (1-D tensor), then returns a 2-D square tensor
 --   with the elements of input as the diagonal. If input is a tensor with
@@ -1660,7 +1656,7 @@ diagEmbed :: Offset -> Int -> Int -> Tensor -> Tensor
 --   which diagonal to consider: If offset = 0, it is the main diagonal. If
 --   offset &gt; 0, it is above the main diagonal. If offset &lt; 0, it is
 --   below the main diagonal.
-diagflat :: Offset -> Tensor -> Tensor
+diagflat :: Diag -> Tensor -> Tensor
 
 -- | Returns a partial view of input with the its diagonal elements with
 --   respect to dim1 and dim2 appended as a dimension at the end of the
@@ -1668,7 +1664,7 @@ diagflat :: Offset -> Tensor -> Tensor
 --   arguments yields a diagonal matrix with the diagonal entries of the
 --   input. However, diagEmbed has different default dimensions, so those
 --   need to be explicitly specified.
-diagonal :: Offset -> Dimname -> Dimname -> Dimname -> Tensor -> Tensor
+diagonal :: Diag -> Dim -> Dim -> Tensor -> Tensor
 
 -- | Returns True if all elements in the tensor are True, False otherwise.
 all :: Tensor -> Bool
@@ -1904,14 +1900,12 @@ lstsq :: Tensor -> Tensor -> (Tensor, Tensor)
 mv :: Tensor -> Tensor -> Tensor
 sumWithDimnames :: Tensor -> [Dimname] -> Bool -> DType -> Tensor
 instance GHC.Show.Show Torch.Functional.RNNParams
-instance GHC.Show.Show Torch.Functional.Offset
 instance GHC.Show.Show Torch.Functional.KeepDim
 instance GHC.Classes.Eq Torch.Functional.KeepDim
 instance GHC.Show.Show Torch.Functional.Reduction
 instance GHC.Classes.Eq Torch.Functional.Reduction
 instance GHC.Show.Show Torch.Functional.Tri
 instance GHC.Classes.Eq Torch.Functional.Tri
-instance Torch.Internal.Class.Castable Torch.Functional.Offset GHC.Int.Int64
 instance Torch.Internal.Class.Castable Torch.Functional.Reduction GHC.Int.Int64
 instance GHC.Num.Num Torch.Tensor.Tensor
 instance GHC.Classes.Eq Torch.Tensor.Tensor
@@ -6247,8 +6241,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679645415 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679645440 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679644364 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679644389 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
