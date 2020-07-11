@@ -2386,6 +2386,11 @@ type family MaybePrepend (mh :: Maybe a) (t :: [a]) :: [a]
 type family LastDim (l :: [a]) :: Nat
 type family BackwardsImpl (last :: Nat) (n :: Nat) :: Nat
 type Backwards l n = BackwardsImpl (LastDim l) n
+type family Init (xs :: [a]) :: [a]
+type family Last (xs :: [a]) :: a
+type family InsertImpl (n :: Nat) (x :: a) (l :: [a]) :: Maybe [a]
+type family CheckInsert (n :: Nat) (x :: a) (l :: [a]) (result :: Maybe [a]) :: [a]
+type family Insert (n :: Nat) (x :: a) (l :: [a]) :: [a]
 type family RemoveImpl (l :: [a]) (n :: Nat) :: Maybe [a]
 type family CheckRemove (l :: [a]) (n :: Nat) (result :: Maybe [a]) :: [a]
 type Remove l n = CheckRemove l n (RemoveImpl l n)
@@ -3346,6 +3351,7 @@ transpose :: forall n m shape shape' dtype device. (KnownNat n, KnownNat m, shap
 transpose2D :: forall (i :: Nat) (j :: Nat) dtype device. Tensor device dtype '[i, j] -> Tensor device dtype '[j, i]
 class KnownTri (tri :: Tri)
 triVal :: KnownTri tri => Tri
+type family DiagSize (tri :: Tri) (index :: Nat) (m :: Nat) (n :: Nat) :: Nat
 type family DiagShape (tri :: Tri) (index :: Nat) (shape :: [Nat]) :: [Nat]
 
 -- | diag
@@ -3360,7 +3366,7 @@ type family DiagShape (tri :: Tri) (index :: Nat) (shape :: [Nat]) :: [Nat]
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ diag @'Lower @1 (ones :: CPUTensor 'D.Float '[3,2])
 --   (Float,[2])
 --   </pre>
-diag :: forall (tri :: Tri) (index :: Nat) (shape :: [Nat]) (shape' :: [Nat]) device dtype. (KnownTri tri, KnownNat index, StandardDTypeValidation device dtype, shape' ~ DiagShape tri index shape) => Tensor device dtype shape -> Tensor device dtype shape'
+diag :: forall tri index shape shape' device dtype. (KnownTri tri, KnownNat index, StandardDTypeValidation device dtype, shape' ~ DiagShape tri index shape) => Tensor device dtype shape -> Tensor device dtype shape'
 
 -- | all See
 --   <a>https://pytorch.org/docs/stable/tensors.html#torch.BoolTensor.all</a>.
@@ -4051,6 +4057,54 @@ type family Det (shape :: [Nat]) :: [Nat]
 --   (Float,[3])
 --   </pre>
 det :: forall shape dtype device. Tensor device dtype shape -> Tensor device dtype (Det shape)
+type family DimsDistinctAscendingCheck (dim1 :: Nat) (dim2 :: Nat) (cmp :: Ordering) :: Constraint
+type family DimsDistinctAscending (dim1 :: Nat) (dim2 :: Nat) :: Constraint
+type family DiagEmbedShapeImpl (dim1 :: Nat) (dim2 :: Nat) (shape :: [Nat]) (n :: Nat) :: [Nat]
+type family DiagEmbedShape (index :: Nat) (dim1 :: Nat) (dim2 :: Nat) (shape :: [Nat]) :: [Nat]
+
+-- | diagEmbed
+--   
+--   <pre>
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ diagEmbed @0 @1 @2 Upper (ones :: CPUTensor 'D.Float '[2,3])
+--   (Float,[2,3,3])
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ diagEmbed @1 @0 @2 Upper (ones :: CPUTensor 'D.Float '[2,3])
+--   (Float,[4,2,4])
+--   </pre>
+diagEmbed :: forall index dim1 dim2 shape shape' device dtype. (KnownNat index, KnownNat dim1, KnownNat dim2, shape' ~ DiagEmbedShape index dim1 dim2 shape, DimsDistinctAscending dim1 dim2, StandardDTypeValidation device dtype) => Tri -> Tensor device dtype shape -> Tensor device dtype shape'
+type family DiagflatShapeImpl (d :: Nat) :: [Nat]
+type family DiagflatShape (index :: Nat) (shape :: [Nat]) :: [Nat]
+
+-- | diagflat
+--   
+--   <pre>
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ diagflat @0 Upper (ones :: CPUTensor 'D.Float '[3])
+--   (Float,[3,3])
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ diagflat @1 Upper (ones :: CPUTensor 'D.Float '[3])
+--   (Float,[4,4])
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ diagflat @0 Upper (ones :: CPUTensor 'D.Float '[2,2])
+--   (Float,[4,4])
+--   </pre>
+diagflat :: forall index shape shape' device dtype. (KnownNat index, shape' ~ DiagflatShape index shape, StandardDTypeValidation device dtype) => Tri -> Tensor device dtype shape -> Tensor device dtype shape'
+type family NDimAtLeastCheck (ndim :: Nat) (shape :: [Nat]) (cmp :: Ordering) :: Constraint
+type family NDimAtLeast (ndim :: Nat) (shape :: [Nat]) :: Constraint
+type family DiagonalShape (tri :: Tri) (index :: Nat) (dim1 :: Nat) (dim2 :: Nat) (shape :: [Nat]) :: [Nat]
+
+-- | diagonal
+--   
+--   <pre>
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ diagonal @'Upper @0 @0 @1 (ones :: CPUTensor 'D.Float '[3,3])
+--   (Float,[3])
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ diagonal @'Upper @1 @0 @1 (ones :: CPUTensor 'D.Float '[3,3])
+--   (Float,[2])
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ diagonal @'Lower @1 @1 @2 (ones :: CPUTensor 'D.Float '[2,5,4,2])
+--   (Float,[2,2,4])
+--   </pre>
+diagonal :: forall tri index dim1 dim2 shape shape' device dtype. (KnownTri tri, KnownNat index, KnownNat dim1, KnownNat dim2, NDimAtLeast 2 shape, DimsDistinctAscending dim1 dim2, shape' ~ DiagonalShape tri index dim1 dim2 shape, StandardDTypeValidation device dtype) => Tensor device dtype shape -> Tensor device dtype shape'
 type family DotDTypeIsValid (device :: (DeviceType, Nat)) (dtype :: DType) :: Constraint
 
 -- | dot product Note that this function does not broadcast.
@@ -6241,8 +6295,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679644364 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679644389 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679646169 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679646194 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
