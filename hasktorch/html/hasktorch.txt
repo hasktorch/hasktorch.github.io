@@ -1130,6 +1130,9 @@ RNNParams :: Tensor -> Tensor -> Tensor -> Tensor -> RNNParams
 [biasHH] :: RNNParams -> Tensor
 data Diag
 Diag :: Int -> Diag
+data CeilMode
+Ceil :: CeilMode
+Floor :: CeilMode
 data KeepDim
 KeepDim :: KeepDim
 RemoveDim :: KeepDim
@@ -1485,6 +1488,18 @@ multiLabelMarginLoss :: Reduction -> Tensor -> Tensor -> Tensor
 --   Tensor.
 klDiv :: Reduction -> Tensor -> Tensor -> Tensor
 
+-- | Creates a criterion that uses a squared term if the absolute
+--   element-wise error falls below 1 and an L1 term otherwise. It is less
+--   sensitive to outliers than the MSELoss and in some cases prevents
+--   exploding gradients (e.g. see Fast R-CNN paper by Ross Girshick). Also
+--   known as the Huber loss.
+smoothL1Loss :: Reduction -> Tensor -> Tensor -> Tensor
+
+-- | Creates a criterion that optimizes a two-class classification logistic
+--   loss between input tensor &lt;math&gt; and target tensor &lt;math&gt;
+--   (containing 1 or -1).
+softMarginLoss :: Reduction -> Tensor -> Tensor -> Tensor
+
 -- | Applies a 1D adaptive max pooling over an input signal composed of
 --   several input planes.
 adaptiveMaxPool1d :: Int -> Tensor -> (Tensor, Tensor)
@@ -1498,23 +1513,27 @@ adaptiveMaxPool2d :: (Int, Int) -> Tensor -> (Tensor, Tensor)
 adaptiveMaxPool3d :: (Int, Int) -> Tensor -> (Tensor, Tensor)
 
 -- | maxPool1dWithIndices
-maxPool1dWithIndices :: Int -> Int -> Int -> Int -> Bool -> Tensor -> (Tensor, Tensor)
+maxPool1dWithIndices :: Int -> Int -> Int -> Int -> CeilMode -> Tensor -> (Tensor, Tensor)
 
 -- | Applies a 1D max pooling over an input signal composed of several
 --   input planes.
-maxPool1d :: Int -> Int -> Int -> Int -> Bool -> Tensor -> Tensor
+maxPool1d :: Int -> Int -> Int -> Int -> CeilMode -> Tensor -> Tensor
 
 -- | Applies a 2D max pooling over an input signal composed of several
 --   input planes.
-maxPool2d :: (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Bool -> Tensor -> Tensor
+maxPool2d :: (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> CeilMode -> Tensor -> Tensor
 
 -- | Applies a 3D max pooling over an input signal composed of several
 --   input planes.
-maxPool3d :: (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Bool -> Tensor -> Tensor
+maxPool3d :: (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> CeilMode -> Tensor -> Tensor
+
+-- | Calculates resulting dimensions from a 2d maxpool operation see
+--   <a>https://pytorch.org/docs/master/generated/torch.nn.MaxPool2d.html#torch.nn.MaxPool2d</a>
+maxPool2dDim :: (Int, Int) -> (Int, Int) -> (Int, Int) -> (Int, Int) -> CeilMode -> (Int, Int) -> (Int, Int)
 
 -- | Applies a 1D average pooling over an input signal composed of several
 --   input planes.
-avgPool1d :: Int -> Int -> Int -> Bool -> Bool -> Tensor -> Tensor
+avgPool1d :: Int -> Int -> Int -> CeilMode -> Bool -> Tensor -> Tensor
 avgPool1d' :: Int -> Int -> Int -> Tensor -> Tensor
 
 -- | Applies a 1D adaptive average pooling over an input signal composed of
@@ -1734,18 +1753,6 @@ quantizedRnnReluCell :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor
 -- | A quantized Elman RNN cell with tanh non-linearity
 quantizedRnnTanhCell :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Float -> Float -> Float -> Float -> Tensor -> Tensor -> Tensor
 
--- | Creates a criterion that uses a squared term if the absolute
---   element-wise error falls below 1 and an L1 term otherwise. It is less
---   sensitive to outliers than the MSELoss and in some cases prevents
---   exploding gradients (e.g. see Fast R-CNN paper by Ross Girshick). Also
---   known as the Huber loss
-smoothL1Loss :: Reduction -> Tensor -> Tensor -> Tensor
-
--- | Creates a criterion that optimizes a two-class classification logistic
---   loss between input tensor &lt;math&gt; and target tensor &lt;math&gt;
---   (containing 1 or -1).
-softMarginLoss :: Reduction -> Tensor -> Tensor -> Tensor
-
 -- | Applies the soft shrinkage function elementwise
 softShrink :: Float -> Tensor -> Tensor
 
@@ -1912,12 +1919,15 @@ lstsq :: Tensor -> Tensor -> (Tensor, Tensor)
 mv :: Tensor -> Tensor -> Tensor
 sumWithDimnames :: Tensor -> [Dimname] -> Bool -> DType -> Tensor
 instance GHC.Show.Show Torch.Functional.RNNParams
+instance GHC.Show.Show Torch.Functional.CeilMode
+instance GHC.Classes.Eq Torch.Functional.CeilMode
 instance GHC.Show.Show Torch.Functional.KeepDim
 instance GHC.Classes.Eq Torch.Functional.KeepDim
 instance GHC.Show.Show Torch.Functional.Reduction
 instance GHC.Classes.Eq Torch.Functional.Reduction
 instance GHC.Show.Show Torch.Functional.Tri
 instance GHC.Classes.Eq Torch.Functional.Tri
+instance Torch.Internal.Class.Castable Torch.Functional.CeilMode Foreign.C.Types.CBool
 instance Torch.Internal.Class.Castable Torch.Functional.Reduction GHC.Int.Int64
 instance GHC.Num.Num Torch.Tensor.Tensor
 instance GHC.Classes.Eq Torch.Tensor.Tensor
@@ -2091,6 +2101,7 @@ Linear :: Parameter -> Parameter -> Linear
 [weight] :: Linear -> Parameter
 [bias] :: Linear -> Parameter
 linear :: Linear -> Tensor -> Tensor
+linearForward :: Linear -> Tensor -> Tensor
 data Conv2dSpec
 Conv2dSpec :: Int -> Int -> Int -> Int -> Conv2dSpec
 [inputChannelSize] :: Conv2dSpec -> Int
@@ -6500,8 +6511,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679765383 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679765408 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679767390 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679767415 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
