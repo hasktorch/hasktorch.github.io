@@ -1276,6 +1276,10 @@ matmul :: Tensor -> Tensor -> Tensor
 embedding :: Bool -> Bool -> Tensor -> Int -> Tensor -> Tensor
 embedding' :: Tensor -> Tensor -> Tensor
 
+-- | A one hot encoding of the given input. The encoding is based on the
+--   given number of classes.
+oneHot :: Int -> Tensor -> Tensor
+
 -- | Computes the error function of each element
 erf :: Tensor -> Tensor
 
@@ -6330,7 +6334,7 @@ pmap :: (MonadIO m, MonadBaseControl IO m) => Int -> (a -> b) -> ListT m a -> Co
 -- | Run a parallel pipe over the given ListT. (TODO: with the given number
 --   of workers)
 pmap' :: (MonadIO m, MonadBaseControl IO m) => Int -> Pipe a b m () -> ListT m a -> ContT r m (ListT m b)
-class (MonadBase IO m) => Datastream m seed dataset batch
+class (MonadBase IO m) => Datastream m seed dataset batch | dataset -> batch
 streamBatch :: Datastream m seed dataset batch => dataset -> seed -> ListT m batch
 class (Applicative b, Applicative m, Monad b, Monad m) => MonadBase (b :: Type -> Type) (m :: Type -> Type) | m -> b
 
@@ -6426,21 +6430,41 @@ liftBaseWith :: MonadBaseControl b m => (RunInBase m b -> b a) -> m a
 --   <tt><a>restoreM</a></tt> is usually not implemented directly, but
 --   using <tt><a>defaultRestoreM</a></tt>.
 restoreM :: MonadBaseControl b m => StM m a -> m a
+
+-- | The monad used to run resource management actions, corresponding to
+--   the monad directly beneath <a>SafeT</a>
+type family Base (m :: Type -> Type) :: Type -> Type
+
+-- | <a>MonadSafe</a> lets you <a>register</a> and <a>release</a>
+--   finalizers that execute in a <a>Base</a> monad
+class (MonadCatch m, MonadMask m, MonadIO m, MonadIO Base m) => MonadSafe (m :: Type -> Type) where {
+    
+    -- | The monad used to run resource management actions, corresponding to
+    --   the monad directly beneath <a>SafeT</a>
+    type family Base (m :: Type -> Type) :: Type -> Type;
+}
 instance Control.Monad.Base.MonadBase GHC.Types.IO m => Control.Monad.Base.MonadBase GHC.Types.IO (Pipes.Internal.Proxy a' a b' b m)
 
 module Torch.Data.CsvDataset
-data CsvDataset batches
-CsvDataset :: FilePath -> !Word8 -> NamedColumns -> HasHeader -> Int -> Maybe (batches -> Bool) -> Maybe BufferSize -> Bool -> CsvDataset batches
-[filePath] :: CsvDataset batches -> FilePath
-[delimiter] :: CsvDataset batches -> !Word8
-[byName] :: CsvDataset batches -> NamedColumns
-[hasHeader] :: CsvDataset batches -> HasHeader
-[batchSize] :: CsvDataset batches -> Int
-[filter] :: CsvDataset batches -> Maybe (batches -> Bool)
-[shuffle] :: CsvDataset batches -> Maybe BufferSize
-[dropLast] :: CsvDataset batches -> Bool
-csvDataset :: forall batches. FilePath -> CsvDataset batches
-data NamedColumns
+tsvDataset :: forall (isNamed :: NamedColumns) batches. FilePath -> CsvDataset' batches isNamed
+csvDataset :: forall (isNamed :: NamedColumns) batches. FilePath -> CsvDataset' batches isNamed
+
+-- | Use if you want to decode with a record that has a FromRecord
+--   instance.
+type CsvDataset batches = CsvDataset' batches Unnamed
+
+-- | Use CsvDatasetNamed if you want to decode with a record that has
+--   FromNamedRecord instance, | decoding fields of a given name from a csv
+--   file,
+type CsvDatasetNamed batches = CsvDataset' batches Named
+data CsvDataset' batches (named :: NamedColumns)
+CsvDataset' :: FilePath -> !Word8 -> HasHeader -> Int -> Maybe BufferSize -> Bool -> CsvDataset' batches (named :: NamedColumns)
+[filePath] :: CsvDataset' batches (named :: NamedColumns) -> FilePath
+[delimiter] :: CsvDataset' batches (named :: NamedColumns) -> !Word8
+[hasHeader] :: CsvDataset' batches (named :: NamedColumns) -> HasHeader
+[batchSize] :: CsvDataset' batches (named :: NamedColumns) -> Int
+[shuffle] :: CsvDataset' batches (named :: NamedColumns) -> Maybe BufferSize
+[dropLast] :: CsvDataset' batches (named :: NamedColumns) -> Bool
 
 -- | A type that can be converted from a single CSV field, with the
 --   possibility of failure.
@@ -6494,7 +6518,42 @@ parseField :: FromField a => Field -> Parser a
 --   </pre>
 class FromRecord a
 parseRecord :: FromRecord a => Record -> Parser a
-instance (GHC.Base.MonadPlus m, Control.Monad.Base.MonadBase GHC.Types.IO m, Control.Monad.Trans.Control.MonadBaseControl GHC.Types.IO m, Pipes.Safe.MonadSafe m, Data.Csv.Conversion.FromRecord batch, Data.Csv.Conversion.FromNamedRecord batch) => Torch.Data.StreamedPipeline.Datastream m () (Torch.Data.CsvDataset.CsvDataset batch) (Data.Vector.Vector batch)
+
+-- | A type that can be converted from a single CSV record, with the
+--   possibility of failure.
+--   
+--   When writing an instance, use <a>empty</a>, <a>mzero</a>, or
+--   <a>fail</a> to make a conversion fail, e.g. if a <a>Record</a> has the
+--   wrong number of columns.
+--   
+--   Given this example data:
+--   
+--   <pre>
+--   name,age
+--   John,56
+--   Jane,55
+--   </pre>
+--   
+--   here's an example type and instance:
+--   
+--   <pre>
+--   {-# LANGUAGE OverloadedStrings #-}
+--   
+--   data Person = Person { name :: !Text, age :: !Int }
+--   
+--   instance FromNamedRecord Person where
+--       parseNamedRecord m = Person &lt;$&gt;
+--                            m .: "name" &lt;*&gt;
+--                            m .: "age"
+--   </pre>
+--   
+--   Note the use of the <tt>OverloadedStrings</tt> language extension
+--   which enables <a>ByteString</a> values to be written as string
+--   literals.
+class FromNamedRecord a
+parseNamedRecord :: FromNamedRecord a => NamedRecord -> Parser a
+instance (Control.Monad.Trans.Control.MonadBaseControl GHC.Types.IO m, Pipes.Safe.MonadSafe m, Data.Csv.Conversion.FromNamedRecord batch) => Torch.Data.StreamedPipeline.Datastream m () (Torch.Data.CsvDataset.CsvDatasetNamed batch) (Data.Vector.Vector batch)
+instance (Control.Monad.Trans.Control.MonadBaseControl GHC.Types.IO m, Pipes.Safe.MonadSafe m, Data.Csv.Conversion.FromRecord batch) => Torch.Data.StreamedPipeline.Datastream m () (Torch.Data.CsvDataset.CsvDataset batch) (Data.Vector.Vector batch)
 
 module Torch.Data.Dataset
 
@@ -6537,8 +6596,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679771948 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679771973 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679772703 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679772728 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
