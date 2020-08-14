@@ -78,35 +78,250 @@ instance Data.Reflection.Reifies GHC.Types.Double Torch.DType.DType
 instance Data.Reflection.Reifies 'Torch.DType.Double Torch.DType.DType
 instance Torch.Internal.Class.Castable Torch.DType.DType Torch.Internal.Type.ScalarType
 
-module Torch.Data.Pipeline
-takeBatch :: MonadIO m => Input (Maybe batch) -> Producer batch m ()
-readBatches :: forall dataset batch m. Dataset m dataset batch => dataset -> Output (Maybe batch) -> Effect m ()
-readBatchesConcurrently :: forall dataset batch m. (MonadPlus m, ConcurrentDataset m dataset batch) => Int -> dataset -> Output (Maybe batch) -> Effect m ()
-makeFold' :: (Dataset m dataset batch, MonadIO m) => dataset -> m (FoldM m batch b -> m b, Async (StM m ()))
-makeFoldWithTransform' :: (MonadIO m, Dataset m dataset batch) => (batch -> batch') -> dataset -> m (FoldM m batch' b -> m b, Async (StM m ()))
-makeConcurrentFold' :: (MonadIO m, ConcurrentDataset m dataset batch') => (batch' -> batch) -> dataset -> Int -> m (FoldM m batch b -> m b, [Async (StM m ())])
-makeFold :: (Dataset m dataset batch, MonadIO m) => dataset -> m (FoldM m batch b -> m b)
-makeFoldWithTransform :: (MonadIO m, Dataset m dataset batch) => (batch -> batch') -> dataset -> m (FoldM m batch' b -> m b)
-makeConcurrentFold :: (MonadIO m, ConcurrentDataset m dataset batch') => (batch' -> batch) -> dataset -> Int -> m (FoldM m batch b -> m b)
-foldFromProducer :: Monad m => Producer batch m () -> FoldM m batch b -> m b
+module Torch.Data.Internal
+runWithBuffer :: forall a m b. MonadBaseControl IO m => Int -> (Output a -> m ()) -> ContT b m (ListT m (a, Int))
+liftedBracket :: MonadBaseControl IO m => m a -> (a -> m b) -> (a -> m c) -> m c
+withBufferLifted :: MonadBaseControl IO m => Buffer a -> (Output a -> m l) -> (Input a -> m r) -> m (l, r)
+fromInput' :: MonadBase IO m => Input a -> Producer' a m ()
+toOutput' :: MonadBase IO m => Output a -> Consumer' a m ()
+liftedFinally :: MonadBaseControl IO m => m a -> m b -> m a
+atomically :: MonadIO m => STM a -> m a
+instance Control.Monad.Base.MonadBase GHC.Types.IO m => Control.Monad.Base.MonadBase GHC.Types.IO (Pipes.Internal.Proxy a' a b' b m)
 
--- | Like <a>Fold</a>, but monadic.
+module Torch.Data.StreamedPipeline
+makeListT :: forall sample m dataset seed b r. (Datastream m seed dataset sample, MonadBaseControl IO m, MonadBase IO m) => DataloaderOptions -> dataset -> ListT m seed -> ContT b m (ListT m (sample, Int))
+makeListT' :: forall sample m f dataset seed b. (Datastream m seed dataset sample, MonadBaseControl IO m, MonadBase IO m, Foldable f) => DataloaderOptions -> dataset -> f seed -> ContT b m (ListT m (sample, Int))
+
+-- | Run a parallel map over the given ListT (TODO: with the given number
+--   of workers)
+pmap :: (MonadIO m, MonadBaseControl IO m) => Int -> (a -> b) -> ListT m a -> ContT r m (ListT m b)
+
+-- | Run a parallel pipe over the given ListT. (TODO: with the given number
+--   of workers)
+pmap' :: (MonadIO m, MonadBaseControl IO m) => Int -> Pipe a b m () -> ListT m a -> ContT r m (ListT m b)
+
+-- | Default dataloader options, you should override the fields in this
+--   record.
+dataloaderOpts :: DataloaderOptions
+class Monad m => Datastream m seed dataset sample | dataset -> sample
+streamBatch :: Datastream m seed dataset sample => dataset -> seed -> ListT m sample
+class (Applicative b, Applicative m, Monad b, Monad m) => MonadBase (b :: Type -> Type) (m :: Type -> Type) | m -> b
+
+-- | Lift a computation from the base monad
+liftBase :: MonadBase b m => b α -> m α
+
+-- | <h2>Writing instances</h2>
 --   
---   A '<a>FoldM</a> m a b' processes elements of type <b>a</b> and results
---   in a monadic value of type <b>m b</b>.
-data FoldM (m :: Type -> Type) a b
+--   The usual way to write a <tt><a>MonadBaseControl</a></tt> instance for
+--   a transformer stack over a base monad <tt>B</tt> is to write an
+--   instance <tt>MonadBaseControl B B</tt> for the base monad, and
+--   <tt>MonadTransControl T</tt> instances for every transformer
+--   <tt>T</tt>. Instances for <tt><a>MonadBaseControl</a></tt> are then
+--   simply implemented using <tt><a>ComposeSt</a></tt>,
+--   <tt><a>defaultLiftBaseWith</a></tt>, <tt><a>defaultRestoreM</a></tt>.
+class MonadBase b m => MonadBaseControl (b :: Type -> Type) (m :: Type -> Type) | m -> b where {
+    
+    -- | Monadic state that <tt>m</tt> adds to the base monad <tt>b</tt>.
+    --   
+    --   For all base (non-transformed) monads, <tt>StM m a ~ a</tt>:
+    --   
+    --   <pre>
+    --   StM <a>IO</a>         a ~ a
+    --   StM <a>Maybe</a>      a ~ a
+    --   StM (<a>Either</a> e) a ~ a
+    --   StM []         a ~ a
+    --   StM ((-&gt;) r)   a ~ a
+    --   StM <a>Identity</a>   a ~ a
+    --   StM <a>STM</a>        a ~ a
+    --   StM (<a>ST</a> s)     a ~ a
+    --   </pre>
+    --   
+    --   If <tt>m</tt> is a transformed monad, <tt>m ~ t b</tt>,
+    --   <tt><a>StM</a></tt> is the monadic state of the transformer <tt>t</tt>
+    --   (given by its <a>StT</a> from <a>MonadTransControl</a>). For a
+    --   transformer stack, <tt><a>StM</a></tt> is defined recursively:
+    --   
+    --   <pre>
+    --   StM (<a>IdentityT</a>  m) a ~ <a>ComposeSt</a> <a>IdentityT</a> m a ~ StM m a
+    --   StM (<a>MaybeT</a>     m) a ~ <a>ComposeSt</a> <a>MaybeT</a>    m a ~ StM m (<a>Maybe</a> a)
+    --   StM (<a>ErrorT</a> e   m) a ~ <a>ComposeSt</a> <a>ErrorT</a>    m a ~ <a>Error</a> e =&gt; StM m (<a>Either</a> e a)
+    --   StM (<a>ExceptT</a> e  m) a ~ <a>ComposeSt</a> <a>ExceptT</a>   m a ~ StM m (<a>Either</a> e a)
+    --   StM (<a>ListT</a>      m) a ~ <a>ComposeSt</a> <a>ListT</a>     m a ~ StM m [a]
+    --   StM (<a>ReaderT</a> r  m) a ~ <a>ComposeSt</a> <a>ReaderT</a>   m a ~ StM m a
+    --   StM (<a>StateT</a> s   m) a ~ <a>ComposeSt</a> <a>StateT</a>    m a ~ StM m (a, s)
+    --   StM (<a>WriterT</a> w  m) a ~ <a>ComposeSt</a> <a>WriterT</a>   m a ~ <a>Monoid</a> w =&gt; StM m (a, w)
+    --   StM (<a>RWST</a> r w s m) a ~ <a>ComposeSt</a> <a>RWST</a>      m a ~ <a>Monoid</a> w =&gt; StM m (a, s, w)
+    --   </pre>
+    type family StM (m :: Type -> Type) a;
+}
 
--- | <tt>FoldM </tt> <tt> step </tt> <tt> initial </tt> <tt> extract</tt>
-FoldM :: (x -> a -> m x) -> m x -> (x -> m b) -> FoldM (m :: Type -> Type) a b
-class (MonadPlus m, MonadIO m, MonadBaseControl IO m) => Dataset m dataset batch
-getBatch :: Dataset m dataset batch => dataset -> Iter -> m batch
-numIters :: Dataset m dataset batch => dataset -> Int
-data DatasetMock m tensor
-DatasetMock :: (Int -> m tensor) -> Iter -> DatasetMock m tensor
-[getBatchMock] :: DatasetMock m tensor -> Int -> m tensor
-[numItersMock] :: DatasetMock m tensor -> Iter
-class Dataset m dataset batch => ConcurrentDataset m dataset batch
-getBatchConcurrently :: ConcurrentDataset m dataset batch => WorkerId -> dataset -> Iter -> m batch
+-- | <tt>liftBaseWith</tt> is similar to <tt>liftIO</tt> and
+--   <tt>liftBase</tt> in that it lifts a base computation to the
+--   constructed monad.
+--   
+--   Instances should satisfy similar laws as the <tt>MonadIO</tt> and
+--   <a>MonadBase</a> laws:
+--   
+--   <pre>
+--   liftBaseWith . const . return = return
+--   </pre>
+--   
+--   <pre>
+--   liftBaseWith (const (m &gt;&gt;= f)) = liftBaseWith (const m) &gt;&gt;= liftBaseWith . const . f
+--   </pre>
+--   
+--   The difference with <tt>liftBase</tt> is that before lifting the base
+--   computation <tt>liftBaseWith</tt> captures the state of <tt>m</tt>. It
+--   then provides the base computation with a <a>RunInBase</a> function
+--   that allows running <tt>m</tt> computations in the base monad on the
+--   captured state:
+--   
+--   <pre>
+--   withFileLifted :: MonadBaseControl IO m =&gt; FilePath -&gt; IOMode -&gt; (Handle -&gt; m a) -&gt; m a
+--   withFileLifted file mode action = liftBaseWith (\runInBase -&gt; withFile file mode (runInBase . action)) &gt;&gt;= restoreM
+--                                -- = control $ \runInBase -&gt; withFile file mode (runInBase . action)
+--                                -- = liftBaseOp (withFile file mode) action
+--   </pre>
+--   
+--   <tt><a>liftBaseWith</a></tt> is usually not implemented directly, but
+--   using <tt><a>defaultLiftBaseWith</a></tt>.
+liftBaseWith :: MonadBaseControl b m => (RunInBase m b -> b a) -> m a
+
+-- | Construct a <tt>m</tt> computation from the monadic state of
+--   <tt>m</tt> that is returned from a <a>RunInBase</a> function.
+--   
+--   Instances should satisfy:
+--   
+--   <pre>
+--   liftBaseWith (\runInBase -&gt; runInBase m) &gt;&gt;= restoreM = m
+--   </pre>
+--   
+--   <tt><a>restoreM</a></tt> is usually not implemented directly, but
+--   using <tt><a>defaultRestoreM</a></tt>.
+restoreM :: MonadBaseControl b m => StM m a -> m a
+
+-- | The monad used to run resource management actions, corresponding to
+--   the monad directly beneath <a>SafeT</a>
+type family Base (m :: Type -> Type) :: Type -> Type
+
+-- | <a>MonadSafe</a> lets you <a>register</a> and <a>release</a>
+--   finalizers that execute in a <a>Base</a> monad
+class (MonadCatch m, MonadMask m, MonadIO m, MonadIO Base m) => MonadSafe (m :: Type -> Type) where {
+    
+    -- | The monad used to run resource management actions, corresponding to
+    --   the monad directly beneath <a>SafeT</a>
+    type family Base (m :: Type -> Type) :: Type -> Type;
+}
+
+module Torch.Data.CsvDataset
+tsvDataset :: forall (isNamed :: NamedColumns) batches. FilePath -> CsvDataset' batches isNamed
+csvDataset :: forall (isNamed :: NamedColumns) batches. FilePath -> CsvDataset' batches isNamed
+
+-- | Use if you want to decode with a record that has a FromRecord
+--   instance.
+type CsvDataset batches = CsvDataset' batches Unnamed
+
+-- | Use CsvDatasetNamed if you want to decode with a record that has
+--   FromNamedRecord instance, | decoding fields of a given name from a csv
+--   file,
+type CsvDatasetNamed batches = CsvDataset' batches Named
+data CsvDataset' batches (named :: NamedColumns)
+CsvDataset' :: FilePath -> !Word8 -> HasHeader -> Int -> Maybe BufferSize -> Bool -> CsvDataset' batches (named :: NamedColumns)
+[filePath] :: CsvDataset' batches (named :: NamedColumns) -> FilePath
+[delimiter] :: CsvDataset' batches (named :: NamedColumns) -> !Word8
+[hasHeader] :: CsvDataset' batches (named :: NamedColumns) -> HasHeader
+[batchSize] :: CsvDataset' batches (named :: NamedColumns) -> Int
+[shuffle] :: CsvDataset' batches (named :: NamedColumns) -> Maybe BufferSize
+[dropLast] :: CsvDataset' batches (named :: NamedColumns) -> Bool
+
+-- | A type that can be converted from a single CSV field, with the
+--   possibility of failure.
+--   
+--   When writing an instance, use <a>empty</a>, <a>mzero</a>, or
+--   <a>fail</a> to make a conversion fail, e.g. if a <a>Field</a> can't be
+--   converted to the given type.
+--   
+--   Example type and instance:
+--   
+--   <pre>
+--   {-# LANGUAGE OverloadedStrings #-}
+--   
+--   data Color = Red | Green | Blue
+--   
+--   instance FromField Color where
+--       parseField s
+--           | s == "R"  = pure Red
+--           | s == "G"  = pure Green
+--           | s == "B"  = pure Blue
+--           | otherwise = mzero
+--   </pre>
+class FromField a
+parseField :: FromField a => Field -> Parser a
+
+-- | A type that can be converted from a single CSV record, with the
+--   possibility of failure.
+--   
+--   When writing an instance, use <a>empty</a>, <a>mzero</a>, or
+--   <a>fail</a> to make a conversion fail, e.g. if a <a>Record</a> has the
+--   wrong number of columns.
+--   
+--   Given this example data:
+--   
+--   <pre>
+--   John,56
+--   Jane,55
+--   </pre>
+--   
+--   here's an example type and instance:
+--   
+--   <pre>
+--   data Person = Person { name :: !Text, age :: !Int }
+--   
+--   instance FromRecord Person where
+--       parseRecord v
+--           | length v == 2 = Person &lt;$&gt;
+--                             v .! 0 &lt;*&gt;
+--                             v .! 1
+--           | otherwise     = mzero
+--   </pre>
+class FromRecord a
+parseRecord :: FromRecord a => Record -> Parser a
+
+-- | A type that can be converted from a single CSV record, with the
+--   possibility of failure.
+--   
+--   When writing an instance, use <a>empty</a>, <a>mzero</a>, or
+--   <a>fail</a> to make a conversion fail, e.g. if a <a>Record</a> has the
+--   wrong number of columns.
+--   
+--   Given this example data:
+--   
+--   <pre>
+--   name,age
+--   John,56
+--   Jane,55
+--   </pre>
+--   
+--   here's an example type and instance:
+--   
+--   <pre>
+--   {-# LANGUAGE OverloadedStrings #-}
+--   
+--   data Person = Person { name :: !Text, age :: !Int }
+--   
+--   instance FromNamedRecord Person where
+--       parseNamedRecord m = Person &lt;$&gt;
+--                            m .: "name" &lt;*&gt;
+--                            m .: "age"
+--   </pre>
+--   
+--   Note the use of the <tt>OverloadedStrings</tt> language extension
+--   which enables <a>ByteString</a> values to be written as string
+--   literals.
+class FromNamedRecord a
+parseNamedRecord :: FromNamedRecord a => NamedRecord -> Parser a
+instance (Control.Monad.Trans.Control.MonadBaseControl GHC.Types.IO m, Pipes.Safe.MonadSafe m, Data.Csv.Conversion.FromNamedRecord batch) => Torch.Data.StreamedPipeline.Datastream m () (Torch.Data.CsvDataset.CsvDatasetNamed batch) (Data.Vector.Vector batch)
+instance (Control.Monad.Trans.Control.MonadBaseControl GHC.Types.IO m, Pipes.Safe.MonadSafe m, Data.Csv.Conversion.FromRecord batch) => Torch.Data.StreamedPipeline.Datastream m () (Torch.Data.CsvDataset.CsvDataset batch) (Data.Vector.Vector batch)
 
 module Torch.Device
 data DeviceType
@@ -2424,6 +2639,22 @@ instance GHC.Generics.Generic Torch.NN.Recurrent.Cell.Elman.ElmanCell
 instance GHC.Show.Show Torch.NN.Recurrent.Cell.Elman.ElmanSpec
 instance GHC.Classes.Eq Torch.NN.Recurrent.Cell.Elman.ElmanSpec
 instance Torch.NN.Randomizable Torch.NN.Recurrent.Cell.Elman.ElmanSpec Torch.NN.Recurrent.Cell.Elman.ElmanCell
+
+module Torch.Data.Pipeline
+class (Ord k) => Dataset m dataset k sample | dataset -> sample, dataset -> k
+getItem :: Dataset m dataset k sample => dataset -> k -> m sample
+keys :: Dataset m dataset k sample => dataset -> Set k
+data MapStyleOptions
+MapStyleOptions :: Int -> Int -> Sample -> MapStyleOptions
+[bufferSize] :: MapStyleOptions -> Int
+[numWorkers] :: MapStyleOptions -> Int
+[shuffle] :: MapStyleOptions -> Sample
+data Sample
+[Sequential] :: Sample
+[Shuffle] :: RandomGen g => g -> Sample
+makeListT :: forall m dataset k sample r. (MonadIO m, MonadBaseControl IO m, Dataset m dataset k sample) => MapStyleOptions -> dataset -> ContT r m (ListT m (sample, Int), Sample)
+mapStyleOpts :: Int -> MapStyleOptions
+runContT :: ContT r m a -> (a -> m r) -> m r
 
 module Torch.Typed.Aux
 natValI :: forall n. KnownNat n => Int
@@ -6152,6 +6383,9 @@ forward :: HasForward f a b => f -> a -> b
 forwardStoch :: HasForward f a b => f -> a -> IO b
 
 module Torch.Typed.Vision
+data Mnist (device :: (DeviceType, Nat)) (batchSize :: Nat)
+Mnist :: MnistData -> Mnist (device :: (DeviceType, Nat)) (batchSize :: Nat)
+[mnistData] :: Mnist (device :: (DeviceType, Nat)) (batchSize :: Nat) -> MnistData
 data MnistData
 MnistData :: ByteString -> ByteString -> MnistData
 [images] :: MnistData -> ByteString
@@ -6168,6 +6402,7 @@ getImages :: forall n. KnownNat n => MnistData -> [Int] -> CPUTensor 'Float '[n,
 length :: MnistData -> Int
 decompressFile :: String -> String -> IO ByteString
 initMnist :: String -> IO (MnistData, MnistData)
+instance (GHC.TypeNats.KnownNat batchSize, Torch.Typed.Tensor.KnownDevice device, GHC.Base.Applicative m) => Torch.Data.Pipeline.Dataset m (Torch.Typed.Vision.Mnist device batchSize) GHC.Types.Int (Torch.Typed.Tensor.Tensor device 'Torch.DType.Float '[batchSize, 784], Torch.Typed.Tensor.Tensor device 'Torch.DType.Int64 '[batchSize])
 
 module Torch.Typed
 class Randomizable spec f | spec -> f
@@ -6327,238 +6562,6 @@ data Tri
 Upper :: Tri
 Lower :: Tri
 
-module Torch.Data.StreamedPipeline
-makeListT :: forall batch m dataset seed b r. (Datastream m seed dataset batch, MonadBaseControl IO m, MonadBase IO m) => dataset -> ListT m seed -> ContT b m (ListT m (batch, Int))
-makeListT' :: forall batch m f dataset seed b. (Datastream m seed dataset batch, MonadBaseControl IO m, MonadBase IO m, Foldable f) => dataset -> f seed -> ContT b m (ListT m (batch, Int))
-
--- | Run a parallel map over the given ListT (TODO: with the given number
---   of workers)
-pmap :: (MonadIO m, MonadBaseControl IO m) => Int -> (a -> b) -> ListT m a -> ContT r m (ListT m b)
-
--- | Run a parallel pipe over the given ListT. (TODO: with the given number
---   of workers)
-pmap' :: (MonadIO m, MonadBaseControl IO m) => Int -> Pipe a b m () -> ListT m a -> ContT r m (ListT m b)
-class (MonadBase IO m) => Datastream m seed dataset batch | dataset -> batch
-streamBatch :: Datastream m seed dataset batch => dataset -> seed -> ListT m batch
-class (Applicative b, Applicative m, Monad b, Monad m) => MonadBase (b :: Type -> Type) (m :: Type -> Type) | m -> b
-
--- | Lift a computation from the base monad
-liftBase :: MonadBase b m => b α -> m α
-
--- | <h2>Writing instances</h2>
---   
---   The usual way to write a <tt><a>MonadBaseControl</a></tt> instance for
---   a transformer stack over a base monad <tt>B</tt> is to write an
---   instance <tt>MonadBaseControl B B</tt> for the base monad, and
---   <tt>MonadTransControl T</tt> instances for every transformer
---   <tt>T</tt>. Instances for <tt><a>MonadBaseControl</a></tt> are then
---   simply implemented using <tt><a>ComposeSt</a></tt>,
---   <tt><a>defaultLiftBaseWith</a></tt>, <tt><a>defaultRestoreM</a></tt>.
-class MonadBase b m => MonadBaseControl (b :: Type -> Type) (m :: Type -> Type) | m -> b where {
-    
-    -- | Monadic state that <tt>m</tt> adds to the base monad <tt>b</tt>.
-    --   
-    --   For all base (non-transformed) monads, <tt>StM m a ~ a</tt>:
-    --   
-    --   <pre>
-    --   StM <a>IO</a>         a ~ a
-    --   StM <a>Maybe</a>      a ~ a
-    --   StM (<a>Either</a> e) a ~ a
-    --   StM []         a ~ a
-    --   StM ((-&gt;) r)   a ~ a
-    --   StM <a>Identity</a>   a ~ a
-    --   StM <a>STM</a>        a ~ a
-    --   StM (<a>ST</a> s)     a ~ a
-    --   </pre>
-    --   
-    --   If <tt>m</tt> is a transformed monad, <tt>m ~ t b</tt>,
-    --   <tt><a>StM</a></tt> is the monadic state of the transformer <tt>t</tt>
-    --   (given by its <a>StT</a> from <a>MonadTransControl</a>). For a
-    --   transformer stack, <tt><a>StM</a></tt> is defined recursively:
-    --   
-    --   <pre>
-    --   StM (<a>IdentityT</a>  m) a ~ <a>ComposeSt</a> <a>IdentityT</a> m a ~ StM m a
-    --   StM (<a>MaybeT</a>     m) a ~ <a>ComposeSt</a> <a>MaybeT</a>    m a ~ StM m (<a>Maybe</a> a)
-    --   StM (<a>ErrorT</a> e   m) a ~ <a>ComposeSt</a> <a>ErrorT</a>    m a ~ <a>Error</a> e =&gt; StM m (<a>Either</a> e a)
-    --   StM (<a>ExceptT</a> e  m) a ~ <a>ComposeSt</a> <a>ExceptT</a>   m a ~ StM m (<a>Either</a> e a)
-    --   StM (<a>ListT</a>      m) a ~ <a>ComposeSt</a> <a>ListT</a>     m a ~ StM m [a]
-    --   StM (<a>ReaderT</a> r  m) a ~ <a>ComposeSt</a> <a>ReaderT</a>   m a ~ StM m a
-    --   StM (<a>StateT</a> s   m) a ~ <a>ComposeSt</a> <a>StateT</a>    m a ~ StM m (a, s)
-    --   StM (<a>WriterT</a> w  m) a ~ <a>ComposeSt</a> <a>WriterT</a>   m a ~ <a>Monoid</a> w =&gt; StM m (a, w)
-    --   StM (<a>RWST</a> r w s m) a ~ <a>ComposeSt</a> <a>RWST</a>      m a ~ <a>Monoid</a> w =&gt; StM m (a, s, w)
-    --   </pre>
-    type family StM (m :: Type -> Type) a;
-}
-
--- | <tt>liftBaseWith</tt> is similar to <tt>liftIO</tt> and
---   <tt>liftBase</tt> in that it lifts a base computation to the
---   constructed monad.
---   
---   Instances should satisfy similar laws as the <tt>MonadIO</tt> and
---   <a>MonadBase</a> laws:
---   
---   <pre>
---   liftBaseWith . const . return = return
---   </pre>
---   
---   <pre>
---   liftBaseWith (const (m &gt;&gt;= f)) = liftBaseWith (const m) &gt;&gt;= liftBaseWith . const . f
---   </pre>
---   
---   The difference with <tt>liftBase</tt> is that before lifting the base
---   computation <tt>liftBaseWith</tt> captures the state of <tt>m</tt>. It
---   then provides the base computation with a <a>RunInBase</a> function
---   that allows running <tt>m</tt> computations in the base monad on the
---   captured state:
---   
---   <pre>
---   withFileLifted :: MonadBaseControl IO m =&gt; FilePath -&gt; IOMode -&gt; (Handle -&gt; m a) -&gt; m a
---   withFileLifted file mode action = liftBaseWith (\runInBase -&gt; withFile file mode (runInBase . action)) &gt;&gt;= restoreM
---                                -- = control $ \runInBase -&gt; withFile file mode (runInBase . action)
---                                -- = liftBaseOp (withFile file mode) action
---   </pre>
---   
---   <tt><a>liftBaseWith</a></tt> is usually not implemented directly, but
---   using <tt><a>defaultLiftBaseWith</a></tt>.
-liftBaseWith :: MonadBaseControl b m => (RunInBase m b -> b a) -> m a
-
--- | Construct a <tt>m</tt> computation from the monadic state of
---   <tt>m</tt> that is returned from a <a>RunInBase</a> function.
---   
---   Instances should satisfy:
---   
---   <pre>
---   liftBaseWith (\runInBase -&gt; runInBase m) &gt;&gt;= restoreM = m
---   </pre>
---   
---   <tt><a>restoreM</a></tt> is usually not implemented directly, but
---   using <tt><a>defaultRestoreM</a></tt>.
-restoreM :: MonadBaseControl b m => StM m a -> m a
-
--- | The monad used to run resource management actions, corresponding to
---   the monad directly beneath <a>SafeT</a>
-type family Base (m :: Type -> Type) :: Type -> Type
-
--- | <a>MonadSafe</a> lets you <a>register</a> and <a>release</a>
---   finalizers that execute in a <a>Base</a> monad
-class (MonadCatch m, MonadMask m, MonadIO m, MonadIO Base m) => MonadSafe (m :: Type -> Type) where {
-    
-    -- | The monad used to run resource management actions, corresponding to
-    --   the monad directly beneath <a>SafeT</a>
-    type family Base (m :: Type -> Type) :: Type -> Type;
-}
-instance Control.Monad.Base.MonadBase GHC.Types.IO m => Control.Monad.Base.MonadBase GHC.Types.IO (Pipes.Internal.Proxy a' a b' b m)
-
-module Torch.Data.CsvDataset
-tsvDataset :: forall (isNamed :: NamedColumns) batches. FilePath -> CsvDataset' batches isNamed
-csvDataset :: forall (isNamed :: NamedColumns) batches. FilePath -> CsvDataset' batches isNamed
-
--- | Use if you want to decode with a record that has a FromRecord
---   instance.
-type CsvDataset batches = CsvDataset' batches Unnamed
-
--- | Use CsvDatasetNamed if you want to decode with a record that has
---   FromNamedRecord instance, | decoding fields of a given name from a csv
---   file,
-type CsvDatasetNamed batches = CsvDataset' batches Named
-data CsvDataset' batches (named :: NamedColumns)
-CsvDataset' :: FilePath -> !Word8 -> HasHeader -> Int -> Maybe BufferSize -> Bool -> CsvDataset' batches (named :: NamedColumns)
-[filePath] :: CsvDataset' batches (named :: NamedColumns) -> FilePath
-[delimiter] :: CsvDataset' batches (named :: NamedColumns) -> !Word8
-[hasHeader] :: CsvDataset' batches (named :: NamedColumns) -> HasHeader
-[batchSize] :: CsvDataset' batches (named :: NamedColumns) -> Int
-[shuffle] :: CsvDataset' batches (named :: NamedColumns) -> Maybe BufferSize
-[dropLast] :: CsvDataset' batches (named :: NamedColumns) -> Bool
-
--- | A type that can be converted from a single CSV field, with the
---   possibility of failure.
---   
---   When writing an instance, use <a>empty</a>, <a>mzero</a>, or
---   <a>fail</a> to make a conversion fail, e.g. if a <a>Field</a> can't be
---   converted to the given type.
---   
---   Example type and instance:
---   
---   <pre>
---   {-# LANGUAGE OverloadedStrings #-}
---   
---   data Color = Red | Green | Blue
---   
---   instance FromField Color where
---       parseField s
---           | s == "R"  = pure Red
---           | s == "G"  = pure Green
---           | s == "B"  = pure Blue
---           | otherwise = mzero
---   </pre>
-class FromField a
-parseField :: FromField a => Field -> Parser a
-
--- | A type that can be converted from a single CSV record, with the
---   possibility of failure.
---   
---   When writing an instance, use <a>empty</a>, <a>mzero</a>, or
---   <a>fail</a> to make a conversion fail, e.g. if a <a>Record</a> has the
---   wrong number of columns.
---   
---   Given this example data:
---   
---   <pre>
---   John,56
---   Jane,55
---   </pre>
---   
---   here's an example type and instance:
---   
---   <pre>
---   data Person = Person { name :: !Text, age :: !Int }
---   
---   instance FromRecord Person where
---       parseRecord v
---           | length v == 2 = Person &lt;$&gt;
---                             v .! 0 &lt;*&gt;
---                             v .! 1
---           | otherwise     = mzero
---   </pre>
-class FromRecord a
-parseRecord :: FromRecord a => Record -> Parser a
-
--- | A type that can be converted from a single CSV record, with the
---   possibility of failure.
---   
---   When writing an instance, use <a>empty</a>, <a>mzero</a>, or
---   <a>fail</a> to make a conversion fail, e.g. if a <a>Record</a> has the
---   wrong number of columns.
---   
---   Given this example data:
---   
---   <pre>
---   name,age
---   John,56
---   Jane,55
---   </pre>
---   
---   here's an example type and instance:
---   
---   <pre>
---   {-# LANGUAGE OverloadedStrings #-}
---   
---   data Person = Person { name :: !Text, age :: !Int }
---   
---   instance FromNamedRecord Person where
---       parseNamedRecord m = Person &lt;$&gt;
---                            m .: "name" &lt;*&gt;
---                            m .: "age"
---   </pre>
---   
---   Note the use of the <tt>OverloadedStrings</tt> language extension
---   which enables <a>ByteString</a> values to be written as string
---   literals.
-class FromNamedRecord a
-parseNamedRecord :: FromNamedRecord a => NamedRecord -> Parser a
-instance (Control.Monad.Trans.Control.MonadBaseControl GHC.Types.IO m, Pipes.Safe.MonadSafe m, Data.Csv.Conversion.FromNamedRecord batch) => Torch.Data.StreamedPipeline.Datastream m () (Torch.Data.CsvDataset.CsvDatasetNamed batch) (Data.Vector.Vector batch)
-instance (Control.Monad.Trans.Control.MonadBaseControl GHC.Types.IO m, Pipes.Safe.MonadSafe m, Data.Csv.Conversion.FromRecord batch) => Torch.Data.StreamedPipeline.Datastream m () (Torch.Data.CsvDataset.CsvDataset batch) (Data.Vector.Vector batch)
-
 module Torch.Data.Dataset
 
 -- | This class is actually not very useful. | It would actually be better
@@ -6577,7 +6580,7 @@ Mnist :: Int -> MnistData -> Mnist
 [batchSize] :: Mnist -> Int
 [mnistData] :: Mnist -> MnistData
 getLabels' :: Int -> MnistData -> [Int] -> Tensor
-getImages' :: Int -> Int -> MnistData -> [Int] -> IO Tensor
+getImages' :: Int -> Int -> MnistData -> [Int] -> Tensor
 grayScale10 :: [Char]
 grayScale70 :: [Char]
 dispImage :: Tensor -> IO ()
@@ -6600,8 +6603,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679772474 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679772499 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679686519 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679686544 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
@@ -6612,3 +6615,4 @@ randomIndexes :: Int -> [Int]
 instance GHC.Classes.Eq Torch.Vision.PixelFormat
 instance GHC.Show.Show Torch.Vision.PixelFormat
 instance (GHC.Base.MonadPlus m, Control.Monad.Base.MonadBase GHC.Types.IO m) => Torch.Data.StreamedPipeline.Datastream m GHC.Types.Int Torch.Vision.Mnist (Torch.Tensor.Tensor, Torch.Tensor.Tensor)
+instance GHC.Base.Applicative m => Torch.Data.Pipeline.Dataset m Torch.Vision.Mnist GHC.Types.Int (Torch.Tensor.Tensor, Torch.Tensor.Tensor)
