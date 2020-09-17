@@ -2405,17 +2405,19 @@ type LearningRate = Tensor
 type Loss = Tensor
 newtype Gradients
 Gradients :: [Tensor] -> Gradients
-grad' :: Tensor -> [IndependentTensor] -> Gradients
-class Optimizer o
-step :: Optimizer o => LearningRate -> Gradients -> [Tensor] -> o -> ([Tensor], o)
+data OptimizerState option
+OptimizerState :: option -> OptimizerState option
+grad' :: Loss -> [Parameter] -> Gradients
+class Optimizer optimizer
+step :: Optimizer optimizer => LearningRate -> Gradients -> [Tensor] -> optimizer -> ([Tensor], optimizer)
 
 -- | run a single iteration of an optimizer, returning new parameters and
 --   updated optimizer state
-runStep :: (Parameterized p, Optimizer o) => p -> o -> Loss -> LearningRate -> IO ([Parameter], o)
+runStep :: (Optimizer optimizer, Parameterized model) => model -> optimizer -> Loss -> LearningRate -> IO (model, optimizer)
 
 -- | run a single iteration of an optimizer, returning new parameters and
 --   updated optimizer state
-runStep' :: (Parameterized p, Optimizer o) => p -> o -> LearningRate -> Gradients -> IO ([Parameter], o)
+runStep' :: (Optimizer optimizer, Parameterized model) => model -> optimizer -> Gradients -> LearningRate -> IO (model, optimizer)
 data GD
 GD :: GD
 
@@ -2453,6 +2455,86 @@ instance GHC.Show.Show Torch.Optim.Gradients
 instance Torch.Optim.Optimizer Torch.Optim.Adam
 instance Torch.Optim.Optimizer Torch.Optim.GDM
 instance Torch.Optim.Optimizer Torch.Optim.GD
+
+module Torch.Optim.CppOptim
+type CppOptimizerRef = ForeignPtr Optimizer
+data CppOptimizerState option
+CppOptimizerState :: option -> CppOptimizerRef -> CppOptimizerState option
+class CppOptimizer option
+initOptimizer :: (CppOptimizer option, Parameterized model) => option -> model -> IO (CppOptimizerState option)
+unsafeStep :: (CppOptimizer option, Parameterized model) => model -> CppOptimizerState option -> Tensor -> IO (model, CppOptimizerState option)
+data AdagradOptions
+AdagradOptions :: Double -> Double -> Double -> Double -> Double -> AdagradOptions
+[adagradLr] :: AdagradOptions -> Double
+[adagradLrDecay] :: AdagradOptions -> Double
+[adagradWeightDecay] :: AdagradOptions -> Double
+[adagradInitialAccumulatorValue] :: AdagradOptions -> Double
+[adagradEps] :: AdagradOptions -> Double
+data AdamOptions
+AdamOptions :: Double -> (Double, Double) -> Double -> Double -> Bool -> AdamOptions
+[adamLr] :: AdamOptions -> Double
+[adamBetas] :: AdamOptions -> (Double, Double)
+[adamEps] :: AdamOptions -> Double
+[adamWeightDecay] :: AdamOptions -> Double
+[adamAmsgrad] :: AdamOptions -> Bool
+data AdamwOptions
+AdamwOptions :: Double -> (Double, Double) -> Double -> Double -> Bool -> AdamwOptions
+[adamwLr] :: AdamwOptions -> Double
+[adamwBetas] :: AdamwOptions -> (Double, Double)
+[adamwEps] :: AdamwOptions -> Double
+[adamwWeightDecay] :: AdamwOptions -> Double
+[adamwAmsgrad] :: AdamwOptions -> Bool
+data LbfgsOptions
+LbfgsOptions :: Double -> Int -> Int -> Double -> Double -> Int -> Maybe String -> LbfgsOptions
+[lbfgsLr] :: LbfgsOptions -> Double
+[lbfgsMaxIter] :: LbfgsOptions -> Int
+[lbfgsMaxEval] :: LbfgsOptions -> Int
+[lbfgsToleranceGrad] :: LbfgsOptions -> Double
+[lbfgsToleranceChange] :: LbfgsOptions -> Double
+[lbfgsHistorySize] :: LbfgsOptions -> Int
+[lbfgsLineSearchFn] :: LbfgsOptions -> Maybe String
+data RmspropOptions
+RmspropOptions :: Double -> Double -> Double -> Double -> Double -> Bool -> RmspropOptions
+[rmspropLr] :: RmspropOptions -> Double
+[rmspropAlpha] :: RmspropOptions -> Double
+[rmspropEps] :: RmspropOptions -> Double
+[rmspropWeightDecay] :: RmspropOptions -> Double
+[rmspropMomentum] :: RmspropOptions -> Double
+[rmspropCentered] :: RmspropOptions -> Bool
+data SGDOptions
+SGDOptions :: Double -> Double -> Double -> Double -> Bool -> SGDOptions
+[sgdLr] :: SGDOptions -> Double
+[sgdMomentum] :: SGDOptions -> Double
+[sgdDampening] :: SGDOptions -> Double
+[sgdWeightDecay] :: SGDOptions -> Double
+[sgdNesterov] :: SGDOptions -> Bool
+save :: CppOptimizerState option -> FilePath -> IO ()
+load :: CppOptimizerState option -> FilePath -> IO ()
+instance GHC.Classes.Eq Torch.Optim.CppOptim.SGDOptions
+instance GHC.Show.Show Torch.Optim.CppOptim.SGDOptions
+instance GHC.Classes.Eq Torch.Optim.CppOptim.RmspropOptions
+instance GHC.Show.Show Torch.Optim.CppOptim.RmspropOptions
+instance GHC.Classes.Eq Torch.Optim.CppOptim.LbfgsOptions
+instance GHC.Show.Show Torch.Optim.CppOptim.LbfgsOptions
+instance GHC.Classes.Eq Torch.Optim.CppOptim.AdamwOptions
+instance GHC.Show.Show Torch.Optim.CppOptim.AdamwOptions
+instance GHC.Classes.Eq Torch.Optim.CppOptim.AdamOptions
+instance GHC.Show.Show Torch.Optim.CppOptim.AdamOptions
+instance GHC.Classes.Eq Torch.Optim.CppOptim.AdagradOptions
+instance GHC.Show.Show Torch.Optim.CppOptim.AdagradOptions
+instance Data.Default.Class.Default Torch.Optim.CppOptim.SGDOptions
+instance Torch.Optim.CppOptim.CppOptimizer Torch.Optim.CppOptim.SGDOptions
+instance Data.Default.Class.Default Torch.Optim.CppOptim.RmspropOptions
+instance Torch.Optim.CppOptim.CppOptimizer Torch.Optim.CppOptim.RmspropOptions
+instance Data.Default.Class.Default Torch.Optim.CppOptim.LbfgsOptions
+instance Torch.Optim.CppOptim.CppOptimizer Torch.Optim.CppOptim.LbfgsOptions
+instance Data.Default.Class.Default Torch.Optim.CppOptim.AdamwOptions
+instance Torch.Optim.CppOptim.CppOptimizer Torch.Optim.CppOptim.AdamwOptions
+instance Data.Default.Class.Default Torch.Optim.CppOptim.AdamOptions
+instance Torch.Optim.CppOptim.CppOptimizer Torch.Optim.CppOptim.AdamOptions
+instance Data.Default.Class.Default Torch.Optim.CppOptim.AdagradOptions
+instance Torch.Optim.CppOptim.CppOptimizer Torch.Optim.CppOptim.AdagradOptions
+instance Torch.Optim.CppOptim.CppOptimizer option => Torch.Optim.Optimizer (Torch.Optim.CppOptim.CppOptimizerState option)
 
 module Torch.Script
 newtype ScriptModule
@@ -6803,8 +6885,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679698171 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679698196 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679704333 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679704358 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
