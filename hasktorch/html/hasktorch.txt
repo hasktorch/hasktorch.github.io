@@ -551,6 +551,7 @@ select :: Int -> Int -> Tensor -> Tensor
 -- | Returns a new tensor which indexes the input tensor along dimension
 --   dim using the entries in index which is a LongTensor.
 indexSelect :: Int -> Tensor -> Tensor -> Tensor
+indexSelect' :: Int -> [Int] -> Tensor -> Tensor
 
 -- | Slices the input tensor along the selected dimension at the given
 --   range.
@@ -1365,12 +1366,6 @@ isfinite :: Tensor -> Tensor
 isinf :: Tensor -> Tensor
 
 module Torch.Functional
-data RNNParams
-RNNParams :: Tensor -> Tensor -> Tensor -> Tensor -> RNNParams
-[weightIH] :: RNNParams -> Tensor
-[weightHH] :: RNNParams -> Tensor
-[biasIH] :: RNNParams -> Tensor
-[biasHH] :: RNNParams -> Tensor
 data Diag
 Diag :: Int -> Diag
 data CeilMode
@@ -1640,6 +1635,22 @@ le :: Tensor -> Tensor -> Tensor
 --   argument.
 eq :: Tensor -> Tensor -> Tensor
 (==.) :: Tensor -> Tensor -> Tensor
+
+-- | Returns a new tensor with the elements of input at the given indices.
+--   The input tensor is treated as if it were viewed as a 1-D tensor. The
+--   result takes the same shape as the indices.
+take :: Tensor -> Tensor -> Tensor
+
+-- | Returns a new 1-D tensor which indexes the input tensor according to
+--   the boolean mask mask which is a BoolTensor. The shapes of the mask
+--   tensor and the input tensor don’t need to match, but they must be
+--   broadcastable.
+maskedSelect :: Tensor -> Tensor -> Tensor
+
+-- | Returns a tuple of 1-D tensors, one for each dimension in input, each
+--   containing the indices (in that dimension) of all non-zero elements of
+--   input .
+nonzero :: Tensor -> Tensor
 isclose :: Double -> Double -> Bool -> Tensor -> Tensor -> Tensor
 isnan :: Tensor -> Tensor
 isNonzero :: Tensor -> Bool
@@ -1661,6 +1672,26 @@ squeezeAll :: Tensor -> Tensor
 
 -- | squeezeDim
 squeezeDim :: Int -> Tensor -> Tensor
+
+-- | Returns a tuple (values, indices) where values is the cumulative
+--   maximum of elements of input in the dimension dim. And indices is the
+--   index location of each maximum value found in the dimension dim.
+cummax :: Int -> Tensor -> (Tensor, Tensor)
+
+-- | Returns a tuple (values, indices) where values is the cumulative
+--   minimum of elements of input in the dimension dim. And indices is the
+--   index location of each maximum value found in the dimension dim.
+cummin :: Int -> Tensor -> (Tensor, Tensor)
+
+-- | Returns the cumulative product of elements of input in the dimension
+--   dim. For example, if input is a vector of size N, the result will also
+--   be a vector of size N, with elements.
+cumprod :: Int -> DType -> Tensor -> Tensor
+
+-- | Returns the cumulative sum of elements of input in the dimension dim.
+--   For example, if input is a vector of size N, the result will also be a
+--   vector of size N, with elements.
+cumsum :: Int -> DType -> Tensor -> Tensor
 
 -- | Function that measures the Binary Cross Entropy between the target and
 --   the output.
@@ -1701,6 +1732,10 @@ ctcLoss :: Bool -> Int -> Reduction -> [Int] -> [Int] -> Tensor -> Tensor -> Ten
 
 -- | Returns CTC loss with defaulted options.
 ctcLoss' :: Reduction -> [Int] -> [Int] -> Tensor -> Tensor -> Tensor
+
+-- | Returns the p-norm of (input - other) The shapes of input and other
+--   must be broadcastable.
+dist :: Float -> Tensor -> Tensor -> Tensor
 
 -- | Measures the loss given an input tensor xx and a labels tensor yy
 --   (containing 1 or -1). This is usually used for measuring whether two
@@ -1800,6 +1835,10 @@ adaptiveAvgPool3d :: (Int, Int, Int) -> Tensor -> Tensor
 --   a tensor composed of individual inverses.
 inverse :: Tensor -> Tensor
 
+-- | Solves a system of equations with a triangular coefficient matrix AA
+--   and multiple right-hand sides bb
+triangularSolve :: Tensor -> Bool -> Bool -> Bool -> Tensor -> (Tensor, Tensor)
+
 -- | This function returns eigenvalues and eigenvectors of a real symmetric
 --   matrix input or a batch of real symmetric matrices, represented by a
 --   namedtuple (eigenvalues, eigenvectors).
@@ -1841,6 +1880,17 @@ geqrf :: Tensor -> (Tensor, Tensor)
 --   directly calls the underlying LAPACK function <tt>?orgqr</tt>. See
 --   LAPACK documentation for <tt>orgqr</tt> for further details.
 orgqr :: Tensor -> Tensor -> Tensor
+
+-- | Multiplies mat (given by input3) by the orthogonal Q matrix of the QR
+--   factorization formed by torch.geqrf() that is represented by (a, tau)
+--   (given by (input, input2)). This directly calls the underlying LAPACK
+--   function ?ormqr. See LAPACK documentation for ormqr for further
+--   details.
+ormqr :: Tensor -> Tensor -> Bool -> Bool -> Tensor -> Tensor
+
+-- | Returns the LU solve of the linear system Ax = bAx=b using the
+--   partially pivoted LU factorization of A from torch.lu().
+luSolve :: Tensor -> Tensor -> Tensor -> Tensor
 
 -- | During training, randomly zeroes some of the elements of the input
 --   tensor with probability p using samples from a Bernoulli distribution.
@@ -1975,6 +2025,14 @@ flatten :: Dim -> Dim -> Tensor -> Tensor
 
 -- | flattenAll
 flattenAll :: Tensor -> Tensor
+lstm :: Tensor -> [Tensor] -> [Tensor] -> Bool -> Int -> Double -> Bool -> Bool -> Bool -> (Tensor, Tensor, Tensor)
+lstm' :: Tensor -> [Tensor] -> [Tensor] -> Bool -> Int -> Double -> Bool -> Bool -> Tensor -> (Tensor, Tensor, Tensor)
+gru :: Tensor -> [Tensor] -> Bool -> Int -> Double -> Bool -> Bool -> Bool -> Tensor -> (Tensor, Tensor)
+gru' :: Tensor -> Tensor -> [Tensor] -> Bool -> Int -> Double -> Bool -> Bool -> Tensor -> (Tensor, Tensor)
+rnnTanh :: Tensor -> [Tensor] -> Bool -> Int -> Double -> Bool -> Bool -> Bool -> Tensor -> (Tensor, Tensor)
+rnnTanh' :: Tensor -> Tensor -> [Tensor] -> Bool -> Int -> Double -> Bool -> Bool -> Tensor -> (Tensor, Tensor)
+rnnRelu :: Tensor -> [Tensor] -> Bool -> Int -> Double -> Bool -> Bool -> Bool -> Tensor -> (Tensor, Tensor)
+rnnRelu' :: Tensor -> Tensor -> Tensor -> [Tensor] -> Bool -> Int -> Double -> Bool -> Bool -> (Tensor, Tensor)
 
 -- | A long short-term memory (LSTM) cell.
 lstmCell :: Tensor -> Tensor -> Tensor -> Tensor -> (Tensor, Tensor) -> Tensor -> (Tensor, Tensor)
@@ -2051,6 +2109,24 @@ triu :: Diag -> Tensor -> Tensor
 --   &lt;math&gt; where &lt;math&gt; and &lt;math&gt; are the dimensions of
 --   the matrix.
 tril :: Diag -> Tensor -> Tensor
+
+-- | Returns a new tensor with the truncated integer values of the elements
+--   of input.
+trunc :: Tensor -> Tensor
+
+-- | Returns the unique elements of the input tensor along a dimension.
+uniqueDim :: Int -> Bool -> Bool -> Bool -> Tensor -> (Tensor, Tensor, Tensor)
+
+-- | Eliminates all but the first element from every consecutive group of
+--   equivalent elements. This function is different from uniqueDim in the
+--   sense that this function only eliminates consecutive duplicate values.
+uniqueConsecutive :: Bool -> Bool -> Int -> Tensor -> (Tensor, Tensor, Tensor)
+
+-- | Eliminates all but the first element from every consecutive group of
+--   equivalent elements along a dimension. This function is different from
+--   uniqueDim in the sense that this function only eliminates consecutive
+--   duplicate values.
+uniqueDimConsecutive :: Int -> Bool -> Bool -> Tensor -> (Tensor, Tensor, Tensor)
 
 -- | Returns a new tensor with a dimension of size one inserted at the
 --   specified position. The returned tensor shares the same underlying
@@ -2165,7 +2241,6 @@ logdet :: Tensor -> Tensor
 lstsq :: Tensor -> Tensor -> (Tensor, Tensor)
 mv :: Tensor -> Tensor -> Tensor
 sumWithDimnames :: Tensor -> [Dimname] -> Bool -> DType -> Tensor
-instance GHC.Show.Show Torch.Functional.RNNParams
 instance GHC.Show.Show Torch.Functional.CeilMode
 instance GHC.Classes.Eq Torch.Functional.CeilMode
 instance GHC.Show.Show Torch.Functional.KeepDim
@@ -2376,6 +2451,7 @@ instance GHC.Classes.Eq Torch.NN.LinearSpec
 instance GHC.Show.Show Torch.NN.LinearSpec
 instance Torch.NN.Randomizable Torch.NN.Conv2dSpec Torch.NN.Conv2d
 instance Torch.NN.Parameterized [Torch.NN.Linear]
+instance Torch.NN.HasForward Torch.NN.Linear Torch.Tensor.Tensor Torch.Tensor.Tensor
 instance Torch.NN.Randomizable Torch.NN.LinearSpec Torch.NN.Linear
 instance Torch.NN.Parameterized Torch.Tensor.Tensor
 instance Torch.NN.Parameterized Torch.NN.Parameter
@@ -2692,11 +2768,12 @@ LSTMCell :: Parameter -> Parameter -> Parameter -> Parameter -> LSTMCell
 [weightsHH] :: LSTMCell -> Parameter
 [biasIH] :: LSTMCell -> Parameter
 [biasHH] :: LSTMCell -> Parameter
-lstmCellForward :: LSTMCell -> Tensor -> (Tensor, Tensor) -> (Tensor, Tensor)
+lstmCellForward :: LSTMCell -> (Tensor, Tensor) -> Tensor -> (Tensor, Tensor)
 instance GHC.Show.Show Torch.NN.Recurrent.Cell.LSTM.LSTMCell
 instance GHC.Generics.Generic Torch.NN.Recurrent.Cell.LSTM.LSTMCell
 instance GHC.Show.Show Torch.NN.Recurrent.Cell.LSTM.LSTMSpec
 instance GHC.Classes.Eq Torch.NN.Recurrent.Cell.LSTM.LSTMSpec
+instance Torch.NN.Parameterized Torch.NN.Recurrent.Cell.LSTM.LSTMCell
 instance Torch.NN.Randomizable Torch.NN.Recurrent.Cell.LSTM.LSTMSpec Torch.NN.Recurrent.Cell.LSTM.LSTMCell
 
 module Torch.NN.Recurrent.Cell.GRU
@@ -2715,6 +2792,7 @@ instance GHC.Show.Show Torch.NN.Recurrent.Cell.GRU.GRUCell
 instance GHC.Generics.Generic Torch.NN.Recurrent.Cell.GRU.GRUCell
 instance GHC.Show.Show Torch.NN.Recurrent.Cell.GRU.GRUSpec
 instance GHC.Classes.Eq Torch.NN.Recurrent.Cell.GRU.GRUSpec
+instance Torch.NN.Parameterized Torch.NN.Recurrent.Cell.GRU.GRUCell
 instance Torch.NN.Randomizable Torch.NN.Recurrent.Cell.GRU.GRUSpec Torch.NN.Recurrent.Cell.GRU.GRUCell
 
 module Torch.NN.Recurrent.Cell.Elman
@@ -2733,6 +2811,7 @@ instance GHC.Show.Show Torch.NN.Recurrent.Cell.Elman.ElmanCell
 instance GHC.Generics.Generic Torch.NN.Recurrent.Cell.Elman.ElmanCell
 instance GHC.Show.Show Torch.NN.Recurrent.Cell.Elman.ElmanSpec
 instance GHC.Classes.Eq Torch.NN.Recurrent.Cell.Elman.ElmanSpec
+instance Torch.NN.Parameterized Torch.NN.Recurrent.Cell.Elman.ElmanCell
 instance Torch.NN.Randomizable Torch.NN.Recurrent.Cell.Elman.ElmanSpec Torch.NN.Recurrent.Cell.Elman.ElmanCell
 
 module Torch.Data.Pipeline
@@ -6885,8 +6964,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679704333 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679704358 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679709135 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679709160 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
