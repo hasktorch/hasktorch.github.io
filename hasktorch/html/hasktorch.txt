@@ -79,7 +79,7 @@ instance Data.Reflection.Reifies 'Torch.DType.Double Torch.DType.DType
 instance Torch.Internal.Class.Castable Torch.DType.DType Torch.Internal.Type.ScalarType
 
 module Torch.Data.Internal
-runWithBuffer :: forall a m b. MonadBaseControl IO m => Int -> (Output a -> m ()) -> ContT b m (ListT m (a, Int))
+runWithBuffer :: forall a m b. MonadBaseControl IO m => Int -> (Output a -> m ()) -> ContT b m (ListT m a)
 liftedBracket :: MonadBaseControl IO m => m a -> (a -> m b) -> (a -> m c) -> m c
 withBufferLifted :: MonadBaseControl IO m => Buffer a -> (Output a -> m l) -> (Input a -> m r) -> m (l, r)
 fromInput' :: MonadBase IO m => Input a -> Producer' a m ()
@@ -88,23 +88,83 @@ liftedFinally :: MonadBaseControl IO m => m a -> m b -> m a
 atomically :: MonadIO m => STM a -> m a
 instance Control.Monad.Base.MonadBase GHC.Types.IO m => Control.Monad.Base.MonadBase GHC.Types.IO (Pipes.Internal.Proxy a' a b' b m)
 
+module Torch.Data.Pipeline
+
+-- | The base dataset class. A dataset is capable of returning a sample for
+--   a given key, and every <a>Dataset</a> has a known set of keys.
+class (Ord k) => Dataset m dataset k sample | dataset -> m, dataset -> sample, dataset -> k
+getItem :: Dataset m dataset k sample => dataset -> k -> m sample
+keys :: Dataset m dataset k sample => dataset -> Set k
+
+-- | Dataset options used when loading datasets. Specify shuffling
+--   behavior, the number of threads to use, and the buffer size used to
+--   store retrieved samples in each thread.
+data DatasetOptions
+DatasetOptions :: Int -> Int -> Sample -> DatasetOptions
+
+-- | Max number of samples stored in each buffer at a given time.
+[dataBufferSize] :: DatasetOptions -> Int
+
+-- | Number of threads retrieving samples.
+[numWorkers] :: DatasetOptions -> Int
+
+-- | The ordering of samples streamed.
+[shuffle] :: DatasetOptions -> Sample
+
+-- | Default <a>DatasetOptions</a>. The <a>Int</a> parameter specifies the
+--   number of workers, and sets the buffer size equal to the number of
+--   workers. Sampling is sequential.
+datasetOpts :: Int -> DatasetOptions
+
+-- | A <a>Sample</a> determines the ordering of samples streamed out of a
+--   dataset. You can either order sequentially, or supply a random
+--   generator to shuffle samples.
+data Sample
+[Sequential] :: Sample
+[Shuffle] :: RandomGen g => g -> Sample
+
+-- | Return a stream of samples from the given dataset, along with a new
+--   <a>Sample</a> value. The returned stream contains every sample
+--   returned by <tt><a>getItem</a></tt> for every key in the set of keys
+--   associated with the given dataset. The returned <a>Sample</a> value
+--   returns an updated <a>Sample</a> value, this will be identical to the
+--   original <a>Sample</a> value if sampling is <a>Sequential</a> but will
+--   return a new random number generator if sampling is <a>Shuffle</a>.
+streamFromMap :: forall m dataset k sample r. (Dataset m dataset k sample, MonadIO m, MonadBaseControl IO m) => DatasetOptions -> dataset -> ContT r m (ListT m sample, Sample)
+
 module Torch.Data.StreamedPipeline
-makeListT :: forall sample m dataset seed b r. (Datastream m seed dataset sample, MonadBaseControl IO m, MonadBase IO m) => DataloaderOptions -> dataset -> ListT m seed -> ContT b m (ListT m (sample, Int))
-makeListT' :: forall sample m f dataset seed b. (Datastream m seed dataset sample, MonadBaseControl IO m, MonadBase IO m, Foldable f) => DataloaderOptions -> dataset -> f seed -> ContT b m (ListT m (sample, Int))
 
--- | Run a parallel map over the given ListT (TODO: with the given number
---   of workers)
-pmap :: (MonadIO m, MonadBaseControl IO m) => Int -> (a -> b) -> ListT m a -> ContT r m (ListT m b)
+-- | The base datastream class. A dataset returns a stream of samples based
+--   on a seed value.
+class Monad m => Datastream m seed dataset sample | dataset -> sample
+streamSamples :: Datastream m seed dataset sample => dataset -> seed -> ListT m sample
 
--- | Run a parallel pipe over the given ListT. (TODO: with the given number
---   of workers)
-pmap' :: (MonadIO m, MonadBaseControl IO m) => Int -> Pipe a b m () -> ListT m a -> ContT r m (ListT m b)
+-- | Datastream options used when looding datastreams. Currently only
+--   buffer size is configurable, since thread count is controlled by the
+--   number of seeds (see <tt><a>streamFrom</a></tt> functions).
+newtype DatastreamOptions
+DatastreamOptions :: Int -> DatastreamOptions
+
+-- | Max number of samples stored in each buffer at a given time.
+[bufferSize] :: DatastreamOptions -> Int
 
 -- | Default dataloader options, you should override the fields in this
 --   record.
-dataloaderOpts :: DataloaderOptions
-class Monad m => Datastream m seed dataset sample | dataset -> sample
-streamBatch :: Datastream m seed dataset sample => dataset -> seed -> ListT m sample
+datastreamOpts :: DatastreamOptions
+
+-- | Return a stream of samples from the given dataset as a continuation. A
+--   stream of samples is generated for every seed in the given stream of
+--   seeds, and all of these streams are merged into the output stream in a
+--   non-deterministic order (if you need determinism see 'streamFrom'').
+--   Every stream created for each seed value is made in its own thread.
+streamFrom :: forall sample m dataset seed b. (Datastream m seed dataset sample, MonadBaseControl IO m, MonadBase IO m) => DatastreamOptions -> dataset -> ListT m seed -> ContT b m (ListT m sample)
+
+-- | This function is the same as <a>streamFrom</a> except the seeds are
+--   specified as a <a>Foldable</a>, and the stream returned has a
+--   deterministic ordering. The results from each given seed are
+--   interspersed in the order defined by the <tt><a>Foldable</a></tt> of
+--   seeds.
+streamFrom' :: forall sample m f dataset seed b. (Show sample, Datastream m seed dataset sample, MonadBaseControl IO m, MonadBase IO m, MonadIO m, Foldable f) => DatastreamOptions -> dataset -> f seed -> ContT b m (ListT m sample)
 class (Applicative b, Applicative m, Monad b, Monad m) => MonadBase (b :: Type -> Type) (m :: Type -> Type) | m -> b
 
 -- | Lift a computation from the base monad
@@ -200,39 +260,67 @@ liftBaseWith :: MonadBaseControl b m => (RunInBase m b -> b a) -> m a
 --   using <tt><a>defaultRestoreM</a></tt>.
 restoreM :: MonadBaseControl b m => StM m a -> m a
 
--- | The monad used to run resource management actions, corresponding to
---   the monad directly beneath <a>SafeT</a>
-type family Base (m :: Type -> Type) :: Type -> Type
+module Torch.Data.Dataset
 
--- | <a>MonadSafe</a> lets you <a>register</a> and <a>release</a>
---   finalizers that execute in a <a>Base</a> monad
-class (MonadCatch m, MonadMask m, MonadIO m, MonadIO Base m) => MonadSafe (m :: Type -> Type) where {
-    
-    -- | The monad used to run resource management actions, corresponding to
-    --   the monad directly beneath <a>SafeT</a>
-    type family Base (m :: Type -> Type) :: Type -> Type;
-}
+-- | This type is actually not very useful. | It would actually be better
+--   to define a transform | on top of another dataset, since then we can
+--   do this in parallel
+data CollatedDataset m dataset batch collatedBatch
+CollatedDataset :: dataset -> Int -> Pipe [batch] collatedBatch m () -> CollatedDataset m dataset batch collatedBatch
+[set] :: CollatedDataset m dataset batch collatedBatch -> dataset
+[chunkSize] :: CollatedDataset m dataset batch collatedBatch -> Int
+[collateFn] :: CollatedDataset m dataset batch collatedBatch -> Pipe [batch] collatedBatch m ()
+instance Torch.Data.StreamedPipeline.Datastream m seed dataset batch => Torch.Data.StreamedPipeline.Datastream m seed (Torch.Data.Dataset.CollatedDataset m dataset batch collatedBatch) collatedBatch
 
-module Torch.Data.CsvDataset
-tsvDataset :: forall (isNamed :: NamedColumns) batches. FilePath -> CsvDataset' batches isNamed
-csvDataset :: forall (isNamed :: NamedColumns) batches. FilePath -> CsvDataset' batches isNamed
+module Torch.Data.CsvDatastream
+type BufferSize = Int
+data NamedColumns
+Unnamed :: NamedColumns
+Named :: NamedColumns
 
--- | Use if you want to decode with a record that has a FromRecord
---   instance.
-type CsvDataset batches = CsvDataset' batches Unnamed
+-- | A CSV datastream. The datastream instance of this type streams samples
+--   of <tt>batches</tt> from a CSV file at the specified file path.
+--   Batches are yielded in constant memory, but if shuffling is enabled,
+--   then there will be at most <tt><a>BufferSize</a></tt> records stored
+--   in memory.
+data CsvDatastream' batches (named :: NamedColumns)
+CsvDatastream' :: FilePath -> !Word8 -> HasHeader -> Int -> Maybe BufferSize -> Bool -> CsvDatastream' batches (named :: NamedColumns)
 
--- | Use CsvDatasetNamed if you want to decode with a record that has
---   FromNamedRecord instance, | decoding fields of a given name from a csv
---   file,
-type CsvDatasetNamed batches = CsvDataset' batches Named
-data CsvDataset' batches (named :: NamedColumns)
-CsvDataset' :: FilePath -> !Word8 -> HasHeader -> Int -> Maybe BufferSize -> Bool -> CsvDataset' batches (named :: NamedColumns)
-[filePath] :: CsvDataset' batches (named :: NamedColumns) -> FilePath
-[delimiter] :: CsvDataset' batches (named :: NamedColumns) -> !Word8
-[hasHeader] :: CsvDataset' batches (named :: NamedColumns) -> HasHeader
-[batchSize] :: CsvDataset' batches (named :: NamedColumns) -> Int
-[shuffle] :: CsvDataset' batches (named :: NamedColumns) -> Maybe BufferSize
-[dropLast] :: CsvDataset' batches (named :: NamedColumns) -> Bool
+-- | CSV file path.
+[filePath] :: CsvDatastream' batches (named :: NamedColumns) -> FilePath
+
+-- | Column delimiter.
+[delimiter] :: CsvDatastream' batches (named :: NamedColumns) -> !Word8
+
+-- | Does the file have a header?
+[hasHeader] :: CsvDatastream' batches (named :: NamedColumns) -> HasHeader
+
+-- | Batch size. , filter :: Maybe (batches -&gt; Bool)
+[batchSize] :: CsvDatastream' batches (named :: NamedColumns) -> Int
+
+-- | Buffered shuffle with specified buffer size.
+[bufferedShuffle] :: CsvDatastream' batches (named :: NamedColumns) -> Maybe BufferSize
+
+-- | Drop the last batch if it is less than batch size.
+[dropLast] :: CsvDatastream' batches (named :: NamedColumns) -> Bool
+
+-- | A specialized version of CsvDatastream'. Use this type if you want to
+--   decode a CSV file with records defined by the order of the columns.
+type CsvDatastream batches = CsvDatastream' batches Unnamed
+
+-- | A specialized version of CsvDatastream'. Use this type if you want to
+--   decode a CSV file with records that have
+--   <tt><a>FromNamedRecord</a></tt> instance. This decodes each field of
+--   the record by the corresponding column with the given header name.
+type CsvDatastreamNamed batches = CsvDatastream' batches Named
+
+-- | Produce a CsvDatastream' from the given file with default options, and
+--   comma separated columns.
+csvDatastream :: forall (isNamed :: NamedColumns) batches. FilePath -> CsvDatastream' batches isNamed
+
+-- | Produce a CsvDatastream' from the given file with default options, and
+--   tab separated columns.
+tsvDatastream :: forall (isNamed :: NamedColumns) batches. FilePath -> CsvDatastream' batches isNamed
 
 -- | A type that can be converted from a single CSV field, with the
 --   possibility of failure.
@@ -320,8 +408,58 @@ parseRecord :: FromRecord a => Record -> Parser a
 --   literals.
 class FromNamedRecord a
 parseNamedRecord :: FromNamedRecord a => NamedRecord -> Parser a
-instance (Control.Monad.Trans.Control.MonadBaseControl GHC.Types.IO m, Pipes.Safe.MonadSafe m, Data.Csv.Conversion.FromNamedRecord batch) => Torch.Data.StreamedPipeline.Datastream m () (Torch.Data.CsvDataset.CsvDatasetNamed batch) (Data.Vector.Vector batch)
-instance (Control.Monad.Trans.Control.MonadBaseControl GHC.Types.IO m, Pipes.Safe.MonadSafe m, Data.Csv.Conversion.FromRecord batch) => Torch.Data.StreamedPipeline.Datastream m () (Torch.Data.CsvDataset.CsvDataset batch) (Data.Vector.Vector batch)
+instance (Control.Monad.Trans.Control.MonadBaseControl GHC.Types.IO m, Pipes.Safe.MonadSafe m, Data.Csv.Conversion.FromNamedRecord batch) => Torch.Data.StreamedPipeline.Datastream m () (Torch.Data.CsvDatastream.CsvDatastreamNamed batch) (Data.Vector.Vector batch)
+instance (Control.Monad.Trans.Control.MonadBaseControl GHC.Types.IO m, Pipes.Safe.MonadSafe m, Data.Csv.Conversion.FromRecord batch) => Torch.Data.StreamedPipeline.Datastream m () (Torch.Data.CsvDatastream.CsvDatastream batch) (Data.Vector.Vector batch)
+
+module Torch.Data.Utils
+
+-- | Run a map function in parallel over the given stream.
+pmap :: (MonadIO m, MonadBaseControl IO m) => (a -> b) -> ListT m a -> ContT r m (ListT m b)
+
+-- | Run a pipe in parallel over the given stream.
+pmap' :: (MonadIO m, MonadBaseControl IO m) => Pipe a b m () -> ListT m a -> ContT r m (ListT m b)
+
+-- | Map a ListT transform over the given the stream in parallel. This
+--   should be useful for using functions which groups elements of a stream
+--   and yields them downstream.
+pmapGroup :: (MonadIO m, MonadBaseControl IO m) => (ListT m a -> ListT m b) -> ListT m a -> ContT r m (ListT m b)
+
+-- | Run a given batching function in parallel. See <a>collate</a> for how
+--   the given samples are batched.
+bufferedCollate :: (MonadIO m, MonadBaseControl IO m) => Int -> ([sample] -> Maybe batch) -> ListT m sample -> ContT r m (ListT m batch)
+
+-- | Run a batching function with integer batch size over the given stream.
+--   The elements of the stream are split into lists of the given batch
+--   size and are collated with the given function. Only Just values are
+--   yielded downstream. If the last chunk of samples is less than the
+--   given batch size then the batching function will be passed a list of
+--   length less than batch size.
+collate :: Monad m => Int -> ([sample] -> Maybe batch) -> ListT m sample -> ListT m batch
+
+-- | Enumerate the given stream, zipping each element with an index.
+enumerateData :: Monad m => ListT m a -> Producer (a, Int) m ()
+
+-- | An In-Memory cached dataset. See the <a>cache</a> function for how to
+--   create a cached dataset.
+data CachedDataset (m :: * -> *) sample
+
+-- | Enumerate a given stream and store it as a <a>CachedDataset</a>. This
+--   function should be used after a time consuming preprocessing pipeline
+--   and used in subsequent epochs to avoid repeating the preprocessing
+--   pipeline.
+cache :: Monad m => ListT m sample -> m (CachedDataset m sample)
+instance GHC.Base.Applicative m => Torch.Data.Pipeline.Dataset m (Torch.Data.Utils.CachedDataset m sample) GHC.Types.Int sample
+
+
+-- | Modules for defining datasets and how to efficiently iterate over
+--   them. If you have an indexable (fixed-size) dataset, see
+--   <a>Torch.Data.Pipeline</a>. If you want to stream in your data then
+--   see <a>Torch.Data.StreamedPipeline</a>. The <a>Torch.Data.Utils</a>
+--   module provides some convienient functions for both indexable and
+--   streamed datasets.
+--   
+--   The mnist examples show how to run data for a predefined dataset.
+module Torch.Data
 
 module Torch.Device
 data DeviceType
@@ -2813,22 +2951,6 @@ instance GHC.Show.Show Torch.NN.Recurrent.Cell.Elman.ElmanSpec
 instance GHC.Classes.Eq Torch.NN.Recurrent.Cell.Elman.ElmanSpec
 instance Torch.NN.Parameterized Torch.NN.Recurrent.Cell.Elman.ElmanCell
 instance Torch.NN.Randomizable Torch.NN.Recurrent.Cell.Elman.ElmanSpec Torch.NN.Recurrent.Cell.Elman.ElmanCell
-
-module Torch.Data.Pipeline
-class (Ord k) => Dataset m dataset k sample | dataset -> sample, dataset -> k
-getItem :: Dataset m dataset k sample => dataset -> k -> m sample
-keys :: Dataset m dataset k sample => dataset -> Set k
-data MapStyleOptions
-MapStyleOptions :: Int -> Int -> Sample -> MapStyleOptions
-[bufferSize] :: MapStyleOptions -> Int
-[numWorkers] :: MapStyleOptions -> Int
-[shuffle] :: MapStyleOptions -> Sample
-data Sample
-[Sequential] :: Sample
-[Shuffle] :: RandomGen g => g -> Sample
-makeListT :: forall m dataset k sample r. (MonadIO m, MonadBaseControl IO m, Dataset m dataset k sample) => MapStyleOptions -> dataset -> ContT r m (ListT m (sample, Int), Sample)
-mapStyleOpts :: Int -> MapStyleOptions
-runContT :: ContT r m a -> (a -> m r) -> m r
 
 module Torch.Typed.Aux
 natValI :: forall n. KnownNat n => Int
@@ -6734,9 +6856,9 @@ forwardStoch :: HasForward f a b => f -> a -> IO b
 forwardStoch :: (HasForward f a b, Generic f, Generic a, Generic b, GHasForward (Rep f) (Rep a) (Rep b)) => f -> a -> IO b
 
 module Torch.Typed.Vision
-data Mnist (device :: (DeviceType, Nat)) (batchSize :: Nat)
-Mnist :: MnistData -> Mnist (device :: (DeviceType, Nat)) (batchSize :: Nat)
-[mnistData] :: Mnist (device :: (DeviceType, Nat)) (batchSize :: Nat) -> MnistData
+data MNIST (m :: Type -> Type) (device :: (DeviceType, Nat)) (batchSize :: Nat)
+MNIST :: MnistData -> MNIST (m :: Type -> Type) (device :: (DeviceType, Nat)) (batchSize :: Nat)
+[mnistData] :: MNIST (m :: Type -> Type) (device :: (DeviceType, Nat)) (batchSize :: Nat) -> MnistData
 data MnistData
 MnistData :: ByteString -> ByteString -> MnistData
 [images] :: MnistData -> ByteString
@@ -6753,7 +6875,7 @@ getImages :: forall n. KnownNat n => MnistData -> [Int] -> CPUTensor 'Float '[n,
 length :: MnistData -> Int
 decompressFile :: String -> String -> IO ByteString
 initMnist :: String -> IO (MnistData, MnistData)
-instance (GHC.TypeNats.KnownNat batchSize, Torch.Typed.Tensor.KnownDevice device, GHC.Base.Applicative m) => Torch.Data.Pipeline.Dataset m (Torch.Typed.Vision.Mnist device batchSize) GHC.Types.Int (Torch.Typed.Tensor.Tensor device 'Torch.DType.Float '[batchSize, 784], Torch.Typed.Tensor.Tensor device 'Torch.DType.Int64 '[batchSize])
+instance (GHC.TypeNats.KnownNat batchSize, Torch.Typed.Tensor.KnownDevice device, GHC.Base.Applicative m) => Torch.Data.Pipeline.Dataset m (Torch.Typed.Vision.MNIST m device batchSize) GHC.Types.Int (Torch.Typed.Tensor.Tensor device 'Torch.DType.Float '[batchSize, 784], Torch.Typed.Tensor.Tensor device 'Torch.DType.Int64 '[batchSize])
 
 module Torch.Typed
 class Randomizable spec f | spec -> f
@@ -6923,23 +7045,11 @@ data Tri
 Upper :: Tri
 Lower :: Tri
 
-module Torch.Data.Dataset
-
--- | This class is actually not very useful. | It would actually be better
---   to define a transform | on top of another dataset, since then we can
---   do this in parallel
-data CollatedDataset m dataset batch collatedBatch
-CollatedDataset :: dataset -> Int -> Pipe [batch] collatedBatch m () -> CollatedDataset m dataset batch collatedBatch
-[set] :: CollatedDataset m dataset batch collatedBatch -> dataset
-[chunkSize] :: CollatedDataset m dataset batch collatedBatch -> Int
-[collateFn] :: CollatedDataset m dataset batch collatedBatch -> Pipe [batch] collatedBatch m ()
-instance Torch.Data.StreamedPipeline.Datastream m seed dataset batch => Torch.Data.StreamedPipeline.Datastream m seed (Torch.Data.Dataset.CollatedDataset m dataset batch collatedBatch) collatedBatch
-
 module Torch.Vision
-data Mnist
-Mnist :: Int -> MnistData -> Mnist
-[batchSize] :: Mnist -> Int
-[mnistData] :: Mnist -> MnistData
+data MNIST (m :: * -> *)
+MNIST :: Int -> MnistData -> MNIST (m :: * -> *)
+[batchSize] :: MNIST (m :: * -> *) -> Int
+[mnistData] :: MNIST (m :: * -> *) -> MnistData
 getLabels' :: Int -> MnistData -> [Int] -> Tensor
 getImages' :: Int -> Int -> MnistData -> [Int] -> Tensor
 grayScale10 :: [Char]
@@ -6964,8 +7074,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679709135 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679709160 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679697899 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679697924 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
@@ -6975,5 +7085,5 @@ chw2hwc :: Tensor -> Tensor
 randomIndexes :: Int -> [Int]
 instance GHC.Classes.Eq Torch.Vision.PixelFormat
 instance GHC.Show.Show Torch.Vision.PixelFormat
-instance (GHC.Base.MonadPlus m, Control.Monad.Base.MonadBase GHC.Types.IO m) => Torch.Data.StreamedPipeline.Datastream m GHC.Types.Int Torch.Vision.Mnist (Torch.Tensor.Tensor, Torch.Tensor.Tensor)
-instance GHC.Base.Applicative m => Torch.Data.Pipeline.Dataset m Torch.Vision.Mnist GHC.Types.Int (Torch.Tensor.Tensor, Torch.Tensor.Tensor)
+instance GHC.Base.Monad m => Torch.Data.StreamedPipeline.Datastream m GHC.Types.Int (Torch.Vision.MNIST m) (Torch.Tensor.Tensor, Torch.Tensor.Tensor)
+instance GHC.Base.Applicative m => Torch.Data.Pipeline.Dataset m (Torch.Vision.MNIST m) GHC.Types.Int (Torch.Tensor.Tensor, Torch.Tensor.Tensor)
