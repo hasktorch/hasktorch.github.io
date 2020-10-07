@@ -6855,6 +6855,68 @@ forward :: (HasForward f a b, Generic f, Generic a, Generic b, GHasForward (Rep 
 forwardStoch :: HasForward f a b => f -> a -> IO b
 forwardStoch :: (HasForward f a b, Generic f, Generic a, Generic b, GHasForward (Rep f) (Rep a) (Rep b)) => f -> a -> IO b
 
+module Torch.Typed.Optim.CppOptim
+class CppOptimizer option
+initOptimizer :: forall model tensors. (CppOptimizer option, Parameterized model, HMap' ToDependent (Parameters model) tensors, Castable (HList tensors) [ATenTensor]) => option -> model -> IO (CppOptimizerState option (Parameters model))
+unsafeStep :: forall model dev dtype lossShape tensors res. (CppOptimizer option, Parameterized model, HMap' ToDependent (Parameters model) tensors, HMap' ToParameter tensors (Parameters model), Castable (HList tensors) [ATenTensor]) => model -> CppOptimizerState option (Parameters model) -> Tensor dev dtype lossShape -> IO (model, CppOptimizerState option (Parameters model))
+data ToParameter
+ToParameter :: ToParameter
+data CppOptimizerState option (params :: [*])
+CppOptimizerState :: option -> CppOptimizerRef -> CppOptimizerState option (params :: [*])
+type CppOptimizerRef = ForeignPtr Optimizer
+runStep :: (CppOptimizer option, Parameterized model, HMap' ToDependent (Parameters model) tensors, HMap' ToParameter tensors (Parameters model), Castable (HList tensors) [ATenTensor]) => model -> CppOptimizerState option (Parameters model) -> Loss dev dtype -> IO (model, CppOptimizerState option (Parameters model))
+data AdagradOptions
+AdagradOptions :: Double -> Double -> Double -> Double -> Double -> AdagradOptions
+[adagradLr] :: AdagradOptions -> Double
+[adagradLrDecay] :: AdagradOptions -> Double
+[adagradWeightDecay] :: AdagradOptions -> Double
+[adagradInitialAccumulatorValue] :: AdagradOptions -> Double
+[adagradEps] :: AdagradOptions -> Double
+data AdamOptions
+AdamOptions :: Double -> (Double, Double) -> Double -> Double -> Bool -> AdamOptions
+[adamLr] :: AdamOptions -> Double
+[adamBetas] :: AdamOptions -> (Double, Double)
+[adamEps] :: AdamOptions -> Double
+[adamWeightDecay] :: AdamOptions -> Double
+[adamAmsgrad] :: AdamOptions -> Bool
+data AdamwOptions
+AdamwOptions :: Double -> (Double, Double) -> Double -> Double -> Bool -> AdamwOptions
+[adamwLr] :: AdamwOptions -> Double
+[adamwBetas] :: AdamwOptions -> (Double, Double)
+[adamwEps] :: AdamwOptions -> Double
+[adamwWeightDecay] :: AdamwOptions -> Double
+[adamwAmsgrad] :: AdamwOptions -> Bool
+data LbfgsOptions
+LbfgsOptions :: Double -> Int -> Int -> Double -> Double -> Int -> Maybe String -> LbfgsOptions
+[lbfgsLr] :: LbfgsOptions -> Double
+[lbfgsMaxIter] :: LbfgsOptions -> Int
+[lbfgsMaxEval] :: LbfgsOptions -> Int
+[lbfgsToleranceGrad] :: LbfgsOptions -> Double
+[lbfgsToleranceChange] :: LbfgsOptions -> Double
+[lbfgsHistorySize] :: LbfgsOptions -> Int
+[lbfgsLineSearchFn] :: LbfgsOptions -> Maybe String
+data RmspropOptions
+RmspropOptions :: Double -> Double -> Double -> Double -> Double -> Bool -> RmspropOptions
+[rmspropLr] :: RmspropOptions -> Double
+[rmspropAlpha] :: RmspropOptions -> Double
+[rmspropEps] :: RmspropOptions -> Double
+[rmspropWeightDecay] :: RmspropOptions -> Double
+[rmspropMomentum] :: RmspropOptions -> Double
+[rmspropCentered] :: RmspropOptions -> Bool
+data SGDOptions
+SGDOptions :: Double -> Double -> Double -> Double -> Bool -> SGDOptions
+[sgdLr] :: SGDOptions -> Double
+[sgdMomentum] :: SGDOptions -> Double
+[sgdDampening] :: SGDOptions -> Double
+[sgdWeightDecay] :: SGDOptions -> Double
+[sgdNesterov] :: SGDOptions -> Bool
+instance Torch.Typed.Optim.CppOptim.CppOptimizer Torch.Optim.CppOptim.AdamOptions
+instance Torch.Typed.Optim.CppOptim.CppOptimizer Torch.Optim.CppOptim.AdamwOptions
+instance Torch.Typed.Optim.CppOptim.CppOptimizer Torch.Optim.CppOptim.LbfgsOptions
+instance Torch.Typed.Optim.CppOptim.CppOptimizer Torch.Optim.CppOptim.RmspropOptions
+instance Torch.Typed.Optim.CppOptim.CppOptimizer Torch.Optim.CppOptim.SGDOptions
+instance Torch.HList.Apply' Torch.Typed.Optim.CppOptim.ToParameter (Torch.Typed.Tensor.Tensor dev dtype shape) (Torch.Typed.Parameter.Parameter dev dtype shape)
+
 module Torch.Typed.Vision
 data MNIST (m :: Type -> Type) (device :: (DeviceType, Nat)) (batchSize :: Nat)
 MNIST :: MnistData -> MNIST (m :: Type -> Type) (device :: (DeviceType, Nat)) (batchSize :: Nat)
@@ -7074,8 +7136,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679697926 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679697951 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679699378 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679699403 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
