@@ -1,15 +1,14 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE TypeSynonymInstances #-}</span><span>
-</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE FlexibleInstances #-}</span><span>
-</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE MultiParamTypeClasses #-}</span><span>
-</span><span id="line-4"></span><span>
-</span><span id="line-5"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.Layout</span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-6"></span><span>
-</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">Torch.Internal.Class</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">Castable</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">Torch.Internal.Const</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">ATen</span></span><span>
-</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">Torch.Internal.Type</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">ATen</span></span><span>
-</span><span id="line-10"></span><span>
-</span><span id="line-11"></span><span class="hs-keyword">data</span><span> </span><span id="Layout"><span class="annot"><a href="Torch.Layout.html#Layout"><span class="hs-identifier hs-var">Layout</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Strided"><span class="annot"><a href="Torch.Layout.html#Strided"><span class="hs-identifier hs-var">Strided</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Sparse"><span class="annot"><a href="Torch.Layout.html#Sparse"><span class="hs-identifier hs-var">Sparse</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Mkldnn"><span class="annot"><a href="Torch.Layout.html#Mkldnn"><span class="hs-identifier hs-var">Mkldnn</span></a></span></span><span>
-</span><span id="line-12"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679803458"><span id="local-6989586621679803460"><span class="annot"><span class="annottext">Layout -&gt; Layout -&gt; Bool
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE FlexibleInstances #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE MultiParamTypeClasses #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.Layout</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">Torch.Internal.Class</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">Castable</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">Torch.Internal.Const</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">ATen</span></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">Torch.Internal.Type</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">ATen</span></span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">data</span><span> </span><span id="Layout"><span class="annot"><a href="Torch.Layout.html#Layout"><span class="hs-identifier hs-var">Layout</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Strided"><span class="annot"><a href="Torch.Layout.html#Strided"><span class="hs-identifier hs-var">Strided</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Sparse"><span class="annot"><a href="Torch.Layout.html#Sparse"><span class="hs-identifier hs-var">Sparse</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Mkldnn"><span class="annot"><a href="Torch.Layout.html#Mkldnn"><span class="hs-identifier hs-var">Mkldnn</span></a></span></span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679801085"><span id="local-6989586621679801087"><span class="annot"><span class="annottext">Layout -&gt; Layout -&gt; Bool
 (Layout -&gt; Layout -&gt; Bool)
 -&gt; (Layout -&gt; Layout -&gt; Bool) -&gt; Eq Layout
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -17,7 +16,7 @@ forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
 $c/= :: Layout -&gt; Layout -&gt; Bool
 == :: Layout -&gt; Layout -&gt; Bool
 $c== :: Layout -&gt; Layout -&gt; Bool
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679803451"><span id="local-6989586621679803453"><span id="local-6989586621679803455"><span class="annot"><span class="annottext">Int -&gt; Layout -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679801078"><span id="local-6989586621679801080"><span id="local-6989586621679801082"><span class="annot"><span class="annottext">Int -&gt; Layout -&gt; ShowS
 [Layout] -&gt; ShowS
 Layout -&gt; String
 (Int -&gt; Layout -&gt; ShowS)
@@ -31,45 +30,45 @@ $cshow :: Layout -&gt; String
 showsPrec :: Int -&gt; Layout -&gt; ShowS
 $cshowsPrec :: Int -&gt; Layout -&gt; ShowS
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
-</span><span id="line-13"></span><span>
-</span><span id="line-14"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">Castable</span></a></span><span> </span><span class="annot"><a href="Torch.Layout.html#Layout"><span class="hs-identifier hs-type">Layout</span></a></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Layout</span></a></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-15"></span><span>  </span><span id="local-6989586621679803446"><span class="annot"><span class="annottext">cast :: Layout -&gt; (Layout -&gt; IO r) -&gt; IO r
-</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">cast</span></a></span></span><span> </span><span class="annot"><a href="Torch.Layout.html#Strided"><span class="hs-identifier hs-type">Strided</span></a></span><span> </span><span id="local-6989586621679803444"><span class="annot"><span class="annottext">f :: Layout -&gt; IO r
-</span><a href="#local-6989586621679803444"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Layout -&gt; IO r
-</span><a href="#local-6989586621679803444"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Layout
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">Castable</span></a></span><span> </span><span class="annot"><a href="Torch.Layout.html#Layout"><span class="hs-identifier hs-type">Layout</span></a></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Layout</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-14"></span><span>  </span><span id="local-6989586621679801073"><span class="annot"><span class="annottext">cast :: Layout -&gt; (Layout -&gt; IO r) -&gt; IO r
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">cast</span></a></span></span><span> </span><span class="annot"><a href="Torch.Layout.html#Strided"><span class="hs-identifier hs-type">Strided</span></a></span><span> </span><span id="local-6989586621679801071"><span class="annot"><span class="annottext">f :: Layout -&gt; IO r
+</span><a href="#local-6989586621679801071"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Layout -&gt; IO r
+</span><a href="#local-6989586621679801071"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Layout
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.kStrided</span></a></span><span>
-</span><span id="line-16"></span><span>  </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">cast</span></a></span><span> </span><span class="annot"><a href="Torch.Layout.html#Sparse"><span class="hs-identifier hs-type">Sparse</span></a></span><span> </span><span id="local-6989586621679803442"><span class="annot"><span class="annottext">f :: Layout -&gt; IO r
-</span><a href="#local-6989586621679803442"><span class="hs-identifier hs-var">f</span></a></span></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Layout -&gt; IO r
-</span><a href="#local-6989586621679803442"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Layout
+</span><span id="line-15"></span><span>  </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">cast</span></a></span><span> </span><span class="annot"><a href="Torch.Layout.html#Sparse"><span class="hs-identifier hs-type">Sparse</span></a></span><span> </span><span id="local-6989586621679801069"><span class="annot"><span class="annottext">f :: Layout -&gt; IO r
+</span><a href="#local-6989586621679801069"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Layout -&gt; IO r
+</span><a href="#local-6989586621679801069"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Layout
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.kSparse</span></a></span><span>
-</span><span id="line-17"></span><span>  </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">cast</span></a></span><span> </span><span class="annot"><a href="Torch.Layout.html#Mkldnn"><span class="hs-identifier hs-type">Mkldnn</span></a></span><span> </span><span id="local-6989586621679803440"><span class="annot"><span class="annottext">f :: Layout -&gt; IO r
-</span><a href="#local-6989586621679803440"><span class="hs-identifier hs-var">f</span></a></span></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Layout -&gt; IO r
-</span><a href="#local-6989586621679803440"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Layout
+</span><span id="line-16"></span><span>  </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">cast</span></a></span><span> </span><span class="annot"><a href="Torch.Layout.html#Mkldnn"><span class="hs-identifier hs-type">Mkldnn</span></a></span><span> </span><span id="local-6989586621679801067"><span class="annot"><span class="annottext">f :: Layout -&gt; IO r
+</span><a href="#local-6989586621679801067"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Layout -&gt; IO r
+</span><a href="#local-6989586621679801067"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Layout
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.kMkldnn</span></a></span><span>
-</span><span id="line-18"></span><span>
-</span><span id="line-19"></span><span>  </span><span id="local-6989586621679803438"><span class="annot"><span class="annottext">uncast :: Layout -&gt; (Layout -&gt; IO r) -&gt; IO r
-</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">uncast</span></a></span></span><span> </span><span id="local-6989586621679803436"><span class="annot"><span class="annottext">x :: Layout
-</span><a href="#local-6989586621679803436"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span id="local-6989586621679803435"><span class="annot"><span class="annottext">f :: Layout -&gt; IO r
-</span><a href="#local-6989586621679803435"><span class="hs-identifier hs-var">f</span></a></span></span><span>
-</span><span id="line-20"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Layout
-</span><a href="#local-6989586621679803436"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Layout -&gt; Layout -&gt; Bool
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span>  </span><span id="local-6989586621679801065"><span class="annot"><span class="annottext">uncast :: Layout -&gt; (Layout -&gt; IO r) -&gt; IO r
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">uncast</span></a></span></span><span> </span><span id="local-6989586621679801063"><span class="annot"><span class="annottext">x :: Layout
+</span><a href="#local-6989586621679801063"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span id="local-6989586621679801062"><span class="annot"><span class="annottext">f :: Layout -&gt; IO r
+</span><a href="#local-6989586621679801062"><span class="hs-identifier hs-var">f</span></a></span></span><span>
+</span><span id="line-19"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Layout
+</span><a href="#local-6989586621679801063"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Layout -&gt; Layout -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Layout
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.kStrided</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Layout -&gt; IO r
-</span><a href="#local-6989586621679803435"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Layout
+</span><a href="#local-6989586621679801062"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Layout
 </span><a href="Torch.Layout.html#Strided"><span class="hs-identifier hs-var">Strided</span></a></span><span>
-</span><span id="line-21"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Layout
-</span><a href="#local-6989586621679803436"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Layout -&gt; Layout -&gt; Bool
+</span><span id="line-20"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Layout
+</span><a href="#local-6989586621679801063"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Layout -&gt; Layout -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Layout
-</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.kSparse</span></a></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Layout -&gt; IO r
-</span><a href="#local-6989586621679803435"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Layout
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.kSparse</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Layout -&gt; IO r
+</span><a href="#local-6989586621679801062"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Layout
 </span><a href="Torch.Layout.html#Sparse"><span class="hs-identifier hs-var">Sparse</span></a></span><span>
-</span><span id="line-22"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Layout
-</span><a href="#local-6989586621679803436"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Layout -&gt; Layout -&gt; Bool
+</span><span id="line-21"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Layout
+</span><a href="#local-6989586621679801063"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Layout -&gt; Layout -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Layout
-</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.kMkldnn</span></a></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Layout -&gt; IO r
-</span><a href="#local-6989586621679803435"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Layout
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.kMkldnn</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Layout -&gt; IO r
+</span><a href="#local-6989586621679801062"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Layout
 </span><a href="Torch.Layout.html#Mkldnn"><span class="hs-identifier hs-var">Mkldnn</span></a></span><span>
-</span><span id="line-23"></span></pre></body></html>
+</span><span id="line-22"></span></pre></body></html>

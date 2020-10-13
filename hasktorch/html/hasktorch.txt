@@ -519,7 +519,7 @@ class HFoldrM m f acc xs res | m f acc xs -> res
 hfoldrM :: HFoldrM m f acc xs res => f -> acc -> HList xs -> m res
 data HNothing
 HNothing :: HNothing
-data HJust x
+newtype HJust x
 HJust :: x -> HJust x
 class HUnfold f res xs
 hunfoldr' :: HUnfold f res xs => f -> res -> HList xs
@@ -1504,7 +1504,7 @@ isfinite :: Tensor -> Tensor
 isinf :: Tensor -> Tensor
 
 module Torch.Functional
-data Diag
+newtype Diag
 Diag :: Int -> Diag
 data CeilMode
 Ceil :: CeilMode
@@ -1512,7 +1512,7 @@ Floor :: CeilMode
 data KeepDim
 KeepDim :: KeepDim
 RemoveDim :: KeepDim
-data Dim
+newtype Dim
 Dim :: Int -> Dim
 data Reduction
 ReduceNone :: Reduction
@@ -2619,7 +2619,7 @@ type LearningRate = Tensor
 type Loss = Tensor
 newtype Gradients
 Gradients :: [Tensor] -> Gradients
-data OptimizerState option
+newtype OptimizerState option
 OptimizerState :: option -> OptimizerState option
 grad' :: Loss -> [Parameter] -> Gradients
 class Optimizer optimizer
@@ -7136,8 +7136,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679699381 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679699406 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679697169 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679697194 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
