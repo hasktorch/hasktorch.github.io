@@ -46,6 +46,7 @@ GeneratorType :: Parsable
 StorageType :: Parsable
 CType :: CType -> Parsable
 STLType :: STLType -> Parsable
+ArrayRef :: CType -> Parsable
 CppString :: Parsable
 Tuple :: [Parsable] -> Parsable
 CppClass :: SignatureStr -> CppTypeStr -> HsTypeStr -> Parsable
@@ -273,6 +274,9 @@ identifier :: Parser String
 --   
 --   &gt;&gt;&gt; parseTest typ "char*"
 --   CType CString
+--   
+--   &gt;&gt;&gt; parseTest typ "ArrayRef&lt;double&gt;"
+--   ArrayRef CDouble
 --   </pre>
 typ :: Parser Parsable
 
@@ -424,7 +428,7 @@ THC :: Mode
 NN :: Mode
 Native :: Mode
 data Declaration
-Declaration :: String -> Bool -> String -> [Type] -> [String] -> Mode -> String -> [Type] -> Bool -> Maybe Bool -> Bool -> Bool -> Maybe Bool -> Maybe Bool -> Maybe Bool -> Declaration
+Declaration :: String -> Bool -> String -> [Type] -> [String] -> Mode -> String -> [Type] -> Bool -> Maybe Bool -> Bool -> Maybe Bool -> Maybe Bool -> Maybe Bool -> Declaration
 [name] :: Declaration -> String
 [matches_jit_signature] :: Declaration -> Bool
 [schema_string] :: Declaration -> String
@@ -436,7 +440,6 @@ Declaration :: String -> Bool -> String -> [Type] -> [String] -> Mode -> String 
 [inplace] :: Declaration -> Bool
 [is_factory_method] :: Declaration -> Maybe Bool
 [abstract] :: Declaration -> Bool
-[requires_tensor] :: Declaration -> Bool
 [device_guard] :: Declaration -> Maybe Bool
 [with_gil] :: Declaration -> Maybe Bool
 [deprecated] :: Declaration -> Maybe Bool
@@ -487,11 +490,14 @@ cket :: Text
 tenTypeToCppType :: TenType -> Text
 ctypeToCppType :: CType -> Text
 stltypeToCppType :: STLType -> Text
+arrayrefToCppType :: CType -> Text
 parsableToCppType :: Parsable -> Text
 tenTypeToHsType :: TenType -> Text
 tenTypeToHigherHsType :: TenType -> Text
 stltypeToHsType :: STLType -> Text
 stltypeToHigherHsType :: STLType -> Text
+arrayrefToHsType :: CType -> Text
+arrayrefToHigherHsType :: CType -> Text
 ctypeToHsType :: CType -> Text
 ctypeToHigherHsType :: CType -> Text
 withParens :: Text -> Text
@@ -499,6 +505,7 @@ parsableToHsType :: Parsable -> Text
 parsableToHigherHsType :: Parsable -> Text
 tenTypeToInitial :: TenType -> Text
 stltypeToInitial :: STLType -> Text
+arrayrefToInitial :: CType -> Text
 ctypeToInitial :: CType -> Text
 parsableToInitial :: Parsable -> Text
 isCType :: Parsable -> Bool
