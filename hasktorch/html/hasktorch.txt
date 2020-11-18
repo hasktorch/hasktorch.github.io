@@ -2287,6 +2287,10 @@ unsqueeze :: Dim -> Tensor -> Tensor
 --   spatial (4 dimensional).
 upsampleBilinear2d :: (Int, Int) -> Bool -> Tensor -> Tensor
 
+-- | Applies a 2D nearest neighbor upsampling to an input signal composed
+--   of several input channels.
+upsampleNearest2d :: (Int, Int) -> Double -> Double -> Tensor -> Tensor
+
 -- | Splits the tensor into chunks of given size if possible.
 split :: Int -> Dim -> Tensor -> [Tensor]
 
@@ -2370,6 +2374,17 @@ stdMean :: Bool -> Tensor -> (Tensor, Tensor)
 --   standard-deviation will be calculated via the biased estimator.
 --   Otherwise, Bessel’s correction will be used.
 stdMeanDim :: Dim -> Bool -> KeepDim -> Tensor -> (Tensor, Tensor)
+
+-- | Returns a copy of input.
+clone :: Tensor -> IO Tensor
+
+-- | Returns a new tensor with the same data as the input tensor but of a
+--   different shape.
+view :: [Int] -> Tensor -> Tensor
+
+-- | Repeats this tensor along the specified dimensions.
+repeat :: [Int] -> Tensor -> Tensor
+batchNorm :: Tensor -> Tensor -> Tensor -> Tensor -> Bool -> Double -> Double -> Tensor -> Tensor
 acos :: Tensor -> Tensor
 addmv :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor
 addr :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor
@@ -2587,6 +2602,23 @@ Conv2d :: Parameter -> Parameter -> Conv2d
 [conv2dWeight] :: Conv2d -> Parameter
 [conv2dBias] :: Conv2d -> Parameter
 conv2dForward :: Conv2d -> (Int, Int) -> (Int, Int) -> Tensor -> Tensor
+data BatchNormSpec
+BatchNormSpec :: Int -> BatchNormSpec
+[numFeatures] :: BatchNormSpec -> Int
+data BatchNorm
+BatchNorm :: Parameter -> Parameter -> Tensor -> Tensor -> BatchNorm
+[batchNormWeight] :: BatchNorm -> Parameter
+[batchNormBias] :: BatchNorm -> Parameter
+[runningMean] :: BatchNorm -> Tensor
+[runningVar] :: BatchNorm -> Tensor
+batchNormForward :: BatchNorm -> Bool -> Double -> Double -> Tensor -> Tensor
+data UpSampleSpec
+UpSampleSpec :: Int -> Int -> UpSampleSpec
+[upsampleInputFilters] :: UpSampleSpec -> Int
+[upsampleStride] :: UpSampleSpec -> Int
+data UpSample
+UpSample :: UpSampleSpec -> UpSample
+[upsampleSpec] :: UpSample -> UpSampleSpec
 instance GHC.Classes.Eq Torch.NN.LinearSpec
 instance GHC.Show.Show Torch.NN.LinearSpec
 instance Torch.NN.Parameterized Torch.NN.Linear
@@ -2597,6 +2629,20 @@ instance GHC.Show.Show Torch.NN.Conv2dSpec
 instance Torch.NN.Parameterized Torch.NN.Conv2d
 instance GHC.Generics.Generic Torch.NN.Conv2d
 instance GHC.Show.Show Torch.NN.Conv2d
+instance GHC.Classes.Eq Torch.NN.BatchNormSpec
+instance GHC.Show.Show Torch.NN.BatchNormSpec
+instance Torch.NN.Parameterized Torch.NN.BatchNorm
+instance GHC.Generics.Generic Torch.NN.BatchNorm
+instance GHC.Show.Show Torch.NN.BatchNorm
+instance GHC.Classes.Eq Torch.NN.UpSampleSpec
+instance GHC.Show.Show Torch.NN.UpSampleSpec
+instance Torch.NN.Parameterized Torch.NN.UpSample
+instance GHC.Generics.Generic Torch.NN.UpSample
+instance GHC.Show.Show Torch.NN.UpSample
+instance Torch.NN.Randomizable Torch.NN.UpSampleSpec Torch.NN.UpSample
+instance Torch.NN.HasForward Torch.NN.UpSample Torch.Tensor.Tensor Torch.Tensor.Tensor
+instance Torch.NN.Parameterized Torch.NN.UpSampleSpec
+instance Torch.NN.Randomizable Torch.NN.BatchNormSpec Torch.NN.BatchNorm
 instance Torch.NN.Randomizable Torch.NN.Conv2dSpec Torch.NN.Conv2d
 instance Torch.NN.HasForward Torch.NN.Linear Torch.Tensor.Tensor Torch.Tensor.Tensor
 instance Torch.NN.Randomizable Torch.NN.LinearSpec Torch.NN.Linear
@@ -7133,8 +7179,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679588522 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679588547 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679597623 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679597648 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
