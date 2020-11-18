@@ -636,9 +636,11 @@ class (Castable a (ForeignPtr Scalar)) => Scalar a
 instance Torch.Scalar.Scalar GHC.Types.Float
 instance Torch.Scalar.Scalar GHC.Types.Double
 instance Torch.Scalar.Scalar GHC.Types.Int
+instance Torch.Scalar.Scalar GHC.Types.Bool
 instance Torch.Internal.Class.Castable GHC.Types.Float (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Scalar)
 instance Torch.Internal.Class.Castable GHC.Types.Double (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Scalar)
 instance Torch.Internal.Class.Castable GHC.Types.Int (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Scalar)
+instance Torch.Internal.Class.Castable GHC.Types.Bool (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Scalar)
 
 module Torch.TensorOptions
 type ATenTensorOptions = ForeignPtr TensorOptions
@@ -2596,14 +2598,12 @@ instance Torch.NN.Parameterized Torch.NN.Conv2d
 instance GHC.Generics.Generic Torch.NN.Conv2d
 instance GHC.Show.Show Torch.NN.Conv2d
 instance Torch.NN.Randomizable Torch.NN.Conv2dSpec Torch.NN.Conv2d
-instance Torch.NN.Parameterized [Torch.NN.Linear]
 instance Torch.NN.HasForward Torch.NN.Linear Torch.Tensor.Tensor Torch.Tensor.Tensor
 instance Torch.NN.Randomizable Torch.NN.LinearSpec Torch.NN.Linear
 instance Torch.NN.Parameterized Torch.Tensor.Tensor
 instance Torch.NN.Parameterized Torch.NN.Parameter
-instance Torch.NN.Parameterized GHC.Types.Int
-instance Torch.NN.Parameterized GHC.Types.Float
-instance Torch.NN.Parameterized GHC.Types.Double
+instance Torch.Scalar.Scalar a => Torch.NN.Parameterized a
+instance (Data.Foldable.Foldable t, Data.Traversable.Traversable t, Torch.NN.Parameterized a) => Torch.NN.Parameterized (t a)
 instance Torch.NN.Parameterized (a -> a)
 instance Torch.NN.Parameterized c => Torch.NN.GParameterized (GHC.Generics.K1 i c)
 instance Torch.NN.GParameterized GHC.Generics.U1
@@ -7133,8 +7133,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679588757 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679588782 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679588522 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679588547 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
