@@ -730,8 +730,11 @@ _dims :: TensorLike a => a -> [Int]
 _deepDims :: TensorLike a => a -> Maybe [Int]
 _peekElemOff :: TensorLike a => Ptr () -> Int -> [Int] -> IO a
 _pokeElemOff :: TensorLike a => Ptr () -> Int -> a -> IO ()
+bool_opts :: TensorOptions
+uint8_opts :: TensorOptions
 int64_opts :: TensorOptions
 float_opts :: TensorOptions
+double_opts :: TensorOptions
 withTensor :: Tensor -> (Ptr () -> IO a) -> IO a
 class AsTensors as
 toTensors :: AsTensors as => as -> Vector Tensor
@@ -751,6 +754,8 @@ instance Torch.Tensor.GAsTensors ls => Torch.Tensor.GAsTensors (GHC.Generics.M1 
 instance Torch.Tensor.TensorLike ls => Torch.Tensor.GAsTensors (GHC.Generics.K1 i ls)
 instance (Data.Reflection.Reifies a Torch.DType.DType, Foreign.Storable.Storable a) => Torch.Tensor.TensorLike a
 instance Torch.Tensor.TensorLike GHC.Types.Bool
+instance Torch.Tensor.TensorLike Torch.Tensor.Tensor
+instance Torch.Tensor.TensorLike a => Torch.Tensor.TensorLike (a, a)
 instance Torch.Tensor.TensorLike a => Torch.Tensor.TensorLike [a]
 instance Torch.Tensor.TensorIndex Torch.Tensor.None
 instance Torch.Tensor.TensorIndex Torch.Tensor.Ellipsis
@@ -878,6 +883,14 @@ eyeSquare' :: Int -> Tensor
 eye' :: Int -> Int -> Tensor
 full' :: Scalar a => [Int] -> a -> Tensor
 sparseCooTensor' :: Tensor -> Tensor -> [Int] -> Tensor
+
+-- | Returns a 1-D tensor with values from the interval [start, end) taken
+--   with common difference step beginning from start.
+arange :: Int -> Int -> Int -> TensorOptions -> Tensor
+
+-- | Returns a 1-D tensor with values from the interval [start, end) taken
+--   with common difference step beginning from start.
+arange' :: Int -> Int -> Int -> Tensor
 
 module Torch.Functional.Internal
 align_tensors :: [Tensor] -> [Tensor]
@@ -5238,14 +5251,14 @@ type family Narrow (shape :: [Nat]) (dim :: Nat) (start :: Nat) (length :: Nat) 
 --   <tt>start</tt> of length <a>length</a> along <a>dim</a>
 --   
 --   <pre>
---   &gt;&gt;&gt; narrow @0 @0 @2 (ones :: CPUTensor 'D.Float '[3,3,3])
---   Tensor Float [2,3,3]
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ narrow @0 @0 @2 (ones :: CPUTensor 'D.Float '[3,3,3])
+--   (Float,[2,3,3])
 --   
---   &gt;&gt;&gt; narrow @1 @1 @2 (ones :: CPUTensor 'D.Half '[3,3,3])
---   Tensor Half [3,2,3]
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ narrow @1 @1 @2 (ones :: CPUTensor 'D.Half '[3,3,3])
+--   (Half,[3,2,3])
 --   
---   &gt;&gt;&gt; narrow @1 @1 @2 (ones :: CPUTensor 'D.Bool '[3,3,3])
---   Tensor Bool [3,2,3]
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ narrow @1 @1 @2 (ones :: CPUTensor 'D.Bool '[3,3,3])
+--   (Bool,[3,2,3])
 --   </pre>
 narrow :: forall dim start length shape mbSize mbNewShape dtype device. (All KnownNat '[dim, start, length], All KnownNat shape) => Tensor device dtype shape -> Tensor device dtype (Narrow shape dim start length)
 
@@ -5499,7 +5512,10 @@ type family SqueezeAll (shape :: [Nat]) :: [Nat]
 --   (Float,[2,2,2])
 --   
 --   &gt;&gt;&gt; squeezeAll (ones :: CPUTensor 'D.Float '[2,1,2,1,2])
---   Tensor Float [2,2,2]
+--   Tensor Float [2,2,2] [[[ 1.0000   ,  1.0000   ],
+--                          [ 1.0000   ,  1.0000   ]],
+--                         [[ 1.0000   ,  1.0000   ],
+--                          [ 1.0000   ,  1.0000   ]]]
 --   </pre>
 squeezeAll :: forall shape shape' dtype device. shape' ~ SqueezeAll shape => Tensor device dtype shape -> Tensor device dtype shape'
 type family SqueezeDimImpl (shape :: [a]) (dim :: Nat) :: Maybe [a]
@@ -5520,14 +5536,8 @@ type SqueezeDim shape dim = SqueezeDimCheck shape dim (SqueezeDimImpl shape dim)
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ squeezeDim @1 (ones :: CPUTensor 'D.Float '[2,1,2,1,2])
 --   (Float,[2,2,1,2])
 --   
---   &gt;&gt;&gt; squeezeDim @1 (ones :: CPUTensor 'D.Float '[2,1,2,1,2])
---   Tensor Float [2,2,1,2]
---   
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ squeezeDim @3 (ones :: CPUTensor 'D.Float '[2,1,2,1,2])
 --   (Float,[2,1,2,2])
---   
---   &gt;&gt;&gt; squeezeDim @3 (ones :: CPUTensor 'D.Float '[2,1,2,1,2])
---   Tensor Float [2,1,2,2]
 --   </pre>
 squeezeDim :: forall dim shape shape' dtype device. (KnownNat dim, shape' ~ SqueezeDim shape dim) => Tensor device dtype shape -> Tensor device dtype shape'
 
@@ -6089,8 +6099,8 @@ type Upsample2d shape h w = Upsample2dCheck shape h w
 --   several input channels.
 --   
 --   <pre>
---   &gt;&gt;&gt; upsample_bilinear2d @3 @5 False (ones :: CPUTensor 'D.Float '[2,3,2,2])
---   Tensor Float [2,3,3,5]
+--   &gt;&gt;&gt; (dtype &amp;&amp;&amp; shape) $ upsample_bilinear2d @3 @5 False (ones :: CPUTensor 'D.Float '[2,3,2,2])
+--   (Float,[2,3,3,5])
 --   </pre>
 upsample_bilinear2d :: forall w h shape dtype device. (KnownNat h, KnownNat w, All KnownNat shape) => Bool -> Tensor device dtype shape -> Tensor device dtype (Upsample2d shape h w)
 
@@ -6098,8 +6108,8 @@ upsample_bilinear2d :: forall w h shape dtype device. (KnownNat h, KnownNat w, A
 --   input channels.
 --   
 --   <pre>
---   &gt;&gt;&gt; upsample_bicubic2d @3 @5 False (ones :: CPUTensor 'D.Float '[2,3,2,2])
---   Tensor Float [2,3,3,5]
+--   &gt;&gt;&gt; (dtype &amp;&amp;&amp; shape) $ upsample_bicubic2d @3 @5 False (ones :: CPUTensor 'D.Float '[2,3,2,2])
+--   (Float,[2,3,3,5])
 --   </pre>
 upsample_bicubic2d :: forall w h shape dtype device. (KnownNat h, KnownNat w, All KnownNat shape) => Bool -> Tensor device dtype shape -> Tensor device dtype (Upsample2d shape h w)
 
@@ -6107,8 +6117,8 @@ upsample_bicubic2d :: forall w h shape dtype device. (KnownNat h, KnownNat w, Al
 --   input channels.
 --   
 --   <pre>
---   &gt;&gt;&gt; upsample_nearest2d @3 @5 (ones :: CPUTensor 'D.Float '[2,3,2,2])
---   Tensor Float [2,3,3,5]
+--   &gt;&gt;&gt; (dtype &amp;&amp;&amp; shape) $ upsample_nearest2d @3 @5 (ones :: CPUTensor 'D.Float '[2,3,2,2])
+--   (Float,[2,3,3,5])
 --   </pre>
 upsample_nearest2d :: forall w h shape dtype device. (KnownNat h, KnownNat w, All KnownNat shape) => Tensor device dtype shape -> Tensor device dtype (Upsample2d shape h w)
 instance GHC.Generics.Generic Torch.Typed.Functional.RNNDirectionality
@@ -6375,8 +6385,10 @@ lstmForward :: forall shapeOrder batchSize seqLen directionality initialization 
 --         Tensor '( 'D.CPU, 0) 'D.Float '[6, 5, 30],
 --         Tensor '( 'D.CPU, 0) 'D.Float '[6, 5, 30])
 --   
---   &gt;&gt;&gt; lstmForwardWithoutDropout @'BatchFirst model input
---   (Tensor Float [5,16,60] ,Tensor Float [6,5,30] ,Tensor Float [6,5,30] )
+--   &gt;&gt;&gt; (a,b,c) = lstmForwardWithoutDropout @'BatchFirst model input
+--   
+--   &gt;&gt;&gt; ((dtype a, shape a), (dtype b, shape b), (dtype c, shape c))
+--   ((Float,[5,16,60]),(Float,[6,5,30]),(Float,[6,5,30]))
 --   </pre>
 --   
 --   Forward propagate the <a>LSTM</a> module and apply dropout on the
@@ -6395,8 +6407,10 @@ lstmForward :: forall shapeOrder batchSize seqLen directionality initialization 
 --         Tensor '( 'D.CPU, 0) 'D.Float '[6, 5, 30],
 --         Tensor '( 'D.CPU, 0) 'D.Float '[6, 5, 30])
 --   
---   &gt;&gt;&gt; lstmForwardWithDropout @'BatchFirst model input
---   (Tensor Float [5,16,60] ,Tensor Float [6,5,30] ,Tensor Float [6,5,30] )
+--   &gt;&gt;&gt; (a,b,c) = lstmForwardWithDropout @'BatchFirst model input
+--   
+--   &gt;&gt;&gt; ((dtype a, shape a), (dtype b, shape b), (dtype c, shape c))
+--   ((Float,[5,16,60]),(Float,[6,5,30]),(Float,[6,5,30]))
 --   </pre>
 lstmForwardWithDropout :: forall shapeOrder batchSize seqLen directionality initialization numLayers inputSize outputSize hiddenSize inputShape outputShape hxShape parameters tensorParameters dtype device. (KnownNat (NumberOfDirections directionality), KnownNat numLayers, KnownNat batchSize, KnownNat hiddenSize, KnownRNNShapeOrder shapeOrder, KnownRNNDirectionality directionality, outputSize ~ (hiddenSize * NumberOfDirections directionality), inputShape ~ RNNShape shapeOrder seqLen batchSize inputSize, outputShape ~ RNNShape shapeOrder seqLen batchSize outputSize, hxShape ~ '[numLayers * NumberOfDirections directionality, batchSize, hiddenSize], parameters ~ Parameters (LSTM inputSize hiddenSize numLayers directionality dtype device), Parameterized (LSTM inputSize hiddenSize numLayers directionality dtype device), tensorParameters ~ LSTMR inputSize hiddenSize numLayers directionality dtype device, Castable (HList tensorParameters) [ATenTensor], HMap' ToDependent parameters tensorParameters) => LSTMWithInit inputSize hiddenSize numLayers directionality initialization dtype device -> Tensor device dtype inputShape -> (Tensor device dtype outputShape, Tensor device dtype hxShape, Tensor device dtype hxShape)
 
@@ -6416,8 +6430,10 @@ lstmForwardWithDropout :: forall shapeOrder batchSize seqLen directionality init
 --         Tensor '( 'D.CPU, 0) 'D.Float '[6, 5, 30],
 --         Tensor '( 'D.CPU, 0) 'D.Float '[6, 5, 30])
 --   
---   &gt;&gt;&gt; lstmForwardWithDropout @'BatchFirst model input
---   (Tensor Float [5,16,60] ,Tensor Float [6,5,30] ,Tensor Float [6,5,30] )
+--   &gt;&gt;&gt; (a,b,c) = lstmForwardWithDropout @'BatchFirst model input
+--   
+--   &gt;&gt;&gt; ((dtype a, shape a), (dtype b, shape b), (dtype c, shape c))
+--   ((Float,[5,16,60]),(Float,[6,5,30]),(Float,[6,5,30]))
 --   </pre>
 lstmForwardWithoutDropout :: forall shapeOrder batchSize seqLen directionality initialization numLayers inputSize outputSize hiddenSize inputShape outputShape hxShape parameters tensorParameters dtype device. (KnownNat (NumberOfDirections directionality), KnownNat numLayers, KnownNat batchSize, KnownNat hiddenSize, KnownRNNShapeOrder shapeOrder, KnownRNNDirectionality directionality, outputSize ~ (hiddenSize * NumberOfDirections directionality), inputShape ~ RNNShape shapeOrder seqLen batchSize inputSize, outputShape ~ RNNShape shapeOrder seqLen batchSize outputSize, hxShape ~ '[numLayers * NumberOfDirections directionality, batchSize, hiddenSize], parameters ~ Parameters (LSTM inputSize hiddenSize numLayers directionality dtype device), Parameterized (LSTM inputSize hiddenSize numLayers directionality dtype device), tensorParameters ~ LSTMR inputSize hiddenSize numLayers directionality dtype device, Castable (HList tensorParameters) [ATenTensor], HMap' ToDependent parameters tensorParameters) => LSTMWithInit inputSize hiddenSize numLayers directionality initialization dtype device -> Tensor device dtype inputShape -> (Tensor device dtype outputShape, Tensor device dtype hxShape, Tensor device dtype hxShape)
 instance GHC.Classes.Eq (Torch.Typed.NN.Recurrent.LSTM.LSTMLayerSpec inputSize hiddenSize directionality dtype device)
@@ -6520,8 +6536,10 @@ gruForward :: forall shapeOrder batchSize seqLen directionality initialization n
 --     :: (Tensor '( 'D.CPU, 0) 'D.Float '[5, 16, 60],
 --         Tensor '( 'D.CPU, 0) 'D.Float '[6, 5, 30])
 --   
---   &gt;&gt;&gt; gruForwardWithoutDropout @'BatchFirst model input
---   (Tensor Float [5,16,60] ,Tensor Float [6,5,30] )
+--   &gt;&gt;&gt; (a,b) = gruForwardWithoutDropout @'BatchFirst model input
+--   
+--   &gt;&gt;&gt; ((dtype a, shape a), (dtype b, shape b))
+--   ((Float,[5,16,60]),(Float,[6,5,30]))
 --   </pre>
 --   
 --   Forward propagate the <a>GRU</a> module and apply dropout on the
@@ -6539,8 +6557,10 @@ gruForward :: forall shapeOrder batchSize seqLen directionality initialization n
 --     :: (Tensor '( 'D.CPU, 0) 'D.Float '[5, 16, 60],
 --         Tensor '( 'D.CPU, 0) 'D.Float '[6, 5, 30])
 --   
---   &gt;&gt;&gt; gruForwardWithDropout @'BatchFirst model input
---   (Tensor Float [5,16,60] ,Tensor Float [6,5,30] )
+--   &gt;&gt;&gt; (a,b) = gruForwardWithDropout @'BatchFirst model input
+--   
+--   &gt;&gt;&gt; ((dtype a, shape a), (dtype b, shape b))
+--   ((Float,[5,16,60]),(Float,[6,5,30]))
 --   </pre>
 gruForwardWithDropout :: forall shapeOrder batchSize seqLen directionality initialization numLayers inputSize outputSize hiddenSize inputShape outputShape hcShape parameters tensorParameters dtype device. (KnownNat (NumberOfDirections directionality), KnownNat numLayers, KnownNat batchSize, KnownNat hiddenSize, KnownRNNShapeOrder shapeOrder, KnownRNNDirectionality directionality, outputSize ~ (hiddenSize * NumberOfDirections directionality), inputShape ~ RNNShape shapeOrder seqLen batchSize inputSize, outputShape ~ RNNShape shapeOrder seqLen batchSize outputSize, hcShape ~ '[numLayers * NumberOfDirections directionality, batchSize, hiddenSize], parameters ~ Parameters (GRU inputSize hiddenSize numLayers directionality dtype device), Parameterized (GRU inputSize hiddenSize numLayers directionality dtype device), tensorParameters ~ GRUR inputSize hiddenSize numLayers directionality dtype device, Castable (HList tensorParameters) [ATenTensor], HMap' ToDependent parameters tensorParameters) => GRUWithInit inputSize hiddenSize numLayers directionality initialization dtype device -> Tensor device dtype inputShape -> (Tensor device dtype outputShape, Tensor device dtype hcShape)
 
@@ -6559,8 +6579,10 @@ gruForwardWithDropout :: forall shapeOrder batchSize seqLen directionality initi
 --     :: (Tensor '( 'D.CPU, 0) 'D.Float '[5, 16, 60],
 --         Tensor '( 'D.CPU, 0) 'D.Float '[6, 5, 30])
 --   
---   &gt;&gt;&gt; gruForwardWithDropout @'BatchFirst model input
---   (Tensor Float [5,16,60] ,Tensor Float [6,5,30] )
+--   &gt;&gt;&gt; (a,b) = gruForwardWithDropout @'BatchFirst model input
+--   
+--   &gt;&gt;&gt; ((dtype a, shape a), (dtype b, shape b))
+--   ((Float,[5,16,60]),(Float,[6,5,30]))
 --   </pre>
 gruForwardWithoutDropout :: forall shapeOrder batchSize seqLen directionality initialization numLayers inputSize outputSize hiddenSize inputShape outputShape hcShape parameters tensorParameters dtype device. (KnownNat (NumberOfDirections directionality), KnownNat numLayers, KnownNat batchSize, KnownNat hiddenSize, KnownRNNShapeOrder shapeOrder, KnownRNNDirectionality directionality, outputSize ~ (hiddenSize * NumberOfDirections directionality), inputShape ~ RNNShape shapeOrder seqLen batchSize inputSize, outputShape ~ RNNShape shapeOrder seqLen batchSize outputSize, hcShape ~ '[numLayers * NumberOfDirections directionality, batchSize, hiddenSize], parameters ~ Parameters (GRU inputSize hiddenSize numLayers directionality dtype device), Parameterized (GRU inputSize hiddenSize numLayers directionality dtype device), tensorParameters ~ GRUR inputSize hiddenSize numLayers directionality dtype device, Castable (HList tensorParameters) [ATenTensor], HMap' ToDependent parameters tensorParameters) => GRUWithInit inputSize hiddenSize numLayers directionality initialization dtype device -> Tensor device dtype inputShape -> (Tensor device dtype outputShape, Tensor device dtype hcShape)
 instance GHC.Classes.Eq (Torch.Typed.NN.Recurrent.GRU.GRULayerSpec inputSize hiddenSize directionality dtype device)
@@ -7179,8 +7201,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679597623 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679597648 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679602471 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679602496 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
