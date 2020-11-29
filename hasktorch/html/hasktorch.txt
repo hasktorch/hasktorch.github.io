@@ -58,6 +58,7 @@ Float :: DType
 -- | Double
 Double :: DType
 isIntegral :: DType -> Bool
+byteLength :: DType -> Int
 instance GHC.Show.Show Torch.DType.DType
 instance GHC.Classes.Eq Torch.DType.DType
 instance Data.Reflection.Reifies GHC.Types.Bool Torch.DType.DType
@@ -2388,8 +2389,14 @@ stdMean :: Bool -> Tensor -> (Tensor, Tensor)
 --   Otherwise, Bessel’s correction will be used.
 stdMeanDim :: Dim -> Bool -> KeepDim -> Tensor -> (Tensor, Tensor)
 
--- | Returns a copy of input.
+-- | Returns a copy of input. Output tensor keeps a computational graph and
+--   a requires_grad value of input tensor.
+--   <a>https://discuss.pytorch.org/t/clone-and-detach-in-v0-4-0/16861/41</a>
 clone :: Tensor -> IO Tensor
+
+-- | Returns a copy of input. Output tensor does not keep a computational
+--   graph and a requires_grad value of input tensor.
+detach :: Tensor -> IO Tensor
 
 -- | Returns a new tensor with the same data as the input tensor but of a
 --   different shape.
@@ -2681,6 +2688,10 @@ save :: [Tensor] -> FilePath -> IO ()
 load :: FilePath -> IO [Tensor]
 saveParams :: Parameterized f => f -> FilePath -> IO ()
 loadParams :: Parameterized b => b -> FilePath -> IO b
+class RawFile a
+loadBinary :: RawFile a => Handle -> a -> IO a
+saveBinary :: RawFile a => Handle -> a -> IO ()
+instance Torch.Serialize.RawFile Torch.Tensor.Tensor
 
 module Torch.Optim
 type LearningRate = Tensor
@@ -7202,8 +7213,8 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679602635 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679602660 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679603258 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679603283 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
