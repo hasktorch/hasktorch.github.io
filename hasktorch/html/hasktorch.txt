@@ -681,9 +681,11 @@ toInt :: Tensor -> Int
 
 -- | Casts the input tensor to the given data type
 toType :: DType -> Tensor -> Tensor
+class ToDevice a
+toDevice :: ToDevice a => Device -> a -> a
 
 -- | Casts the input tensor to given device
-toDevice :: Device -> Tensor -> Tensor
+_toDevice :: Device -> Tensor -> Tensor
 
 -- | Slices the input tensor along the selected dimension at the given
 --   index.
@@ -779,6 +781,7 @@ instance (Torch.Tensor.TensorIndex a, Torch.Tensor.TensorIndex b, Torch.Tensor.T
 instance (Torch.Tensor.TensorIndex a, Torch.Tensor.TensorIndex b, Torch.Tensor.TensorIndex c, Torch.Tensor.TensorIndex d) => Torch.Tensor.TensorIndex (a, b, c, d)
 instance (Torch.Tensor.TensorIndex a, Torch.Tensor.TensorIndex b, Torch.Tensor.TensorIndex c, Torch.Tensor.TensorIndex d, Torch.Tensor.TensorIndex e) => Torch.Tensor.TensorIndex (a, b, c, d, e)
 instance Torch.Internal.Class.Castable Torch.Tensor.RawTensorIndex (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.TensorIndex)
+instance Torch.Tensor.ToDevice Torch.Tensor.Tensor
 instance Torch.Internal.Class.Castable Torch.Tensor.Tensor Torch.Tensor.ATenTensor
 instance GHC.Show.Show Torch.Tensor.Tensor
 instance Torch.Internal.Class.Castable [Torch.Tensor.Tensor] (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.TensorList)
@@ -2596,10 +2599,14 @@ flattenParameters :: Parameterized f => f -> [Parameter]
 flattenParameters :: (Parameterized f, Generic f, GParameterized (Rep f)) => f -> [Parameter]
 _replaceParameters :: Parameterized f => f -> ParamStream f
 _replaceParameters :: (Parameterized f, Generic f, GParameterized (Rep f)) => f -> ParamStream f
+replaceDevice :: Parameterized f => Device -> f -> f
+replaceDevice :: (Parameterized f, Generic f, GParameterized (Rep f)) => Device -> f -> f
+defaultReplaceDevice :: Parameterized a => Device -> a -> a
 replaceParameters :: Parameterized f => f -> [Parameter] -> f
 class GParameterized f
 gFlattenParameters :: forall a. GParameterized f => f a -> [Parameter]
 _gReplaceParameters :: forall a. GParameterized f => f a -> ParamStream (f a)
+gReplaceDevice :: forall a. GParameterized f => Device -> f a -> f a
 class Randomizable spec f | spec -> f
 sample :: Randomizable spec f => spec -> IO f
 data LinearSpec
@@ -2652,7 +2659,6 @@ instance GHC.Generics.Generic Torch.NN.Conv2d
 instance GHC.Show.Show Torch.NN.Conv2d
 instance GHC.Classes.Eq Torch.NN.BatchNormSpec
 instance GHC.Show.Show Torch.NN.BatchNormSpec
-instance Torch.NN.Parameterized Torch.NN.BatchNorm
 instance GHC.Generics.Generic Torch.NN.BatchNorm
 instance GHC.Show.Show Torch.NN.BatchNorm
 instance GHC.Classes.Eq Torch.NN.UpSampleSpec
@@ -2663,10 +2669,12 @@ instance GHC.Show.Show Torch.NN.UpSample
 instance Torch.NN.Randomizable Torch.NN.UpSampleSpec Torch.NN.UpSample
 instance Torch.NN.HasForward Torch.NN.UpSample Torch.Tensor.Tensor Torch.Tensor.Tensor
 instance Torch.NN.Parameterized Torch.NN.UpSampleSpec
+instance Torch.NN.Parameterized Torch.NN.BatchNorm
 instance Torch.NN.Randomizable Torch.NN.BatchNormSpec Torch.NN.BatchNorm
 instance Torch.NN.Randomizable Torch.NN.Conv2dSpec Torch.NN.Conv2d
 instance Torch.NN.HasForward Torch.NN.Linear Torch.Tensor.Tensor Torch.Tensor.Tensor
 instance Torch.NN.Randomizable Torch.NN.LinearSpec Torch.NN.Linear
+instance Torch.NN.Parameterized a => Torch.Tensor.ToDevice a
 instance Torch.NN.Parameterized Torch.Tensor.Tensor
 instance Torch.NN.Parameterized Torch.NN.Parameter
 instance Torch.Scalar.Scalar a => Torch.NN.Parameterized a
@@ -7213,17 +7221,17 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 readImageAsRGB8WithScaling :: FilePath -> Int -> Int -> Bool -> IO (Either String (Image PixelRGB8, Tensor))
 drawLine :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679603636 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679607447 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawRect :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawString :: String -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawChar :: Int -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679603715 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679607526 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 resizeRGB8 :: Int -> Int -> Bool -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679603765 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679607576 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679603807 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679603832 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679607618 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679607643 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
