@@ -3250,6 +3250,7 @@ instance Torch.Typed.Tensor.KnownDevice device => GHC.Real.Fractional (Torch.Typ
 instance GHC.Show.Show (Torch.Typed.Tensor.Tensor device dtype shape)
 instance Torch.Internal.Class.Castable (Torch.Typed.Tensor.Tensor device dtype shape) Torch.Tensor.ATenTensor
 instance Torch.Internal.Class.Castable [Torch.Typed.Tensor.Tensor device dtype shape] (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.TensorList)
+instance GHC.TypeNats.KnownNat n => Torch.Internal.Class.Castable (Data.Vector.Sized.Vector n (Torch.Typed.Tensor.Tensor device dtype shape)) (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.TensorList)
 instance GHC.TypeNats.KnownNat n => Torch.Typed.Tensor.KnownDevice '( 'Torch.Device.CPU, n)
 instance GHC.TypeNats.KnownNat n => Torch.Typed.Tensor.KnownDevice '( 'Torch.Device.CUDA, n)
 instance Torch.Typed.Tensor.KnownDType 'Torch.DType.Bool
@@ -5459,6 +5460,7 @@ type Stack dim tensors = StackCheck (StackImpl dim tensors 1)
 --   (Float,([2,2,3],[[[1.0,1.0,1.0],[1.0,1.0,1.0]],[[1.0,1.0,1.0],[1.0,1.0,1.0]]]))
 --   </pre>
 stack :: forall dim shape dtype device tensors. (KnownNat dim, '(shape, dtype, device) ~ Stack dim tensors, Castable (HList tensors) [ATenTensor]) => HList tensors -> Tensor device dtype shape
+vecStack :: forall dim n shape dtype device. (KnownNat dim, KnownNat n) => Vector n (Tensor device dtype shape) -> Tensor device dtype (Insert dim n shape)
 
 -- | t
 --   
@@ -7221,17 +7223,17 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 readImageAsRGB8WithScaling :: FilePath -> Int -> Int -> Bool -> IO (Either String (Image PixelRGB8, Tensor))
 drawLine :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679607447 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679610750 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawRect :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawString :: String -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawChar :: Int -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679607526 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679610829 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 resizeRGB8 :: Int -> Int -> Bool -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679607576 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679610879 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679607618 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679607643 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679610921 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679610946 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
