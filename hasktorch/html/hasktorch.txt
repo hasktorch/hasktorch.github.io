@@ -724,10 +724,11 @@ data Slice a
 Slice :: a -> Slice a
 class TensorIndex a
 pushIndex :: TensorIndex a => [RawTensorIndex] -> a -> [RawTensorIndex]
+asValue :: TensorLike a => Tensor -> a
 class TensorLike a
 asTensor' :: TensorLike a => a -> TensorOptions -> Tensor
 asTensor :: TensorLike a => a -> Tensor
-asValue :: TensorLike a => Tensor -> a
+_asValue :: TensorLike a => Tensor -> a
 _dtype :: TensorLike a => DType
 _dims :: TensorLike a => a -> [Int]
 _deepDims :: TensorLike a => a -> Maybe [Int]
@@ -2678,6 +2679,8 @@ instance Torch.NN.Parameterized a => Torch.Tensor.ToDevice a
 instance Torch.NN.Parameterized Torch.Tensor.Tensor
 instance Torch.NN.Parameterized Torch.NN.Parameter
 instance Torch.Scalar.Scalar a => Torch.NN.Parameterized a
+instance (Torch.NN.Parameterized a, Torch.NN.Parameterized b) => Torch.NN.Parameterized (a, b)
+instance (Torch.NN.Parameterized a, Torch.NN.Parameterized b, Torch.NN.Parameterized c) => Torch.NN.Parameterized (a, b, c)
 instance (Data.Foldable.Foldable t, Data.Traversable.Traversable t, Torch.NN.Parameterized a) => Torch.NN.Parameterized (t a)
 instance Torch.NN.Parameterized (a -> a)
 instance Torch.NN.Parameterized c => Torch.NN.GParameterized (GHC.Generics.K1 i c)
@@ -7223,17 +7226,17 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 readImageAsRGB8WithScaling :: FilePath -> Int -> Int -> Bool -> IO (Either String (Image PixelRGB8, Tensor))
 drawLine :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679610750 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679612780 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawRect :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawString :: String -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawChar :: Int -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679610829 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679612859 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 resizeRGB8 :: Int -> Int -> Bool -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679610879 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679612909 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679610921 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679610946 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679612951 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679612976 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
