@@ -2694,16 +2694,6 @@ instance (Torch.NN.GHasForward f a b, Torch.NN.GHasForward g a' b', b'' GHC.Type
 instance (Torch.NN.GHasForward f a b, Torch.NN.GHasForward g a' b', b'' GHC.Types.~ (b GHC.Generics.:*: b')) => Torch.NN.GHasForward (f GHC.Generics.:*: g) (a GHC.Generics.:*: a') b''
 instance Torch.NN.GHasForward f a b => Torch.NN.GHasForward (GHC.Generics.M1 i t f) (GHC.Generics.M1 i t' a) (GHC.Generics.M1 i t' b)
 
-module Torch.Serialize
-save :: [Tensor] -> FilePath -> IO ()
-load :: FilePath -> IO [Tensor]
-saveParams :: Parameterized f => f -> FilePath -> IO ()
-loadParams :: Parameterized b => b -> FilePath -> IO b
-class RawFile a
-loadBinary :: RawFile a => Handle -> a -> IO a
-saveBinary :: RawFile a => Handle -> a -> IO ()
-instance Torch.Serialize.RawFile Torch.Tensor.Tensor
-
 module Torch.Optim
 type LearningRate = Tensor
 type Loss = Tensor
@@ -2898,6 +2888,8 @@ save' :: RawModule -> FilePath -> IO ()
 data LoadMode
 WithoutRequiredGrad :: LoadMode
 WithRequiredGrad :: LoadMode
+
+-- | Load a torchscript file
 load :: LoadMode -> FilePath -> IO ScriptModule
 load' :: FilePath -> IO RawModule
 forwardIO :: ScriptModule -> [IValue] -> IO IValue
@@ -2908,6 +2900,15 @@ getParameters :: ScriptModule -> [Tensor]
 getParametersIO :: RawModule -> IO [Tensor]
 setParameters :: RawModule -> [Tensor] -> IO ()
 updateParameters :: LoadMode -> ScriptModule -> [Tensor] -> ScriptModule
+getNamedParameters :: ScriptModule -> [(String, Tensor)]
+getNamedBuffers :: ScriptModule -> [(String, Tensor)]
+
+-- | Load all attributes including training flags This function returns
+--   IVObject type as Tensor type. To get Tensor type, use get
+--   getNamedParameters and getNamedBuffers.
+getNamedAttributes :: ScriptModule -> [(String, IValue)]
+getNamedModules :: ScriptModule -> [(String, ScriptModule)]
+getNamedChildren :: ScriptModule -> [(String, ScriptModule)]
 toScriptModule :: RawModule -> IO ScriptModule
 toRawModule :: ScriptModule -> IO RawModule
 clone :: RawModule -> IO RawModule
@@ -2967,6 +2968,27 @@ instance GHC.Show.Show Torch.Script.Blob
 instance Torch.Internal.Class.Castable Torch.Script.RawModule (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Module)
 instance GHC.Show.Show Torch.Script.ScriptModule
 instance Torch.Internal.Class.Castable Torch.Script.ScriptModule (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Module)
+
+module Torch.Serialize
+save :: [Tensor] -> FilePath -> IO ()
+load :: FilePath -> IO [Tensor]
+
+-- | Save state_dict
+pickleSave :: IValue -> FilePath -> IO ()
+
+-- | Load a state_dict file You should use a dict function of pytorch to
+--   save a state_dict file as follows.
+--   
+--   <pre>
+--   torch.save(dict(model.state_dict()), "state_dict.pth")
+--   </pre>
+pickleLoad :: FilePath -> IO IValue
+saveParams :: Parameterized f => f -> FilePath -> IO ()
+loadParams :: Parameterized b => b -> FilePath -> IO b
+class RawFile a
+loadBinary :: RawFile a => Handle -> a -> IO a
+saveBinary :: RawFile a => Handle -> a -> IO ()
+instance Torch.Serialize.RawFile Torch.Tensor.Tensor
 
 module Torch.Random
 mkGenerator :: Device -> Word64 -> IO Generator
@@ -7226,19 +7248,19 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 readImageAsRGB8WithScaling :: FilePath -> Int -> Int -> Bool -> IO (Either String (Image PixelRGB8, Tensor))
 centerCrop :: Int -> Int -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679612776 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679613332 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawLine :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679612827 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679613383 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawRect :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawString :: String -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawChar :: Int -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679612906 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679613462 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 resizeRGB8 :: Int -> Int -> Bool -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679612956 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679613512 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679612998 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679613023 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679613554 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679613579 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
