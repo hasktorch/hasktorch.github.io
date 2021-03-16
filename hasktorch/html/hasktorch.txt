@@ -57,8 +57,30 @@ Float :: DType
 
 -- | Double
 Double :: DType
+
+-- | ComplexHalf
+ComplexHalf :: DType
+
+-- | ComplexFloat
+ComplexFloat :: DType
+
+-- | ComplexDouble
+ComplexDouble :: DType
+
+-- | QInt8
+QInt8 :: DType
+
+-- | QUInt8
+QUInt8 :: DType
+
+-- | QInt32
+QInt32 :: DType
+
+-- | BFloat16
+BFloat16 :: DType
 isIntegral :: DType -> Bool
 byteLength :: DType -> Int
+instance GHC.Read.Read Torch.DType.DType
 instance GHC.Show.Show Torch.DType.DType
 instance GHC.Classes.Eq Torch.DType.DType
 instance Data.Reflection.Reifies GHC.Types.Bool Torch.DType.DType
@@ -632,6 +654,27 @@ instance GHC.Show.Show Torch.Layout.Layout
 instance GHC.Classes.Eq Torch.Layout.Layout
 instance Torch.Internal.Class.Castable Torch.Layout.Layout Torch.Internal.Type.Layout
 
+module Torch.Lens
+type Traversal' s a = forall f. Applicative f => (a -> f a) -> s -> f s
+class HasTypes s a
+types_ :: HasTypes s a => Traversal' s a
+types_ :: (HasTypes s a, Generic s, GHasTypes (Rep s) a) => Traversal' s a
+over :: Traversal' s a -> (a -> a) -> s -> s
+flattenValues :: forall a s. Traversal' s a -> s -> [a]
+replaceValues :: forall a s. Traversal' s a -> s -> [a] -> s
+types :: forall a s. HasTypes s a => Traversal' s a
+class GHasTypes s a
+gtypes :: forall b. GHasTypes s a => Traversal' (s b) a
+instance (GHC.Generics.Generic s, Torch.Lens.GHasTypes (GHC.Generics.Rep s) a) => Torch.Lens.HasTypes s a
+instance Torch.Lens.HasTypes s a => Torch.Lens.GHasTypes (GHC.Generics.K1 i s) a
+instance Torch.Lens.HasTypes s a => Torch.Lens.HasTypes [s] a
+instance (Torch.Lens.HasTypes s0 a, Torch.Lens.HasTypes s1 a) => Torch.Lens.HasTypes (s0, s1) a
+instance (Torch.Lens.HasTypes s0 a, Torch.Lens.HasTypes s1 a, Torch.Lens.HasTypes s2 a) => Torch.Lens.HasTypes (s0, s1, s2) a
+instance Torch.Lens.GHasTypes GHC.Generics.U1 a
+instance (Torch.Lens.GHasTypes f a, Torch.Lens.GHasTypes g a) => Torch.Lens.GHasTypes (f GHC.Generics.:+: g) a
+instance (Torch.Lens.GHasTypes f a, Torch.Lens.GHasTypes g a) => Torch.Lens.GHasTypes (f GHC.Generics.:*: g) a
+instance Torch.Lens.GHasTypes s a => Torch.Lens.GHasTypes (GHC.Generics.M1 i t s) a
+
 module Torch.Scalar
 class (Castable a (ForeignPtr Scalar)) => Scalar a
 instance Torch.Scalar.Scalar GHC.Types.Float
@@ -680,9 +723,9 @@ toDouble :: Tensor -> Double
 toInt :: Tensor -> Int
 
 -- | Casts the input tensor to the given data type
-toType :: DType -> Tensor -> Tensor
-class ToDevice a
-toDevice :: ToDevice a => Device -> a -> a
+_toType :: DType -> Tensor -> Tensor
+toType :: forall a. HasTypes a Tensor => DType -> a -> a
+toDevice :: forall a. HasTypes a Tensor => Device -> a -> a
 
 -- | Casts the input tensor to given device
 _toDevice :: Device -> Tensor -> Tensor
@@ -783,8 +826,13 @@ instance (Torch.Tensor.TensorIndex a, Torch.Tensor.TensorIndex b, Torch.Tensor.T
 instance (Torch.Tensor.TensorIndex a, Torch.Tensor.TensorIndex b, Torch.Tensor.TensorIndex c, Torch.Tensor.TensorIndex d) => Torch.Tensor.TensorIndex (a, b, c, d)
 instance (Torch.Tensor.TensorIndex a, Torch.Tensor.TensorIndex b, Torch.Tensor.TensorIndex c, Torch.Tensor.TensorIndex d, Torch.Tensor.TensorIndex e) => Torch.Tensor.TensorIndex (a, b, c, d, e)
 instance Torch.Internal.Class.Castable Torch.Tensor.RawTensorIndex (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.TensorIndex)
-instance Torch.Tensor.ToDevice Torch.Tensor.Tensor
 instance Torch.Internal.Class.Castable Torch.Tensor.Tensor Torch.Tensor.ATenTensor
+instance Torch.Lens.HasTypes Torch.Tensor.Tensor Torch.Tensor.Tensor
+instance Torch.Lens.HasTypes (a -> a) Torch.Tensor.Tensor
+instance Torch.Lens.HasTypes GHC.Types.Int Torch.Tensor.Tensor
+instance Torch.Lens.HasTypes GHC.Types.Double Torch.Tensor.Tensor
+instance Torch.Lens.HasTypes GHC.Types.Float Torch.Tensor.Tensor
+instance Torch.Lens.HasTypes GHC.Types.Bool Torch.Tensor.Tensor
 instance GHC.Show.Show Torch.Tensor.Tensor
 instance Torch.Internal.Class.Castable [Torch.Tensor.Tensor] (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.TensorList)
 instance Torch.Internal.Class.Castable [Torch.Tensor.Tensor] (GHC.ForeignPtr.ForeignPtr (Torch.Internal.Type.C10List Torch.Internal.Type.Tensor))
@@ -2582,6 +2630,7 @@ grad :: Tensor -> [IndependentTensor] -> [Tensor]
 requiresGrad :: Tensor -> Bool
 makeIndependent :: Tensor -> IO IndependentTensor
 makeIndependentWithRequiresGrad :: Tensor -> Bool -> IO IndependentTensor
+instance GHC.Generics.Generic Torch.Autograd.IndependentTensor
 instance GHC.Show.Show Torch.Autograd.IndependentTensor
 
 module Torch.NN
@@ -2601,14 +2650,10 @@ flattenParameters :: Parameterized f => f -> [Parameter]
 flattenParameters :: (Parameterized f, Generic f, GParameterized (Rep f)) => f -> [Parameter]
 _replaceParameters :: Parameterized f => f -> ParamStream f
 _replaceParameters :: (Parameterized f, Generic f, GParameterized (Rep f)) => f -> ParamStream f
-replaceDevice :: Parameterized f => Device -> f -> f
-replaceDevice :: (Parameterized f, Generic f, GParameterized (Rep f)) => Device -> f -> f
-defaultReplaceDevice :: Parameterized a => Device -> a -> a
 replaceParameters :: Parameterized f => f -> [Parameter] -> f
 class GParameterized f
 gFlattenParameters :: forall a. GParameterized f => f a -> [Parameter]
 _gReplaceParameters :: forall a. GParameterized f => f a -> ParamStream (f a)
-gReplaceDevice :: forall a. GParameterized f => Device -> f a -> f a
 class Randomizable spec f | spec -> f
 sample :: Randomizable spec f => spec -> IO f
 data LinearSpec
@@ -2671,12 +2716,10 @@ instance GHC.Show.Show Torch.NN.UpSample
 instance Torch.NN.Randomizable Torch.NN.UpSampleSpec Torch.NN.UpSample
 instance Torch.NN.HasForward Torch.NN.UpSample Torch.Tensor.Tensor Torch.Tensor.Tensor
 instance Torch.NN.Parameterized Torch.NN.UpSampleSpec
-instance Torch.NN.Parameterized Torch.NN.BatchNorm
 instance Torch.NN.Randomizable Torch.NN.BatchNormSpec Torch.NN.BatchNorm
 instance Torch.NN.Randomizable Torch.NN.Conv2dSpec Torch.NN.Conv2d
 instance Torch.NN.HasForward Torch.NN.Linear Torch.Tensor.Tensor Torch.Tensor.Tensor
 instance Torch.NN.Randomizable Torch.NN.LinearSpec Torch.NN.Linear
-instance Torch.NN.Parameterized a => Torch.Tensor.ToDevice a
 instance Torch.NN.Parameterized Torch.Tensor.Tensor
 instance Torch.NN.Parameterized Torch.NN.Parameter
 instance Torch.Scalar.Scalar a => Torch.NN.Parameterized a
@@ -7212,6 +7255,27 @@ Float :: DType
 
 -- | Double
 Double :: DType
+
+-- | ComplexHalf
+ComplexHalf :: DType
+
+-- | ComplexFloat
+ComplexFloat :: DType
+
+-- | ComplexDouble
+ComplexDouble :: DType
+
+-- | QInt8
+QInt8 :: DType
+
+-- | QUInt8
+QUInt8 :: DType
+
+-- | QInt32
+QInt32 :: DType
+
+-- | BFloat16
+BFloat16 :: DType
 class (Castable a (ForeignPtr Scalar)) => Scalar a
 data Reduction
 ReduceNone :: Reduction
@@ -7250,19 +7314,19 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 readImageAsRGB8WithScaling :: FilePath -> Int -> Int -> Bool -> IO (Either String (Image PixelRGB8, Tensor))
 centerCrop :: Int -> Int -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679565024 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679567800 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawLine :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679565075 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679567851 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawRect :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawString :: String -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawChar :: Int -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679565154 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679567930 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 resizeRGB8 :: Int -> Int -> Bool -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679565204 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679567980 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679565246 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679565271 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679568022 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679568047 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
