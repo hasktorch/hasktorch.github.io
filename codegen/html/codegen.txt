@@ -6,7 +6,7 @@
 --   
 --   parse torch yaml spec files, generate code
 @package codegen
-@version 0.1.0.0
+@version 1.8.0.0
 
 module ParseFunctionSig
 data DefaultValue
@@ -59,6 +59,7 @@ Dimname :: Parsable
 DimnameList :: Parsable
 Symbol :: Parsable
 IValue :: Parsable
+Stream :: Parsable
 data CType
 CBool :: CType
 CVoid :: CType
@@ -89,6 +90,7 @@ TensorQ :: TenType
 TensorAVector :: TenType
 TensorOptions :: TenType
 TensorList :: TenType
+C10ListTensor :: TenType
 IntegerTensor :: TenType
 IndexTensor :: TenType
 BoolTensor :: TenType
@@ -206,6 +208,9 @@ identifier :: Parser String
 --   &gt;&gt;&gt; parseTest typ "IValue"
 --   IValue
 --   
+--   &gt;&gt;&gt; parseTest typ "Stream"
+--   Stream
+--   
 --   &gt;&gt;&gt; parseTest typ "Storage"
 --   StorageType
 --   
@@ -232,6 +237,9 @@ identifier :: Parser String
 --   
 --   &gt;&gt;&gt; parseTest typ "TensorList"
 --   TenType TensorList
+--   
+--   &gt;&gt;&gt; parseTest typ "const c10::List&lt;c10::optional&lt;Tensor&gt;&gt; &amp;"
+--   TenType C10ListTensor
 --   
 --   &gt;&gt;&gt; parseTest typ "TensorOptions"
 --   TenType TensorOptions
@@ -537,7 +545,6 @@ renderFunctions :: Bool -> Bool -> String -> [Declaration] -> Text
 decodeAndCodeGen :: String -> String -> IO ()
 renderImport :: Bool -> Bool -> Text -> Text
 template :: Bool -> Bool -> Text -> Text -> Text
-typeTemplate :: Text
 
 module RenderPure
 data Binding
