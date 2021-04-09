@@ -3263,8 +3263,23 @@ dtypeVal :: KnownDType dtype => DType
 type family ComputeDType (dtype' :: dtype) :: DType
 class KnownDevice (device :: (DeviceType, Nat))
 deviceVal :: KnownDevice device => Device
+type Size = Type -> Type
+type Shape = [Type -> Type]
+type family ToNat (shape :: Size) :: Nat
+type family ToNats (shape :: Shape) :: [Nat]
+type family FromNat (shape :: Nat) :: Size
+type family FromNats (shape :: [Nat]) :: Shape
+class Unnamed t where {
+    type family UTShape t :: [Nat];
+    type family UTDevice t :: (DeviceType, Nat);
+    type family UTDType t :: DType;
+}
+toUnnamed :: forall device dtype shape. (Unnamed t, IsUnnamed t device dtype shape) => t -> Tensor device dtype shape
+fromUnnamed :: forall device dtype shape. (Unnamed t, IsUnnamed t device dtype shape) => Tensor device dtype shape -> t
+toDynamic :: Unnamed t => t -> Tensor
+type family IsUnnamed t (device :: (DeviceType, Nat)) (dtype :: DType) (shape :: [Nat]) :: Constraint
 data Tensor (device :: (DeviceType, Nat)) (dtype :: DType) (shape :: [Nat])
-[UnsafeMkTensor] :: forall device dtype shape. {toDynamic :: Tensor} -> Tensor device dtype shape
+[UnsafeMkTensor] :: forall device dtype shape. Tensor -> Tensor device dtype shape
 type CPUTensor = Tensor '( 'CPU, 0)
 type CUDATensor deviceIndex = Tensor '( 'CUDA, deviceIndex)
 data UnknownShapeTensor device dtype
@@ -3326,6 +3341,12 @@ type family Numel (shape :: [Nat]) :: Nat
 --   &gt;&gt;&gt; toList . Just $ reshape </tt>'[2,3,4] t'
 --   [[[111,112,113,114],[121,122,123,124],[131,132,133,134]],[[211,212,213,214],[221,222,223,224],[231,232,233,234]]]
 reshape :: forall shape' shape dtype device. (KnownShape shape', Numel shape ~ Numel shape') => Tensor device dtype shape -> Tensor device dtype shape'
+
+-- | To avoid overlapped instance for (Unnamed t =&gt; Castable t
+--   D.ATenTensor)
+newtype Wrap a
+Wrap :: a -> Wrap a
+[unWrap] :: Wrap a -> a
 data TensorListFold
 TensorListFold :: TensorListFold
 data TensorListUnfold
@@ -3340,33 +3361,43 @@ toCPU :: forall device shape dtype. Tensor device dtype shape -> CPUTensor dtype
 toCUDA :: forall device' device shape dtype. Tensor device dtype shape -> CUDATensor 0 dtype shape
 
 -- | move tensor to device TODO: what if this fails?
-toDevice :: forall device' device dtype shape. KnownDevice device' => Tensor device dtype shape -> Tensor device' dtype shape
+toDevice :: forall device' device dtype shape t t'. (KnownDevice device', IsUnnamed t device dtype shape, Unnamed t', t' ~ ReplaceDevice'' t device') => t -> t'
 
 -- | change tensor data type
-toDType :: forall dtype' dtype device shape. KnownDType dtype' => Tensor device dtype shape -> Tensor device dtype' shape
+toDType :: forall dtype' dtype device shape t t'. (KnownDType dtype', IsUnnamed t device dtype shape, Unnamed t', t' ~ ReplaceDType'' t dtype') => t -> t'
 
 -- | returns tensor dimension uses compile-time information only
-dim :: forall device dtype shape. TensorOptions shape dtype device => Tensor device dtype shape -> Int
+dim :: forall device dtype shape t. (TensorOptions shape dtype device, IsUnnamed t device dtype shape) => t -> Int
 
 -- | returns tensor shape as list uses compile-time information only
-shape :: forall device dtype shape. TensorOptions shape dtype device => Tensor device dtype shape -> [Int]
+shape :: forall device dtype shape t. (TensorOptions shape dtype device, IsUnnamed t device dtype shape) => t -> [Int]
 
 -- | returns tensor data type uses compile-time information only
-dtype :: forall device dtype shape. TensorOptions shape dtype device => Tensor device dtype shape -> DType
+dtype :: forall device dtype shape t. (TensorOptions shape dtype device, IsUnnamed t device dtype shape) => t -> DType
 
 -- | returns tensor device uses compile-time information only
-device :: forall device dtype shape. TensorOptions shape dtype device => Tensor device dtype shape -> Device
+device :: forall device dtype shape t. (TensorOptions shape dtype device, IsUnnamed t device dtype shape) => t -> Device
 toInt :: Tensor device dtype shape -> Int
 toFloat :: forall device. Tensor device 'Float '[] -> Float
 toDouble :: forall device. Tensor device 'Double '[] -> Double
 toBool :: forall device. Tensor device 'Bool '[] -> Bool
+data NamedTensor (device :: (DeviceType, Nat)) (dtype :: DType) (shape :: Shape)
+[FromTensor] :: forall device dtype shape' shape. shape ~ ToNats shape' => Tensor device dtype shape -> NamedTensor device dtype shape'
+type family ReplaceDevice'' (tensor :: t) (device :: (DeviceType, Nat)) :: t
+type family ReplaceDType'' (tensor :: t) (dtype :: DType) :: t
+instance Torch.Typed.Tensor.Unnamed (Torch.Typed.Tensor.NamedTensor device dtype shape)
+instance Torch.Typed.Tensor.KnownDevice device => GHC.Num.Num (Torch.Typed.Tensor.NamedTensor device dtype shape)
+instance Torch.Typed.Tensor.KnownDevice device => GHC.Real.Fractional (Torch.Typed.Tensor.NamedTensor device dtype shape)
+instance GHC.Show.Show (Torch.Typed.Tensor.NamedTensor device dtype shape)
 instance Torch.HList.Apply Torch.Typed.Tensor.TensorListUnfold [Torch.Tensor.ATenTensor] (GHC.Types.IO Torch.HList.HNothing)
 instance Torch.Internal.Class.Castable x Torch.Tensor.ATenTensor => Torch.HList.Apply Torch.Typed.Tensor.TensorListUnfold [Torch.Tensor.ATenTensor] (GHC.Types.IO (Torch.HList.HJust (x, [Torch.Tensor.ATenTensor])))
 instance (Torch.HList.HFoldrM GHC.Types.IO Torch.Typed.Tensor.TensorListFold [Torch.Tensor.ATenTensor] l [Torch.Tensor.ATenTensor], Torch.HList.Apply Torch.Typed.Tensor.TensorListUnfold [Torch.Tensor.ATenTensor] res, Torch.HList.HUnfoldM GHC.Types.IO Torch.Typed.Tensor.TensorListUnfold res l, res GHC.Types.~ Torch.HList.HUnfoldMRes GHC.Types.IO [Torch.Tensor.ATenTensor] l) => Torch.Internal.Class.Castable (Torch.HList.HList l) [Torch.Tensor.ATenTensor]
 instance Torch.Internal.Class.Castable x Torch.Tensor.ATenTensor => Torch.HList.Apply' Torch.Typed.Tensor.TensorListFold (x, GHC.Types.IO [Torch.Tensor.ATenTensor]) (GHC.Types.IO [Torch.Tensor.ATenTensor])
+instance Torch.Typed.Tensor.Unnamed t => Torch.Internal.Class.Castable (Torch.Typed.Tensor.Wrap t) Torch.Tensor.ATenTensor
 instance (Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device) => Torch.Typed.Tensor.TensorOptions '[] dtype device
 instance (GHC.TypeNats.KnownNat h, Torch.Typed.Tensor.TensorOptions t dtype device) => Torch.Typed.Tensor.TensorOptions (h : t) dtype device
 instance (Torch.Tensor.TensorLike [Torch.Typed.Tensor.ComputeItemType (Torch.Typed.Tensor.ComputeHaskellType dtype) shape], Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Tensor.KnownShape shape) => GHC.Exts.IsList (GHC.Maybe.Maybe (Torch.Typed.Tensor.Tensor device dtype shape))
+instance Torch.Typed.Tensor.Unnamed (Torch.Typed.Tensor.Tensor device dtype shape)
 instance Torch.Typed.Tensor.KnownDevice device => GHC.Num.Num (Torch.Typed.Tensor.Tensor device dtype shape)
 instance Torch.Typed.Tensor.KnownDevice device => GHC.Real.Fractional (Torch.Typed.Tensor.Tensor device dtype shape)
 instance GHC.Show.Show (Torch.Typed.Tensor.Tensor device dtype shape)
@@ -3396,6 +3427,44 @@ save :: forall tensors. Castable (HList tensors) [ATenTensor] => HList tensors -
 -- | load list of tensors from file
 load :: forall tensors. Castable (HList tensors) [ATenTensor] => FilePath -> IO (HList tensors)
 
+module Torch.Typed.Lens
+
+-- | Type alias for lens
+type Lens' s a = Lens s s a a
+type Lens s t a b = forall f. Functor f => (a -> f b) -> s -> f t
+class HasField (field :: Symbol) shape
+field :: HasField field shape => Lens' (NamedTensor device dtype shape) (NamedTensor device dtype (DropField field shape))
+field :: (HasField field shape, FieldIdx field shape) => Lens' (NamedTensor device dtype shape) (NamedTensor device dtype (DropField field shape))
+type family GHasField (field :: Symbol) f :: Bool
+type family DropField (field :: Symbol) (a :: [Type -> Type]) :: [Type -> Type]
+class FieldIdx (field :: Symbol) (a :: [Type -> Type])
+
+-- | Return field-id
+fieldIdx :: FieldIdx field a => Proxy a -> [Maybe Int]
+class FieldId (field :: Symbol) a
+
+-- | Return field-id
+fieldId :: FieldId field a => Proxy a -> Maybe Int
+
+-- | Return field-id
+fieldId :: (FieldId field a, Generic a, GFieldId field (Rep a)) => Proxy a -> Maybe Int
+class GFieldId (field :: Symbol) (a :: Type -> Type)
+gfieldId :: GFieldId field a => Proxy a -> Maybe Int
+gfieldId' :: GFieldId field a => Proxy a -> (Maybe Int, Int)
+instance (Torch.Typed.Lens.FieldId field (x ()), Torch.Typed.Lens.FieldIdx field xs) => Torch.Typed.Lens.FieldIdx field (x : xs)
+instance Torch.Typed.Lens.FieldId field (Data.Vector.Sized.Vector n v)
+instance (GHC.Generics.Generic s, Torch.Typed.Lens.GFieldId field (GHC.Generics.Rep s)) => Torch.Typed.Lens.FieldId field s
+instance Torch.Typed.Lens.GFieldId field f => Torch.Typed.Lens.GFieldId field (GHC.Generics.M1 GHC.Generics.D t f)
+instance Torch.Typed.Lens.GFieldId field f => Torch.Typed.Lens.GFieldId field (GHC.Generics.M1 GHC.Generics.C t f)
+instance (GHC.TypeLits.KnownSymbol field, GHC.TypeLits.KnownSymbol field_) => Torch.Typed.Lens.GFieldId field (GHC.Generics.S1 ('GHC.Generics.MetaSel ('GHC.Maybe.Just field_) p f b) (GHC.Generics.Rec0 a))
+instance Torch.Typed.Lens.GFieldId field (GHC.Generics.K1 c f)
+instance Torch.Typed.Lens.GFieldId field GHC.Generics.U1
+instance (Torch.Typed.Lens.GFieldId field f, Torch.Typed.Lens.GFieldId field g) => Torch.Typed.Lens.GFieldId field (f GHC.Generics.:*: g)
+instance (Torch.Typed.Lens.GFieldId field f, Torch.Typed.Lens.GFieldId field g) => Torch.Typed.Lens.GFieldId field (f GHC.Generics.:+: g)
+instance Torch.Typed.Lens.FieldIdx field shape => Torch.Typed.Lens.HasField field shape
+instance Torch.Typed.Lens.FieldIdx field '[]
+instance Torch.Tensor.TensorIndex [GHC.Maybe.Maybe GHC.Types.Int]
+
 module Torch.Typed.Factories
 zeros :: forall shape dtype device. TensorOptions shape dtype device => Tensor device dtype shape
 full :: forall shape dtype device a. (TensorOptions shape dtype device, Scalar a) => a -> Tensor device dtype shape
@@ -3413,6 +3482,8 @@ randint :: forall shape dtype device. (TensorOptions shape dtype device, RandDTy
 --   0) 0 2 (Float,([3],[0.0,1.0,2.0]))
 linspace :: forall steps device start end. (Scalar start, Scalar end, KnownNat steps, TensorOptions '[steps] 'Float device) => start -> end -> Tensor device 'Float '[steps]
 eyeSquare :: forall n dtype device. (KnownNat n, TensorOptions '[n, n] dtype device) => Tensor device dtype '[n, n]
+instance Torch.Typed.Tensor.TensorOptions shape dtype device => Data.Default.Class.Default (Torch.Typed.Tensor.Tensor device dtype shape)
+instance (Torch.Typed.Tensor.TensorOptions shape' dtype device, shape' GHC.Types.~ Torch.Typed.Tensor.ToNats shape) => Data.Default.Class.Default (Torch.Typed.Tensor.NamedTensor device dtype shape)
 
 module Torch.Typed.Functional
 
@@ -3754,7 +3825,7 @@ pow :: forall shape'' shape shape' dtype device. (BasicArithmeticDTypeIsValid de
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ relu (ones :: CPUTensor 'D.Float '[3,2])
 --   (Float,[3,2])
 --   </pre>
-relu :: forall shape dtype device. StandardFloatingPointDTypeValidation device dtype => Tensor device dtype shape -> Tensor device dtype shape
+relu :: forall shape dtype device t. (StandardFloatingPointDTypeValidation device dtype, IsUnnamed t device dtype shape) => t -> t
 
 -- | selu
 --   
@@ -3787,7 +3858,7 @@ sigmoid :: forall shape dtype device. StandardFloatingPointDTypeValidation devic
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ sin (ones :: CPUTensor 'D.Float '[3,2])
 --   (Float,[3,2])
 --   </pre>
-sin :: forall shape dtype device. StandardFloatingPointDTypeValidation device dtype => Tensor device dtype shape -> Tensor device dtype shape
+sin :: forall shape dtype device t. (StandardFloatingPointDTypeValidation device dtype, IsUnnamed t device dtype shape) => t -> t
 
 -- | sinh
 --   
@@ -3795,7 +3866,7 @@ sin :: forall shape dtype device. StandardFloatingPointDTypeValidation device dt
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ sinh (ones :: CPUTensor 'D.Float '[3,2])
 --   (Float,[3,2])
 --   </pre>
-sinh :: forall shape dtype device. StandardFloatingPointDTypeValidation device dtype => Tensor device dtype shape -> Tensor device dtype shape
+sinh :: forall shape dtype device t. (StandardFloatingPointDTypeValidation device dtype, IsUnnamed t device dtype shape) => t -> t
 
 -- | cos
 --   
@@ -3803,10 +3874,10 @@ sinh :: forall shape dtype device. StandardFloatingPointDTypeValidation device d
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ cos (ones :: CPUTensor 'D.Float '[3,2])
 --   (Float,[3,2])
 --   </pre>
-cos :: forall shape dtype device. StandardFloatingPointDTypeValidation device dtype => Tensor device dtype shape -> Tensor device dtype shape
+cos :: forall shape dtype device t. (StandardFloatingPointDTypeValidation device dtype, IsUnnamed t device dtype shape) => t -> t
 
 -- | sqrt
-sqrt :: forall shape dtype device. StandardFloatingPointDTypeValidation device dtype => Tensor device dtype shape -> Tensor device dtype shape
+sqrt :: forall shape dtype device t. (StandardFloatingPointDTypeValidation device dtype, IsUnnamed t device dtype shape) => t -> t
 
 -- | tanh
 tanh :: forall shape dtype device. StandardFloatingPointDTypeValidation device dtype => Tensor device dtype shape -> Tensor device dtype shape
@@ -7187,10 +7258,20 @@ UnsafeMkParameter :: IndependentTensor -> Parameter (device :: (DeviceType, Nat)
 untypeParam :: Parameter device dtype shape -> Parameter
 toDependent :: forall shape dtype device. Parameter device dtype shape -> Tensor device dtype shape
 makeIndependent :: forall shape dtype device. Tensor device dtype shape -> IO (Parameter device dtype shape)
+type family ReplaceDType'' (tensor :: t) (dtype :: DType) :: t
+type family ReplaceDevice'' (tensor :: t) (device :: (DeviceType, Nat)) :: t
+data NamedTensor (device :: (DeviceType, Nat)) (dtype :: DType) (shape :: Shape)
+[FromTensor] :: forall device dtype shape' shape. shape ~ ToNats shape' => Tensor device dtype shape -> NamedTensor device dtype shape'
 data TensorListUnfold
 TensorListUnfold :: TensorListUnfold
 data TensorListFold
 TensorListFold :: TensorListFold
+
+-- | To avoid overlapped instance for (Unnamed t =&gt; Castable t
+--   D.ATenTensor)
+newtype Wrap a
+Wrap :: a -> Wrap a
+[unWrap] :: Wrap a -> a
 type family Numel (shape :: [Nat]) :: Nat
 type family MatMulDTypeIsValid (device :: (DeviceType, Nat)) (dtype :: DType) :: Constraint
 type MatMul shape shape' = CheckMatMul shape shape' (ComputeMatMul (Reverse shape) (Reverse shape'))
@@ -7219,7 +7300,22 @@ UnknownShapeTensor :: Tensor device dtype shape -> UnknownShapeTensor device dty
 type CUDATensor deviceIndex = Tensor '( 'CUDA, deviceIndex)
 type CPUTensor = Tensor '( 'CPU, 0)
 data Tensor (device :: (DeviceType, Nat)) (dtype :: DType) (shape :: [Nat])
-[UnsafeMkTensor] :: forall device dtype shape. {toDynamic :: Tensor} -> Tensor device dtype shape
+[UnsafeMkTensor] :: forall device dtype shape. Tensor -> Tensor device dtype shape
+type family IsUnnamed t (device :: (DeviceType, Nat)) (dtype :: DType) (shape :: [Nat]) :: Constraint
+class Unnamed t where {
+    type family UTShape t :: [Nat];
+    type family UTDevice t :: (DeviceType, Nat);
+    type family UTDType t :: DType;
+}
+toUnnamed :: forall device dtype shape. (Unnamed t, IsUnnamed t device dtype shape) => t -> Tensor device dtype shape
+fromUnnamed :: forall device dtype shape. (Unnamed t, IsUnnamed t device dtype shape) => Tensor device dtype shape -> t
+toDynamic :: Unnamed t => t -> Tensor
+type family FromNats (shape :: [Nat]) :: Shape
+type family FromNat (shape :: Nat) :: Size
+type family ToNats (shape :: Shape) :: [Nat]
+type family ToNat (shape :: Size) :: Nat
+type Shape = [Type -> Type]
+type Size = Type -> Type
 class KnownDevice (device :: (DeviceType, Nat))
 deviceVal :: KnownDevice device => Device
 type family ComputeDType (dtype' :: dtype) :: DType
@@ -7272,16 +7368,16 @@ toCPU :: forall device shape dtype. Tensor device dtype shape -> CPUTensor dtype
 toCUDA :: forall device' device shape dtype. Tensor device dtype shape -> CUDATensor 0 dtype shape
 
 -- | returns tensor dimension uses compile-time information only
-dim :: forall device dtype shape. TensorOptions shape dtype device => Tensor device dtype shape -> Int
+dim :: forall device dtype shape t. (TensorOptions shape dtype device, IsUnnamed t device dtype shape) => t -> Int
 
 -- | returns tensor shape as list uses compile-time information only
-shape :: forall device dtype shape. TensorOptions shape dtype device => Tensor device dtype shape -> [Int]
+shape :: forall device dtype shape t. (TensorOptions shape dtype device, IsUnnamed t device dtype shape) => t -> [Int]
 
 -- | returns tensor data type uses compile-time information only
-dtype :: forall device dtype shape. TensorOptions shape dtype device => Tensor device dtype shape -> DType
+dtype :: forall device dtype shape t. (TensorOptions shape dtype device, IsUnnamed t device dtype shape) => t -> DType
 
 -- | returns tensor device uses compile-time information only
-device :: forall device dtype shape. TensorOptions shape dtype device => Tensor device dtype shape -> Device
+device :: forall device dtype shape t. (TensorOptions shape dtype device, IsUnnamed t device dtype shape) => t -> Device
 toInt :: Tensor device dtype shape -> Int
 toFloat :: forall device. Tensor device 'Float '[] -> Float
 toDouble :: forall device. Tensor device 'Double '[] -> Double
@@ -7380,19 +7476,19 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 readImageAsRGB8WithScaling :: FilePath -> Int -> Int -> Bool -> IO (Either String (Image PixelRGB8, Tensor))
 centerCrop :: Int -> Int -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679578258 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679587525 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawLine :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679578309 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679587576 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawRect :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawString :: String -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawChar :: Int -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679578388 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679587655 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 resizeRGB8 :: Int -> Int -> Bool -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679578438 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679587705 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679578480 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679578505 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679587747 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679587772 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
