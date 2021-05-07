@@ -655,7 +655,12 @@ instance GHC.Classes.Eq Torch.Layout.Layout
 instance Torch.Internal.Class.Castable Torch.Layout.Layout Torch.Internal.Type.Layout
 
 module Torch.Lens
-type Traversal' s a = forall f. Applicative f => (a -> f a) -> s -> f s
+
+-- | Type synonym for lens
+type Lens s t a b = forall f. Functor f => (a -> f b) -> s -> f t
+type Lens' s a = Lens s s a a
+type Traversal s t a b = forall f. Applicative f => (a -> f b) -> s -> f t
+type Traversal' s a = Traversal s s a a
 class HasTypes s a
 types_ :: HasTypes s a => Traversal' s a
 types_ :: (HasTypes s a, Generic s, GHasTypes (Rep s) a) => Traversal' s a
@@ -837,6 +842,10 @@ instance GHC.Show.Show Torch.Tensor.Tensor
 instance Torch.Internal.Class.Castable [Torch.Tensor.Tensor] (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.TensorList)
 instance Torch.Internal.Class.Castable [Torch.Tensor.Tensor] (GHC.ForeignPtr.ForeignPtr (Torch.Internal.Type.C10List Torch.Internal.Type.Tensor))
 instance Torch.Internal.Class.Castable [Torch.Tensor.Tensor] (GHC.ForeignPtr.ForeignPtr (Torch.Internal.Type.C10List (Torch.Internal.Type.C10Optional Torch.Internal.Type.Tensor)))
+instance Torch.Lens.HasTypes GHC.Types.Int GHC.Types.Int
+instance Torch.Lens.HasTypes GHC.Types.Float GHC.Types.Float
+instance Torch.Lens.HasTypes GHC.Types.Double GHC.Types.Double
+instance Torch.Lens.HasTypes GHC.Types.Bool GHC.Types.Bool
 
 module Torch.TensorFactories
 type FactoryType = ForeignPtr IntArray -> ForeignPtr TensorOptions -> IO (ForeignPtr Tensor)
@@ -3381,10 +3390,14 @@ toInt :: Tensor device dtype shape -> Int
 toFloat :: forall device. Tensor device 'Float '[] -> Float
 toDouble :: forall device. Tensor device 'Double '[] -> Double
 toBool :: forall device. Tensor device 'Bool '[] -> Bool
+type family ToDType a :: DType
+type family ToShape a :: Shape
+type family FindDim (a :: Size) (shape :: Shape) :: Nat
 data NamedTensor (device :: (DeviceType, Nat)) (dtype :: DType) (shape :: Shape)
 [FromTensor] :: forall device dtype shape' shape. shape ~ ToNats shape' => Tensor device dtype shape -> NamedTensor device dtype shape'
 type family ReplaceDevice'' (tensor :: t) (device :: (DeviceType, Nat)) :: t
 type family ReplaceDType'' (tensor :: t) (dtype :: DType) :: t
+instance Torch.Internal.Class.Castable (Torch.Typed.Tensor.NamedTensor device dtype shape) Torch.Tensor.ATenTensor
 instance Torch.Typed.Tensor.Unnamed (Torch.Typed.Tensor.NamedTensor device dtype shape)
 instance Torch.Typed.Tensor.KnownDevice device => GHC.Num.Num (Torch.Typed.Tensor.NamedTensor device dtype shape)
 instance Torch.Typed.Tensor.KnownDevice device => GHC.Real.Fractional (Torch.Typed.Tensor.NamedTensor device dtype shape)
@@ -3428,15 +3441,16 @@ save :: forall tensors. Castable (HList tensors) [ATenTensor] => HList tensors -
 load :: forall tensors. Castable (HList tensors) [ATenTensor] => FilePath -> IO (HList tensors)
 
 module Torch.Typed.Lens
-
--- | Type alias for lens
-type Lens' s a = Lens s s a a
-type Lens s t a b = forall f. Functor f => (a -> f b) -> s -> f t
+class HasName (name :: Type -> Type) shape
+name :: HasName name shape => Traversal' (NamedTensor device dtype shape) (NamedTensor device dtype (DropName name shape))
+name :: (HasName name shape, KnownNat (NamedIdx name shape)) => Traversal' (NamedTensor device dtype shape) (NamedTensor device dtype (DropName name shape))
 class HasField (field :: Symbol) shape
 field :: HasField field shape => Lens' (NamedTensor device dtype shape) (NamedTensor device dtype (DropField field shape))
 field :: (HasField field shape, FieldIdx field shape) => Lens' (NamedTensor device dtype shape) (NamedTensor device dtype (DropField field shape))
 type family GHasField (field :: Symbol) f :: Bool
 type family DropField (field :: Symbol) (a :: [Type -> Type]) :: [Type -> Type]
+type family DropName (name :: Type -> Type) (a :: [Type -> Type]) :: [Type -> Type]
+type family NamedIdx (name :: Type -> Type) (shape :: [Type -> Type]) :: Nat
 class FieldIdx (field :: Symbol) (a :: [Type -> Type])
 
 -- | Return field-id
@@ -3463,6 +3477,7 @@ instance (Torch.Typed.Lens.GFieldId field f, Torch.Typed.Lens.GFieldId field g) 
 instance (Torch.Typed.Lens.GFieldId field f, Torch.Typed.Lens.GFieldId field g) => Torch.Typed.Lens.GFieldId field (f GHC.Generics.:+: g)
 instance Torch.Typed.Lens.FieldIdx field shape => Torch.Typed.Lens.HasField field shape
 instance Torch.Typed.Lens.FieldIdx field '[]
+instance GHC.TypeNats.KnownNat (Torch.Typed.Lens.NamedIdx name shape) => Torch.Typed.Lens.HasName name shape
 instance Torch.Tensor.TensorIndex [GHC.Maybe.Maybe GHC.Types.Int]
 
 module Torch.Typed.Factories
@@ -3632,6 +3647,20 @@ unsafeMeanAll :: forall shape dtype device. MeanDTypeValidation device dtype => 
 --   (Float,[3,4])
 --   </pre>
 meanDim :: forall dim shape' shape dtype device. (KnownNat dim, shape' ~ DropValue shape dim, MeanDTypeValidation device dtype, AllDimsPositive shape) => Tensor device dtype shape -> Tensor device dtype shape'
+
+-- | Computes the mean and reduces the tensor over the specified dimension.
+--   
+--   <pre>
+--   &gt;&gt;&gt; import Torch.Typed.Factories
+--   
+--   &gt;&gt;&gt; import Data.Default.Class
+--   
+--   &gt;&gt;&gt; t = def :: NamedTensor '( D.CPU, 0) 'D.Float '[Vector 3, Vector 4, Vector 5]
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ meanNamedDim @(Vector 4) t
+--   (Float,[3,5])
+--   </pre>
+meanNamedDim :: forall dim shape' shape dtype device. (KnownNat (FindDim dim shape), shape' ~ DropNamedValue shape dim, MeanDTypeValidation device dtype) => NamedTensor device dtype shape -> NamedTensor device dtype shape'
 
 -- | Computes the mean and optionally reduces the tensor over the specified
 --   dimension.
@@ -6003,6 +6032,7 @@ erfinv :: forall shape dtype device. StandardFloatingPointDTypeValidation device
 --   </pre>
 minAll :: forall shape dtype device. Tensor device dtype shape -> Tensor device dtype '[]
 type family DropValue (shape :: [Nat]) (i :: Nat) :: [Nat]
+type family DropNamedValue (shape :: Shape) (i :: Size) :: Shape
 
 -- | minDim
 --   
@@ -6043,6 +6073,48 @@ maxAll :: forall shape dtype device. Tensor device dtype shape -> Tensor device 
 --   (Float,[3,4])
 --   </pre>
 maxDim :: forall d shape dtype device. KnownNat d => Tensor device dtype shape -> (Tensor device dtype (DropValue shape d), Tensor device 'Int64 (DropValue shape d))
+type family HasDim (dim :: Nat) (shape :: [Nat]) :: Constraint
+
+-- | sortDim
+--   
+--   <pre>
+--   &gt;&gt;&gt; t = ones :: CPUTensor 'D.Float '[3,4,5]
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ fst $ sortDim @0 True t
+--   (Float,[3,4,5])
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ snd $ sortDim @0 True t
+--   (Int64,[3,4,5])
+--   </pre>
+sortDim :: forall dim shape dtype device. (KnownNat dim, HasDim dim shape) => Bool -> Tensor device dtype shape -> (Tensor device dtype shape, Tensor device Int64 shape)
+
+-- | sortNamedDim
+--   
+--   <pre>
+--   &gt;&gt;&gt; import Torch.Typed.Factories
+--   
+--   &gt;&gt;&gt; import Data.Default.Class
+--   
+--   &gt;&gt;&gt; t = def :: NamedTensor '( D.CPU, 0) 'D.Float '[Vector 3, Vector 4, Vector 5]
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ fst $ sortNamedDim @(Vector 3) True t
+--   (Float,[3,4,5])
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ snd $ sortNamedDim @(Vector 3) True t
+--   (Int64,[3,4,5])
+--   </pre>
+sortNamedDim :: forall dim shape dtype device. KnownNat (FindDim dim shape) => Bool -> NamedTensor device dtype shape -> (NamedTensor device dtype shape, NamedTensor device Int64 shape)
+
+-- | argSortDim
+--   
+--   <pre>
+--   &gt;&gt;&gt; t = ones :: CPUTensor 'D.Float '[3,4,5]
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ argSortDim @0 True t
+--   (Int64,[3,4,5])
+--   </pre>
+argSortDim :: forall dim shape dtype device. (KnownNat dim, HasDim dim shape) => Bool -> Tensor device dtype shape -> Tensor device Int64 shape
+argSortNamedDim :: forall dim shape dtype device. KnownNat (FindDim dim shape) => Bool -> NamedTensor device dtype shape -> NamedTensor device Int64 shape
 type family TopKCheck (k :: Nat) (shape :: [Nat]) (dim :: Nat) (satd :: Maybe Nat) (result :: Maybe a) :: a
 type TopK k shape dim = TopKCheck k shape dim (ExtractDim dim shape) (ReplaceDim dim shape k)
 type family TopKDeviceAndDTypeCheck dtype (device :: (DeviceType, Nat)) :: Constraint
@@ -6415,6 +6487,22 @@ instance Torch.HList.Apply' Torch.Typed.Parameter.MakeIndependent (Torch.Typed.T
 instance Torch.HList.Apply' Torch.Typed.Parameter.ToDependent (Torch.Typed.Parameter.Parameter device dtype shape) (Torch.Typed.Tensor.Tensor device dtype shape)
 instance Torch.NN.Randomizable (Torch.HList.HList '[]) (Torch.HList.HList '[])
 instance (Torch.NN.Randomizable xSpec x, Torch.NN.Randomizable (Torch.HList.HList xsSpec) (Torch.HList.HList xs)) => Torch.NN.Randomizable (Torch.HList.HList (xSpec : xsSpec)) (Torch.HList.HList (x : xs))
+
+module Torch.Typed.NamedTensor
+class NamedTensorLike a where {
+    type family ToNestedList a :: Type;
+}
+toNestedList :: NamedTensorLike a => a -> ToNestedList a
+asNamedTensor :: NamedTensorLike a => a -> NamedTensor '( 'CPU, 0) (ToDType a) (ToShape a)
+fromNestedList :: NamedTensorLike a => ToNestedList a -> a
+fromNamedTensor :: NamedTensorLike a => NamedTensor '( 'CPU, 0) (ToDType a) (ToShape a) -> a
+instance Torch.Typed.NamedTensor.NamedTensorLike GHC.Types.Bool
+instance Torch.Typed.NamedTensor.NamedTensorLike GHC.Types.Int
+instance Torch.Typed.NamedTensor.NamedTensorLike GHC.Types.Float
+instance Torch.Typed.NamedTensor.NamedTensorLike GHC.Types.Double
+instance (GHC.TypeNats.KnownNat n, Torch.Tensor.TensorLike (Torch.Typed.NamedTensor.ToNestedList a), Torch.Typed.NamedTensor.NamedTensorLike a) => Torch.Typed.NamedTensor.NamedTensorLike (Data.Vector.Sized.Vector n a)
+instance (GHC.Types.Coercible (vec n a) (Data.Vector.Sized.Vector n a), GHC.TypeNats.KnownNat n, Torch.Tensor.TensorLike (Torch.Typed.NamedTensor.ToNestedList a), Torch.Typed.NamedTensor.NamedTensorLike a) => Torch.Typed.NamedTensor.NamedTensorLike (vec n a)
+instance (GHC.Generics.Generic (g a), Data.Default.Class.Default (g a), Torch.Lens.HasTypes (g a) a, GHC.TypeNats.KnownNat (Torch.Typed.Tensor.ToNat g), Torch.Tensor.TensorLike (Torch.Typed.NamedTensor.ToNestedList a), Torch.Typed.NamedTensor.NamedTensorLike a) => Torch.Typed.NamedTensor.NamedTensorLike (g a)
 
 module Torch.Typed.NN.Sparse
 data EmbeddingType
@@ -7262,6 +7350,9 @@ type family ReplaceDType'' (tensor :: t) (dtype :: DType) :: t
 type family ReplaceDevice'' (tensor :: t) (device :: (DeviceType, Nat)) :: t
 data NamedTensor (device :: (DeviceType, Nat)) (dtype :: DType) (shape :: Shape)
 [FromTensor] :: forall device dtype shape' shape. shape ~ ToNats shape' => Tensor device dtype shape -> NamedTensor device dtype shape'
+type family FindDim (a :: Size) (shape :: Shape) :: Nat
+type family ToShape a :: Shape
+type family ToDType a :: DType
 data TensorListUnfold
 TensorListUnfold :: TensorListUnfold
 data TensorListFold
@@ -7476,19 +7567,19 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 readImageAsRGB8WithScaling :: FilePath -> Int -> Int -> Bool -> IO (Either String (Image PixelRGB8, Tensor))
 centerCrop :: Int -> Int -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679587525 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679592059 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawLine :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679587576 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679592110 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawRect :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawString :: String -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawChar :: Int -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679587655 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679592189 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 resizeRGB8 :: Int -> Int -> Bool -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679587705 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679592239 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679587747 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679587772 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679592281 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679592306 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
