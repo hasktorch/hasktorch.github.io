@@ -5085,10 +5085,17 @@ type family PaddingIdxCheck (idx :: Maybe Nat) (numEmbeds :: Nat) :: Constraint
 --   <li>-</li>
 --   <li>- libtorch 1.8</li>
 --   <li>- The behavior of libtorch 1.8 changes. See
---   <a>https://github.com/pytorch/pytorch/issues/53368</a> &gt;&gt;&gt;
---   dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (t' -&gt; D.asValue
---   (toDynamic t') :: [[[Float]]]) $ t
---   (Float,([4,1,2],[[[1.0,1.0]],[[3.0,3.0]],[[1.0,1.0]],[[0.0,0.0]]]))
+--   <a>https://github.com/pytorch/pytorch/issues/53368</a></li>
+--   <li>-
+--   (Float,([4,1,2],[[[1.0,1.0]],[[3.0,3.0]],[[1.0,1.0]],[[0.0,0.0]]]))</li>
+--   <li>-</li>
+--   <li>- libtorch 1.8.1</li>
+--   <li>- The behavior of libtorch 1.8.1 is reverted.</li>
+--   <li>-
+--   (Float,([4,1,2],[[[1.0,1.0]],[[3.0,3.0]],[[1.0,1.0]],[[2.0,2.0]]]))
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (t' -&gt;
+--   D.asValue (toDynamic t') :: [[[Float]]]) $ t
+--   (Float,([4,1,2],[[[1.0,1.0]],[[3.0,3.0]],[[1.0,1.0]],[[2.0,2.0]]]))
 --   &gt;&gt;&gt; t = embedding @'Nothing False False weights indices
 --   &gt;&gt;&gt; :type t t :: Tensor '( 'D.CPU, 0) 'D.Float '[4, 1, 2]
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (t' -&gt;
