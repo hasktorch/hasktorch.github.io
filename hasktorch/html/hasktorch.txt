@@ -2907,8 +2907,8 @@ SGDOptions :: Double -> Double -> Double -> Double -> Bool -> SGDOptions
 [sgdDampening] :: SGDOptions -> Double
 [sgdWeightDecay] :: SGDOptions -> Double
 [sgdNesterov] :: SGDOptions -> Bool
-save :: CppOptimizerState option -> FilePath -> IO ()
-load :: CppOptimizerState option -> FilePath -> IO ()
+saveState :: CppOptimizerState option -> FilePath -> IO ()
+loadState :: CppOptimizerState option -> FilePath -> IO ()
 instance GHC.Classes.Eq Torch.Optim.CppOptim.AdagradOptions
 instance GHC.Show.Show Torch.Optim.CppOptim.AdagradOptions
 instance GHC.Classes.Eq Torch.Optim.CppOptim.AdamOptions
@@ -2988,15 +2988,15 @@ IVObject :: IValue
 IVUninitialized :: IValue
 IVCapsule :: IValue
 newModule :: String -> IO RawModule
-save :: ScriptModule -> FilePath -> IO ()
-save' :: RawModule -> FilePath -> IO ()
+saveScript :: ScriptModule -> FilePath -> IO ()
+saveScript' :: RawModule -> FilePath -> IO ()
 data LoadMode
 WithoutRequiredGrad :: LoadMode
 WithRequiredGrad :: LoadMode
 
 -- | Load a torchscript file
-load :: LoadMode -> FilePath -> IO ScriptModule
-load' :: FilePath -> IO RawModule
+loadScript :: LoadMode -> FilePath -> IO ScriptModule
+loadScript' :: FilePath -> IO RawModule
 registerParameter :: RawModule -> String -> Tensor -> Bool -> IO ()
 registerModule :: RawModule -> String -> RawModule -> IO ()
 getParameters :: ScriptModule -> [Tensor]
@@ -3014,8 +3014,11 @@ getNamedModules :: ScriptModule -> [(String, ScriptModule)]
 getNamedChildren :: ScriptModule -> [(String, ScriptModule)]
 toScriptModule :: RawModule -> IO ScriptModule
 toRawModule :: ScriptModule -> IO RawModule
-clone :: RawModule -> IO RawModule
-train :: RawModule -> Bool -> IO ()
+cloneRawModule :: RawModule -> IO RawModule
+data RuntimeMode
+Eval :: RuntimeMode
+Train :: RuntimeMode
+setRuntimeMode :: RawModule -> RuntimeMode -> IO ()
 define :: RawModule -> String -> IO ()
 dumpToStr :: ScriptModule -> Bool -> Bool -> Bool -> Int -> IO String
 dumpToStr' :: ScriptModule -> IO String
@@ -3060,6 +3063,8 @@ instance GHC.Show.Show Torch.Script.JitGraph
 instance GHC.Show.Show Torch.Script.IValue
 instance GHC.Classes.Eq Torch.Script.LoadMode
 instance GHC.Show.Show Torch.Script.LoadMode
+instance GHC.Classes.Eq Torch.Script.RuntimeMode
+instance GHC.Show.Show Torch.Script.RuntimeMode
 instance Torch.NN.Parameterized Torch.Script.ScriptModule
 instance Torch.NN.HasForward Torch.Script.ScriptModule [Torch.Script.IValue] Torch.Script.IValue
 instance Torch.Internal.Class.Castable [Torch.Script.IValue] [Torch.Script.RawIValue]
@@ -7573,19 +7578,19 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 readImageAsRGB8WithScaling :: FilePath -> Int -> Int -> Bool -> IO (Either String (Image PixelRGB8, Tensor))
 centerCrop :: Int -> Int -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679592064 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679592169 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawLine :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679592115 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679592220 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawRect :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawString :: String -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawChar :: Int -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679592194 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679592299 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 resizeRGB8 :: Int -> Int -> Bool -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679592244 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679592349 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679592286 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679592311 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679592391 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679592416 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
