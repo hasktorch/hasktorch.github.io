@@ -1,0 +1,322 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE RankNTypes #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE MultiParamTypeClasses #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.Data.Internal</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/fazxm1511paxihkn112b5l6qd8l2dvc4-transformers-base-lib-transformers-base-0.4.5.2-haddock-doc/share/doc/transformers-base/html/src"><span class="hs-identifier">Control.Monad.Base</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/fazxm1511paxihkn112b5l6qd8l2dvc4-transformers-base-lib-transformers-base-0.4.5.2-haddock-doc/share/doc/transformers-base/html/src"><span class="hs-identifier">MonadBase</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/25gyvxs8sfcmlrfd88qa12v4s2jisr8m-monad-control-lib-monad-control-1.0.2.3-haddock-doc/share/doc/monad-control/html/src"><span class="hs-identifier">Control.Monad.Trans.Control</span></a></span><span> </span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier">Pipes</span></a></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/gi3ii02mxr2l6qd73gq29asx1kn1yvi3-pipes-concurrency-lib-pipes-concurrency-2.0.12-haddock-doc/share/doc/pipes-concurrency/html/src"><span class="hs-identifier">Pipes.Concurrent</span></a></span><span> </span><span class="hs-keyword">hiding</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">atomically</span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/9lin4f6iiha2rjqm5rvganpirgyzyxd5-safe-exceptions-lib-safe-exceptions-0.1.7.1-haddock-doc/share/doc/safe-exceptions/html/src"><span class="hs-identifier">Control.Exception.Safe</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/9lin4f6iiha2rjqm5rvganpirgyzyxd5-safe-exceptions-lib-safe-exceptions-0.1.7.1-haddock-doc/share/doc/safe-exceptions/html/src"><span class="hs-identifier">finally</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/9lin4f6iiha2rjqm5rvganpirgyzyxd5-safe-exceptions-lib-safe-exceptions-0.1.7.1-haddock-doc/share/doc/safe-exceptions/html/src"><span class="hs-identifier">bracket</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/d2viyspw5cv5y25ys973i7ldxsba4gcb-lifted-async-lib-lifted-async-0.10.1.3-haddock-doc/share/doc/lifted-async/html/src"><span class="hs-identifier">Control.Concurrent.Async.Lifted</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/d2viyspw5cv5y25ys973i7ldxsba4gcb-lifted-async-lib-lifted-async-0.10.1.3-haddock-doc/share/doc/lifted-async/html/src"><span class="hs-identifier">concurrently</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">when</span></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier">Pipes.Prelude</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">P</span></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.Cont</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">ContT</span></span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">ContT</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/apj4fhhmp4gbch73305ll5kzmxzh18bj-stm-lib-stm-2.5.0.0-haddock-doc/share/doc/stm/html/src"><span class="hs-identifier">Control.Concurrent.STM</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">STM</span></span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="annot"><a href="Torch.Data.Internal.html#runWithBuffer"><span class="hs-identifier hs-type">runWithBuffer</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679642638"><span class="annot"><a href="#local-6989586621679642638"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span id="local-6989586621679642637"><span class="annot"><a href="#local-6989586621679642637"><span class="hs-identifier hs-type">m</span></a></span></span><span> </span><span id="local-6989586621679642636"><span class="annot"><a href="#local-6989586621679642636"><span class="hs-identifier hs-type">b</span></a></span></span><span> </span><span class="hs-operator">.</span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/25gyvxs8sfcmlrfd88qa12v4s2jisr8m-monad-control-lib-monad-control-1.0.2.3-haddock-doc/share/doc/monad-control/html/src"><span class="hs-identifier hs-type">MonadBaseControl</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679642637"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-20"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/gi3ii02mxr2l6qd73gq29asx1kn1yvi3-pipes-concurrency-lib-pipes-concurrency-2.0.12-haddock-doc/share/doc/pipes-concurrency/html/src"><span class="hs-identifier hs-type">Output</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642638"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679642637"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-comment">-- ContT b m (ListT m (a, Int))</span><span>
+</span><span id="line-23"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">ContT</span></span><span> </span><span class="annot"><a href="#local-6989586621679642636"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642637"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-type">ListT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642637"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642638"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span id="runWithBuffer"><span class="annot"><span class="annottext">runWithBuffer :: Int -&gt; (Output a -&gt; m ()) -&gt; ContT b m (ListT m a)
+</span><a href="Torch.Data.Internal.html#runWithBuffer"><span class="hs-identifier hs-var hs-var">runWithBuffer</span></a></span></span><span> </span><span id="local-6989586621679642635"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679642635"><span class="hs-identifier hs-var">bufferSize</span></a></span></span><span> </span><span id="local-6989586621679642634"><span class="annot"><span class="annottext">Output a -&gt; m ()
+</span><a href="#local-6989586621679642634"><span class="hs-identifier hs-var">batchHandler</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((ListT m a -&gt; m b) -&gt; m b) -&gt; ContT b m (ListT m a)
+forall k (r :: k) (m :: k -&gt; *) a.
+((a -&gt; m r) -&gt; m r) -&gt; ContT r m a
+</span><span class="hs-identifier hs-var">ContT</span></span><span> </span><span class="annot"><span class="annottext">(((ListT m a -&gt; m b) -&gt; m b) -&gt; ContT b m (ListT m a))
+-&gt; ((ListT m a -&gt; m b) -&gt; m b) -&gt; ContT b m (ListT m a)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679642633"><span class="annot"><span class="annottext">ListT m a -&gt; m b
+</span><a href="#local-6989586621679642633"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-25"></span><span>  </span><span class="annot"><span class="annottext">((), b) -&gt; b
+forall a b. (a, b) -&gt; b
+</span><span class="hs-identifier hs-var">snd</span></span><span>
+</span><span id="line-26"></span><span>    </span><span class="annot"><span class="annottext">(((), b) -&gt; b) -&gt; m ((), b) -&gt; m b
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Buffer a -&gt; (Output a -&gt; m ()) -&gt; (Input a -&gt; m b) -&gt; m ((), b)
+forall (m :: * -&gt; *) a l r.
+MonadBaseControl IO m =&gt;
+Buffer a -&gt; (Output a -&gt; m l) -&gt; (Input a -&gt; m r) -&gt; m (l, r)
+</span><a href="Torch.Data.Internal.html#withBufferLifted"><span class="hs-identifier hs-var">withBufferLifted</span></a></span><span>
+</span><span id="line-27"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Buffer a
+forall a. Int -&gt; Buffer a
+</span><a href="../file:///nix/store/gi3ii02mxr2l6qd73gq29asx1kn1yvi3-pipes-concurrency-lib-pipes-concurrency-2.0.12-haddock-doc/share/doc/pipes-concurrency/html/src"><span class="hs-identifier hs-var">bounded</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679642635"><span class="hs-identifier hs-var">bufferSize</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span>      </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679642629"><span class="annot"><span class="annottext">Output a
+</span><a href="#local-6989586621679642629"><span class="hs-identifier hs-var">batchOutput</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Output a -&gt; m ()
+</span><a href="#local-6989586621679642634"><span class="hs-identifier hs-var">batchHandler</span></a></span><span> </span><span class="annot"><span class="annottext">Output a
+</span><a href="#local-6989586621679642629"><span class="hs-identifier hs-var">batchOutput</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>      </span><span class="hs-comment">-- (\input -&gt; f . Select $ P.zip (fromInput' input) iters)</span><span>
+</span><span id="line-30"></span><span>      </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679642628"><span class="annot"><span class="annottext">Input a
+</span><a href="#local-6989586621679642628"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ListT m a -&gt; m b
+</span><a href="#local-6989586621679642633"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">(ListT m a -&gt; m b)
+-&gt; (Producer a m () -&gt; ListT m a) -&gt; Producer a m () -&gt; m b
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Producer a m () -&gt; ListT m a
+forall (m :: * -&gt; *) a. Producer a m () -&gt; ListT m a
+</span><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">Select</span></a></span><span> </span><span class="annot"><span class="annottext">(Producer a m () -&gt; m b) -&gt; Producer a m () -&gt; m b
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Input a -&gt; Producer' a m ()
+forall (m :: * -&gt; *) a.
+MonadBase IO m =&gt;
+Input a -&gt; Producer' a m ()
+</span><a href="Torch.Data.Internal.html#fromInput%27"><span class="hs-identifier hs-var">fromInput'</span></a></span><span> </span><span class="annot"><span class="annottext">Input a
+</span><a href="#local-6989586621679642628"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span id="local-6989586621679642704"><span id="local-6989586621679642705"><span id="local-6989586621679642706"><span id="local-6989586621679642707"><span class="annot"><a href="Torch.Data.Internal.html#liftedBracket"><span class="hs-identifier hs-type">liftedBracket</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/25gyvxs8sfcmlrfd88qa12v4s2jisr8m-monad-control-lib-monad-control-1.0.2.3-haddock-doc/share/doc/monad-control/html/src"><span class="hs-identifier hs-type">MonadBaseControl</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679642707"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679642707"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642706"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679642706"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679642707"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642705"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679642706"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679642707"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642704"><span class="hs-identifier hs-type">c</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679642707"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642704"><span class="hs-identifier hs-type">c</span></a></span></span></span></span></span><span>
+</span><span id="line-33"></span><span id="liftedBracket"><span class="annot"><span class="annottext">liftedBracket :: m a -&gt; (a -&gt; m b) -&gt; (a -&gt; m c) -&gt; m c
+</span><a href="Torch.Data.Internal.html#liftedBracket"><span class="hs-identifier hs-var hs-var">liftedBracket</span></a></span></span><span> </span><span id="local-6989586621679642623"><span class="annot"><span class="annottext">m a
+</span><a href="#local-6989586621679642623"><span class="hs-identifier hs-var">acquire</span></a></span></span><span> </span><span id="local-6989586621679642622"><span class="annot"><span class="annottext">a -&gt; m b
+</span><a href="#local-6989586621679642622"><span class="hs-identifier hs-var">release</span></a></span></span><span> </span><span id="local-6989586621679642621"><span class="annot"><span class="annottext">a -&gt; m c
+</span><a href="#local-6989586621679642621"><span class="hs-identifier hs-var">action</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(RunInBase m IO -&gt; IO (StM m c)) -&gt; m c
+forall (b :: * -&gt; *) (m :: * -&gt; *) a.
+MonadBaseControl b m =&gt;
+(RunInBase m b -&gt; b (StM m a)) -&gt; m a
+</span><a href="../file:///nix/store/25gyvxs8sfcmlrfd88qa12v4s2jisr8m-monad-control-lib-monad-control-1.0.2.3-haddock-doc/share/doc/monad-control/html/src"><span class="hs-identifier hs-var">control</span></a></span><span> </span><span class="annot"><span class="annottext">((RunInBase m IO -&gt; IO (StM m c)) -&gt; m c)
+-&gt; (RunInBase m IO -&gt; IO (StM m c)) -&gt; m c
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679642619"><span class="annot"><span class="annottext">RunInBase m IO
+</span><a href="#local-6989586621679642619"><span class="hs-identifier hs-var">runInIO</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-34"></span><span>  </span><span class="annot"><span class="annottext">IO (StM m a)
+-&gt; (StM m a -&gt; IO (StM m b))
+-&gt; (StM m a -&gt; IO (StM m c))
+-&gt; IO (StM m c)
+forall (m :: * -&gt; *) a b c.
+MonadMask m =&gt;
+m a -&gt; (a -&gt; m b) -&gt; (a -&gt; m c) -&gt; m c
+</span><a href="../file:///nix/store/9lin4f6iiha2rjqm5rvganpirgyzyxd5-safe-exceptions-lib-safe-exceptions-0.1.7.1-haddock-doc/share/doc/safe-exceptions/html/src"><span class="hs-identifier hs-var">bracket</span></a></span><span>
+</span><span id="line-35"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">m a -&gt; IO (StM m a)
+RunInBase m IO
+</span><a href="#local-6989586621679642619"><span class="hs-identifier hs-var">runInIO</span></a></span><span> </span><span class="annot"><span class="annottext">m a
+</span><a href="#local-6989586621679642623"><span class="hs-identifier hs-var">acquire</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>    </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679642618"><span class="annot"><span class="annottext">StM m a
+</span><a href="#local-6989586621679642618"><span class="hs-identifier hs-var">saved</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">m b -&gt; IO (StM m b)
+RunInBase m IO
+</span><a href="#local-6989586621679642619"><span class="hs-identifier hs-var">runInIO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">StM m a -&gt; m a
+forall (b :: * -&gt; *) (m :: * -&gt; *) a.
+MonadBaseControl b m =&gt;
+StM m a -&gt; m a
+</span><a href="../file:///nix/store/25gyvxs8sfcmlrfd88qa12v4s2jisr8m-monad-control-lib-monad-control-1.0.2.3-haddock-doc/share/doc/monad-control/html/src"><span class="hs-identifier hs-var">restoreM</span></a></span><span> </span><span class="annot"><span class="annottext">StM m a
+</span><a href="#local-6989586621679642618"><span class="hs-identifier hs-var">saved</span></a></span><span> </span><span class="annot"><span class="annottext">m a -&gt; (a -&gt; m b) -&gt; m b
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
+</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; m b
+</span><a href="#local-6989586621679642622"><span class="hs-identifier hs-var">release</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span>    </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679642616"><span class="annot"><span class="annottext">StM m a
+</span><a href="#local-6989586621679642616"><span class="hs-identifier hs-var">saved</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">m c -&gt; IO (StM m c)
+RunInBase m IO
+</span><a href="#local-6989586621679642619"><span class="hs-identifier hs-var">runInIO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">StM m a -&gt; m a
+forall (b :: * -&gt; *) (m :: * -&gt; *) a.
+MonadBaseControl b m =&gt;
+StM m a -&gt; m a
+</span><a href="../file:///nix/store/25gyvxs8sfcmlrfd88qa12v4s2jisr8m-monad-control-lib-monad-control-1.0.2.3-haddock-doc/share/doc/monad-control/html/src"><span class="hs-identifier hs-var">restoreM</span></a></span><span> </span><span class="annot"><span class="annottext">StM m a
+</span><a href="#local-6989586621679642616"><span class="hs-identifier hs-var">saved</span></a></span><span> </span><span class="annot"><span class="annottext">m a -&gt; (a -&gt; m c) -&gt; m c
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
+</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; m c
+</span><a href="#local-6989586621679642621"><span class="hs-identifier hs-var">action</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span id="local-6989586621679642744"><span id="local-6989586621679642745"><span id="local-6989586621679642746"><span id="local-6989586621679642748"><span class="annot"><a href="Torch.Data.Internal.html#withBufferLifted"><span class="hs-identifier hs-type">withBufferLifted</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/25gyvxs8sfcmlrfd88qa12v4s2jisr8m-monad-control-lib-monad-control-1.0.2.3-haddock-doc/share/doc/monad-control/html/src"><span class="hs-identifier hs-type">MonadBaseControl</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679642748"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-41"></span><span>  </span><span class="annot"><a href="../file:///nix/store/gi3ii02mxr2l6qd73gq29asx1kn1yvi3-pipes-concurrency-lib-pipes-concurrency-2.0.12-haddock-doc/share/doc/pipes-concurrency/html/src"><span class="hs-identifier hs-type">Buffer</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642746"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/gi3ii02mxr2l6qd73gq29asx1kn1yvi3-pipes-concurrency-lib-pipes-concurrency-2.0.12-haddock-doc/share/doc/pipes-concurrency/html/src"><span class="hs-identifier hs-type">Output</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642746"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679642748"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642745"><span class="hs-identifier hs-type">l</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/gi3ii02mxr2l6qd73gq29asx1kn1yvi3-pipes-concurrency-lib-pipes-concurrency-2.0.12-haddock-doc/share/doc/pipes-concurrency/html/src"><span class="hs-identifier hs-type">Input</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642746"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679642748"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642744"><span class="hs-identifier hs-type">r</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-44"></span><span>  </span><span class="annot"><a href="#local-6989586621679642748"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679642745"><span class="hs-identifier hs-type">l</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679642744"><span class="hs-identifier hs-type">r</span></a></span><span class="hs-special">)</span></span></span></span></span><span>
+</span><span id="line-45"></span><span id="withBufferLifted"><span class="annot"><span class="annottext">withBufferLifted :: Buffer a -&gt; (Output a -&gt; m l) -&gt; (Input a -&gt; m r) -&gt; m (l, r)
+</span><a href="Torch.Data.Internal.html#withBufferLifted"><span class="hs-identifier hs-var hs-var">withBufferLifted</span></a></span></span><span> </span><span id="local-6989586621679642615"><span class="annot"><span class="annottext">Buffer a
+</span><a href="#local-6989586621679642615"><span class="hs-identifier hs-var">buffer</span></a></span></span><span> </span><span id="local-6989586621679642614"><span class="annot"><span class="annottext">Output a -&gt; m l
+</span><a href="#local-6989586621679642614"><span class="hs-identifier hs-var">fOutput</span></a></span></span><span> </span><span id="local-6989586621679642613"><span class="annot"><span class="annottext">Input a -&gt; m r
+</span><a href="#local-6989586621679642613"><span class="hs-identifier hs-var">fInput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-46"></span><span>  </span><span class="annot"><span class="annottext">m (Output a, Input a, STM ())
+-&gt; ((Output a, Input a, STM ()) -&gt; m ())
+-&gt; ((Output a, Input a, STM ()) -&gt; m (l, r))
+-&gt; m (l, r)
+forall (m :: * -&gt; *) a b c.
+MonadBaseControl IO m =&gt;
+m a -&gt; (a -&gt; m b) -&gt; (a -&gt; m c) -&gt; m c
+</span><a href="Torch.Data.Internal.html#liftedBracket"><span class="hs-identifier hs-var">liftedBracket</span></a></span><span>
+</span><span id="line-47"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">IO (Output a, Input a, STM ()) -&gt; m (Output a, Input a, STM ())
+forall (b :: * -&gt; *) (m :: * -&gt; *) &#945;. MonadBase b m =&gt; b &#945; -&gt; m &#945;
+</span><a href="../file:///nix/store/fazxm1511paxihkn112b5l6qd8l2dvc4-transformers-base-lib-transformers-base-0.4.5.2-haddock-doc/share/doc/transformers-base/html/src"><span class="hs-identifier hs-var">liftBase</span></a></span><span> </span><span class="annot"><span class="annottext">(IO (Output a, Input a, STM ()) -&gt; m (Output a, Input a, STM ()))
+-&gt; IO (Output a, Input a, STM ()) -&gt; m (Output a, Input a, STM ())
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Buffer a -&gt; IO (Output a, Input a, STM ())
+forall a. Buffer a -&gt; IO (Output a, Input a, STM ())
+</span><a href="../file:///nix/store/gi3ii02mxr2l6qd73gq29asx1kn1yvi3-pipes-concurrency-lib-pipes-concurrency-2.0.12-haddock-doc/share/doc/pipes-concurrency/html/src"><span class="hs-identifier hs-var">spawn'</span></a></span><span> </span><span class="annot"><span class="annottext">Buffer a
+</span><a href="#local-6989586621679642615"><span class="hs-identifier hs-var">buffer</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span>    </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Output a
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Input a
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679642610"><span class="annot"><span class="annottext">STM ()
+</span><a href="#local-6989586621679642610"><span class="hs-identifier hs-var">seal</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">IO () -&gt; m ()
+forall (b :: * -&gt; *) (m :: * -&gt; *) &#945;. MonadBase b m =&gt; b &#945; -&gt; m &#945;
+</span><a href="../file:///nix/store/fazxm1511paxihkn112b5l6qd8l2dvc4-transformers-base-lib-transformers-base-0.4.5.2-haddock-doc/share/doc/transformers-base/html/src"><span class="hs-identifier hs-var">liftBase</span></a></span><span> </span><span class="annot"><span class="annottext">(IO () -&gt; m ()) -&gt; IO () -&gt; m ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">STM () -&gt; IO ()
+forall (m :: * -&gt; *) a. MonadIO m =&gt; STM a -&gt; m a
+</span><a href="Torch.Data.Internal.html#atomically"><span class="hs-identifier hs-var">atomically</span></a></span><span> </span><span class="annot"><span class="annottext">STM ()
+</span><a href="#local-6989586621679642610"><span class="hs-identifier hs-var">seal</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621679642608"><span class="annot"><span class="annottext">Output a
+</span><a href="#local-6989586621679642608"><span class="hs-identifier hs-var">output</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679642607"><span class="annot"><span class="annottext">Input a
+</span><a href="#local-6989586621679642607"><span class="hs-identifier hs-var">input</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679642606"><span class="annot"><span class="annottext">STM ()
+</span><a href="#local-6989586621679642606"><span class="hs-identifier hs-var">seal</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-50"></span><span>        </span><span class="annot"><span class="annottext">m l -&gt; m r -&gt; m (l, r)
+forall (m :: * -&gt; *) a b.
+MonadBaseControl IO m =&gt;
+m a -&gt; m b -&gt; m (a, b)
+</span><a href="../file:///nix/store/d2viyspw5cv5y25ys973i7ldxsba4gcb-lifted-async-lib-lifted-async-0.10.1.3-haddock-doc/share/doc/lifted-async/html/src"><span class="hs-identifier hs-var">concurrently</span></a></span><span>
+</span><span id="line-51"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Output a -&gt; m l
+</span><a href="#local-6989586621679642614"><span class="hs-identifier hs-var">fOutput</span></a></span><span> </span><span class="annot"><span class="annottext">Output a
+</span><a href="#local-6989586621679642608"><span class="hs-identifier hs-var">output</span></a></span><span> </span><span class="annot"><span class="annottext">m l -&gt; m () -&gt; m l
+forall (m :: * -&gt; *) a b.
+MonadBaseControl IO m =&gt;
+m a -&gt; m b -&gt; m a
+</span><a href="Torch.Data.Internal.html#liftedFinally"><span class="hs-operator hs-var">`liftedFinally`</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">IO () -&gt; m ()
+forall (b :: * -&gt; *) (m :: * -&gt; *) &#945;. MonadBase b m =&gt; b &#945; -&gt; m &#945;
+</span><a href="../file:///nix/store/fazxm1511paxihkn112b5l6qd8l2dvc4-transformers-base-lib-transformers-base-0.4.5.2-haddock-doc/share/doc/transformers-base/html/src"><span class="hs-identifier hs-var">liftBase</span></a></span><span> </span><span class="annot"><span class="annottext">(IO () -&gt; m ()) -&gt; IO () -&gt; m ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">STM () -&gt; IO ()
+forall (m :: * -&gt; *) a. MonadIO m =&gt; STM a -&gt; m a
+</span><a href="Torch.Data.Internal.html#atomically"><span class="hs-identifier hs-var">atomically</span></a></span><span> </span><span class="annot"><span class="annottext">STM ()
+</span><a href="#local-6989586621679642606"><span class="hs-identifier hs-var">seal</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-52"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Input a -&gt; m r
+</span><a href="#local-6989586621679642613"><span class="hs-identifier hs-var">fInput</span></a></span><span> </span><span class="annot"><span class="annottext">Input a
+</span><a href="#local-6989586621679642607"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="annot"><span class="annottext">m r -&gt; m () -&gt; m r
+forall (m :: * -&gt; *) a b.
+MonadBaseControl IO m =&gt;
+m a -&gt; m b -&gt; m a
+</span><a href="Torch.Data.Internal.html#liftedFinally"><span class="hs-operator hs-var">`liftedFinally`</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">IO () -&gt; m ()
+forall (b :: * -&gt; *) (m :: * -&gt; *) &#945;. MonadBase b m =&gt; b &#945; -&gt; m &#945;
+</span><a href="../file:///nix/store/fazxm1511paxihkn112b5l6qd8l2dvc4-transformers-base-lib-transformers-base-0.4.5.2-haddock-doc/share/doc/transformers-base/html/src"><span class="hs-identifier hs-var">liftBase</span></a></span><span> </span><span class="annot"><span class="annottext">(IO () -&gt; m ()) -&gt; IO () -&gt; m ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">STM () -&gt; IO ()
+forall (m :: * -&gt; *) a. MonadIO m =&gt; STM a -&gt; m a
+</span><a href="Torch.Data.Internal.html#atomically"><span class="hs-identifier hs-var">atomically</span></a></span><span> </span><span class="annot"><span class="annottext">STM ()
+</span><a href="#local-6989586621679642606"><span class="hs-identifier hs-var">seal</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span id="local-6989586621679642733"><span id="local-6989586621679642735"><span class="annot"><a href="Torch.Data.Internal.html#fromInput%27"><span class="hs-identifier hs-type">fromInput'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/fazxm1511paxihkn112b5l6qd8l2dvc4-transformers-base-lib-transformers-base-0.4.5.2-haddock-doc/share/doc/transformers-base/html/src"><span class="hs-identifier hs-type">MonadBase</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679642735"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="../file:///nix/store/gi3ii02mxr2l6qd73gq29asx1kn1yvi3-pipes-concurrency-lib-pipes-concurrency-2.0.12-haddock-doc/share/doc/pipes-concurrency/html/src"><span class="hs-identifier hs-type">Input</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642733"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-type">Producer'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642733"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642735"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span></span></span><span>
+</span><span id="line-56"></span><span id="fromInput%27"><span class="annot"><span class="annottext">fromInput' :: Input a -&gt; Producer' a m ()
+</span><a href="Torch.Data.Internal.html#fromInput%27"><span class="hs-identifier hs-var hs-var">fromInput'</span></a></span></span><span> </span><span id="local-6989586621679642604"><span class="annot"><span class="annottext">Input a
+</span><a href="#local-6989586621679642604"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Proxy x' x () a m ()
+Producer' a m ()
+</span><a href="#local-6989586621679642603"><span class="hs-identifier hs-var">loop</span></a></span><span>
+</span><span id="line-57"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-58"></span><span>    </span><span id="local-6989586621679642603"><span class="annot"><span class="annottext">loop :: Proxy x' x () a m ()
+</span><a href="#local-6989586621679642603"><span class="hs-identifier hs-var hs-var">loop</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-59"></span><span>      </span><span id="local-6989586621679642602"><span class="annot"><span class="annottext">Maybe a
+</span><a href="#local-6989586621679642602"><span class="hs-identifier hs-var">ma</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO (Maybe a) -&gt; Proxy x' x () a m (Maybe a)
+forall (b :: * -&gt; *) (m :: * -&gt; *) &#945;. MonadBase b m =&gt; b &#945; -&gt; m &#945;
+</span><a href="../file:///nix/store/fazxm1511paxihkn112b5l6qd8l2dvc4-transformers-base-lib-transformers-base-0.4.5.2-haddock-doc/share/doc/transformers-base/html/src"><span class="hs-identifier hs-var">liftBase</span></a></span><span> </span><span class="annot"><span class="annottext">(IO (Maybe a) -&gt; Proxy x' x () a m (Maybe a))
+-&gt; IO (Maybe a) -&gt; Proxy x' x () a m (Maybe a)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">STM (Maybe a) -&gt; IO (Maybe a)
+forall (m :: * -&gt; *) a. MonadIO m =&gt; STM a -&gt; m a
+</span><a href="Torch.Data.Internal.html#atomically"><span class="hs-identifier hs-var">atomically</span></a></span><span> </span><span class="annot"><span class="annottext">(STM (Maybe a) -&gt; IO (Maybe a)) -&gt; STM (Maybe a) -&gt; IO (Maybe a)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Input a -&gt; STM (Maybe a)
+forall a. Input a -&gt; STM (Maybe a)
+</span><a href="../file:///nix/store/gi3ii02mxr2l6qd73gq29asx1kn1yvi3-pipes-concurrency-lib-pipes-concurrency-2.0.12-haddock-doc/share/doc/pipes-concurrency/html/src"><span class="hs-identifier hs-var hs-var">recv</span></a></span><span> </span><span class="annot"><span class="annottext">Input a
+</span><a href="#local-6989586621679642604"><span class="hs-identifier hs-var">input</span></a></span><span>
+</span><span id="line-60"></span><span>      </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Maybe a
+</span><a href="#local-6989586621679642602"><span class="hs-identifier hs-var">ma</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-61"></span><span>        </span><span class="annot"><span class="annottext">Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">() -&gt; Proxy x' x () a m ()
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-62"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679642600"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679642600"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-63"></span><span>          </span><span class="annot"><span class="annottext">a -&gt; Proxy x' x () a m ()
+forall (m :: * -&gt; *) a x' x. Functor m =&gt; a -&gt; Proxy x' x () a m ()
+</span><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">yield</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679642600"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-64"></span><span>          </span><span class="annot"><span class="annottext">Proxy x' x () a m ()
+</span><a href="#local-6989586621679642603"><span class="hs-identifier hs-var">loop</span></a></span><span>
+</span><span id="line-65"></span><span>
+</span><span id="line-66"></span><span id="local-6989586621679642597"><span id="local-6989586621679642598"><span class="annot"><a href="Torch.Data.Internal.html#toOutput%27"><span class="hs-identifier hs-type">toOutput'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/fazxm1511paxihkn112b5l6qd8l2dvc4-transformers-base-lib-transformers-base-0.4.5.2-haddock-doc/share/doc/transformers-base/html/src"><span class="hs-identifier hs-type">MonadBase</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679642598"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="../file:///nix/store/gi3ii02mxr2l6qd73gq29asx1kn1yvi3-pipes-concurrency-lib-pipes-concurrency-2.0.12-haddock-doc/share/doc/pipes-concurrency/html/src"><span class="hs-identifier hs-type">Output</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642597"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-type">Consumer'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642597"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642598"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span></span></span><span>
+</span><span id="line-67"></span><span id="toOutput%27"><span class="annot"><span class="annottext">toOutput' :: Output a -&gt; Consumer' a m ()
+</span><a href="Torch.Data.Internal.html#toOutput%27"><span class="hs-identifier hs-var hs-var">toOutput'</span></a></span></span><span> </span><span id="local-6989586621679642595"><span class="annot"><span class="annottext">Output a
+</span><a href="#local-6989586621679642595"><span class="hs-identifier hs-var">output</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Proxy () a y' y m ()
+Consumer' a m ()
+</span><a href="#local-6989586621679642594"><span class="hs-identifier hs-var">loop</span></a></span><span>
+</span><span id="line-68"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-69"></span><span>    </span><span id="local-6989586621679642594"><span class="annot"><span class="annottext">loop :: Proxy () a y' y m ()
+</span><a href="#local-6989586621679642594"><span class="hs-identifier hs-var hs-var">loop</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-70"></span><span>      </span><span id="local-6989586621679642593"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679642593"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Proxy () a y' y m a
+forall (m :: * -&gt; *) a. Functor m =&gt; Consumer' a m a
+</span><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">await</span></a></span><span>
+</span><span id="line-71"></span><span>      </span><span id="local-6989586621679642591"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679642591"><span class="hs-identifier hs-var">alive</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO Bool -&gt; Proxy () a y' y m Bool
+forall (b :: * -&gt; *) (m :: * -&gt; *) &#945;. MonadBase b m =&gt; b &#945; -&gt; m &#945;
+</span><a href="../file:///nix/store/fazxm1511paxihkn112b5l6qd8l2dvc4-transformers-base-lib-transformers-base-0.4.5.2-haddock-doc/share/doc/transformers-base/html/src"><span class="hs-identifier hs-var">liftBase</span></a></span><span> </span><span class="annot"><span class="annottext">(IO Bool -&gt; Proxy () a y' y m Bool)
+-&gt; IO Bool -&gt; Proxy () a y' y m Bool
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">STM Bool -&gt; IO Bool
+forall (m :: * -&gt; *) a. MonadIO m =&gt; STM a -&gt; m a
+</span><a href="Torch.Data.Internal.html#atomically"><span class="hs-identifier hs-var">atomically</span></a></span><span> </span><span class="annot"><span class="annottext">(STM Bool -&gt; IO Bool) -&gt; STM Bool -&gt; IO Bool
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Output a -&gt; a -&gt; STM Bool
+forall a. Output a -&gt; a -&gt; STM Bool
+</span><a href="../file:///nix/store/gi3ii02mxr2l6qd73gq29asx1kn1yvi3-pipes-concurrency-lib-pipes-concurrency-2.0.12-haddock-doc/share/doc/pipes-concurrency/html/src"><span class="hs-identifier hs-var hs-var">send</span></a></span><span> </span><span class="annot"><span class="annottext">Output a
+</span><a href="#local-6989586621679642595"><span class="hs-identifier hs-var">output</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679642593"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-72"></span><span>      </span><span class="annot"><span class="annottext">Bool -&gt; Proxy () a y' y m () -&gt; Proxy () a y' y m ()
+forall (f :: * -&gt; *). Applicative f =&gt; Bool -&gt; f () -&gt; f ()
+</span><span class="hs-identifier hs-var">when</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679642591"><span class="hs-identifier hs-var">alive</span></a></span><span> </span><span class="annot"><span class="annottext">Proxy () a y' y m ()
+</span><a href="#local-6989586621679642594"><span class="hs-identifier hs-var">loop</span></a></span><span>
+</span><span id="line-73"></span><span>
+</span><span id="line-74"></span><span id="local-6989586621679642691"><span id="local-6989586621679642692"><span id="local-6989586621679642693"><span class="annot"><a href="Torch.Data.Internal.html#liftedFinally"><span class="hs-identifier hs-type">liftedFinally</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/25gyvxs8sfcmlrfd88qa12v4s2jisr8m-monad-control-lib-monad-control-1.0.2.3-haddock-doc/share/doc/monad-control/html/src"><span class="hs-identifier hs-type">MonadBaseControl</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679642693"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679642693"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642692"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679642693"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642691"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679642693"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642692"><span class="hs-identifier hs-type">a</span></a></span></span></span></span><span>
+</span><span id="line-75"></span><span id="liftedFinally"><span class="annot"><span class="annottext">liftedFinally :: m a -&gt; m b -&gt; m a
+</span><a href="Torch.Data.Internal.html#liftedFinally"><span class="hs-identifier hs-var hs-var">liftedFinally</span></a></span></span><span> </span><span id="local-6989586621679642589"><span class="annot"><span class="annottext">m a
+</span><a href="#local-6989586621679642589"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679642588"><span class="annot"><span class="annottext">m b
+</span><a href="#local-6989586621679642588"><span class="hs-identifier hs-var">sequel</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(RunInBase m IO -&gt; IO (StM m a)) -&gt; m a
+forall (b :: * -&gt; *) (m :: * -&gt; *) a.
+MonadBaseControl b m =&gt;
+(RunInBase m b -&gt; b (StM m a)) -&gt; m a
+</span><a href="../file:///nix/store/25gyvxs8sfcmlrfd88qa12v4s2jisr8m-monad-control-lib-monad-control-1.0.2.3-haddock-doc/share/doc/monad-control/html/src"><span class="hs-identifier hs-var">control</span></a></span><span> </span><span class="annot"><span class="annottext">((RunInBase m IO -&gt; IO (StM m a)) -&gt; m a)
+-&gt; (RunInBase m IO -&gt; IO (StM m a)) -&gt; m a
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679642587"><span class="annot"><span class="annottext">RunInBase m IO
+</span><a href="#local-6989586621679642587"><span class="hs-identifier hs-var">runInIO</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-76"></span><span>  </span><span class="annot"><span class="annottext">IO (StM m a) -&gt; IO (StM m b) -&gt; IO (StM m a)
+forall (m :: * -&gt; *) a b. MonadMask m =&gt; m a -&gt; m b -&gt; m a
+</span><a href="../file:///nix/store/9lin4f6iiha2rjqm5rvganpirgyzyxd5-safe-exceptions-lib-safe-exceptions-0.1.7.1-haddock-doc/share/doc/safe-exceptions/html/src"><span class="hs-identifier hs-var">finally</span></a></span><span>
+</span><span id="line-77"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">m a -&gt; IO (StM m a)
+RunInBase m IO
+</span><a href="#local-6989586621679642587"><span class="hs-identifier hs-var">runInIO</span></a></span><span> </span><span class="annot"><span class="annottext">m a
+</span><a href="#local-6989586621679642589"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-78"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">m b -&gt; IO (StM m b)
+RunInBase m IO
+</span><a href="#local-6989586621679642587"><span class="hs-identifier hs-var">runInIO</span></a></span><span> </span><span class="annot"><span class="annottext">m b
+</span><a href="#local-6989586621679642588"><span class="hs-identifier hs-var">sequel</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-79"></span><span>
+</span><span id="line-80"></span><span id="local-6989586621679642697"><span id="local-6989586621679642699"><span class="annot"><a href="Torch.Data.Internal.html#atomically"><span class="hs-identifier hs-type">atomically</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadIO</span></span><span> </span><span class="annot"><a href="#local-6989586621679642699"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="annot"><a href="#local-6989586621679642697"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679642699"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642697"><span class="hs-identifier hs-type">a</span></a></span></span></span><span>
+</span><span id="line-81"></span><span id="atomically"><span class="annot"><span class="annottext">atomically :: STM a -&gt; m a
+</span><a href="Torch.Data.Internal.html#atomically"><span class="hs-identifier hs-var hs-var">atomically</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO a -&gt; m a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">(IO a -&gt; m a) -&gt; (STM a -&gt; IO a) -&gt; STM a -&gt; m a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">STM a -&gt; IO a
+forall a. STM a -&gt; IO a
+</span><span class="hs-identifier hs-var">STM.atomically</span></span><span>
+</span><span id="line-82"></span><span>
+</span><span id="line-83"></span><span id="local-6989586621679642581"><span id="local-6989586621679642582"><span id="local-6989586621679642583"><span id="local-6989586621679642584"><span id="local-6989586621679642585"><span class="hs-keyword">instance</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/fazxm1511paxihkn112b5l6qd8l2dvc4-transformers-base-lib-transformers-base-0.4.5.2-haddock-doc/share/doc/transformers-base/html/src"><span class="hs-identifier hs-type">MonadBase</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679642585"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="../file:///nix/store/fazxm1511paxihkn112b5l6qd8l2dvc4-transformers-base-lib-transformers-base-0.4.5.2-haddock-doc/share/doc/transformers-base/html/src"><span class="hs-identifier hs-type">MonadBase</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-type">Proxy</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642584"><span class="hs-identifier hs-type">a'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642583"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642582"><span class="hs-identifier hs-type">b'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642581"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679642585"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-84"></span><span>  </span><span id="local-6989586621679642574"><span class="annot"><span class="annottext">liftBase :: IO &#945; -&gt; Proxy a' a b' b m &#945;
+</span><a href="#local-6989586621679642574"><span class="hs-identifier hs-var hs-var hs-var hs-var">liftBase</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">m &#945; -&gt; Proxy a' a b' b m &#945;
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">(m &#945; -&gt; Proxy a' a b' b m &#945;)
+-&gt; (IO &#945; -&gt; m &#945;) -&gt; IO &#945; -&gt; Proxy a' a b' b m &#945;
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">IO &#945; -&gt; m &#945;
+forall (b :: * -&gt; *) (m :: * -&gt; *) &#945;. MonadBase b m =&gt; b &#945; -&gt; m &#945;
+</span><a href="../file:///nix/store/fazxm1511paxihkn112b5l6qd8l2dvc4-transformers-base-lib-transformers-base-0.4.5.2-haddock-doc/share/doc/transformers-base/html/src"><span class="hs-identifier hs-var">liftBase</span></a></span></span></span></span></span></span><span>
+</span><span id="line-85"></span><span>
+</span><span id="line-86"></span><span>
+</span><span id="line-87"></span><span class="hs-comment">---- make a runData function which just does runContT but zips that</span><span>
+</span><span id="line-88"></span><span class="hs-comment">---- the listT with the iteration! This is much better</span><span>
+</span><span id="line-89"></span></pre></body></html>
