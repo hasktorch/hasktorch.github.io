@@ -1,0 +1,618 @@
+<!DOCTYPE HTML><html><head><title>hasktorch - Linear Regression</title><meta charset="utf-8"><meta content="summary" name="twitter:card"><meta content="https://s3-eu-west-1.amazonaws.com/worldwideapps/assets/tintin-blue.png" name="twitter:site"><meta content="hasktorch - Linear Regression" name="twitter:title"><meta content="Functional differentiable programming in Haskell" name="twitter:description"><meta content="Austin Huang" name="twitter:creator"><meta content="https://s3-eu-west-1.amazonaws.com/worldwideapps/assets/tintin-blue.png" name="twitter:image"><meta itemprop="og:type" content="website"><meta itemprop="og:site_name" content="theam"><meta itemprop="og:title" content="hasktorch - Linear Regression"><meta itemprop="og:image" content="https://s3-eu-west-1.amazonaws.com/worldwideapps/assets/tintin-blue.png"><meta itemprop="og:description" content="Functional differentiable programming in Haskell"><link href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans|Montserrat:500" rel="stylesheet"><link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet"><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night.min.css" rel="stylesheet"><link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css" rel="stylesheet"><link href="https://s3-eu-west-1.amazonaws.com/worldwideapps/assets/favicon-blue.ico" rel="shortcut icon"><link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-alpha/dist/katex.min.css" rel="stylesheet"><style>
+html
+{
+  height     : 100%;
+  min-height : 100%;
+}
+
+body
+{
+  height      : 100%;
+  min-height  : 100%;
+  font-family : "IBM+Plex+Sans", sans-serif;
+  font-size   : 1em;
+  overflow-x  : hidden;
+}
+
+body a
+{
+  color : rgba(104,136,163,77.0);
+}
+
+body a:hover
+{
+  color : rgba(134,174,209,26.0);
+}
+
+h1
+{
+  font-family : "Montserrat", sans-serif;
+  font-weight : 500;
+  font-size   : 1em;
+}
+
+h2
+{
+  font-family : "Montserrat", sans-serif;
+  font-weight : 500;
+  font-size   : 2.44099em;
+}
+
+h3
+{
+  font-family : "Montserrat", sans-serif;
+  font-weight : 500;
+  font-size   : 5.95848em;
+}
+
+h1
+{
+  font-size : 2.44099em;
+}
+
+h2
+{
+  font-size : 1.953em;
+}
+
+h3
+{
+  font-size : 1.56299em;
+}
+
+blockquote
+{
+  border-left  : solid 4px #dddddd;
+  padding-left : 1rem;
+  color        : #777777;
+}
+
+.next-prev
+{
+  margin-top    : 5%;
+  margin-bottom : 5%;
+}
+
+#header-container
+{
+  margin-top    : 5rem;
+  margin-bottom : 5rem;
+  text-align    : center;
+}
+
+#header-container img
+{
+  max-height : 7rem;
+}
+
+.cover-heading
+{
+  font-size     : 800%;
+  margin-bottom : 1.56299rem;
+}
+
+.cover-container
+{
+  background-color : #94c1e8;
+}
+
+.watermark
+{
+  position    : absolute;
+  top         : 0px;
+  left        : 0px;
+  max-height  : 1.25039rem;
+  margin-top  : 1.25039rem;
+  margin-left : 1.25039rem;
+}
+
+.cover-heading-subtitle
+{
+  margin-top : 3rem;
+  font-size  : 1.953rem;
+  color      : #212529;
+}
+
+.vertical-auto
+{
+  margin-top    : auto;
+  margin-bottom : auto;
+}
+
+.content
+{
+  margin-top    : 5%;
+  margin-bottom : 5%;
+}
+
+#wrapper
+{
+  padding-left       : 0px;
+  -webkit-transition : all 0.5s ease 0.0s;
+  -moz-transition    : all 0.5s ease 0.0s;
+  -ms-transition     : all 0.5s ease 0.0s;
+  -o-transition      : all 0.5s ease 0.0s;
+  transition         : all 0.5s ease 0.0s;
+}
+
+#wrapper.toggled
+{
+  padding-left : 250px;
+}
+
+#wrapper.toggled #sidebar-wrapper
+{
+  width : 250px;
+}
+
+#page-content-wrapper#wrapper.toggled
+{
+  position     : absolute;
+  margin-right : -250px;
+}
+
+#page-content-wrapper
+{
+  width      : 100%;
+  position   : absolute;
+  margin-top : 3rem;
+  padding    : 15px 15px 15px 15px;
+}
+
+#page-content-wrapper img
+{
+  max-width : 100%;
+}
+
+#sidebar-wrapper
+{
+  z-index            : 1000;
+  position           : fixed;
+  left               : 250px;
+  width              : 0px;
+  margin-left        : -250px;
+  overflow-y         : hidden;
+  overflow-x         : hidden;
+  -webkit-transition : all 0.5s ease 0.0s;
+  -moz-transition    : all 0.5s ease 0.0s;
+  -ms-transition     : all 0.5s ease 0.0s;
+  -o-transition      : all 0.5s ease 0.0s;
+  transition         : all 0.5s ease 0.0s;
+}
+
+.sidebar-nav
+{
+  position        : absolute;
+  top             : 0px;
+  width           : 250px;
+  margin          : 0px 0px 0px 0px;
+  padding         : 0px 0px 0px 0px;
+  list-style-type : none;
+}
+
+.sidebar-nav li
+{
+  text-indent : 20px;
+  line-height : 40px;
+}
+
+.sidebar-nav li a
+{
+  display         : block;
+  text-decoration : none;
+  font-weight     : bold;
+  color           : rgba(60,78,93,153.0);
+}
+
+.sidebar-nav li a:hover
+{
+  text-decoration : none;
+  color           : rgba(45,58,70,178.0);
+}
+
+.sidebar-nav li .tintin-fg-active
+{
+  color : #ffffff;
+}
+
+#menu-toggle
+{
+  position : absolute;
+}
+
+#menu-toggle img
+{
+  position : absolute;
+  left     : 0px;
+}
+
+#menu-toggle .rotateIn
+{
+  z-index : 999;
+}
+
+.tintin-doc-topbar
+{
+  height : 3rem;
+}
+
+.tintin-doc-topbar a
+{
+  margin-left : 1rem;
+  margin-top  : 0rem;
+  width       : 1.5rem;
+}
+
+.filter-gray
+{
+  position     : relative;
+  bottom       : 3px;
+  margin-left  : 0.25rem;
+  margin-right : 1rem;
+  height       : 1rem;
+}
+
+.footer-theam
+{
+  position    : relative;
+  bottom      : 1px;
+  margin-left : -0.25rem;
+  height      : 1.75rem;
+}
+
+.tintin-doc-footer
+{
+  bottom : 0px;
+  height : -15rem;
+  width  : 100%;
+  color  : rgba(0,0,0,0.3);
+}
+
+.main-container
+{
+  min-height : 100%;
+  position   : relative;
+}
+
+#content
+{
+  min-height : 95%;
+}
+
+.sidebar-nav > .sidebar-brand
+{
+  height         : 3rem;
+  font-size      : 2rem;
+  font-family    : "Montserrat", sans-serif;
+  font-weight    : 500;
+  padding-top    : 2.5rem;
+  padding-bottom : 2.5rem;
+  margin-bottom  : 1.5rem;
+}
+
+.sidebar-nav > .sidebar-brand img
+{
+  height : 1.5rem;
+}
+
+.tintin-navbar
+{
+  font-weight      : bold;
+  background-color : rgba(119,155,186,51.0);
+}
+
+.tintin-navbar .left-part
+{
+  padding-left : 0px !important;
+}
+
+.tintin-navbar ul
+{
+  margin-top      : 1rem;
+  list-style-type : none;
+}
+
+.tintin-navbar ul li
+{
+  margin-right : 1rem;
+  display      : inline;
+}
+
+.tintin-navbar ul li a
+{
+  color : rgba(60,78,93,153.0);
+}
+
+.tintin-navbar ul li a:hover
+{
+  text-decoration : none;
+  color           : rgba(45,58,70,178.0);
+}
+
+
+.tintin-navbar .tintin-navbar-active a
+{
+  color : #212529;
+}
+
+.tintin-navbar .tintin-navbar-active a:hover
+{
+  text-decoration : none;
+  color           : rgba(77,80,83,51.0);
+}
+
+.tintin-bg-70
+{
+  background-color : rgba(119,155,186,51.0);
+}
+
+.tintin-bg-blue
+{
+  background-color : #94c1e8;
+}
+
+.tintin-fg-blue
+{
+  color : #94c1e8;
+}
+
+.tintin-fg-active
+{
+  color : #ffffff;
+}
+
+.tintin-fg-disabled
+{
+  color : #000000;
+}
+
+footer
+{
+  position         : relative;
+  bottom           : 0px;
+  left             : 0px;
+  width            : 100%;
+  padding-top      : 30px;
+  padding-bottom   : 30px;
+  color            : #212529;
+  background-color : rgba(119,155,186,51.0);
+  text-align       : center;
+}
+
+footer a
+{
+  color : rgba(60,78,93,153.0);
+}
+
+footer a:hover
+{
+  text-decoration : none;
+  color           : rgba(45,58,70,178.0);
+}
+
+footer .author
+{
+  margin-top : 1.19999em;
+  font-size  : 1.19999em;
+}
+
+footer .site-generated-message
+{
+  font-size     : 0.8em;
+  margin-top    : 3em;
+  margin-bottom : 3em;
+}
+
+.container
+{
+  max-width : 50rem;
+}
+
+@media screen and (min-width: 768px)
+{
+
+#wrapper
+{
+  padding-left : 0px;
+}
+
+#wrapper .toggled
+{
+  padding-left : 250px;
+}
+
+#wrapper .toggled #sidebar-wrapper
+{
+  width : 250px;
+}
+
+#wrapper .toggled #page-content-wrapper
+{
+  position     : relative;
+  margin-right : 0px;
+}
+
+#sidebar-wrapper
+{
+  width : 0px;
+}
+
+#page-content-wrapper
+{
+  padding  : 20px 20px 20px 20px;
+  position : relative;
+}
+
+}
+
+/* Generated with Clay, http://fvisser.nl/clay */</style></head><body class="h-100 tintin-fg-black tintin-bg-white"><div id="main-container" class="h-100"><section id="content"><div id="wrapper" class="toggled"><div id="sidebar-wrapper" class="h-100 tintin-bg-blue"><div class="h-100 tintin-bg-70"><p></p></div><ul class="sidebar-nav"><li class="sidebar-brand d-flex tintin-bg-blue"><a href="index.html" class="align-self-center tintin-fg-white">hasktorch</a></li><li><a href="01-getting-started.html" class="tintin-fg-disabled">Getting Started</a></li><li><a href="02-tensors.html" class="tintin-fg-disabled">Tensors</a></li><li><a href="03-randomness.html" class="tintin-fg-disabled">Randomness</a></li><li><a href="04-automatic-differentiation.html" class="tintin-fg-disabled">Automatic Differentiation</a></li><li><a href="05-differentiable-programs.html" class="tintin-fg-disabled">Differentiable Programs</a></li><li><a href="06-linear-regression.html" class="tintin-fg-active">Linear Regression</a></li><li><a href="07-typed-tensors.html" class="tintin-fg-disabled">Typed Tensors</a></li></ul></div><nav class="navbar navbar-expand-lg tintin-doc-topbar tintin-fg-white"><a href="#menu-toggle" id="menu-toggle" class><img src="https://s3-eu-west-1.amazonaws.com/worldwideapps/assets/menu.png" class="img-fluid animated rotateOut"><img src="https://s3-eu-west-1.amazonaws.com/worldwideapps/assets/close.png" class="img-fluid animated rotateIn"></a></nav><div id="page-content-wrapper"><div class="container"><div class="col"><div class="animated fadeIn"><h1>Linear Regression</h1>
+<p>Let&#39;s start with a simple example of linear regression. Here we
+generate random data with an underlying affine relationship between
+the inputs and outputs, then fit a linear regression to reproduce that
+relationship.</p>
+<p>This example is adapted from
+<a href="https://github.com/hasktorch/hasktorch/tree/master/examples/regression">https://github.com/hasktorch/hasktorch/tree/master/examples/regression</a>.</p>
+<p>In a standard supervised learning model, the neural network is
+initialized using a randomized initialization scheme. An iterative
+optimization is performed such that at each iteration a batch.</p>
+<p>Here is a simple end-to-end example in Hasktorch:</p>
+<pre class="haskell"><code>module Main where
+
+import Control.Monad (when)
+import Torch
+
+groundTruth :: Tensor -&gt; Tensor
+groundTruth t = squeezeAll $ matmul t weight + bias
+  where
+    weight = asTensor ([42.0, 64.0, 96.0] :: [Float])
+    bias = full&#39; [1] (3.14 :: Float)
+
+model :: Linear -&gt; Tensor -&gt; Tensor
+model state input = squeezeAll $ linear state input
+
+main :: IO ()
+main = do
+    init &lt;- sample $ LinearSpec{in_features = numFeatures, out_features = 1}
+    randGen &lt;- mkGenerator (Device CPU 0) 12345
+    (trained, _) &lt;- foldLoop (init, randGen) 2000 $ \(state, randGen) i -&gt; do
+        let (input, randGen&#39;) = randn&#39; [batchSize, numFeatures] randGen
+            (y, y&#39;) = (groundTruth input, model state input)
+            loss = mseLoss y y&#39;
+        when (i `mod` 100 == 0) $ do
+            putStrLn $ &quot;Iteration: &quot; ++ show i ++ &quot; | Loss: &quot; ++ show loss
+        (state&#39;, _) &lt;- runStep state GD loss 5e-3
+        pure (state&#39;, randGen&#39;)
+    pure ()
+  where
+    batchSize = 4
+    numFeatures = 3
+</code></pre>
+<p>Let&#39;s break this down in steps:</p>
+<ol>
+<li><p>The <code>init</code> variable is initialized as a <code>Linear</code> type (defined in
+<code>Torch.NN</code>) using <code>sample</code> which randomly initializes a <code>Linear</code>
+value. Initialization is discussed in more detail in the following
+section</p></li>
+<li><p><code>Linear</code> is a built-in algebraic data type (ADT) implementing the
+<code>Parameterized</code> typeclass and representing a fully connected linear
+layer, equivalent to linear regression when no hidden layers are
+present.</p></li>
+<li><p><code>init</code> is passed into the <code>Torch.Optim.foldLoop</code> as the state
+variable. Note that <code>foldLoop</code> is just a convenience function
+defined using <code>foldM</code>:</p>
+<pre class="haskell"><code>foldLoop :: a -&gt; Int -&gt; (a -&gt; Int -&gt; IO a) -&gt; IO a
+foldLoop init count body = foldM body init [1 .. count]
+</code></pre></li>
+<li><p>At each optimization step, <code>Torch.Optim.runStep</code> computes an
+updated model state given the current state, optimizer, loss
+function, and learning rate.</p></li>
+</ol>
+<p>Note the expression of the architecture in the <code>Torch.NN.linear</code>
+function (a single linear layer, or alternatively a neural network
+with zero hidden layers), does not require an explicit representation
+of the compute graph, but is simply a composition of tensor
+ops. Because of the autodiff mechanism described in the previous
+section, the graph is constructed automatically as pure functional ops
+are applied, given a context of a set of independent variables.</p>
+<h2>Weight Initialization</h2>
+<p>Random initialization of weights is not a pure function since two
+random initializations return different values. Initialization occurs
+by calling the <code>Torch.NN.sample</code> function for an ADT implementing the
+<code>Torch.NN.Randomizable</code> typeclass:</p>
+<pre class="haskell"><code>class Randomizable spec f | spec -&gt; f where
+  sample :: spec -&gt; IO f
+</code></pre>
+<p>In a typical (but not required) usage, <code>f</code> is an ADT that implements
+the <code>Parameterized</code> typeclass, so that there&#39;s a pair of types—a
+specification type implementing the <code>spec</code> input to <code>sample</code> and a
+type implementing <code>Parameterizable</code> representing the model state.</p>
+<p>For example, a linear fully connected layer is provided by the
+<code>Torch.NN</code> module and defined therein as:</p>
+<pre class="haskell"><code>data Linear = Linear {weight :: Parameter, bias :: Parameter} deriving (Show, Generic)
+</code></pre>
+<p>and is typically used with a specification type:</p>
+<pre class="haskell"><code>data LinearSpec = LinearSpec {in_features :: Int, out_features :: Int}
+  deriving (Show, Eq)
+</code></pre>
+<p>Putting this together, in untyped tensor usage, the user can implement
+custom models or layers implementing the <code>Parameterizable</code> typeclass
+built up from other ADTs implementing <code>Parameterizable</code>. The shape of
+the data required for initialization is described by a type
+implementing <code>Randomizable</code>&#39;s <code>spec</code> parameter, and the <code>sample</code>
+implementation specifies the default weight initialization.</p>
+<p>Note this initialization approach is specific to untyped tensors. One
+consequence of using typed tensors is that the information in these
+<code>spec</code> types is reflected in the type itself and thus are not needed.</p>
+<p>What if you want to use a custom initialization that differs from the
+default? You can define an alternative function with the same
+signature <code>spec -&gt; IO f</code> and use the alternative function instead of
+<code>sample</code>.</p>
+<h3>Optimizers</h3>
+<p>Optimization implementations are functions that take as input the
+current parameter values of a model, parameter gradient estimates of
+the loss function at those parameters for a single batch, and a
+characteristic learning describing how large a perturbation to make to
+the parameters in order to reduce the loss. Given those inputs, they
+output a new set of parameters.</p>
+<p>In the simple case of stochastic gradient descent, the function to
+output a new set of parameters is to subtract from the current
+parameter (theta), the gradient of the loss $\nabla J$ scaled by the
+learning rate $\eta$:</p>
+<p>$$\theta_{i+1} = \theta_i - \eta \nabla J(\theta)$$</p>
+<p>While stochastic gradient descent is a stateless function of the
+parameters, loss, and gradient, some optimizers have a notion of
+internal state that is propagated from one step to the step, for
+example, retaining and updating momentum between steps:</p>
+<p>$$\begin{gathered}
+\Delta \theta_i = \alpha \Delta \theta_{i-1} - \eta \nabla J(\theta) \
+\theta_{i+1} = \theta_i + \Delta \theta_i
+\end{gathered}$$</p>
+<p>In this case, the momentum term $\Delta \theta_i$ is carried forward
+as internal state of the optimizer that is propagated to the next
+step. (alpha) is an optimizer parameter which determines a weighting
+on the momentum term relative to the gradient.</p>
+<p>Implementation of an optimizer consists of defining an ADT describing
+the optimizer state and a <code>step</code> function that implements a single
+step perturbation given the learning rate, loss gradients, current
+parameters, and optimizer state.</p>
+<p>This function interface is described in the <code>Torch.Optim.Optimizer</code>
+typeclass interface:</p>
+<pre class="haskell"><code>class Optimizer o where
+    step :: LearningRate -&gt; Gradients -&gt; [Tensor] -&gt; o -&gt; ([Tensor], o)
+</code></pre>
+<p><code>Gradients</code> is a newtype wrapper around a list of tensors to make
+intent explicit: <code>newtype Gradients = Gradients [Tensor]</code>.</p>
+<p>Hasktorch provides built-in optimizer implementations in
+<code>Torch.Optim</code>. Some illustrative example implementations follow.</p>
+<p>Being stateless, stochastic gradient descent has an ADT that has only
+one constructor value:</p>
+<pre class="haskell"><code>data GD = GD
+</code></pre>
+<p>and implements the step function as:</p>
+<pre class="haskell"><code>instance Optimizer GD where
+  step lr gradients depParameters dummy = (gd lr gradients depParameters, dummy)
+    where
+      step p dp = p - (lr * dp)
+      gd lr (Gradients gradients) parameters = zipWith step parameters gradients
+</code></pre>
+<p>The use of an optimizer was illustrated in the linear regression example
+using the function <code>runStep</code></p>
+<pre class="haskell"><code>(newParam, _) &lt;- runStep state GD loss 5e-3
+</code></pre>
+<p>In this case the new optimizer state returned is ignored (as <code>_</code>) since
+gradient descent does not have any internal state. Under the hood,
+<code>runStep</code> does a little bookkeeping making independent variables from a
+model, computing gradients, and passing values to the <code>step</code> function.
+Usually a user can ignore the details and just pass model parameters and
+the optimizer to runStep as an abstracted interface which takes
+parameter values, the optimizer value, loss (a tensor), and learning
+rate as input and returns new parameters and an updated optimizer value.</p>
+<pre class="haskell"><code>runStep ::
+  (Parameterized p, Optimizer o) =&gt;
+  p -&gt;
+  o -&gt;
+  Tensor -&gt;
+  LearningRate -&gt;
+  IO ([Parameter], o)
+</code></pre>
+</div></div></div></div></div></section><div class="tintin-doc-footer clear-fix"><div class="row next-prev"><div class="col-md-4 offset-md-4"><a href="05-differentiable-programs.html">&lt; Previous: Differentiable Programs</a></div><div class="col-md-4 ml-auto"><a href="07-typed-tensors.html">Next: Typed Tensors &gt;</a></div></div><footer><div class="container"><div class="row"><div class="col"><p class="author">Developed by <span>Austin Huang</span></p><p class="site-generated-message">Site generated with <a href="https://theam.github.io/tintin" class="tintin-logo"><img src="https://s3-eu-west-1.amazonaws.com/worldwideapps/assets/logo.svg" class="filter-gray"></a><span>&mdash; &copy; 2019 </span><a href="https://www.theagilemonkeys.com">The Agile Monkeys</a></p></div></div></div></footer></div></div><script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/haskell.min.js"></script><script src="https://cdn.rawgit.com/icons8/bower-webicon/v0.10.7/jquery-webicon.min.js"></script><script>hljs.initHighlightingOnLoad()</script><script>$(function () {$("#menu-toggle").click(function(e) {e.preventDefault();$("#wrapper").toggleClass("toggled");$("#menu-toggle img").toggleClass("rotateIn rotateOut");})});</script><script src="https://cdn.jsdelivr.net/npm/katex@0.10.0-alpha/dist/katex.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0/contrib/auto-render.min.js"></script><script>renderMathInElement(document.body);</script></body></html>
