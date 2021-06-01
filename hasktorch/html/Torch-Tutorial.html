@@ -1,0 +1,325 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Torch.Tutorial</title><link href="linuwial.css" rel="stylesheet" type="text/css" title="Linuwial" /><link rel="stylesheet" type="text/css" href="quick-jump.css" /><link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400i,700" /><script src="haddock-bundle.min.js" async="async" type="text/javascript"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({ tex2jax: { processClass: "mathjax", ignoreClass: ".*" } });</script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script></head><body><div id="package-header"><span class="caption">hasktorch-0.2.0.0: Functional differentiable programming in Haskell</span><ul class="links" id="page-menu"><li><a href="src/Torch.Tutorial.html">Source</a></li><li><a href="../../share/doc/index.html">Contents</a></li><li><a href="../../share/doc/doc-index.html">Index</a></li></ul></div><div id="content"><div id="module-header"><table class="info"><tr><th>Safe Haskell</th><td>None</td></tr><tr><th>Language</th><td>Haskell2010</td></tr></table><p class="caption">Torch.Tutorial</p></div><div id="description"><p class="caption">Description</p><div class="doc"><p>Hasktorch is a library for scientific computing and differentiable
+programming.</p></div></div><div id="synopsis"><details id="syn"><summary>Synopsis</summary><ul class="details-toggle" data-details-id="syn"></ul></details></div><div id="interface"><h1>Documentation</h1><div class="doc"><h1>What is Hasktorch?</h1><p><a id="introduction"></a></p><p>Hasktorch is a Haskell library for scientific computing and
+differentiable programming.  It leverages <code>libtorch</code> (the backend
+library powering PyTorch) for efficient tensor manipulation and
+automatic differentiation, while bringing to bear Haskell's expressive
+type system and first-class support for for the functional programming
+paradigm.</p><h2>Goal of this tutorial</h2><p>The sequence of topics and examples here is loosely based on the
+PyTorch tutorial <a href="https://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html">Deep Learning with PyTorch: A 60 Minute
+Blitz</a>
+by Soumith Chintala.</p><p>In this tutorial we will implement a simple machine learning
+model. Along the way, you will learn to</p><ul><li>create and manipulate tensors</li><li>build computation graphs from tensors and compute gradients</li><li>optimize parameters with respect to an objective function</li></ul><h1>Usage</h1><p><a id="usage"></a></p><p>The reader is encouraged to follow along with the examples in a GHCi session.</p><p>To start, import <code>Torch</code>:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>import Torch
+</code></strong></pre><h2>Tensors</h2><p><a id="tensors"></a></p><p>A <code>Tensor</code> in Hasktorch is multidimensional array with a fixed shape
+and element type.</p><p>For example, we can initialize a tensor with shape <code>[3, 4]</code> and filled
+with zeros using</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>Torch.zeros' [3, 4]
+</code></strong>Tensor Float [3,4] [[ 0.0000,  0.0000,  0.0000,  0.0000],
+                    [ 0.0000,  0.0000,  0.0000,  0.0000],
+                    [ 0.0000,  0.0000,  0.0000,  0.0000]]
+</pre><p>We can also initialize a tensor from a Haskell list using
+<code><a href="Torch-Tensor.html#v:asTensor" title="Torch.Tensor">asTensor</a></code>:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>asTensor ([[4, 3], [2, 1]] :: [[Float]])
+</code></strong>Tensor Float [2,2] [[ 4.0000   ,  3.0000   ],
+                    [ 2.0000   ,  1.0000   ]]
+</pre><p>Note that the numerical type of the tensor is inferred from the types of
+the values in the list.</p><p>Scalar values are represented in Hasktorch as tensors with shape <code>[]</code>:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>asTensor 3.5
+</code></strong>Tensor Double []  3.5000
+</pre><p>We can get the scalar value back out using <code><a href="Torch-Tensor.html#v:asValue" title="Torch.Tensor">asValue</a></code>:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>asValue (asTensor 3.5)
+</code></strong>3.5
+</pre><h3>Specifying Tensor parameters</h3><p>In the previous section we initialized a tensor filled with zeros
+using <code>zeros'</code> (note the prime suffix). Hasktorch functions use a
+convention where default versions of functions use a prime suffix. The
+unprimed versions of these functions expect an additional parameter
+specifying tensor parameters. For example:</p><pre>  zeros :: [Int] -&gt; <code><a href="Torch.html#v:TensorOptions" title="Torch">TensorOptions</a></code> -&gt; Tensor
+</pre><p><code>TensorOptions</code> are typically specified by starting with
+<code><a href="Torch-TensorOptions.html#v:defaultOpts" title="Torch.TensorOptions">defaultOpts</a></code> and modifying using one or more of
+the following:</p><ul><li><code><a href="Torch-TensorOptions.html#v:withDType" title="Torch.TensorOptions">withDType</a></code> configures the data type of the elements</li><li><code><a href="Torch-TensorOptions.html#v:withDevice" title="Torch.TensorOptions">withDevice</a></code> configures on which device the tensor is to be used</li><li>others (see <code><a href="Torch.html#v:TensorOptions" title="Torch">TensorOptions</a></code>)</li></ul><p>For example, to construct a matrix filled with zeros of dtype <code>Int64</code>:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>zeros [4, 4] (withDType Int64 defaultOpts)
+</code></strong>Tensor Int64 [4,4] [[ 0,  0,  0,  0],
+                    [ 0,  0,  0,  0],
+                    [ 0,  0,  0,  0],
+                    [ 0,  0,  0,  0]]
+</pre><h3>Tensor factories</h3><p>Hasktorch comes with many &quot;factory&quot; functions similar to <code>zeros</code> and
+<code>zeros'</code> useful for initializing common kinds of tensors. For example,
+<code><a href="Torch-TensorFactories.html#v:ones" title="Torch.TensorFactories">ones</a></code>,
+<code><a href="Torch-TensorFactories.html#v:full" title="Torch.TensorFactories">full</a></code>,
+<code><a href="Torch-TensorFactories.html#v:eye" title="Torch.TensorFactories">eye</a></code>,
+and the primed versions of these. See <code><a href="Torch.html#v:TensorFactories" title="Torch">TensorFactories</a></code> for a
+complete list.</p><p>One useful class of factory functions are those suffixed with &quot;-like&quot;
+(e.g. <code><a href="Torch-TensorFactories.html#v:onesLike" title="Torch.TensorFactories">onesLike</a></code>), which initialize a tensor
+with the same dimensions as their argument. For example:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let x = zeros' [3, 2]
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>onesLike x
+</code></strong>Tensor Float [3,2] [[ 1.0000   ,  1.0000   ],
+                    [ 1.0000   ,  1.0000   ],
+                    [ 1.0000   ,  1.0000   ]]
+</pre><h2>Operations</h2><p><a id="operations"></a></p><p>Most operations are pure functions, similar to Haskell standard library
+math operations.</p><p>Tensors implement the <code>Num</code> typeclass:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let x = ones' [4]
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>x + x
+</code></strong>Tensor Float [4] [ 2.0000   ,  2.0000   ,  2.0000   ,  2.0000   ]
+</pre><p>Some operations transform a tensor:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>Torch.relu (asTensor ([-1.0, -0.5, 0.5, 1] :: [Float]))
+</code></strong>Tensor Float [4] [ 0.0000,  0.0000,  0.5000   ,  1.0000   ]
+</pre><p><code><a href="Torch-Tensor.html#v:select" title="Torch.Tensor">select</a></code> slices out a selection by specifying a dimension and index:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let x = asTensor [[[1, 2, 3]], [[4, 5, 6]], [[7, 8, 9]], [[10, 11, 12]]]
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>shape x
+</code></strong>[4,1,3]
+</pre><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>select 2 1 x
+</code></strong>Tensor Double [4,1] [[ 2.0000   ],
+                     [ 5.0000   ],
+                     [ 8.0000   ],
+                     [ 11.0000   ]]
+</pre><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let y = asTensor [1, 2, 3]
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>Torch.select 0 1 y
+</code></strong>Tensor Double []  2.0000
+</pre><p>Values can be extracted from a tensor using <code>asValue</code> so long as the
+dtype matches the Haskell type:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let x = asTensor ([2] :: [Int])
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let y = asValue x :: Int
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>y
+</code></strong>2
+</pre><h2>Randomness</h2><p>Create a randomly initialized matrix:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>x &lt;-randIO' [2, 2]
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>x
+</code></strong>Tensor Float [2,2] [[ 0.2961   ,  0.5166   ],
+                    [ 0.2517   ,  0.6886   ]]
+</pre><p>Note that since random initialization returns a different result each
+time, unlike other tensor constructors, is monadic reflecting the
+context of an underlying random number generator (RNG) changing state.</p><p>Hasktorch includes variations of random tensor initializers in which the
+RNG object is threaded explicitly rather than implicitly. See the
+<code>Torch.Random</code> module functions for details and variations. Samplers for
+which the RNG is not explicit such as <code>randIO'</code> example above use the
+<code>-IO</code> suffix.</p><h2>Automatic Differentiation</h2><p><a id="automatic-differentiation"></a></p><p>Automatic differentiation is achieved through the use of two primary
+functions in the <code><a href="Torch.html#v:Autograd" title="Torch">Autograd</a></code> module,
+<code><a href="Torch-Autograd.html#v:makeIndependent" title="Torch.Autograd">makeIndependent</a></code> and <code><a href="Torch-Autograd.html#v:grad" title="Torch.Autograd">grad</a></code>.</p><h3>Independent Tensors</h3><p><a id="independent-tensors"></a></p><p><code>makeIndependent</code> is used to instantiate an independent tensor variable
+from which a compute graph is constructed for differentiation, while
+<code>grad</code> uses compute graph to compute gradients.</p><p><code>makeIndependent</code> takes a tensor as input and returns an IO action
+which produces an <code><a href="Torch-Autograd.html#v:IndependentTensor" title="Torch.Autograd">IndependentTensor</a></code>:</p><pre> makeIndependent :: Tensor -&gt; IO IndependentTensor</pre><p>What is the definition of the <code>IndependentTensor</code> type produced by the
+<code>makeIndependent</code> action? It&#8217;s defined in the Hasktorch library as:</p><pre> newtype IndependentTensor = IndependentTensor { toDependent :: Tensor }
+ deriving (Show)</pre><p>Thus <code>IndependentTensor</code> is simply a wrapper around the underlying
+Tensor that is passed in as the argument to <code>makeIndependent</code>. Building
+up computations using ops applied to the <code>toDependent</code> tensor of an
+<code>IndependentTensor</code> will implicitly construct a compute graph to which
+<code>grad</code> can be applied.</p><p>All tensors have an underlying property that can be retrieved using
+the <code><a href="Torch-Autograd.html#v:requiresGrad" title="Torch.Autograd">requiresGrad</a></code> function which indicates whether
+they are a differentiable value in a compute graph. <a href="#notes">[1]</a></p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let x = asTensor [1, 2, 3]
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>y &lt;- makeIndependent (asTensor [4, 5, 6])
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let y' = toDependent y
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let z = x + y'
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>requiresGrad x
+</code></strong>False
+</pre><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>requiresGrad y'
+</code></strong>True
+</pre><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>requiresGrad z
+</code></strong>True
+</pre><p>In summary, tensors that are computations of values derived from tensor
+constructors (e.g. <code>ones</code>, <code>zeros</code>, <code>fill</code>, <code>randIO</code> etc.) outside the
+context of a <code>IndependentTensor</code> are not differentiable. Tensors that
+are derived from computations on the <code>toDependent</code> value of an
+<code>IndependentTensor</code> are differentiable, as the above example
+illustrates.</p><h3>Gradients</h3><p><a id="gradients"></a></p><p>Once a computation graph is constructed by applying ops and computing
+derived quantities stemming from a <code>toDependent</code> value of an
+<code>IndependentTensor</code>, a gradient can be taken by using the <code>grad</code>
+function specifying in the first argument tensor corresponding to
+function value of interest and a list of <code>Independent</code> tensor variables
+that the the derivative is taken with respect to:</p><pre> grad :: Tensor -&gt; [IndependentTensor] -&gt; [Tensor]</pre><p>Let&#8217;s demonstrate this with a concrete example. We create a tensor and
+derive an <code>IndependentTensor</code> from it:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>x &lt;- makeIndependent (ones' [2, 2])
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let x' = toDependent x
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>x'
+</code></strong>Tensor Float [2,2] [[ 1.0000   ,  1.0000   ],
+                    [ 1.0000   ,  1.0000   ]]
+</pre><p>Now do some computations on the dependent tensor:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let y = x' + 2
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>y
+</code></strong>Tensor Float [2,2] [[ 3.0000   ,  3.0000   ],
+                    [ 3.0000   ,  3.0000   ]]
+</pre><p>Since y is dependent on the x independent tensor, it is differentiable:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>requiresGrad y
+</code></strong>True
+</pre><p>Applying more operations:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let z = y * y * 3
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let out = mean z
+</code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>z
+</code></strong>Tensor Float [2,2] [[ 27.0000   ,  27.0000   ],
+                    [ 27.0000   ,  27.0000   ]]
+</pre><p>Now retrieve the gradient:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>grad out [x]
+</code></strong>[Tensor Float [2,2] [[ 4.5000   ,  4.5000   ],
+                    [ 4.5000   ,  4.5000   ]]]
+</pre><h2>Differentiable Programs (Neural Networks)</h2><p><a id="differentiable-programs-neural-networks"></a></p><p>From a functional programming perspective, a neural network is
+represented by data and functions, much like any other functional
+program. The only distinction that differentiates neural networks from
+any other functional program is that it implements a small interface
+surface to support differentiation. Thus, we can consider neural
+networks to be &quot;differentiable functional programming&quot;.</p><p>The data in neural networks are the values to be fitted that
+parameterize the functions which carry out the inference operation and
+are modified based on gradients of through those functions.</p><p>As with a regular Haskell program, this data is represented by an
+algebraic data type (ADT). The ADT can take on any shape that&#8217;s needed
+to model the domain of interest, allowing a great deal of flexibility
+and enabling all of Haskell&#8217;s strenghts in data modeling - can use sum
+or product types, nest types, etc. The ADT can implement various
+typeclasses to take on other functionality.</p><p>The core interface that defines capability specific to differentiable
+programming is the <code><a href="Torch-NN.html#v:Parameterized" title="Torch.NN">Parameterized</a></code> typeclass:</p><pre> class Parameterized f where
+   flattenParameters :: f -&gt; [Parameter]
+   default flattenParameters :: (Generic f, Parameterized' (Rep f)) =&gt; f -&gt; [Parameter]
+   flattenParameters f = flattenParameters' (from f)
+
+   replaceOwnParameters :: f -&gt; ParamStream f
+   default replaceOwnParameters :: (Generic f, Parameterized' (Rep f)) =&gt; f -&gt; ParamStream f
+   replaceOwnParameters f = to &lt;$&gt; replaceOwnParameters' (from f)</pre><p>Note <code>Parameter</code> is simply a type alias for <code>IndependentTensor</code> in the
+context of neural networks (i.e. <code>type Parameter = IndependentTensor</code>).</p><p>The role of <code>flattenParameters</code> is to unroll any arbitrary ADT
+representation of a neural network into a standard flattened
+representation consisting a list of <code>IndependentTensor</code> which is used to
+compute gradients.</p><p><code>replaceOwnParameters</code> is used to update parameters. ParamStream is a
+type alias for a State type with state represented by a <code>Parameter</code> list
+and a value parameter corresponding to the ADT defining the model.</p><pre> type ParamStream a = State [Parameter] a</pre><p>Note the use of generics. Generics allow the compiler to usually
+automatically derive <code>flattenParameters</code> and <code>replaceOwnParameter</code>
+instances without any code if your type is built up on tensors,
+containers of tensors, or other types that are built from tensor values
+(for example, layer modules provided in <code>Torch.NN</code>. In many cases, as
+you&#8217;ll see in the following examples, you will only need to add</p><pre> instance Parameterized MyNeuralNetwork</pre><p>(where <code>MyNeuralNetwork</code> is an ADT definition for your model) and the
+compiler will derive implementations for the <code>flattenParameters</code> and
+<code>replaceOwnParameters</code>.</p><h3>Linear Regression</h3><p><a id="linear-regression"></a></p><p>Lets start with a simple example of linear regression. Here we generate
+random data with an underlying affine relationship between the inputs
+and outputs, then fit a linear regression to reproduce that
+relationship.</p><p>This example is adapted from
+<a href="https://github.com/hasktorch/hasktorch/tree/master/examples/regression">https://github.com/hasktorch/hasktorch/tree/master/examples/regression</a>.</p><p>In a standard supervised learning model, the neural network is
+initialized using a randomized initialization scheme. An iterative
+optimization is performed such that at each iteration a batch.</p><pre> module Main where
+
+ import Control.Monad (when)
+ import Torch
+
+ groundTruth :: Tensor -&gt; Tensor
+ groundTruth t = squeezeAll $ matmul t weight + bias
+   where
+     weight = asTensor ([42.0, 64.0, 96.0] :: [Float])
+     bias = full' [1] (3.14 :: Float)
+
+ model :: Linear -&gt; Tensor -&gt; Tensor
+ model state input = squeezeAll $ linear state input
+
+ main :: IO ()
+ main = do
+     init &lt;- sample $ LinearSpec{in_features = numFeatures, out_features = 1}
+     randGen &lt;- mkGenerator (Device CPU 0) 12345
+     (trained, _) &lt;- foldLoop (init, randGen) 2000 $ \(state, randGen) i -&gt; do
+         let (input, randGen') = randn' [batchSize, numFeatures] randGen
+             (y, y') = (groundTruth input, model state input)
+             loss = mseLoss y y'
+         when (i `mod` 100 == 0) $ do
+             putStrLn $ &quot;Iteration: &quot; ++ show i ++ &quot; | Loss: &quot; ++ show loss
+         (newParam, _) &lt;- runStep state GD loss 5e-3
+         pure (replaceParameters state newParam, randGen')
+     pure ()
+   where
+     batchSize = 4
+     numFeatures = 3</pre><p>Note the expression of the architecture in the <code><a href="Torch-NN.html#v:linear" title="Torch.NN">linear</a></code>
+function (a single linear layer, or alternatively a neural network
+with zero hidden layers), does not require an explicit representation
+of the compute graph, but is simply a composition of tensor
+ops. Because of the autodiff mechanism described in the previous
+section, the graph is constructed automatically as pure functional ops
+are applied, given a context of a set of independent variables.</p><p>The <code>init</code> variable is initialized as a <code>Linear</code> type (defined in
+<code>Torch.NN</code>) using <code>sample</code> which randomly initializes a <code>Linear</code> value.</p><p><code>Linear</code> is a built-in ADT implementing the <code>Parameterized</code> typeclass
+and representing a fully connected linear layer, equivalent to linear
+regression when no hidden layers are present.</p><p><code>init</code> is passed into the <code><a href="Torch-Optim.html#v:foldLoop" title="Torch.Optim">foldLoop</a></code><code><a href="#notes">[2]</a> as the </code>state@
+variable.</p><p>A new list of <code>Parameter</code> values is passed back from
+<code><a href="Torch-Optim.html#v:runStep" title="Torch.Optim">runStep</a></code> (which calls <code>grad</code> to retrieve gradients, given
+a loss function, learning rate, and optimizer) and the typeclass
+function <code>replaceParameters</code> is used to update the model at each
+iteration.</p><p>Initialization is discussed in more detail in the following section</p><h3>Weight Initialization</h3><p><a id="weight-initialization"></a></p><p>Random initialization of weights is not a pure function since two
+random initializations return different values. Initialization occurs
+by calling the <code><a href="Torch-NN.html#v:sample" title="Torch.NN">sample</a></code> function for an ADT (<code>spec</code>)
+implementing the <code><a href="Torch-NN.html#v:Randomizable" title="Torch.NN">Randomizable</a></code> typeclass:</p><pre> class Randomizable spec f | spec -&gt; f where
+   sample :: spec -&gt; IO f</pre><p>In a typical (but not required) usage, <code>f</code> is an ADT that implements the
+<code>Parameterized</code> typeclass, so that there&#8217;s a pair of types - a
+specification type implementing the <code>spec</code> input to <code>sample</code> and a type
+implementing <code>Parameterizable</code> representing the model state.</p><p>For example, a linear fully connected layer is provided by the
+<code>Torch.NN</code> module and defined therein as:</p><pre> data Linear = Linear { weight :: Parameter, bias :: Parameter } deriving (Show, Generic)</pre><p>and is typically used with a specification type:</p><pre> data LinearSpec = LinearSpec { in_features :: Int, out_features :: Int }
+   deriving (Show, Eq)</pre><p>Putting this together, in untyped tensor usage, the user can implement
+custom models or layers implementing the <code>Parameterizable</code> typeclass
+built up from other ADTs implementing <code>Parameterizable</code>. The shape of
+the data required for initialization is described by a type implementing
+<code>Randomizable</code>&#8217;s <code>spec</code> parameter, and the <code>sample</code> implementation
+specifies the default weight initialization.</p><p>Note this initialization approach is specific to untyped tensors. One
+consequence of using typed tensors is that the information in these
+<code>spec</code> types is reflected in the type itself and thus are not needed.</p><p>What if you want to use a custom initialization that differs from the
+default? You can define an alternative function with the same signature
+<code>spec -&gt; IO f</code> and use the alternative function instead of <code>sample</code>.</p><h3>Optimizers</h3><p><a id="optimizers"></a></p><p>Optimization implementations are functions that take as input the
+current parameter values of a model, parameter gradient estimates of the
+loss function at those parameters for a single batch, and a
+characteristic learning describing how large a perturbation to make to
+the parameters in order to reduce the loss. Given those inputs, they
+output a new set of parameters.</p><p>In the simple case of stochastic gradient descent, the function to
+output a new set of parameters is to subtract from the current parameter
+(theta), the gradient of the loss <span class="mathjax">\(\nabla J\)</span> scaled by the learning
+rate <span class="mathjax">\(\eta\)</span>:</p><p><span class="mathjax">\[\theta_{i+1} = \theta_i - \eta \nabla J(\theta)\]</span></p><p>While stochastic gradient descent is a stateless function of the
+parameters, loss, and gradient, some optimizers have a notion of
+internal state that is propagated from one step to the step, for
+example, retaining and updating momentum between steps:</p><p><span class="mathjax">\[\begin{gathered}
+    \Delta \theta_i = \alpha \Delta \theta_{i-1} - \eta \nabla J(\theta) \\
+    \theta_{i+1} = \theta_i + \Delta \theta_i
+\end{gathered}\]</span></p><p>In this case, the momentum term <span class="mathjax">\(\Delta \theta_i\)</span> is carried forward
+as internal state of the optimizer that is propagated to the next step.
+(alpha) is an optimizer parameter which determines a weighting on the
+momentum term relative to the gradient.</p><p>Implementation of an optimizer consists of defining an ADT describing
+the optimizer state and a <code>step</code> function that implements a single step
+perturbation given the learning rate, loss gradients, current
+parameters, and optimizer state.</p><p>This function interface is described in the <code><a href="Torch-Optim.html#v:Optimizer" title="Torch.Optim">Optimizer</a></code>
+typeclass interface:</p><pre> class Optimizer o where
+     step :: LearningRate -&gt; Gradients -&gt; [Tensor] -&gt; o -&gt; ([Tensor], o)</pre><p><code>Gradients</code> is a newtype wrapper around a list of tensors to make
+intent explicit: <code>newtype Gradients = Gradients [Tensor]</code>.</p><p>Hasktorch provides built-in optimizer implementations in <code>Torch.Optim</code>.
+Some illustrative example implementations follow.</p><p>Being stateless, stochastic gradient descent has an ADT that has only
+one constructor value:</p><pre> data GD = GD</pre><p>and implements the step function as:</p><pre> instance Optimizer GD where
+     step lr gradients depParameters dummy = (gd lr gradients depParameters, dummy)
+         where
+         step p dp = p - (lr * dp)
+         gd lr (Gradients gradients) parameters = zipWith step parameters gradients</pre><p>The use of an optimizer was illustrated in the linear regression example
+using the function <code>runStep</code></p><pre> (newParam, _) &lt;- runStep state GD loss 5e-3</pre><p>In this case the new optimizer state returned is ignored (as <code>_</code>) since
+gradient descent does not have any internal state. Under the hood,
+<code>runStep</code> does a little bookkeeping making independent variables from a
+model, computing gradients, and passing values to the <code>step</code> function.
+Usually a user can ignore the details and just pass model parameters and
+the optimizer to runStep as an abstracted interface which takes
+parameter values, the optimizer value, loss (a tensor), and learning
+rate as input and returns new parameters and an updated optimizer value.</p><pre> runStep :: (Parameterized p, Optimizer o) =&gt;
+         p -&gt; o -&gt; Tensor -&gt; LearningRate -&gt; IO ([Parameter], o)</pre><h1>Typed Tensors</h1><p><a id="typed-tensors"></a></p><p>Typed tensors provide an alternative API for which tensor
+characteristics are encoded in the type of the tensor. The Hasktorch
+library is layered such that [ TODO ]</p><p>Using typed tensors increases the expressiveness of program invariants
+that can be automatically checked by GHC at the cost of needing to be
+more explicit in writing code and also requiring working with Haskell&#8217;s
+type-level machinery. Type-level Haskell programming has arisen through
+progressive compiler iteration leading to mechanisms that have a higher
+degree of complexity compared to value-level Haskell code or other
+languages such as Idris which were designed with type-level computations
+from inception. In spite of these compromises, Haskell offers enough
+capability to express powerful type-level representations of models that
+is matched by few other languages used for production applications.</p><p>Things we can do in typed Hasktorch:</p><ul><li>specify, check, and infer tensor shapes at compile time</li><li>specify, check, and infer tensor data types at compile time</li><li>specify, check, and infer tensor compute devices at compile time</li></ul><p>We can encode all Hasktorch tensor shapes on the type level using
+type-level lists and natural numbers:</p><pre> type EmptyShape = '[]
+ type OneDimensionalShape (a :: Nat) = '[a]
+ type TwoDimensionalShape (a :: Nat) (b :: Nat) = '[a, b]
+ ...</pre><p>Tensor data types and compute device types are lifted to the type level
+using the <code>DataKinds</code> language extension:</p><pre> type BooleanCPUTensor (shape :: [Nat]) = Tensor '(CPU,  0) 'Bool  shape
+ type IntCUDATensor    (shape :: [Nat]) = Tensor '(CUDA, 1) 'Int64 shape</pre><p>Devices are represented as tuples consisting of a <code>DeviceType</code> (here
+<code>CPU</code> for the CPU and <code>CUDA</code> for a CUDA device, respectively) and a
+device id (here the <code>Nat</code>s <code>0</code> and <code>1</code>, respectively).</p><p>It is a common misconception that specifying tensor properties at
+compile time is only possible if all tensor properties are constants and
+are statically known. If this were the case, then we could only write
+functions over fully specified tensors, say,</p><pre> boring :: BooleanCPUTensor '[] -&gt; BooleanCPUTensor '[]
+ boring = id</pre><p>Fortunately, Haskell has the ability to reason about type variables.
+This feature is called parametric polymorphism. Consider this simple
+example of a function:</p><pre> tensorNoOp
+   :: forall (shape :: [Nat]) (dtype :: DType) (device :: (DeviceType, Nat))
+    . Tensor device dtype shape
+   -&gt; Tensor device dtype shape
+ tensorNoOp = id</pre><p>Here, <code>shape</code>, <code>dtype</code>, and <code>device</code> are type variables that have been
+constrained to be of kind shape, data type, and device, respectively.
+The universal quantifier <code>forall</code> implies that this function is
+well-defined for all inhabitants of the types that are compatible with
+the type variables and their constraints.</p><p>The <code>tensorNoOp</code> function may seem trivial, and that is because its type
+is very strongly constrained: Given any typed tensor, it must return a
+tensor of the same shape and with the same data type and on the same
+device. Besides by means of the identity, <code>id</code>, there are not many ways
+in which this function can be implemented.</p><p>There is a connection between a type signature of a function and
+mathematical proofs. We can say that the fact that a function exists is
+witnessed by its implementation. The implementation, <code>tensorNoOp = id</code>,
+is the proof of the theorem stated by <code>tensorNoOp</code>&#8217;s type signature. And
+here we have a proof that we can run this function on any device and for
+any data type and tensor shape.</p><p>This is the essence of typed Hasktorch. As soon as the compiler gives
+its OK, we hold a proof that our program will run without shape or CUDA
+errors.</p><p><a id="notes"></a></p><ol><li>PyTorch users will be familiar with this as the <code>requires_grad</code>
+    member variable for the PyTorch tensor type. The Hasktorch mechanism
+    is distinct from PyTorch&#8217;s mechanism - by only allowing gradients to
+    be applied in the context of a set of <code>IndependentTensor</code> variables,
+    it allows ops to be semantically pure and preserve referential
+    transparency.</li><li><code>foldLoop</code> is a convenience function defined in terms of <code>foldM</code> as
+    <code>foldLoop x count block = foldM block x ([1 .. count] :: [a])</code></li></ol></div></div></div><div id="footer"><p>Produced by <a href="http://www.haskell.org/haddock/">Haddock</a> version 2.24.0</p></div></body></html>
