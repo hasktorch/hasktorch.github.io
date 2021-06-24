@@ -746,7 +746,7 @@ indexSelect' :: Int -> [Int] -> Tensor -> Tensor
 
 -- | Slices the input tensor along the selected dimension at the given
 --   range.
-slice :: Int -> Int -> Int -> Int -> Tensor -> Tensor
+sliceDim :: Int -> Int -> Int -> Int -> Tensor -> Tensor
 isContiguous :: Tensor -> Bool
 contiguous :: Tensor -> Tensor
 
@@ -769,10 +769,12 @@ data None
 None :: None
 data Ellipsis
 Ellipsis :: Ellipsis
-data Slice a
+newtype Slice a
 Slice :: a -> Slice a
 class TensorIndex a
 pushIndex :: TensorIndex a => [RawTensorIndex] -> a -> [RawTensorIndex]
+toLens :: TensorIndex a => a -> Lens' Tensor Tensor
+toLens :: TensorIndex a => a -> Lens' Tensor Tensor
 asValue :: TensorLike a => Tensor -> a
 class TensorLike a
 asTensor' :: TensorLike a => a -> TensorOptions -> Tensor
@@ -955,6 +957,9 @@ arange :: Int -> Int -> Int -> TensorOptions -> Tensor
 -- | Returns a 1-D tensor with values from the interval [start, end) taken
 --   with common difference step beginning from start.
 arange' :: Int -> Int -> Int -> Tensor
+
+module Torch.Index
+slice :: QuasiQuoter
 
 module Torch.Functional.Internal
 align_tensors :: [Tensor] -> [Tensor]
@@ -7593,19 +7598,19 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 readImageAsRGB8WithScaling :: FilePath -> Int -> Int -> Bool -> IO (Either String (Image PixelRGB8, Tensor))
 centerCrop :: Int -> Int -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679592461 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679612854 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawLine :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679592512 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679612905 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawRect :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawString :: String -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawChar :: Int -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679592591 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679612984 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 resizeRGB8 :: Int -> Int -> Bool -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679592641 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679613034 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679592683 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679592708 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679613076 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679613101 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
