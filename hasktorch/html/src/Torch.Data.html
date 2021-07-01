@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-comment">-- |</span><span>
+</span><span id="line-2"></span><span class="hs-comment">-- Modules for defining datasets and how to efficiently iterate over them.</span><span>
+</span><span id="line-3"></span><span class="hs-comment">-- If you have an indexable (fixed-size) dataset, see &quot;Torch.Data.Pipeline&quot;. If you</span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- want to stream in your data then see &quot;Torch.Data.StreamedPipeline&quot;. The &quot;Torch.Data.Utils&quot; module</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- provides some convienient functions for both indexable and streamed datasets.</span><span>
+</span><span id="line-6"></span><span class="hs-comment">--</span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- The mnist examples show how to run data for a predefined dataset.</span><span>
+</span><span id="line-8"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.Data</span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- * Running data</span></span><span>
+</span><span id="line-10"></span><span>    </span><span class="annot"><span class="hs-comment">-- $data</span></span><span>
+</span><span id="line-11"></span><span>    </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Torch.Data.Pipeline.html"><span class="hs-identifier">Torch.Data.Pipeline</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Torch.Data.StreamedPipeline.html"><span class="hs-identifier">Torch.Data.StreamedPipeline</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Torch.Data.Utils.html"><span class="hs-identifier">Torch.Data.Utils</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.Data.Pipeline.html"><span class="hs-identifier">Torch.Data.Pipeline</span></a></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.Data.StreamedPipeline.html"><span class="hs-identifier">Torch.Data.StreamedPipeline</span></a></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.Data.Utils.html"><span class="hs-identifier">Torch.Data.Utils</span></a></span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="hs-comment">-- $data</span><span>
+</span><span id="line-22"></span><span class="hs-comment">--</span><span>
+</span><span id="line-23"></span><span class="hs-comment">--</span><span>
+</span><span id="line-24"></span><span class="hs-comment">--  The preferred method for running data is the same for both 'Dataset' and 'Datastream'. The intended use is to</span><span>
+</span><span id="line-25"></span><span class="hs-comment">-- use the 'streamFrom' family of functions and run the continuation returned by those functions with a function</span><span>
+</span><span id="line-26"></span><span class="hs-comment">-- that specifies what to do with the given stream. Datasets are then a [pipes](https://hackage.haskell.org/package/pipes)</span><span>
+</span><span id="line-27"></span><span class="hs-comment">-- stream of samples, so anything that you can with a pipes stream you can do with a 'Dataset' or 'Datastream'. As</span><span>
+</span><span id="line-28"></span><span class="hs-comment">-- such you should have some basic familiarity with pipes streams, though</span><span>
+</span><span id="line-29"></span><span class="hs-comment">-- typically you'll want to a fold over the dataset, where &quot;Pipes.Prelude&quot; has convenient functions for folding streams.</span><span>
+</span><span id="line-30"></span><span class="hs-comment">--</span><span>
+</span><span id="line-31"></span><span class="hs-comment">--</span><span>
+</span><span id="line-32"></span><span class="hs-comment">-- &gt; import qualified Pipes.Prelude as P</span><span>
+</span><span id="line-33"></span><span class="hs-comment">-- &gt; import Pipes</span><span>
+</span><span id="line-34"></span><span class="hs-comment">-- &gt;</span><span>
+</span><span id="line-35"></span><span class="hs-comment">-- &gt; -- Take a model and a stream of data from a Dataset or Datastream,</span><span>
+</span><span id="line-36"></span><span class="hs-comment">-- &gt; -- and train the model.</span><span>
+</span><span id="line-37"></span><span class="hs-comment">-- &gt; train :: model -&gt; ListT m sample -&gt; m model</span><span>
+</span><span id="line-38"></span><span class="hs-comment">-- &gt; train model = runEffect . P.foldM step begin done . enumerate</span><span>
+</span><span id="line-39"></span><span class="hs-comment">-- &gt;   where</span><span>
+</span><span id="line-40"></span><span class="hs-comment">-- &gt;       -- run a training step over a given sample from the dataset</span><span>
+</span><span id="line-41"></span><span class="hs-comment">-- &gt;       step model batch = undefined</span><span>
+</span><span id="line-42"></span><span class="hs-comment">-- &gt;       begin = pure model</span><span>
+</span><span id="line-43"></span><span class="hs-comment">-- &gt;       done = pure</span><span>
+</span><span id="line-44"></span><span class="hs-comment">-- &gt;</span><span>
+</span><span id="line-45"></span><span class="hs-comment">-- &gt; runData = runContT (train model) $ streamFromMap (datasetOptions 1) myDataset</span><span>
+</span><span id="line-46"></span><span class="hs-comment">--</span><span>
+</span><span id="line-47"></span><span class="hs-comment">-- See the [foldl](https://hackage.haskell.org/package/foldl) library for the style of fold used here.</span><span>
+</span><span id="line-48"></span></pre></body></html>

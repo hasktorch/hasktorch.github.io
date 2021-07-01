@@ -1,0 +1,296 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DataKinds #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.Distributions.Constraints</span><span> </span><span class="hs-special">(</span><span>
+</span><span id="line-4"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Constraints.html#Constraint"><span class="hs-identifier">Constraint</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-5"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Constraints.html#dependent"><span class="hs-identifier">dependent</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-6"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Constraints.html#boolean"><span class="hs-identifier">boolean</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Constraints.html#integerInterval"><span class="hs-identifier">integerInterval</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Constraints.html#integerLessThan"><span class="hs-identifier">integerLessThan</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Constraints.html#integerGreaterThan"><span class="hs-identifier">integerGreaterThan</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Constraints.html#integerLessThanEq"><span class="hs-identifier">integerLessThanEq</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Constraints.html#integerGreaterThanEq"><span class="hs-identifier">integerGreaterThanEq</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Constraints.html#real"><span class="hs-identifier">real</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Constraints.html#greaterThan"><span class="hs-identifier">greaterThan</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Constraints.html#greaterThanEq"><span class="hs-identifier">greaterThanEq</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Constraints.html#lessThan"><span class="hs-identifier">lessThan</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Constraints.html#lessThanEq"><span class="hs-identifier">lessThanEq</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-17"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Constraints.html#interval"><span class="hs-identifier">interval</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-18"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Constraints.html#halfOpenInterval"><span class="hs-identifier">halfOpenInterval</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Constraints.html#simplex"><span class="hs-identifier">simplex</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Constraints.html#nonNegativeInteger"><span class="hs-identifier">nonNegativeInteger</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Constraints.html#positiveInteger"><span class="hs-identifier">positiveInteger</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Constraints.html#positive"><span class="hs-identifier">positive</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Constraints.html#unitInterval"><span class="hs-identifier">unitInterval</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-25"></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.Functional.Internal.html"><span class="hs-identifier">Torch.Functional.Internal</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">I</span></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.Tensor.html"><span class="hs-identifier">Torch.Tensor</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.TensorFactories.html"><span class="hs-identifier">Torch.TensorFactories</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.Functional.html"><span class="hs-identifier">Torch.Functional</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">F</span></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.Scalar.html"><span class="hs-identifier">Torch.Scalar</span></a></span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">type</span><span> </span><span id="Constraint"><span class="annot"><a href="Torch.Distributions.Constraints.html#Constraint"><span class="hs-identifier hs-var">Constraint</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">D.Tensor</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">D.Tensor</span></a></span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="annot"><a href="Torch.Distributions.Constraints.html#dependent"><span class="hs-identifier hs-type">dependent</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Distributions.Constraints.html#Constraint"><span class="hs-identifier hs-type">Constraint</span></a></span><span>
+</span><span id="line-35"></span><span id="dependent"><span class="annot"><span class="annottext">dependent :: Constraint
+</span><a href="Torch.Distributions.Constraints.html#dependent"><span class="hs-identifier hs-var hs-var">dependent</span></a></span></span><span> </span><span id="local-6989586621679673190"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673190"><span class="hs-identifier hs-var">_tensor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; Tensor
+forall a. HasCallStack =&gt; [Char] -&gt; a
+</span><span class="hs-identifier hs-var">error</span></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;Cannot determine validity of dependent constraint&quot;</span></span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="annot"><a href="Torch.Distributions.Constraints.html#boolean"><span class="hs-identifier hs-type">boolean</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Distributions.Constraints.html#Constraint"><span class="hs-identifier hs-type">Constraint</span></a></span><span>
+</span><span id="line-38"></span><span id="boolean"><span class="annot"><span class="annottext">boolean :: Constraint
+</span><a href="Torch.Distributions.Constraints.html#boolean"><span class="hs-identifier hs-var hs-var">boolean</span></a></span></span><span> </span><span id="local-6989586621679673188"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673188"><span class="hs-identifier hs-var">tensor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673188"><span class="hs-identifier hs-var">tensor</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Constraint
+</span><a href="Torch.Functional.html#eq"><span class="hs-operator hs-var">`F.eq`</span></a></span><span> </span><span class="annot"><span class="annottext">Constraint
+</span><a href="Torch.TensorFactories.html#zerosLike"><span class="hs-identifier hs-var">D.zerosLike</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673188"><span class="hs-identifier hs-var">tensor</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Constraint
+</span><a href="Torch.Functional.Internal.html#logical_or"><span class="hs-operator hs-var">`I.logical_or`</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673188"><span class="hs-identifier hs-var">tensor</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Constraint
+</span><a href="Torch.Functional.html#eq"><span class="hs-operator hs-var">`F.eq`</span></a></span><span> </span><span class="annot"><span class="annottext">Constraint
+</span><a href="Torch.TensorFactories.html#onesLike"><span class="hs-identifier hs-var">D.onesLike</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673188"><span class="hs-identifier hs-var">tensor</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="annot"><a href="Torch.Distributions.Constraints.html#integerInterval"><span class="hs-identifier hs-type">integerInterval</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Distributions.Constraints.html#Constraint"><span class="hs-identifier hs-type">Constraint</span></a></span><span>
+</span><span id="line-41"></span><span id="integerInterval"><span class="annot"><span class="annottext">integerInterval :: Int -&gt; Int -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#integerInterval"><span class="hs-identifier hs-var hs-var">integerInterval</span></a></span></span><span> </span><span id="local-6989586621679673183"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679673183"><span class="hs-identifier hs-var">lower_bound</span></a></span></span><span> </span><span id="local-6989586621679673182"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679673182"><span class="hs-identifier hs-var">upper_bound</span></a></span></span><span> </span><span id="local-6989586621679673181"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673181"><span class="hs-identifier hs-var">tensor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673181"><span class="hs-identifier hs-var">tensor</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Constraint
+</span><a href="Torch.Functional.html#ge"><span class="hs-operator hs-var">`F.ge`</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Constraint
+forall a. Scalar a =&gt; a -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#fullLike%27"><span class="hs-identifier hs-var">fullLike'</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679673183"><span class="hs-identifier hs-var">lower_bound</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673181"><span class="hs-identifier hs-var">tensor</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Constraint
+</span><a href="Torch.Functional.Internal.html#logical_and"><span class="hs-operator hs-var">`I.logical_and`</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673181"><span class="hs-identifier hs-var">tensor</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Constraint
+</span><a href="Torch.Functional.html#le"><span class="hs-operator hs-var">`F.le`</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Constraint
+forall a. Scalar a =&gt; a -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#fullLike%27"><span class="hs-identifier hs-var">fullLike'</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679673182"><span class="hs-identifier hs-var">upper_bound</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673181"><span class="hs-identifier hs-var">tensor</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="annot"><a href="Torch.Distributions.Constraints.html#integerLessThan"><span class="hs-identifier hs-type">integerLessThan</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Distributions.Constraints.html#Constraint"><span class="hs-identifier hs-type">Constraint</span></a></span><span>
+</span><span id="line-44"></span><span id="integerLessThan"><span class="annot"><span class="annottext">integerLessThan :: Int -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#integerLessThan"><span class="hs-identifier hs-var hs-var">integerLessThan</span></a></span></span><span> </span><span id="local-6989586621679673176"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679673176"><span class="hs-identifier hs-var">upper_bound</span></a></span></span><span> </span><span id="local-6989586621679673175"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673175"><span class="hs-identifier hs-var">tensor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673175"><span class="hs-identifier hs-var">tensor</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Constraint
+</span><a href="Torch.Functional.html#lt"><span class="hs-operator hs-var">`F.lt`</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Constraint
+forall a. Scalar a =&gt; a -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#fullLike%27"><span class="hs-identifier hs-var">fullLike'</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679673176"><span class="hs-identifier hs-var">upper_bound</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673175"><span class="hs-identifier hs-var">tensor</span></a></span><span>
+</span><span id="line-45"></span><span>
+</span><span id="line-46"></span><span class="annot"><a href="Torch.Distributions.Constraints.html#integerGreaterThan"><span class="hs-identifier hs-type">integerGreaterThan</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Distributions.Constraints.html#Constraint"><span class="hs-identifier hs-type">Constraint</span></a></span><span>
+</span><span id="line-47"></span><span id="integerGreaterThan"><span class="annot"><span class="annottext">integerGreaterThan :: Int -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#integerGreaterThan"><span class="hs-identifier hs-var hs-var">integerGreaterThan</span></a></span></span><span> </span><span id="local-6989586621679673173"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679673173"><span class="hs-identifier hs-var">lower_bound</span></a></span></span><span> </span><span id="local-6989586621679673172"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673172"><span class="hs-identifier hs-var">tensor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673172"><span class="hs-identifier hs-var">tensor</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Constraint
+</span><a href="Torch.Functional.html#gt"><span class="hs-operator hs-var">`F.gt`</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Constraint
+forall a. Scalar a =&gt; a -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#fullLike%27"><span class="hs-identifier hs-var">fullLike'</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679673173"><span class="hs-identifier hs-var">lower_bound</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673172"><span class="hs-identifier hs-var">tensor</span></a></span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="annot"><a href="Torch.Distributions.Constraints.html#integerLessThanEq"><span class="hs-identifier hs-type">integerLessThanEq</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Distributions.Constraints.html#Constraint"><span class="hs-identifier hs-type">Constraint</span></a></span><span>
+</span><span id="line-50"></span><span id="integerLessThanEq"><span class="annot"><span class="annottext">integerLessThanEq :: Int -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#integerLessThanEq"><span class="hs-identifier hs-var hs-var">integerLessThanEq</span></a></span></span><span> </span><span id="local-6989586621679673170"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679673170"><span class="hs-identifier hs-var">upper_bound</span></a></span></span><span> </span><span id="local-6989586621679673169"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673169"><span class="hs-identifier hs-var">tensor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673169"><span class="hs-identifier hs-var">tensor</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Constraint
+</span><a href="Torch.Functional.html#le"><span class="hs-operator hs-var">`F.le`</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Constraint
+forall a. Scalar a =&gt; a -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#fullLike%27"><span class="hs-identifier hs-var">fullLike'</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679673170"><span class="hs-identifier hs-var">upper_bound</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673169"><span class="hs-identifier hs-var">tensor</span></a></span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="annot"><a href="Torch.Distributions.Constraints.html#integerGreaterThanEq"><span class="hs-identifier hs-type">integerGreaterThanEq</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Distributions.Constraints.html#Constraint"><span class="hs-identifier hs-type">Constraint</span></a></span><span>
+</span><span id="line-53"></span><span id="integerGreaterThanEq"><span class="annot"><span class="annottext">integerGreaterThanEq :: Int -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#integerGreaterThanEq"><span class="hs-identifier hs-var hs-var">integerGreaterThanEq</span></a></span></span><span> </span><span id="local-6989586621679673168"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679673168"><span class="hs-identifier hs-var">lower_bound</span></a></span></span><span> </span><span id="local-6989586621679673167"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673167"><span class="hs-identifier hs-var">tensor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673167"><span class="hs-identifier hs-var">tensor</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Constraint
+</span><a href="Torch.Functional.html#ge"><span class="hs-operator hs-var">`F.ge`</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Constraint
+forall a. Scalar a =&gt; a -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#fullLike%27"><span class="hs-identifier hs-var">fullLike'</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679673168"><span class="hs-identifier hs-var">lower_bound</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673167"><span class="hs-identifier hs-var">tensor</span></a></span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="annot"><a href="Torch.Distributions.Constraints.html#real"><span class="hs-identifier hs-type">real</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Distributions.Constraints.html#Constraint"><span class="hs-identifier hs-type">Constraint</span></a></span><span>
+</span><span id="line-56"></span><span id="real"><span class="annot"><span class="annottext">real :: Constraint
+</span><a href="Torch.Distributions.Constraints.html#real"><span class="hs-identifier hs-var hs-var">real</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Constraint
+</span><a href="Torch.Functional.Internal.html#isfinite"><span class="hs-identifier hs-var">I.isfinite</span></a></span><span>
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span class="annot"><a href="Torch.Distributions.Constraints.html#greaterThan"><span class="hs-identifier hs-type">greaterThan</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Distributions.Constraints.html#Constraint"><span class="hs-identifier hs-type">Constraint</span></a></span><span>
+</span><span id="line-59"></span><span id="greaterThan"><span class="annot"><span class="annottext">greaterThan :: Float -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#greaterThan"><span class="hs-identifier hs-var hs-var">greaterThan</span></a></span></span><span> </span><span id="local-6989586621679673165"><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679673165"><span class="hs-identifier hs-var">lower_bound</span></a></span></span><span> </span><span id="local-6989586621679673164"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673164"><span class="hs-identifier hs-var">tensor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673164"><span class="hs-identifier hs-var">tensor</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Constraint
+</span><a href="Torch.Functional.html#gt"><span class="hs-operator hs-var">`F.gt`</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Constraint
+forall a. Scalar a =&gt; a -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#fullLike%27"><span class="hs-identifier hs-var">fullLike'</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679673165"><span class="hs-identifier hs-var">lower_bound</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673164"><span class="hs-identifier hs-var">tensor</span></a></span><span>
+</span><span id="line-60"></span><span>
+</span><span id="line-61"></span><span class="annot"><a href="Torch.Distributions.Constraints.html#greaterThanEq"><span class="hs-identifier hs-type">greaterThanEq</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Distributions.Constraints.html#Constraint"><span class="hs-identifier hs-type">Constraint</span></a></span><span>
+</span><span id="line-62"></span><span id="greaterThanEq"><span class="annot"><span class="annottext">greaterThanEq :: Float -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#greaterThanEq"><span class="hs-identifier hs-var hs-var">greaterThanEq</span></a></span></span><span> </span><span id="local-6989586621679673163"><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679673163"><span class="hs-identifier hs-var">lower_bound</span></a></span></span><span> </span><span id="local-6989586621679673162"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673162"><span class="hs-identifier hs-var">tensor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673162"><span class="hs-identifier hs-var">tensor</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Constraint
+</span><a href="Torch.Functional.html#ge"><span class="hs-operator hs-var">`F.ge`</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Constraint
+forall a. Scalar a =&gt; a -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#fullLike%27"><span class="hs-identifier hs-var">fullLike'</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679673163"><span class="hs-identifier hs-var">lower_bound</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673162"><span class="hs-identifier hs-var">tensor</span></a></span><span>
+</span><span id="line-63"></span><span>
+</span><span id="line-64"></span><span class="annot"><a href="Torch.Distributions.Constraints.html#lessThan"><span class="hs-identifier hs-type">lessThan</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Distributions.Constraints.html#Constraint"><span class="hs-identifier hs-type">Constraint</span></a></span><span>
+</span><span id="line-65"></span><span id="lessThan"><span class="annot"><span class="annottext">lessThan :: Float -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#lessThan"><span class="hs-identifier hs-var hs-var">lessThan</span></a></span></span><span> </span><span id="local-6989586621679673161"><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679673161"><span class="hs-identifier hs-var">upper_bound</span></a></span></span><span> </span><span id="local-6989586621679673160"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673160"><span class="hs-identifier hs-var">tensor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673160"><span class="hs-identifier hs-var">tensor</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Constraint
+</span><a href="Torch.Functional.html#lt"><span class="hs-operator hs-var">`F.lt`</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Constraint
+forall a. Scalar a =&gt; a -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#fullLike%27"><span class="hs-identifier hs-var">fullLike'</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679673161"><span class="hs-identifier hs-var">upper_bound</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673160"><span class="hs-identifier hs-var">tensor</span></a></span><span>
+</span><span id="line-66"></span><span>
+</span><span id="line-67"></span><span class="annot"><a href="Torch.Distributions.Constraints.html#lessThanEq"><span class="hs-identifier hs-type">lessThanEq</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Distributions.Constraints.html#Constraint"><span class="hs-identifier hs-type">Constraint</span></a></span><span>
+</span><span id="line-68"></span><span id="lessThanEq"><span class="annot"><span class="annottext">lessThanEq :: Float -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#lessThanEq"><span class="hs-identifier hs-var hs-var">lessThanEq</span></a></span></span><span> </span><span id="local-6989586621679673159"><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679673159"><span class="hs-identifier hs-var">upper_bound</span></a></span></span><span> </span><span id="local-6989586621679673158"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673158"><span class="hs-identifier hs-var">tensor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673158"><span class="hs-identifier hs-var">tensor</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Constraint
+</span><a href="Torch.Functional.html#le"><span class="hs-operator hs-var">`F.le`</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Constraint
+forall a. Scalar a =&gt; a -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#fullLike%27"><span class="hs-identifier hs-var">fullLike'</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679673159"><span class="hs-identifier hs-var">upper_bound</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673158"><span class="hs-identifier hs-var">tensor</span></a></span><span>
+</span><span id="line-69"></span><span>
+</span><span id="line-70"></span><span class="annot"><a href="Torch.Distributions.Constraints.html#interval"><span class="hs-identifier hs-type">interval</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Distributions.Constraints.html#Constraint"><span class="hs-identifier hs-type">Constraint</span></a></span><span>
+</span><span id="line-71"></span><span id="interval"><span class="annot"><span class="annottext">interval :: Float -&gt; Float -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#interval"><span class="hs-identifier hs-var hs-var">interval</span></a></span></span><span> </span><span id="local-6989586621679673157"><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679673157"><span class="hs-identifier hs-var">lower_bound</span></a></span></span><span> </span><span id="local-6989586621679673156"><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679673156"><span class="hs-identifier hs-var">upper_bound</span></a></span></span><span> </span><span id="local-6989586621679673155"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673155"><span class="hs-identifier hs-var">tensor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673155"><span class="hs-identifier hs-var">tensor</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Constraint
+</span><a href="Torch.Functional.html#ge"><span class="hs-operator hs-var">`F.ge`</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Constraint
+forall a. Scalar a =&gt; a -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#fullLike%27"><span class="hs-identifier hs-var">fullLike'</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679673157"><span class="hs-identifier hs-var">lower_bound</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673155"><span class="hs-identifier hs-var">tensor</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Constraint
+</span><a href="Torch.Functional.Internal.html#logical_and"><span class="hs-operator hs-var">`I.logical_and`</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673155"><span class="hs-identifier hs-var">tensor</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Constraint
+</span><a href="Torch.Functional.html#le"><span class="hs-operator hs-var">`F.le`</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Constraint
+forall a. Scalar a =&gt; a -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#fullLike%27"><span class="hs-identifier hs-var">fullLike'</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679673156"><span class="hs-identifier hs-var">upper_bound</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673155"><span class="hs-identifier hs-var">tensor</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-72"></span><span>
+</span><span id="line-73"></span><span class="annot"><a href="Torch.Distributions.Constraints.html#halfOpenInterval"><span class="hs-identifier hs-type">halfOpenInterval</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Distributions.Constraints.html#Constraint"><span class="hs-identifier hs-type">Constraint</span></a></span><span>
+</span><span id="line-74"></span><span id="halfOpenInterval"><span class="annot"><span class="annottext">halfOpenInterval :: Float -&gt; Float -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#halfOpenInterval"><span class="hs-identifier hs-var hs-var">halfOpenInterval</span></a></span></span><span> </span><span id="local-6989586621679673154"><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679673154"><span class="hs-identifier hs-var">lower_bound</span></a></span></span><span> </span><span id="local-6989586621679673153"><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679673153"><span class="hs-identifier hs-var">upper_bound</span></a></span></span><span> </span><span id="local-6989586621679673152"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673152"><span class="hs-identifier hs-var">tensor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673152"><span class="hs-identifier hs-var">tensor</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Constraint
+</span><a href="Torch.Functional.html#ge"><span class="hs-operator hs-var">`F.ge`</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Constraint
+forall a. Scalar a =&gt; a -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#fullLike%27"><span class="hs-identifier hs-var">fullLike'</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679673154"><span class="hs-identifier hs-var">lower_bound</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673152"><span class="hs-identifier hs-var">tensor</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Constraint
+</span><a href="Torch.Functional.Internal.html#logical_and"><span class="hs-operator hs-var">`I.logical_and`</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673152"><span class="hs-identifier hs-var">tensor</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Constraint
+</span><a href="Torch.Functional.html#lt"><span class="hs-operator hs-var">`F.lt`</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Constraint
+forall a. Scalar a =&gt; a -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#fullLike%27"><span class="hs-identifier hs-var">fullLike'</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679673153"><span class="hs-identifier hs-var">upper_bound</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673152"><span class="hs-identifier hs-var">tensor</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-75"></span><span>
+</span><span id="line-76"></span><span class="annot"><a href="Torch.Distributions.Constraints.html#simplex"><span class="hs-identifier hs-type">simplex</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Distributions.Constraints.html#Constraint"><span class="hs-identifier hs-type">Constraint</span></a></span><span>
+</span><span id="line-77"></span><span id="simplex"><span class="annot"><span class="annottext">simplex :: Constraint
+</span><a href="Torch.Distributions.Constraints.html#simplex"><span class="hs-identifier hs-var hs-var">simplex</span></a></span></span><span> </span><span id="local-6989586621679673151"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673151"><span class="hs-identifier hs-var">tensor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Dim -&gt; Bool -&gt; Constraint
+</span><a href="Torch.Functional.html#allDim"><span class="hs-identifier hs-var">F.allDim</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Dim
+</span><a href="Torch.Functional.html#Dim"><span class="hs-identifier hs-var">F.Dim</span></a></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Dim) -&gt; Int -&gt; Dim
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#greaterThanEq"><span class="hs-identifier hs-var">greaterThanEq</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">0.0</span></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673151"><span class="hs-identifier hs-var">tensor</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Constraint
+</span><a href="Torch.Functional.Internal.html#logical_and"><span class="hs-operator hs-var">`I.logical_and`</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#lessThan"><span class="hs-identifier hs-var">lessThan</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">1e-6</span></span><span> </span><span class="annot"><span class="annottext">Constraint -&gt; Constraint
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Constraint
+</span><a href="Torch.Functional.html#abs"><span class="hs-identifier hs-var">F.abs</span></a></span><span> </span><span class="annot"><span class="annottext">Constraint -&gt; Constraint
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673147"><span class="hs-identifier hs-var">summed</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Constraint
+</span><a href="Torch.Functional.html#sub"><span class="hs-operator hs-var">`F.sub`</span></a></span><span> </span><span class="annot"><span class="annottext">Constraint
+</span><a href="Torch.TensorFactories.html#onesLike"><span class="hs-identifier hs-var">D.onesLike</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673147"><span class="hs-identifier hs-var">summed</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-78"></span><span>        </span><span class="hs-keyword">where</span><span>
+</span><span id="line-79"></span><span>            </span><span id="local-6989586621679673147"><span class="annot"><span class="annottext">summed :: Tensor
+</span><a href="#local-6989586621679673147"><span class="hs-identifier hs-var hs-var">summed</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Dim -&gt; KeepDim -&gt; DType -&gt; Constraint
+</span><a href="Torch.Functional.html#sumDim"><span class="hs-identifier hs-var">F.sumDim</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Dim
+</span><a href="Torch.Functional.html#Dim"><span class="hs-identifier hs-var">F.Dim</span></a></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Dim) -&gt; Int -&gt; Dim
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">KeepDim
+</span><a href="Torch.Functional.html#RemoveDim"><span class="hs-identifier hs-var">F.RemoveDim</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor -&gt; DType
+</span><a href="Torch.Tensor.html#dtype"><span class="hs-identifier hs-var">D.dtype</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673151"><span class="hs-identifier hs-var">tensor</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673151"><span class="hs-identifier hs-var">tensor</span></a></span><span>
+</span><span id="line-80"></span><span>
+</span><span id="line-81"></span><span class="hs-comment">-- TODO: lowerTriangular</span><span>
+</span><span id="line-82"></span><span class="hs-comment">-- TODO: lowerCholesky</span><span>
+</span><span id="line-83"></span><span class="hs-comment">-- TODO: positiveDefinite</span><span>
+</span><span id="line-84"></span><span class="hs-comment">-- TODO: realVector</span><span>
+</span><span id="line-85"></span><span class="hs-comment">-- TODO: cat</span><span>
+</span><span id="line-86"></span><span class="hs-comment">-- TODO: stack</span><span>
+</span><span id="line-87"></span><span>
+</span><span id="line-88"></span><span class="annot"><a href="Torch.Distributions.Constraints.html#nonNegativeInteger"><span class="hs-identifier hs-type">nonNegativeInteger</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Distributions.Constraints.html#Constraint"><span class="hs-identifier hs-type">Constraint</span></a></span><span>
+</span><span id="line-89"></span><span id="nonNegativeInteger"><span class="annot"><span class="annottext">nonNegativeInteger :: Constraint
+</span><a href="Torch.Distributions.Constraints.html#nonNegativeInteger"><span class="hs-identifier hs-var hs-var">nonNegativeInteger</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#integerGreaterThanEq"><span class="hs-identifier hs-var">integerGreaterThanEq</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-90"></span><span class="annot"><a href="Torch.Distributions.Constraints.html#positiveInteger"><span class="hs-identifier hs-type">positiveInteger</span></a></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Distributions.Constraints.html#Constraint"><span class="hs-identifier hs-type">Constraint</span></a></span><span>
+</span><span id="line-91"></span><span id="positiveInteger"><span class="annot"><span class="annottext">positiveInteger :: Constraint
+</span><a href="Torch.Distributions.Constraints.html#positiveInteger"><span class="hs-identifier hs-var hs-var">positiveInteger</span></a></span></span><span>    </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#integerGreaterThanEq"><span class="hs-identifier hs-var">integerGreaterThanEq</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span>
+</span><span id="line-92"></span><span class="annot"><a href="Torch.Distributions.Constraints.html#positive"><span class="hs-identifier hs-type">positive</span></a></span><span>           </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Distributions.Constraints.html#Constraint"><span class="hs-identifier hs-type">Constraint</span></a></span><span>
+</span><span id="line-93"></span><span id="positive"><span class="annot"><span class="annottext">positive :: Constraint
+</span><a href="Torch.Distributions.Constraints.html#positive"><span class="hs-identifier hs-var hs-var">positive</span></a></span></span><span>           </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Float -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#greaterThan"><span class="hs-identifier hs-var">greaterThan</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">0.0</span></span><span>
+</span><span id="line-94"></span><span class="annot"><a href="Torch.Distributions.Constraints.html#unitInterval"><span class="hs-identifier hs-type">unitInterval</span></a></span><span>       </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Distributions.Constraints.html#Constraint"><span class="hs-identifier hs-type">Constraint</span></a></span><span>
+</span><span id="line-95"></span><span id="unitInterval"><span class="annot"><span class="annottext">unitInterval :: Constraint
+</span><a href="Torch.Distributions.Constraints.html#unitInterval"><span class="hs-identifier hs-var hs-var">unitInterval</span></a></span></span><span>       </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#interval"><span class="hs-identifier hs-var">interval</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">0.0</span></span><span> </span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">1.0</span></span><span>
+</span><span id="line-96"></span><span>
+</span><span id="line-97"></span><span id="local-6989586621679673218"><span class="annot"><a href="Torch.Distributions.Constraints.html#fullLike%27"><span class="hs-identifier hs-type">fullLike'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Scalar.html#Scalar"><span class="hs-identifier hs-type">Scalar</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679673218"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679673218"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">D.Tensor</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">D.Tensor</span></a></span></span><span>
+</span><span id="line-98"></span><span id="fullLike%27"><span class="annot"><span class="annottext">fullLike' :: a -&gt; Constraint
+</span><a href="Torch.Distributions.Constraints.html#fullLike%27"><span class="hs-identifier hs-var hs-var">fullLike'</span></a></span></span><span> </span><span id="local-6989586621679673142"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679673142"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621679673141"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673141"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; Constraint
+forall a. Scalar a =&gt; a -&gt; Constraint
+</span><a href="Torch.Functional.html#mulScalar"><span class="hs-identifier hs-var">F.mulScalar</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679673142"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Constraint -&gt; Constraint
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Constraint
+</span><a href="Torch.TensorFactories.html#onesLike"><span class="hs-identifier hs-var">D.onesLike</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679673141"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-99"></span></pre></body></html>

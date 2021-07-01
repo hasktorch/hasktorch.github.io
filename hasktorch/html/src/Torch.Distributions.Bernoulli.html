@@ -1,0 +1,201 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DataKinds #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE TypeApplications #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.Distributions.Bernoulli</span><span> </span><span class="hs-special">(</span><span>
+</span><span id="line-5"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Bernoulli.html#Bernoulli"><span class="hs-identifier">Bernoulli</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-6"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Bernoulli.html#fromProbs"><span class="hs-identifier">fromProbs</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><a href="Torch.Distributions.Bernoulli.html#fromLogits"><span class="hs-identifier">fromLogits</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.Typed.Functional.html"><span class="hs-identifier">Torch.Typed.Functional</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Functional.html#reductionVal"><span class="hs-identifier">reductionVal</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.Functional.Internal.html"><span class="hs-identifier">Torch.Functional.Internal</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">I</span></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.TensorOptions.html"><span class="hs-identifier">Torch.TensorOptions</span></a></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.Tensor.html"><span class="hs-identifier">Torch.Tensor</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.DType.html"><span class="hs-identifier">Torch.DType</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.TensorFactories.html"><span class="hs-identifier">Torch.TensorFactories</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.Functional.html"><span class="hs-identifier">Torch.Functional</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">F</span></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.Scalar.html"><span class="hs-identifier">Torch.Scalar</span></a></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.Distributions.Constraints.html"><span class="hs-identifier">Torch.Distributions.Constraints</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Constraints</span></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.Distributions.Distribution.html"><span class="hs-identifier">Torch.Distributions.Distribution</span></a></span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">data</span><span> </span><span id="Bernoulli"><span class="annot"><a href="Torch.Distributions.Bernoulli.html#Bernoulli"><span class="hs-identifier hs-var">Bernoulli</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Bernoulli"><span class="annot"><a href="Torch.Distributions.Bernoulli.html#Bernoulli"><span class="hs-identifier hs-var">Bernoulli</span></a></span></span><span> </span><span class="hs-special">{</span><span>
+</span><span id="line-22"></span><span>    </span><span id="probs"><span class="annot"><span class="annottext">Bernoulli -&gt; Tensor
+</span><a href="Torch.Distributions.Bernoulli.html#probs"><span class="hs-identifier hs-var hs-var">probs</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">D.Tensor</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="logits"><span class="annot"><span class="annottext">Bernoulli -&gt; Tensor
+</span><a href="Torch.Distributions.Bernoulli.html#logits"><span class="hs-identifier hs-var hs-var">logits</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">D.Tensor</span></a></span><span>
+</span><span id="line-24"></span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679687638"><span id="local-6989586621679687640"><span id="local-6989586621679687642"><span class="annot"><span class="annottext">Int -&gt; Bernoulli -&gt; ShowS
+[Bernoulli] -&gt; ShowS
+Bernoulli -&gt; String
+(Int -&gt; Bernoulli -&gt; ShowS)
+-&gt; (Bernoulli -&gt; String)
+-&gt; ([Bernoulli] -&gt; ShowS)
+-&gt; Show Bernoulli
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+showList :: [Bernoulli] -&gt; ShowS
+$cshowList :: [Bernoulli] -&gt; ShowS
+show :: Bernoulli -&gt; String
+$cshow :: Bernoulli -&gt; String
+showsPrec :: Int -&gt; Bernoulli -&gt; ShowS
+$cshowsPrec :: Int -&gt; Bernoulli -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.Distributions.Distribution.html#Distribution"><span class="hs-identifier hs-type">Distribution</span></a></span><span> </span><span class="annot"><a href="Torch.Distributions.Bernoulli.html#Bernoulli"><span class="hs-identifier hs-type">Bernoulli</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-26"></span><span>    </span><span id="local-6989586621679687625"><span class="annot"><span class="annottext">batchShape :: Bernoulli -&gt; [Int]
+</span><a href="Torch.Distributions.Distribution.html#batchShape"><span class="hs-identifier hs-var hs-var hs-var hs-var">batchShape</span></a></span></span><span> </span><span id="local-6989586621679687623"><span class="annot"><span class="annottext">Bernoulli
+</span><a href="#local-6989586621679687623"><span class="hs-identifier hs-var">d</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-27"></span><span>    </span><span id="local-6989586621679687622"><span class="annot"><span class="annottext">eventShape :: Bernoulli -&gt; [Int]
+</span><a href="Torch.Distributions.Distribution.html#eventShape"><span class="hs-identifier hs-var hs-var hs-var hs-var">eventShape</span></a></span></span><span> </span><span id="local-6989586621679687620"><span class="annot"><span class="annottext">Bernoulli
+</span><a href="#local-6989586621679687620"><span class="hs-identifier hs-var">_d</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-28"></span><span>    </span><span id="local-6989586621679687619"><span class="annot"><span class="annottext">expand :: Bernoulli -&gt; [Int] -&gt; Bernoulli
+</span><a href="Torch.Distributions.Distribution.html#expand"><span class="hs-identifier hs-var hs-var hs-var hs-var">expand</span></a></span></span><span> </span><span id="local-6989586621679687617"><span class="annot"><span class="annottext">Bernoulli
+</span><a href="#local-6989586621679687617"><span class="hs-identifier hs-var">d</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Bernoulli
+</span><a href="Torch.Distributions.Bernoulli.html#fromProbs"><span class="hs-identifier hs-var">fromProbs</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor -&gt; Bernoulli) -&gt; ([Int] -&gt; Tensor) -&gt; [Int] -&gt; Bernoulli
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Bool -&gt; [Int] -&gt; Tensor
+</span><a href="Torch.Functional.html#expand"><span class="hs-identifier hs-var">F.expand</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bernoulli -&gt; Tensor
+</span><a href="Torch.Distributions.Bernoulli.html#probs"><span class="hs-identifier hs-var hs-var">probs</span></a></span><span> </span><span class="annot"><span class="annottext">Bernoulli
+</span><a href="#local-6989586621679687617"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-29"></span><span>    </span><span id="local-6989586621679687614"><span class="annot"><span class="annottext">support :: Bernoulli -&gt; Tensor -&gt; Tensor
+</span><a href="Torch.Distributions.Distribution.html#support"><span class="hs-identifier hs-var hs-var hs-var hs-var">support</span></a></span></span><span> </span><span id="local-6989586621679687612"><span class="annot"><span class="annottext">Bernoulli
+</span><a href="#local-6989586621679687612"><span class="hs-identifier hs-var">d</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Tensor
+</span><a href="Torch.Distributions.Constraints.html#boolean"><span class="hs-identifier hs-var">Constraints.boolean</span></a></span><span>
+</span><span id="line-30"></span><span>    </span><span id="local-6989586621679687610"><span class="annot"><span class="annottext">mean :: Bernoulli -&gt; Tensor
+</span><a href="Torch.Distributions.Distribution.html#mean"><span class="hs-identifier hs-var hs-var hs-var hs-var">mean</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bernoulli -&gt; Tensor
+</span><a href="Torch.Distributions.Bernoulli.html#probs"><span class="hs-identifier hs-var hs-var">probs</span></a></span><span>
+</span><span id="line-31"></span><span>    </span><span id="local-6989586621679687608"><span class="annot"><span class="annottext">variance :: Bernoulli -&gt; Tensor
+</span><a href="Torch.Distributions.Distribution.html#variance"><span class="hs-identifier hs-var hs-var hs-var hs-var">variance</span></a></span></span><span> </span><span id="local-6989586621679687606"><span class="annot"><span class="annottext">Bernoulli
+</span><a href="#local-6989586621679687606"><span class="hs-identifier hs-var">d</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679687605"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Tensor -&gt; Tensor
+</span><a href="Torch.Functional.html#mul"><span class="hs-operator hs-var">`F.mul`</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor -&gt; Tensor
+</span><a href="Torch.TensorFactories.html#onesLike"><span class="hs-identifier hs-var">D.onesLike</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679687605"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Tensor -&gt; Tensor
+</span><a href="Torch.Functional.html#sub"><span class="hs-operator hs-var">`F.sub`</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679687605"><span class="hs-identifier hs-var">p</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span>            </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679687605"><span class="annot"><span class="annottext">p :: Tensor
+</span><a href="#local-6989586621679687605"><span class="hs-identifier hs-var hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bernoulli -&gt; Tensor
+</span><a href="Torch.Distributions.Bernoulli.html#probs"><span class="hs-identifier hs-var hs-var">probs</span></a></span><span> </span><span class="annot"><span class="annottext">Bernoulli
+</span><a href="#local-6989586621679687606"><span class="hs-identifier hs-var">d</span></a></span><span>
+</span><span id="line-33"></span><span>    </span><span id="local-6989586621679687601"><span class="annot"><span class="annottext">sample :: Bernoulli -&gt; [Int] -&gt; IO Tensor
+</span><a href="Torch.Distributions.Distribution.html#sample"><span class="hs-identifier hs-var hs-var hs-var hs-var">sample</span></a></span></span><span> </span><span id="local-6989586621679687599"><span class="annot"><span class="annottext">Bernoulli
+</span><a href="#local-6989586621679687599"><span class="hs-identifier hs-var">d</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; IO Tensor
+</span><a href="Torch.TensorFactories.html#bernoulliIO%27"><span class="hs-identifier hs-var">D.bernoulliIO'</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor -&gt; IO Tensor) -&gt; ([Int] -&gt; Tensor) -&gt; [Int] -&gt; IO Tensor
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Bool -&gt; [Int] -&gt; Tensor
+</span><a href="Torch.Functional.html#expand"><span class="hs-identifier hs-var">F.expand</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bernoulli -&gt; Tensor
+</span><a href="Torch.Distributions.Bernoulli.html#probs"><span class="hs-identifier hs-var hs-var">probs</span></a></span><span> </span><span class="annot"><span class="annottext">Bernoulli
+</span><a href="#local-6989586621679687599"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="annot"><span class="annottext">([Int] -&gt; Tensor) -&gt; ([Int] -&gt; [Int]) -&gt; [Int] -&gt; Tensor
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Bernoulli -&gt; [Int] -&gt; [Int]
+forall a. Distribution a =&gt; a -&gt; [Int] -&gt; [Int]
+</span><a href="Torch.Distributions.Distribution.html#extendedShape"><span class="hs-identifier hs-var">extendedShape</span></a></span><span> </span><span class="annot"><span class="annottext">Bernoulli
+</span><a href="#local-6989586621679687599"><span class="hs-identifier hs-var">d</span></a></span><span>
+</span><span id="line-34"></span><span>    </span><span id="local-6989586621679687596"><span class="annot"><span class="annottext">logProb :: Bernoulli -&gt; Tensor -&gt; Tensor
+</span><a href="Torch.Distributions.Distribution.html#logProb"><span class="hs-identifier hs-var hs-var hs-var hs-var">logProb</span></a></span></span><span> </span><span id="local-6989586621679687594"><span class="annot"><span class="annottext">Bernoulli
+</span><a href="#local-6989586621679687594"><span class="hs-identifier hs-var">d</span></a></span></span><span> </span><span id="local-6989586621679687593"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679687593"><span class="hs-identifier hs-var">value</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Tensor -&gt; Tensor
+forall a. Scalar a =&gt; a -&gt; Tensor -&gt; Tensor
+</span><a href="Torch.Functional.html#mulScalar"><span class="hs-identifier hs-var">F.mulScalar</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor -&gt; Tensor -&gt; Tensor
+</span><a href="Torch.Distributions.Bernoulli.html#bce%27"><span class="hs-identifier hs-var">bce'</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bernoulli -&gt; Tensor
+</span><a href="Torch.Distributions.Bernoulli.html#logits"><span class="hs-identifier hs-var hs-var">logits</span></a></span><span> </span><span class="annot"><span class="annottext">Bernoulli
+</span><a href="#local-6989586621679687594"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679687593"><span class="hs-identifier hs-var">value</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span>    </span><span id="local-6989586621679687590"><span class="annot"><span class="annottext">entropy :: Bernoulli -&gt; Tensor
+</span><a href="Torch.Distributions.Distribution.html#entropy"><span class="hs-identifier hs-var hs-var hs-var hs-var">entropy</span></a></span></span><span> </span><span id="local-6989586621679687588"><span class="annot"><span class="annottext">Bernoulli
+</span><a href="#local-6989586621679687588"><span class="hs-identifier hs-var">d</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Tensor -&gt; Tensor
+</span><a href="Torch.Distributions.Bernoulli.html#bce%27"><span class="hs-identifier hs-var">bce'</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bernoulli -&gt; Tensor
+</span><a href="Torch.Distributions.Bernoulli.html#logits"><span class="hs-identifier hs-var hs-var">logits</span></a></span><span> </span><span class="annot"><span class="annottext">Bernoulli
+</span><a href="#local-6989586621679687588"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Tensor -&gt; Tensor) -&gt; Tensor -&gt; Tensor
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Bernoulli -&gt; Tensor
+</span><a href="Torch.Distributions.Bernoulli.html#probs"><span class="hs-identifier hs-var hs-var">probs</span></a></span><span> </span><span class="annot"><span class="annottext">Bernoulli
+</span><a href="#local-6989586621679687588"><span class="hs-identifier hs-var">d</span></a></span><span>
+</span><span id="line-36"></span><span>    </span><span id="local-6989586621679687587"><span class="annot"><span class="annottext">enumerateSupport :: Bernoulli -&gt; Bool -&gt; Tensor
+</span><a href="Torch.Distributions.Distribution.html#enumerateSupport"><span class="hs-identifier hs-var hs-var hs-var hs-var">enumerateSupport</span></a></span></span><span> </span><span id="local-6989586621679687585"><span class="annot"><span class="annottext">Bernoulli
+</span><a href="#local-6989586621679687585"><span class="hs-identifier hs-var">d</span></a></span></span><span> </span><span id="local-6989586621679687584"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679687584"><span class="hs-identifier hs-var">doExpand</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-37"></span><span>        </span><span class="hs-special">(</span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679687584"><span class="hs-identifier hs-var">doExpand</span></a></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679687583"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679687583"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Bool -&gt; [Int] -&gt; Tensor
+</span><a href="Torch.Functional.html#expand"><span class="hs-identifier hs-var">F.expand</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679687583"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">[</span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; [Int] -&gt; [Int]
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Bernoulli -&gt; [Int]
+forall a. Distribution a =&gt; a -&gt; [Int]
+</span><a href="Torch.Distributions.Distribution.html#batchShape"><span class="hs-identifier hs-var">batchShape</span></a></span><span> </span><span class="annot"><span class="annottext">Bernoulli
+</span><a href="#local-6989586621679687585"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Tensor
+forall a. a -&gt; a
+</span><span class="hs-identifier hs-var">id</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679687581"><span class="hs-identifier hs-var">values</span></a></span><span>
+</span><span id="line-38"></span><span>        </span><span class="hs-keyword">where</span><span>
+</span><span id="line-39"></span><span>            </span><span id="local-6989586621679687581"><span class="annot"><span class="annottext">values :: Tensor
+</span><a href="#local-6989586621679687581"><span class="hs-identifier hs-var hs-var">values</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; Tensor -&gt; Tensor
+</span><a href="Torch.Tensor.html#reshape"><span class="hs-identifier hs-var">D.reshape</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">[</span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; [Int] -&gt; [Int]
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; [Int]
+forall a. Int -&gt; a -&gt; [a]
+</span><span class="hs-identifier hs-var">replicate</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Int] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">([Int] -&gt; Int) -&gt; [Int] -&gt; Int
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Bernoulli -&gt; [Int]
+forall a. Distribution a =&gt; a -&gt; [Int]
+</span><a href="Torch.Distributions.Distribution.html#batchShape"><span class="hs-identifier hs-var">batchShape</span></a></span><span> </span><span class="annot"><span class="annottext">Bernoulli
+</span><a href="#local-6989586621679687585"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Tensor -&gt; Tensor) -&gt; Tensor -&gt; Tensor
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Float] -&gt; Tensor
+forall a. TensorLike a =&gt; a -&gt; Tensor
+</span><a href="Torch.Tensor.html#asTensor"><span class="hs-identifier hs-var">D.asTensor</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">0.0</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">1.0</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">]</span><span>
+</span><span id="line-40"></span><span>
+</span><span id="line-41"></span><span class="annot"><a href="Torch.Distributions.Bernoulli.html#bce%27"><span class="hs-identifier hs-type">bce'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">D.Tensor</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">D.Tensor</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">D.Tensor</span></a></span><span>
+</span><span id="line-42"></span><span id="bce%27"><span class="annot"><span class="annottext">bce' :: Tensor -&gt; Tensor -&gt; Tensor
+</span><a href="Torch.Distributions.Bernoulli.html#bce%27"><span class="hs-identifier hs-var hs-var">bce'</span></a></span></span><span> </span><span id="local-6989586621679687576"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679687576"><span class="hs-identifier hs-var">logits</span></a></span></span><span> </span><span id="local-6989586621679687575"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679687575"><span class="hs-identifier hs-var">probs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Tensor -&gt; Tensor -&gt; Tensor -&gt; Int -&gt; Tensor
+</span><a href="Torch.Functional.Internal.html#binary_cross_entropy_with_logits"><span class="hs-identifier hs-var">I.binary_cross_entropy_with_logits</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679687576"><span class="hs-identifier hs-var">logits</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679687575"><span class="hs-identifier hs-var">probs</span></a></span><span>
+</span><span id="line-43"></span><span>                        </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor -&gt; Tensor
+</span><a href="Torch.TensorFactories.html#onesLike"><span class="hs-identifier hs-var">D.onesLike</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679687576"><span class="hs-identifier hs-var">logits</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Int] -&gt; TensorOptions -&gt; Tensor
+</span><a href="Torch.TensorFactories.html#ones"><span class="hs-identifier hs-var">D.ones</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int -&gt; Tensor -&gt; Int
+</span><a href="Torch.Tensor.html#size"><span class="hs-identifier hs-var">D.size</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679687576"><span class="hs-identifier hs-var">logits</span></a></span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">TensorOptions
+</span><a href="Torch.Tensor.html#float_opts"><span class="hs-identifier hs-var">D.float_opts</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-44"></span><span>                        </span><span class="annot"><span class="annottext">(Int -&gt; Tensor) -&gt; Int -&gt; Tensor
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">KnownReduction 'ReduceNone =&gt; Int
+forall k (reduction :: k). KnownReduction reduction =&gt; Int
+</span><a href="Torch.Typed.Functional.html#reductionVal"><span class="hs-identifier hs-var">reductionVal</span></a></span><span> </span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Torch.Functional.html#ReduceNone"><span class="hs-identifier hs-type">F.ReduceNone</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-45"></span><span>
+</span><span id="line-46"></span><span class="annot"><a href="Torch.Distributions.Bernoulli.html#fromProbs"><span class="hs-identifier hs-type">fromProbs</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">D.Tensor</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Distributions.Bernoulli.html#Bernoulli"><span class="hs-identifier hs-type">Bernoulli</span></a></span><span>
+</span><span id="line-47"></span><span id="fromProbs"><span class="annot"><span class="annottext">fromProbs :: Tensor -&gt; Bernoulli
+</span><a href="Torch.Distributions.Bernoulli.html#fromProbs"><span class="hs-identifier hs-var hs-var">fromProbs</span></a></span></span><span> </span><span id="local-6989586621679687570"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679687570"><span class="hs-identifier hs-var">probs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Tensor -&gt; Bernoulli
+</span><a href="Torch.Distributions.Bernoulli.html#Bernoulli"><span class="hs-identifier hs-var">Bernoulli</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679687570"><span class="hs-identifier hs-var">probs</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor -&gt; Bernoulli) -&gt; Tensor -&gt; Bernoulli
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Tensor -&gt; Tensor
+</span><a href="Torch.Distributions.Distribution.html#probsToLogits"><span class="hs-identifier hs-var">probsToLogits</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679687570"><span class="hs-identifier hs-var">probs</span></a></span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="annot"><a href="Torch.Distributions.Bernoulli.html#fromLogits"><span class="hs-identifier hs-type">fromLogits</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">D.Tensor</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Distributions.Bernoulli.html#Bernoulli"><span class="hs-identifier hs-type">Bernoulli</span></a></span><span>
+</span><span id="line-50"></span><span id="fromLogits"><span class="annot"><span class="annottext">fromLogits :: Tensor -&gt; Bernoulli
+</span><a href="Torch.Distributions.Bernoulli.html#fromLogits"><span class="hs-identifier hs-var hs-var">fromLogits</span></a></span></span><span> </span><span id="local-6989586621679687568"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679687568"><span class="hs-identifier hs-var">logits</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; Tensor -&gt; Bernoulli
+</span><a href="Torch.Distributions.Bernoulli.html#Bernoulli"><span class="hs-identifier hs-var">Bernoulli</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; Tensor -&gt; Tensor
+</span><a href="Torch.Distributions.Distribution.html#probsToLogits"><span class="hs-identifier hs-var">probsToLogits</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679687568"><span class="hs-identifier hs-var">logits</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679687568"><span class="hs-identifier hs-var">logits</span></a></span><span>
+</span><span id="line-51"></span></pre></body></html>

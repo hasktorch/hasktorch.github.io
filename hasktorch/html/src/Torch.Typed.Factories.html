@@ -1,0 +1,483 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE AllowAmbiguousTypes #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE ConstraintKinds #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE DataKinds #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE FlexibleInstances #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE GADTs #-}</span><span>
+</span><span id="line-7"></span><span class="hs-pragma">{-# LANGUAGE MultiParamTypeClasses #-}</span><span>
+</span><span id="line-8"></span><span class="hs-pragma">{-# LANGUAGE PolyKinds #-}</span><span>
+</span><span id="line-9"></span><span class="hs-pragma">{-# LANGUAGE RankNTypes #-}</span><span>
+</span><span id="line-10"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-11"></span><span class="hs-pragma">{-# LANGUAGE TypeApplications #-}</span><span>
+</span><span id="line-12"></span><span class="hs-pragma">{-# LANGUAGE TypeFamilies #-}</span><span>
+</span><span id="line-13"></span><span class="hs-pragma">{-# LANGUAGE TypeOperators #-}</span><span>
+</span><span id="line-14"></span><span class="hs-pragma">{-# LANGUAGE UndecidableInstances #-}</span><span>
+</span><span id="line-15"></span><span class="hs-pragma">{-# LANGUAGE UndecidableSuperClasses #-}</span><span>
+</span><span id="line-16"></span><span class="hs-pragma">{-# LANGUAGE NoStarIsType #-}</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.Typed.Factories</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Arrow</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-operator">(&amp;&amp;&amp;)</span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/zlc4865a658jwr6r7hxmmib8ljr2i05q-finite-typelits-lib-finite-typelits-0.1.4.2-haddock-doc/share/doc/finite-typelits/html/src"><span class="hs-identifier">Data.Finite</span></a></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Kind</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Constraint</span></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Proxy</span></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/0cdmf3zb1iqkbmp9q2syh47ni76q0ids-reflection-lib-reflection-2.1.6-haddock-doc/share/doc/reflection/html/src"><span class="hs-identifier">Data.Reflection</span></a></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.TypeLits</span></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">System.IO.Unsafe</span></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.DType.html"><span class="hs-identifier">Torch.DType</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.Device.html"><span class="hs-identifier">Torch.Device</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.Functional.html"><span class="hs-identifier">Torch.Functional</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">Torch.Internal.Cast</span></a></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.Scalar.html"><span class="hs-identifier">Torch.Scalar</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.Tensor.html"><span class="hs-identifier">Torch.Tensor</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
+</span><span id="line-33"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.TensorFactories.html"><span class="hs-identifier">Torch.TensorFactories</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
+</span><span id="line-34"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.TensorOptions.html"><span class="hs-identifier">Torch.TensorOptions</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
+</span><span id="line-35"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.Typed.Aux.html"><span class="hs-identifier">Torch.Typed.Aux</span></a></span><span>
+</span><span id="line-36"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html"><span class="hs-identifier">Torch.Typed.Tensor</span></a></span><span>
+</span><span id="line-37"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Prelude</span></span><span> </span><span class="hs-keyword">hiding</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">sin</span></span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/nq0mv4n2x1rmslkzdxaic3kqahcr5rdl-data-default-class-lib-data-default-class-0.1.2.0-haddock-doc/share/doc/data-default-class/html/src"><span class="hs-identifier">Data.Default.Class</span></a></span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span id="local-6989586621679678079"><span id="local-6989586621679678080"><span id="local-6989586621679678081"><span class="hs-keyword">instance</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Tensor.html#TensorOptions"><span class="hs-identifier hs-type">TensorOptions</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678081"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678080"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678079"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="../file:///nix/store/nq0mv4n2x1rmslkzdxaic3kqahcr5rdl-data-default-class-lib-data-default-class-0.1.2.0-haddock-doc/share/doc/data-default-class/html/src"><span class="hs-identifier hs-type">Default</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678079"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678080"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678081"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-41"></span><span>  </span><span id="local-6989586621679678076"><span class="annot"><span class="annottext">def :: Tensor device dtype shape
+</span><a href="../file:///nix/store/nq0mv4n2x1rmslkzdxaic3kqahcr5rdl-data-default-class-lib-data-default-class-0.1.2.0-haddock-doc/share/doc/data-default-class/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">def</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor device dtype shape
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+Tensor device dtype shape
+</span><a href="Torch.Typed.Factories.html#zeros"><span class="hs-identifier hs-var">zeros</span></a></span></span></span></span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span id="local-6989586621679678070"><span id="local-6989586621679678071"><span id="local-6989586621679678072"><span id="local-6989586621679678073"><span class="hs-keyword">instance</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Tensor.html#TensorOptions"><span class="hs-identifier hs-type">TensorOptions</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678073"><span class="hs-identifier hs-type">shape'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678072"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678071"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679678073"><span class="hs-identifier hs-type">shape'</span></a></span><span> </span><span class="annot"><span class="hs-glyph hs-type">~</span></span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#ToNats"><span class="hs-identifier hs-type">ToNats</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678070"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="../file:///nix/store/nq0mv4n2x1rmslkzdxaic3kqahcr5rdl-data-default-class-lib-data-default-class-0.1.2.0-haddock-doc/share/doc/data-default-class/html/src"><span class="hs-identifier hs-type">Default</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Tensor.html#NamedTensor"><span class="hs-identifier hs-type">NamedTensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678071"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678072"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678070"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-44"></span><span>  </span><span id="local-6989586621679678068"><span class="annot"><span class="annottext">def :: NamedTensor device dtype shape
+</span><a href="#local-6989586621679678068"><span class="hs-identifier hs-var hs-var hs-var hs-var">def</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor device dtype shape' -&gt; NamedTensor device dtype shape
+forall t (device :: (DeviceType, Nat)) (dtype :: DType)
+       (shape :: [Nat]).
+(Unnamed t, IsUnnamed t device dtype shape) =&gt;
+Tensor device dtype shape -&gt; t
+</span><a href="Torch.Typed.Tensor.html#fromUnnamed"><span class="hs-identifier hs-var">fromUnnamed</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor device dtype shape'
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+Tensor device dtype shape
+</span><a href="Torch.Typed.Factories.html#zeros"><span class="hs-identifier hs-var">zeros</span></a></span></span></span></span></span><span>
+</span><span id="line-45"></span><span>
+</span><span id="line-46"></span><span class="annot"><a href="Torch.Typed.Factories.html#zeros"><span class="hs-identifier hs-type">zeros</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679678066"><span class="annot"><a href="#local-6989586621679678066"><span class="hs-identifier hs-type">shape</span></a></span></span><span> </span><span id="local-6989586621679678065"><span class="annot"><a href="#local-6989586621679678065"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span id="local-6989586621679678064"><span class="annot"><a href="#local-6989586621679678064"><span class="hs-identifier hs-type">device</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Tensor.html#TensorOptions"><span class="hs-identifier hs-type">TensorOptions</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678066"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678065"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678064"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-49"></span><span>  </span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678064"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678065"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678066"><span class="hs-identifier hs-type">shape</span></a></span><span>
+</span><span id="line-50"></span><span id="zeros"><span class="annot"><span class="annottext">zeros :: Tensor device dtype shape
+</span><a href="Torch.Typed.Factories.html#zeros"><span class="hs-identifier hs-var hs-var">zeros</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-51"></span><span>  </span><span class="annot"><span class="annottext">Tensor -&gt; Tensor device dtype shape
+forall (device :: (DeviceType, Nat)) (dtype :: DType)
+       (shape :: [Nat]).
+Tensor -&gt; Tensor device dtype shape
+</span><a href="Torch.Typed.Tensor.html#UnsafeMkTensor"><span class="hs-identifier hs-var">UnsafeMkTensor</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor -&gt; Tensor device dtype shape)
+-&gt; Tensor -&gt; Tensor device dtype shape
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-52"></span><span>    </span><span class="annot"><span class="annottext">[Int] -&gt; TensorOptions -&gt; Tensor
+</span><a href="Torch.TensorFactories.html#zeros"><span class="hs-identifier hs-var">D.zeros</span></a></span><span>
+</span><span id="line-53"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TensorOptions shape dtype device =&gt; [Int]
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+[Int]
+</span><a href="Torch.Typed.Tensor.html#optionsRuntimeShape"><span class="hs-identifier hs-var">optionsRuntimeShape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678066"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678065"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678064"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span>      </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="annottext">Device -&gt; TensorOptions -&gt; TensorOptions
+</span><a href="Torch.TensorOptions.html#withDevice"><span class="hs-identifier hs-var">D.withDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TensorOptions shape dtype device =&gt; Device
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+Device
+</span><a href="Torch.Typed.Tensor.html#optionsRuntimeDevice"><span class="hs-identifier hs-var">optionsRuntimeDevice</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678066"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678065"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678064"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span>          </span><span class="annot"><span class="annottext">(TensorOptions -&gt; TensorOptions)
+-&gt; (TensorOptions -&gt; TensorOptions)
+-&gt; TensorOptions
+-&gt; TensorOptions
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">DType -&gt; TensorOptions -&gt; TensorOptions
+</span><a href="Torch.TensorOptions.html#withDType"><span class="hs-identifier hs-var">D.withDType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TensorOptions shape dtype device =&gt; DType
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+DType
+</span><a href="Torch.Typed.Tensor.html#optionsRuntimeDType"><span class="hs-identifier hs-var">optionsRuntimeDType</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678066"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678065"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678064"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-56"></span><span>          </span><span class="annot"><span class="annottext">(TensorOptions -&gt; TensorOptions) -&gt; TensorOptions -&gt; TensorOptions
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TensorOptions
+</span><a href="Torch.TensorOptions.html#defaultOpts"><span class="hs-identifier hs-var">D.defaultOpts</span></a></span><span>
+</span><span id="line-57"></span><span>      </span><span class="hs-special">)</span><span>
+</span><span id="line-58"></span><span>
+</span><span id="line-59"></span><span class="annot"><a href="Torch.Typed.Factories.html#full"><span class="hs-identifier hs-type">full</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679678053"><span class="annot"><a href="#local-6989586621679678053"><span class="hs-identifier hs-type">shape</span></a></span></span><span> </span><span id="local-6989586621679678052"><span class="annot"><a href="#local-6989586621679678052"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span id="local-6989586621679678051"><span class="annot"><a href="#local-6989586621679678051"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span id="local-6989586621679678050"><span class="annot"><a href="#local-6989586621679678050"><span class="hs-identifier hs-type">a</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-61"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Tensor.html#TensorOptions"><span class="hs-identifier hs-type">TensorOptions</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678053"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678052"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678051"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Scalar.html#Scalar"><span class="hs-identifier hs-type">D.Scalar</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678050"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-62"></span><span>  </span><span class="annot"><a href="#local-6989586621679678050"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-63"></span><span>  </span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678051"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678052"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678053"><span class="hs-identifier hs-type">shape</span></a></span><span>
+</span><span id="line-64"></span><span id="full"><span class="annot"><span class="annottext">full :: a -&gt; Tensor device dtype shape
+</span><a href="Torch.Typed.Factories.html#full"><span class="hs-identifier hs-var hs-var">full</span></a></span></span><span> </span><span id="local-6989586621679678049"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679678049"><span class="hs-identifier hs-var">value</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-65"></span><span>  </span><span class="annot"><span class="annottext">Tensor -&gt; Tensor device dtype shape
+forall (device :: (DeviceType, Nat)) (dtype :: DType)
+       (shape :: [Nat]).
+Tensor -&gt; Tensor device dtype shape
+</span><a href="Torch.Typed.Tensor.html#UnsafeMkTensor"><span class="hs-identifier hs-var">UnsafeMkTensor</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor -&gt; Tensor device dtype shape)
+-&gt; Tensor -&gt; Tensor device dtype shape
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-66"></span><span>    </span><span class="annot"><span class="annottext">[Int] -&gt; a -&gt; TensorOptions -&gt; Tensor
+forall a. Scalar a =&gt; [Int] -&gt; a -&gt; TensorOptions -&gt; Tensor
+</span><a href="Torch.TensorFactories.html#full"><span class="hs-identifier hs-var">D.full</span></a></span><span>
+</span><span id="line-67"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TensorOptions shape dtype device =&gt; [Int]
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+[Int]
+</span><a href="Torch.Typed.Tensor.html#optionsRuntimeShape"><span class="hs-identifier hs-var">optionsRuntimeShape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678053"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678052"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678051"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-68"></span><span>      </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679678049"><span class="hs-identifier hs-var">value</span></a></span><span>
+</span><span id="line-69"></span><span>      </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="annottext">Device -&gt; TensorOptions -&gt; TensorOptions
+</span><a href="Torch.TensorOptions.html#withDevice"><span class="hs-identifier hs-var">D.withDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TensorOptions shape dtype device =&gt; Device
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+Device
+</span><a href="Torch.Typed.Tensor.html#optionsRuntimeDevice"><span class="hs-identifier hs-var">optionsRuntimeDevice</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678053"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678052"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678051"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-70"></span><span>          </span><span class="annot"><span class="annottext">(TensorOptions -&gt; TensorOptions)
+-&gt; (TensorOptions -&gt; TensorOptions)
+-&gt; TensorOptions
+-&gt; TensorOptions
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">DType -&gt; TensorOptions -&gt; TensorOptions
+</span><a href="Torch.TensorOptions.html#withDType"><span class="hs-identifier hs-var">D.withDType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TensorOptions shape dtype device =&gt; DType
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+DType
+</span><a href="Torch.Typed.Tensor.html#optionsRuntimeDType"><span class="hs-identifier hs-var">optionsRuntimeDType</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678053"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678052"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678051"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-71"></span><span>          </span><span class="annot"><span class="annottext">(TensorOptions -&gt; TensorOptions) -&gt; TensorOptions -&gt; TensorOptions
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TensorOptions
+</span><a href="Torch.TensorOptions.html#defaultOpts"><span class="hs-identifier hs-var">D.defaultOpts</span></a></span><span>
+</span><span id="line-72"></span><span>      </span><span class="hs-special">)</span><span>
+</span><span id="line-73"></span><span>
+</span><span id="line-74"></span><span class="annot"><a href="Torch.Typed.Factories.html#ones"><span class="hs-identifier hs-type">ones</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-75"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679678046"><span class="annot"><a href="#local-6989586621679678046"><span class="hs-identifier hs-type">shape</span></a></span></span><span> </span><span id="local-6989586621679678045"><span class="annot"><a href="#local-6989586621679678045"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span id="local-6989586621679678044"><span class="annot"><a href="#local-6989586621679678044"><span class="hs-identifier hs-type">device</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-76"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Tensor.html#TensorOptions"><span class="hs-identifier hs-type">TensorOptions</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678046"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678045"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678044"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-77"></span><span>  </span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678044"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678045"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678046"><span class="hs-identifier hs-type">shape</span></a></span><span>
+</span><span id="line-78"></span><span id="ones"><span class="annot"><span class="annottext">ones :: Tensor device dtype shape
+</span><a href="Torch.Typed.Factories.html#ones"><span class="hs-identifier hs-var hs-var">ones</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-79"></span><span>  </span><span class="annot"><span class="annottext">Tensor -&gt; Tensor device dtype shape
+forall (device :: (DeviceType, Nat)) (dtype :: DType)
+       (shape :: [Nat]).
+Tensor -&gt; Tensor device dtype shape
+</span><a href="Torch.Typed.Tensor.html#UnsafeMkTensor"><span class="hs-identifier hs-var">UnsafeMkTensor</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor -&gt; Tensor device dtype shape)
+-&gt; Tensor -&gt; Tensor device dtype shape
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-80"></span><span>    </span><span class="annot"><span class="annottext">[Int] -&gt; TensorOptions -&gt; Tensor
+</span><a href="Torch.TensorFactories.html#ones"><span class="hs-identifier hs-var">D.ones</span></a></span><span>
+</span><span id="line-81"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TensorOptions shape dtype device =&gt; [Int]
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+[Int]
+</span><a href="Torch.Typed.Tensor.html#optionsRuntimeShape"><span class="hs-identifier hs-var">optionsRuntimeShape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678046"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678045"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678044"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-82"></span><span>      </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="annottext">Device -&gt; TensorOptions -&gt; TensorOptions
+</span><a href="Torch.TensorOptions.html#withDevice"><span class="hs-identifier hs-var">D.withDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TensorOptions shape dtype device =&gt; Device
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+Device
+</span><a href="Torch.Typed.Tensor.html#optionsRuntimeDevice"><span class="hs-identifier hs-var">optionsRuntimeDevice</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678046"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678045"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678044"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-83"></span><span>          </span><span class="annot"><span class="annottext">(TensorOptions -&gt; TensorOptions)
+-&gt; (TensorOptions -&gt; TensorOptions)
+-&gt; TensorOptions
+-&gt; TensorOptions
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">DType -&gt; TensorOptions -&gt; TensorOptions
+</span><a href="Torch.TensorOptions.html#withDType"><span class="hs-identifier hs-var">D.withDType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TensorOptions shape dtype device =&gt; DType
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+DType
+</span><a href="Torch.Typed.Tensor.html#optionsRuntimeDType"><span class="hs-identifier hs-var">optionsRuntimeDType</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678046"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678045"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678044"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-84"></span><span>          </span><span class="annot"><span class="annottext">(TensorOptions -&gt; TensorOptions) -&gt; TensorOptions -&gt; TensorOptions
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TensorOptions
+</span><a href="Torch.TensorOptions.html#defaultOpts"><span class="hs-identifier hs-var">D.defaultOpts</span></a></span><span>
+</span><span id="line-85"></span><span>      </span><span class="hs-special">)</span><span>
+</span><span id="line-86"></span><span>
+</span><span id="line-87"></span><span class="hs-keyword">type</span><span> </span><span class="hs-keyword">family</span><span> </span><span id="RandDTypeIsValid"><span class="annot"><a href="Torch.Typed.Factories.html#RandDTypeIsValid"><span class="hs-identifier hs-var">RandDTypeIsValid</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679678041"><span class="annot"><a href="#local-6989586621679678041"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Device.html#DeviceType"><span class="hs-identifier hs-type">D.DeviceType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679678040"><span class="annot"><a href="#local-6989586621679678040"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.DType.html#DType"><span class="hs-identifier hs-type">D.DType</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Constraint</span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-88"></span><span>  </span><span id="RandDTypeIsValid"><span class="annot"><a href="Torch.Typed.Factories.html#RandDTypeIsValid"><span class="hs-identifier hs-var">RandDTypeIsValid</span></a></span></span><span> </span><span class="hs-special">'</span><span class="hs-special">(</span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.Device.html#CPU"><span class="hs-identifier hs-type">D.CPU</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679678038"><span class="annot"><a href="#local-6989586621679678038"><span class="hs-identifier hs-type hs-type">dtype</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-89"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.Typed.Aux.html#DTypeIsNotBool"><span class="hs-identifier hs-type">DTypeIsNotBool</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">(</span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.Device.html#CPU"><span class="hs-identifier hs-type">D.CPU</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679678038"><span class="hs-identifier hs-type">dtype</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-90"></span><span>      </span><span class="annot"><a href="Torch.Typed.Aux.html#DTypeIsNotHalf"><span class="hs-identifier hs-type">DTypeIsNotHalf</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">(</span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.Device.html#CPU"><span class="hs-identifier hs-type">D.CPU</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679678038"><span class="hs-identifier hs-type">dtype</span></a></span><span>
+</span><span id="line-91"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-92"></span><span>  </span><span id="RandDTypeIsValid"><span class="annot"><a href="Torch.Typed.Factories.html#RandDTypeIsValid"><span class="hs-identifier hs-var">RandDTypeIsValid</span></a></span></span><span> </span><span class="hs-special">'</span><span class="hs-special">(</span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.Device.html#CUDA"><span class="hs-identifier hs-type">D.CUDA</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679678034"><span class="annot"><a href="#local-6989586621679678034"><span class="hs-identifier hs-type hs-type">dtype</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-93"></span><span>  </span><span id="RandDTypeIsValid"><span class="annot"><a href="Torch.Typed.Factories.html#RandDTypeIsValid"><span class="hs-identifier hs-var">RandDTypeIsValid</span></a></span></span><span> </span><span class="hs-special">'</span><span class="hs-special">(</span><span id="local-6989586621679678033"><span class="annot"><a href="#local-6989586621679678033"><span class="hs-identifier hs-type hs-type">deviceType</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679678032"><span class="annot"><a href="#local-6989586621679678032"><span class="hs-identifier hs-type hs-type">dtype</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Torch.Typed.Aux.html#UnsupportedDTypeForDevice"><span class="hs-identifier hs-type">UnsupportedDTypeForDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678033"><span class="hs-identifier hs-type">deviceType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678032"><span class="hs-identifier hs-type">dtype</span></a></span><span>
+</span><span id="line-94"></span><span>
+</span><span id="line-95"></span><span class="annot"><a href="Torch.Typed.Factories.html#rand"><span class="hs-identifier hs-type">rand</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-96"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679678029"><span class="annot"><a href="#local-6989586621679678029"><span class="hs-identifier hs-type">shape</span></a></span></span><span> </span><span id="local-6989586621679678028"><span class="annot"><a href="#local-6989586621679678028"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span id="local-6989586621679678027"><span class="annot"><a href="#local-6989586621679678027"><span class="hs-identifier hs-type">device</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-97"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#TensorOptions"><span class="hs-identifier hs-type">TensorOptions</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678029"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678028"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678027"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-98"></span><span>    </span><span class="annot"><a href="Torch.Typed.Factories.html#RandDTypeIsValid"><span class="hs-identifier hs-type">RandDTypeIsValid</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678027"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678028"><span class="hs-identifier hs-type">dtype</span></a></span><span>
+</span><span id="line-99"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-100"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678027"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678028"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678029"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-101"></span><span id="rand"><span class="annot"><span class="annottext">rand :: IO (Tensor device dtype shape)
+</span><a href="Torch.Typed.Factories.html#rand"><span class="hs-identifier hs-var hs-var">rand</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-102"></span><span>  </span><span class="annot"><span class="annottext">Tensor -&gt; Tensor device dtype shape
+forall (device :: (DeviceType, Nat)) (dtype :: DType)
+       (shape :: [Nat]).
+Tensor -&gt; Tensor device dtype shape
+</span><a href="Torch.Typed.Tensor.html#UnsafeMkTensor"><span class="hs-identifier hs-var">UnsafeMkTensor</span></a></span><span>
+</span><span id="line-103"></span><span>    </span><span class="annot"><span class="annottext">(Tensor -&gt; Tensor device dtype shape)
+-&gt; IO Tensor -&gt; IO (Tensor device dtype shape)
+forall (f :: Type -&gt; Type) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; TensorOptions -&gt; IO Tensor
+</span><a href="Torch.TensorFactories.html#randIO"><span class="hs-identifier hs-var">D.randIO</span></a></span><span>
+</span><span id="line-104"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TensorOptions shape dtype device =&gt; [Int]
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+[Int]
+</span><a href="Torch.Typed.Tensor.html#optionsRuntimeShape"><span class="hs-identifier hs-var">optionsRuntimeShape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678029"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678028"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678027"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-105"></span><span>      </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="annottext">Device -&gt; TensorOptions -&gt; TensorOptions
+</span><a href="Torch.TensorOptions.html#withDevice"><span class="hs-identifier hs-var">D.withDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TensorOptions shape dtype device =&gt; Device
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+Device
+</span><a href="Torch.Typed.Tensor.html#optionsRuntimeDevice"><span class="hs-identifier hs-var">optionsRuntimeDevice</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678029"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678028"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678027"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-106"></span><span>          </span><span class="annot"><span class="annottext">(TensorOptions -&gt; TensorOptions)
+-&gt; (TensorOptions -&gt; TensorOptions)
+-&gt; TensorOptions
+-&gt; TensorOptions
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">DType -&gt; TensorOptions -&gt; TensorOptions
+</span><a href="Torch.TensorOptions.html#withDType"><span class="hs-identifier hs-var">D.withDType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TensorOptions shape dtype device =&gt; DType
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+DType
+</span><a href="Torch.Typed.Tensor.html#optionsRuntimeDType"><span class="hs-identifier hs-var">optionsRuntimeDType</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678029"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678028"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678027"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-107"></span><span>          </span><span class="annot"><span class="annottext">(TensorOptions -&gt; TensorOptions) -&gt; TensorOptions -&gt; TensorOptions
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TensorOptions
+</span><a href="Torch.TensorOptions.html#defaultOpts"><span class="hs-identifier hs-var">D.defaultOpts</span></a></span><span>
+</span><span id="line-108"></span><span>      </span><span class="hs-special">)</span><span>
+</span><span id="line-109"></span><span>
+</span><span id="line-110"></span><span class="annot"><a href="Torch.Typed.Factories.html#randn"><span class="hs-identifier hs-type">randn</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-111"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679678023"><span class="annot"><a href="#local-6989586621679678023"><span class="hs-identifier hs-type">shape</span></a></span></span><span> </span><span id="local-6989586621679678022"><span class="annot"><a href="#local-6989586621679678022"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span id="local-6989586621679678021"><span class="annot"><a href="#local-6989586621679678021"><span class="hs-identifier hs-type">device</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-112"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#TensorOptions"><span class="hs-identifier hs-type">TensorOptions</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678023"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678022"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678021"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-113"></span><span>    </span><span class="annot"><a href="Torch.Typed.Factories.html#RandDTypeIsValid"><span class="hs-identifier hs-type">RandDTypeIsValid</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678021"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678022"><span class="hs-identifier hs-type">dtype</span></a></span><span>
+</span><span id="line-114"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-115"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678021"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678022"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678023"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-116"></span><span id="randn"><span class="annot"><span class="annottext">randn :: IO (Tensor device dtype shape)
+</span><a href="Torch.Typed.Factories.html#randn"><span class="hs-identifier hs-var hs-var">randn</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-117"></span><span>  </span><span class="annot"><span class="annottext">Tensor -&gt; Tensor device dtype shape
+forall (device :: (DeviceType, Nat)) (dtype :: DType)
+       (shape :: [Nat]).
+Tensor -&gt; Tensor device dtype shape
+</span><a href="Torch.Typed.Tensor.html#UnsafeMkTensor"><span class="hs-identifier hs-var">UnsafeMkTensor</span></a></span><span>
+</span><span id="line-118"></span><span>    </span><span class="annot"><span class="annottext">(Tensor -&gt; Tensor device dtype shape)
+-&gt; IO Tensor -&gt; IO (Tensor device dtype shape)
+forall (f :: Type -&gt; Type) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; TensorOptions -&gt; IO Tensor
+</span><a href="Torch.TensorFactories.html#randnIO"><span class="hs-identifier hs-var">D.randnIO</span></a></span><span>
+</span><span id="line-119"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TensorOptions shape dtype device =&gt; [Int]
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+[Int]
+</span><a href="Torch.Typed.Tensor.html#optionsRuntimeShape"><span class="hs-identifier hs-var">optionsRuntimeShape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678023"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678022"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678021"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-120"></span><span>      </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="annottext">Device -&gt; TensorOptions -&gt; TensorOptions
+</span><a href="Torch.TensorOptions.html#withDevice"><span class="hs-identifier hs-var">D.withDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TensorOptions shape dtype device =&gt; Device
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+Device
+</span><a href="Torch.Typed.Tensor.html#optionsRuntimeDevice"><span class="hs-identifier hs-var">optionsRuntimeDevice</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678023"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678022"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678021"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-121"></span><span>          </span><span class="annot"><span class="annottext">(TensorOptions -&gt; TensorOptions)
+-&gt; (TensorOptions -&gt; TensorOptions)
+-&gt; TensorOptions
+-&gt; TensorOptions
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">DType -&gt; TensorOptions -&gt; TensorOptions
+</span><a href="Torch.TensorOptions.html#withDType"><span class="hs-identifier hs-var">D.withDType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TensorOptions shape dtype device =&gt; DType
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+DType
+</span><a href="Torch.Typed.Tensor.html#optionsRuntimeDType"><span class="hs-identifier hs-var">optionsRuntimeDType</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678023"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678022"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678021"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-122"></span><span>          </span><span class="annot"><span class="annottext">(TensorOptions -&gt; TensorOptions) -&gt; TensorOptions -&gt; TensorOptions
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TensorOptions
+</span><a href="Torch.TensorOptions.html#defaultOpts"><span class="hs-identifier hs-var">D.defaultOpts</span></a></span><span>
+</span><span id="line-123"></span><span>      </span><span class="hs-special">)</span><span>
+</span><span id="line-124"></span><span>
+</span><span id="line-125"></span><span class="annot"><a href="Torch.Typed.Factories.html#randint"><span class="hs-identifier hs-type">randint</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-126"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679678018"><span class="annot"><a href="#local-6989586621679678018"><span class="hs-identifier hs-type">shape</span></a></span></span><span> </span><span id="local-6989586621679678017"><span class="annot"><a href="#local-6989586621679678017"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span id="local-6989586621679678016"><span class="annot"><a href="#local-6989586621679678016"><span class="hs-identifier hs-type">device</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-127"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#TensorOptions"><span class="hs-identifier hs-type">TensorOptions</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678018"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678017"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678016"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-128"></span><span>    </span><span class="annot"><a href="Torch.Typed.Factories.html#RandDTypeIsValid"><span class="hs-identifier hs-type">RandDTypeIsValid</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678016"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678017"><span class="hs-identifier hs-type">dtype</span></a></span><span>
+</span><span id="line-129"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-130"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-131"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-132"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678016"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678017"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678018"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-133"></span><span id="randint"><span class="annot"><span class="annottext">randint :: Int -&gt; Int -&gt; IO (Tensor device dtype shape)
+</span><a href="Torch.Typed.Factories.html#randint"><span class="hs-identifier hs-var hs-var">randint</span></a></span></span><span> </span><span id="local-6989586621679678015"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679678015"><span class="hs-identifier hs-var">low</span></a></span></span><span> </span><span id="local-6989586621679678014"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679678014"><span class="hs-identifier hs-var">high</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-134"></span><span>  </span><span class="annot"><span class="annottext">Tensor -&gt; Tensor device dtype shape
+forall (device :: (DeviceType, Nat)) (dtype :: DType)
+       (shape :: [Nat]).
+Tensor -&gt; Tensor device dtype shape
+</span><a href="Torch.Typed.Tensor.html#UnsafeMkTensor"><span class="hs-identifier hs-var">UnsafeMkTensor</span></a></span><span>
+</span><span id="line-135"></span><span>    </span><span class="annot"><span class="annottext">(Tensor -&gt; Tensor device dtype shape)
+-&gt; IO Tensor -&gt; IO (Tensor device dtype shape)
+forall (f :: Type -&gt; Type) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; [Int] -&gt; TensorOptions -&gt; IO Tensor
+</span><a href="Torch.TensorFactories.html#randintIO"><span class="hs-identifier hs-var">D.randintIO</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679678015"><span class="hs-identifier hs-var">low</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679678014"><span class="hs-identifier hs-var">high</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-136"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TensorOptions shape dtype device =&gt; [Int]
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+[Int]
+</span><a href="Torch.Typed.Tensor.html#optionsRuntimeShape"><span class="hs-identifier hs-var">optionsRuntimeShape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678018"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678017"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678016"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-137"></span><span>      </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="annottext">Device -&gt; TensorOptions -&gt; TensorOptions
+</span><a href="Torch.TensorOptions.html#withDevice"><span class="hs-identifier hs-var">D.withDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TensorOptions shape dtype device =&gt; Device
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+Device
+</span><a href="Torch.Typed.Tensor.html#optionsRuntimeDevice"><span class="hs-identifier hs-var">optionsRuntimeDevice</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678018"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678017"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678016"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-138"></span><span>          </span><span class="annot"><span class="annottext">(TensorOptions -&gt; TensorOptions)
+-&gt; (TensorOptions -&gt; TensorOptions)
+-&gt; TensorOptions
+-&gt; TensorOptions
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">DType -&gt; TensorOptions -&gt; TensorOptions
+</span><a href="Torch.TensorOptions.html#withDType"><span class="hs-identifier hs-var">D.withDType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TensorOptions shape dtype device =&gt; DType
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+DType
+</span><a href="Torch.Typed.Tensor.html#optionsRuntimeDType"><span class="hs-identifier hs-var">optionsRuntimeDType</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678018"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678017"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678016"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-139"></span><span>          </span><span class="annot"><span class="annottext">(TensorOptions -&gt; TensorOptions) -&gt; TensorOptions -&gt; TensorOptions
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TensorOptions
+</span><a href="Torch.TensorOptions.html#defaultOpts"><span class="hs-identifier hs-var">D.defaultOpts</span></a></span><span>
+</span><span id="line-140"></span><span>      </span><span class="hs-special">)</span><span>
+</span><span id="line-141"></span><span>
+</span><span id="line-142"></span><span class="hs-comment">-- | linspace</span><span>
+</span><span id="line-143"></span><span class="hs-comment">-- &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [Float]) $ linspace @7 @'( 'D.CPU, 0) 0 3</span><span>
+</span><span id="line-144"></span><span class="hs-comment">-- (Float,([7],[0.0,0.5,1.0,1.5,2.0,2.5,3.0]))</span><span>
+</span><span id="line-145"></span><span class="hs-comment">-- &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [Float]) $ linspace @3 @'( 'D.CPU, 0) 0 2</span><span>
+</span><span id="line-146"></span><span class="hs-comment">-- (Float,([3],[0.0,1.0,2.0]))</span><span>
+</span><span id="line-147"></span><span class="annot"><a href="Torch.Typed.Factories.html#linspace"><span class="hs-identifier hs-type">linspace</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-148"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679678011"><span class="annot"><a href="#local-6989586621679678011"><span class="hs-identifier hs-type">steps</span></a></span></span><span> </span><span id="local-6989586621679678010"><span class="annot"><a href="#local-6989586621679678010"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span id="local-6989586621679678009"><span class="annot"><a href="#local-6989586621679678009"><span class="hs-identifier hs-type">start</span></a></span></span><span> </span><span id="local-6989586621679678008"><span class="annot"><a href="#local-6989586621679678008"><span class="hs-identifier hs-type">end</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-149"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.Scalar.html#Scalar"><span class="hs-identifier hs-type">D.Scalar</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678009"><span class="hs-identifier hs-type">start</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-150"></span><span>    </span><span class="annot"><a href="Torch.Scalar.html#Scalar"><span class="hs-identifier hs-type">D.Scalar</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678008"><span class="hs-identifier hs-type">end</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-151"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">KnownNat</span></span><span> </span><span class="annot"><a href="#local-6989586621679678011"><span class="hs-identifier hs-type">steps</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-152"></span><span>    </span><span class="annot"><a href="Torch.Typed.Tensor.html#TensorOptions"><span class="hs-identifier hs-type">TensorOptions</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679678011"><span class="hs-identifier hs-type">steps</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.DType.html#Float"><span class="hs-identifier hs-type">D.Float</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678010"><span class="hs-identifier hs-type">device</span></a></span><span>
+</span><span id="line-153"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-154"></span><span>  </span><span class="hs-comment">-- | start</span><span>
+</span><span id="line-155"></span><span>  </span><span class="annot"><a href="#local-6989586621679678009"><span class="hs-identifier hs-type">start</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-156"></span><span>  </span><span class="hs-comment">-- | end</span><span>
+</span><span id="line-157"></span><span>  </span><span class="annot"><a href="#local-6989586621679678008"><span class="hs-identifier hs-type">end</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-158"></span><span>  </span><span class="hs-comment">-- | output</span><span>
+</span><span id="line-159"></span><span>  </span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678010"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.DType.html#Float"><span class="hs-identifier hs-type">D.Float</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679678011"><span class="hs-identifier hs-type">steps</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-160"></span><span id="linspace"><span class="annot"><span class="annottext">linspace :: start -&gt; end -&gt; Tensor device 'Float '[steps]
+</span><a href="Torch.Typed.Factories.html#linspace"><span class="hs-identifier hs-var hs-var">linspace</span></a></span></span><span> </span><span id="local-6989586621679678007"><span class="annot"><span class="annottext">start
+</span><a href="#local-6989586621679678007"><span class="hs-identifier hs-var">start</span></a></span></span><span> </span><span id="local-6989586621679678006"><span class="annot"><span class="annottext">end
+</span><a href="#local-6989586621679678006"><span class="hs-identifier hs-var">end</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-161"></span><span>  </span><span class="annot"><span class="annottext">Tensor -&gt; Tensor device 'Float '[steps]
+forall (device :: (DeviceType, Nat)) (dtype :: DType)
+       (shape :: [Nat]).
+Tensor -&gt; Tensor device dtype shape
+</span><a href="Torch.Typed.Tensor.html#UnsafeMkTensor"><span class="hs-identifier hs-var">UnsafeMkTensor</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor -&gt; Tensor device 'Float '[steps])
+-&gt; Tensor -&gt; Tensor device 'Float '[steps]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-162"></span><span>    </span><span class="annot"><span class="annottext">start -&gt; end -&gt; Int -&gt; TensorOptions -&gt; Tensor
+forall a b.
+(Scalar a, Scalar b) =&gt;
+a -&gt; b -&gt; Int -&gt; TensorOptions -&gt; Tensor
+</span><a href="Torch.TensorFactories.html#linspace"><span class="hs-identifier hs-var">D.linspace</span></a></span><span>
+</span><span id="line-163"></span><span>      </span><span class="annot"><span class="annottext">start
+</span><a href="#local-6989586621679678007"><span class="hs-identifier hs-var">start</span></a></span><span>
+</span><span id="line-164"></span><span>      </span><span class="annot"><span class="annottext">end
+</span><a href="#local-6989586621679678006"><span class="hs-identifier hs-var">end</span></a></span><span>
+</span><span id="line-165"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">KnownNat steps =&gt; Int
+forall (n :: Nat). KnownNat n =&gt; Int
+</span><a href="Torch.Typed.Aux.html#natValI"><span class="hs-identifier hs-var">natValI</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678011"><span class="hs-identifier hs-type">steps</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-166"></span><span>      </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="annottext">Device -&gt; TensorOptions -&gt; TensorOptions
+</span><a href="Torch.TensorOptions.html#withDevice"><span class="hs-identifier hs-var">D.withDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TensorOptions '[steps] 'Float device =&gt; Device
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+Device
+</span><a href="Torch.Typed.Tensor.html#optionsRuntimeDevice"><span class="hs-identifier hs-var">optionsRuntimeDevice</span></a></span><span> </span><span class="hs-glyph">@</span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679678011"><span class="hs-identifier hs-type">steps</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="Torch.DType.html#Float"><span class="hs-identifier hs-type">D.Float</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678010"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-167"></span><span>          </span><span class="annot"><span class="annottext">(TensorOptions -&gt; TensorOptions)
+-&gt; (TensorOptions -&gt; TensorOptions)
+-&gt; TensorOptions
+-&gt; TensorOptions
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">DType -&gt; TensorOptions -&gt; TensorOptions
+</span><a href="Torch.TensorOptions.html#withDType"><span class="hs-identifier hs-var">D.withDType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TensorOptions '[steps] 'Float device =&gt; DType
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+DType
+</span><a href="Torch.Typed.Tensor.html#optionsRuntimeDType"><span class="hs-identifier hs-var">optionsRuntimeDType</span></a></span><span> </span><span class="hs-glyph">@</span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679678011"><span class="hs-identifier hs-type">steps</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="Torch.DType.html#Float"><span class="hs-identifier hs-type">D.Float</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678010"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-168"></span><span>          </span><span class="annot"><span class="annottext">(TensorOptions -&gt; TensorOptions) -&gt; TensorOptions -&gt; TensorOptions
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TensorOptions
+</span><a href="Torch.TensorOptions.html#defaultOpts"><span class="hs-identifier hs-var">D.defaultOpts</span></a></span><span>
+</span><span id="line-169"></span><span>      </span><span class="hs-special">)</span><span>
+</span><span id="line-170"></span><span>
+</span><span id="line-171"></span><span class="annot"><a href="Torch.Typed.Factories.html#eyeSquare"><span class="hs-identifier hs-type">eyeSquare</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-172"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679678002"><span class="annot"><a href="#local-6989586621679678002"><span class="hs-identifier hs-type">n</span></a></span></span><span> </span><span id="local-6989586621679678001"><span class="annot"><a href="#local-6989586621679678001"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span id="local-6989586621679678000"><span class="annot"><a href="#local-6989586621679678000"><span class="hs-identifier hs-type">device</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-173"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier hs-type">KnownNat</span></span><span> </span><span class="annot"><a href="#local-6989586621679678002"><span class="hs-identifier hs-type">n</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-174"></span><span>    </span><span class="annot"><a href="Torch.Typed.Tensor.html#TensorOptions"><span class="hs-identifier hs-type">TensorOptions</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679678002"><span class="hs-identifier hs-type">n</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679678002"><span class="hs-identifier hs-type">n</span></a></span><span class="hs-special">]</span><span> </span><span class="annot"><a href="#local-6989586621679678001"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678000"><span class="hs-identifier hs-type">device</span></a></span><span>
+</span><span id="line-175"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-176"></span><span>  </span><span class="hs-comment">-- | output</span><span>
+</span><span id="line-177"></span><span>  </span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678000"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679678001"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679678002"><span class="hs-identifier hs-type">n</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679678002"><span class="hs-identifier hs-type">n</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-178"></span><span id="eyeSquare"><span class="annot"><span class="annottext">eyeSquare :: Tensor device dtype '[n, n]
+</span><a href="Torch.Typed.Factories.html#eyeSquare"><span class="hs-identifier hs-var hs-var">eyeSquare</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-179"></span><span>  </span><span class="annot"><span class="annottext">Tensor -&gt; Tensor device dtype '[n, n]
+forall (device :: (DeviceType, Nat)) (dtype :: DType)
+       (shape :: [Nat]).
+Tensor -&gt; Tensor device dtype shape
+</span><a href="Torch.Typed.Tensor.html#UnsafeMkTensor"><span class="hs-identifier hs-var">UnsafeMkTensor</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor -&gt; Tensor device dtype '[n, n])
+-&gt; Tensor -&gt; Tensor device dtype '[n, n]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-180"></span><span>    </span><span class="annot"><span class="annottext">Int -&gt; TensorOptions -&gt; Tensor
+</span><a href="Torch.TensorFactories.html#eyeSquare"><span class="hs-identifier hs-var">D.eyeSquare</span></a></span><span>
+</span><span id="line-181"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">KnownNat n =&gt; Int
+forall (n :: Nat). KnownNat n =&gt; Int
+</span><a href="Torch.Typed.Aux.html#natValI"><span class="hs-identifier hs-var">natValI</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678002"><span class="hs-identifier hs-type">n</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-182"></span><span>      </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="annottext">Device -&gt; TensorOptions -&gt; TensorOptions
+</span><a href="Torch.TensorOptions.html#withDevice"><span class="hs-identifier hs-var">D.withDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TensorOptions '[n, n] dtype device =&gt; Device
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+Device
+</span><a href="Torch.Typed.Tensor.html#optionsRuntimeDevice"><span class="hs-identifier hs-var">optionsRuntimeDevice</span></a></span><span> </span><span class="hs-glyph">@</span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679678002"><span class="hs-identifier hs-type">n</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679678002"><span class="hs-identifier hs-type">n</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678001"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678000"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-183"></span><span>          </span><span class="annot"><span class="annottext">(TensorOptions -&gt; TensorOptions)
+-&gt; (TensorOptions -&gt; TensorOptions)
+-&gt; TensorOptions
+-&gt; TensorOptions
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">DType -&gt; TensorOptions -&gt; TensorOptions
+</span><a href="Torch.TensorOptions.html#withDType"><span class="hs-identifier hs-var">D.withDType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TensorOptions '[n, n] dtype device =&gt; DType
+forall (shape :: [Nat]) (dtype :: DType)
+       (device :: (DeviceType, Nat)).
+TensorOptions shape dtype device =&gt;
+DType
+</span><a href="Torch.Typed.Tensor.html#optionsRuntimeDType"><span class="hs-identifier hs-var">optionsRuntimeDType</span></a></span><span> </span><span class="hs-glyph">@</span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679678002"><span class="hs-identifier hs-type">n</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679678002"><span class="hs-identifier hs-type">n</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678001"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679678000"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-184"></span><span>          </span><span class="annot"><span class="annottext">(TensorOptions -&gt; TensorOptions) -&gt; TensorOptions -&gt; TensorOptions
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TensorOptions
+</span><a href="Torch.TensorOptions.html#defaultOpts"><span class="hs-identifier hs-var">D.defaultOpts</span></a></span><span>
+</span><span id="line-185"></span><span>      </span><span class="hs-special">)</span><span>
+</span><span id="line-186"></span></pre></body></html>
