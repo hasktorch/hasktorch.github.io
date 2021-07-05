@@ -773,8 +773,8 @@ newtype Slice a
 Slice :: a -> Slice a
 class TensorIndex a
 pushIndex :: TensorIndex a => [RawTensorIndex] -> a -> [RawTensorIndex]
-toLens :: TensorIndex a => a -> Lens' Tensor Tensor
-toLens :: TensorIndex a => a -> Lens' Tensor Tensor
+toLens :: (TensorIndex a, TensorLike b) => a -> Lens' Tensor b
+toLens :: (TensorIndex a, TensorLike b) => a -> Lens' Tensor b
 asValue :: TensorLike a => Tensor -> a
 class TensorLike a
 asTensor' :: TensorLike a => a -> TensorOptions -> Tensor
@@ -807,11 +807,6 @@ instance (Torch.Tensor.GAsTensors ls, Torch.Tensor.GAsTensors rs) => Torch.Tenso
 instance (Torch.Tensor.GAsTensors ls, Torch.Tensor.GAsTensors rs) => Torch.Tensor.GAsTensors (ls GHC.Generics.:+: rs)
 instance Torch.Tensor.GAsTensors ls => Torch.Tensor.GAsTensors (GHC.Generics.M1 i c ls)
 instance Torch.Tensor.TensorLike ls => Torch.Tensor.GAsTensors (GHC.Generics.K1 i ls)
-instance (Data.Reflection.Reifies a Torch.DType.DType, Foreign.Storable.Storable a) => Torch.Tensor.TensorLike a
-instance Torch.Tensor.TensorLike GHC.Types.Bool
-instance Torch.Tensor.TensorLike Torch.Tensor.Tensor
-instance Torch.Tensor.TensorLike a => Torch.Tensor.TensorLike (a, a)
-instance Torch.Tensor.TensorLike a => Torch.Tensor.TensorLike [a]
 instance Torch.Tensor.TensorIndex Torch.Tensor.None
 instance Torch.Tensor.TensorIndex Torch.Tensor.Ellipsis
 instance Torch.Tensor.TensorIndex GHC.Types.Bool
@@ -832,6 +827,11 @@ instance (Torch.Tensor.TensorIndex a, Torch.Tensor.TensorIndex b) => Torch.Tenso
 instance (Torch.Tensor.TensorIndex a, Torch.Tensor.TensorIndex b, Torch.Tensor.TensorIndex c) => Torch.Tensor.TensorIndex (a, b, c)
 instance (Torch.Tensor.TensorIndex a, Torch.Tensor.TensorIndex b, Torch.Tensor.TensorIndex c, Torch.Tensor.TensorIndex d) => Torch.Tensor.TensorIndex (a, b, c, d)
 instance (Torch.Tensor.TensorIndex a, Torch.Tensor.TensorIndex b, Torch.Tensor.TensorIndex c, Torch.Tensor.TensorIndex d, Torch.Tensor.TensorIndex e) => Torch.Tensor.TensorIndex (a, b, c, d, e)
+instance (Data.Reflection.Reifies a Torch.DType.DType, Foreign.Storable.Storable a) => Torch.Tensor.TensorLike a
+instance Torch.Tensor.TensorLike GHC.Types.Bool
+instance Torch.Tensor.TensorLike Torch.Tensor.Tensor
+instance Torch.Tensor.TensorLike a => Torch.Tensor.TensorLike (a, a)
+instance Torch.Tensor.TensorLike a => Torch.Tensor.TensorLike [a]
 instance Torch.Internal.Class.Castable Torch.Tensor.RawTensorIndex (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.TensorIndex)
 instance Torch.Internal.Class.Castable Torch.Tensor.Tensor Torch.Tensor.ATenTensor
 instance Torch.Lens.HasTypes Torch.Tensor.Tensor Torch.Tensor.Tensor
@@ -959,7 +959,18 @@ arange :: Int -> Int -> Int -> TensorOptions -> Tensor
 arange' :: Int -> Int -> Int -> Tensor
 
 module Torch.Index
+
+-- | Generate a slice from a <a>python compatible expression</a>. When you
+--   take the odd-numbered element of tensor with `tensor[1::2]` in python,
+--   you can write `tensor ! [slice|1::2|]` in hasktorch.
 slice :: QuasiQuoter
+
+-- | Generate a lens from a <a>python compatible expression</a>. When you
+--   take the odd-numbered elements of tensor with `tensor[1::2]` in
+--   python, you can write `tensor ^. [lslice|1::2|]` in hasktorch. When
+--   you put 2 in the odd numbered elements of the tensor, you can write
+--   `tensor &amp; [lslice|1::2|] ~. 2`.
+lslice :: QuasiQuoter
 
 module Torch.Functional.Internal
 align_tensors :: [Tensor] -> [Tensor]
@@ -7598,19 +7609,19 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 readImageAsRGB8WithScaling :: FilePath -> Int -> Int -> Bool -> IO (Either String (Image PixelRGB8, Tensor))
 centerCrop :: Int -> Int -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679612854 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679616284 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawLine :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679612905 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679616335 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawRect :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawString :: String -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawChar :: Int -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679612984 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679616414 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 resizeRGB8 :: Int -> Int -> Bool -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679613034 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679616464 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679613076 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679613101 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679616506 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679616531 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
