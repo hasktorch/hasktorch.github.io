@@ -1,0 +1,1016 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="%24con2tag_8lDECRPoUy483IKon5CnM3"></span><span class="hs-pragma">{-# LANGUAGE AllowAmbiguousTypes #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DataKinds #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE DerivingStrategies #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE GADTs #-}</span><span>
+</span><span id="line-7"></span><span class="hs-pragma">{-# LANGUAGE RankNTypes #-}</span><span>
+</span><span id="line-8"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-9"></span><span class="hs-pragma">{-# LANGUAGE TypeApplications #-}</span><span>
+</span><span id="line-10"></span><span class="hs-pragma">{-# LANGUAGE TypeFamilies #-}</span><span>
+</span><span id="line-11"></span><span class="hs-pragma">{-# LANGUAGE TypeOperators #-}</span><span>
+</span><span id="line-12"></span><span class="hs-pragma">{-# LANGUAGE UndecidableInstances #-}</span><span>
+</span><span id="line-13"></span><span class="hs-pragma">{-# OPTIONS_GHC -Wall #-}</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.GraduallyTyped.Tensor.MathOperations.Comparison</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier">Data.Singletons</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier">SingI</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier">SingKind</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.TypeLits</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Nat</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Symbol</span></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">System.IO.Unsafe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">unsafePerformIO</span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../../../../hasktorch/html/src"><span class="hs-identifier">Torch.DType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../../../../hasktorch/html/src"><span class="hs-identifier">DType</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.DType.html"><span class="hs-identifier">Torch.GraduallyTyped.DType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.DType.html#DataType"><span class="hs-identifier">DataType</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html"><span class="hs-identifier">Torch.GraduallyTyped.Prelude</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Seq"><span class="hs-identifier">Seq</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#forgetIsChecked"><span class="hs-identifier">forgetIsChecked</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html"><span class="hs-identifier">Torch.GraduallyTyped.RequiresGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier">Gradient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#RequiresGradient"><span class="hs-identifier">RequiresGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Class.html"><span class="hs-identifier">Torch.GraduallyTyped.Shape.Class</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Class.html#BroadcastShapesF"><span class="hs-identifier">BroadcastShapesF</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Class.html#GetDimImplF"><span class="hs-identifier">GetDimImplF</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Shape.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#By"><span class="hs-identifier">By</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Dim"><span class="hs-identifier">Dim</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Name"><span class="hs-identifier">Name</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SSelectDim"><span class="hs-identifier">SSelectDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SelectDim"><span class="hs-identifier">SelectDim</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier">Shape</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Size"><span class="hs-identifier">Size</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Tensor.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier">Tensor</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html"><span class="hs-identifier">Torch.GraduallyTyped.Unify</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-keyword">type</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator">(&lt;+&gt;)</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">Torch.Internal.Cast</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">cast2</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">cast3</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">Torch.Internal.Managed.Native</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">ATen</span></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">Torch.Internal.Managed.Type.Tuple</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">ATen</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/a8ll3m7yfhm0g8j77q9rvjhgdb07zpwk-type-errors-pretty-lib-type-errors-pretty-0.0.1.1-haddock-doc/share/doc/type-errors-pretty/html/src"><span class="hs-identifier">Type.Errors.Pretty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">TypeError</span></span><span class="hs-special">,</span><span> </span><span class="hs-keyword">type</span><span> </span><span class="annot"><a href="../file:///nix/store/a8ll3m7yfhm0g8j77q9rvjhgdb07zpwk-type-errors-pretty-lib-type-errors-pretty-0.0.1.1-haddock-doc/share/doc/type-errors-pretty/html/src"><span class="hs-operator">(%)</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-keyword">type</span><span> </span><span class="annot"><a href="../file:///nix/store/a8ll3m7yfhm0g8j77q9rvjhgdb07zpwk-type-errors-pretty-lib-type-errors-pretty-0.0.1.1-haddock-doc/share/doc/type-errors-pretty/html/src"><span class="hs-operator">(&lt;&gt;)</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#gt"><span class="hs-identifier hs-type">gt</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-35"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#lt"><span class="hs-identifier hs-type">lt</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-36"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#ge"><span class="hs-identifier hs-type">ge</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-37"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#le"><span class="hs-identifier hs-type">le</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-38"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#eq"><span class="hs-identifier hs-type">eq</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-39"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#ne"><span class="hs-identifier hs-type">ne</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-40"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#%3E."><span class="hs-operator hs-type">(&gt;.)</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-41"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#%3C."><span class="hs-operator hs-type">(&lt;.)</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-42"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#%3E%3D."><span class="hs-operator hs-type">(&gt;=.)</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-43"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#%3C%3D."><span class="hs-operator hs-type">(&lt;=.)</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-44"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#%3D%3D."><span class="hs-operator hs-type">(==.)</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-45"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#%2F%3D."><span class="hs-operator hs-type">(/=.)</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-46"></span><span>    </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679744968"><span class="annot"><a href="#local-6989586621679744968"><span class="hs-identifier hs-type">gradient</span></a></span></span><span> </span><span id="local-6989586621679744967"><span class="annot"><a href="#local-6989586621679744967"><span class="hs-identifier hs-type">layout</span></a></span></span><span> </span><span id="local-6989586621679744966"><span class="annot"><a href="#local-6989586621679744966"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span id="local-6989586621679744965"><span class="annot"><a href="#local-6989586621679744965"><span class="hs-identifier hs-type">dataType</span></a></span></span><span> </span><span id="local-6989586621679744964"><span class="annot"><a href="#local-6989586621679744964"><span class="hs-identifier hs-type">shape</span></a></span></span><span> </span><span id="local-6989586621679744963"><span class="annot"><a href="#local-6989586621679744963"><span class="hs-identifier hs-type">gradient'</span></a></span></span><span> </span><span id="local-6989586621679744962"><span class="annot"><a href="#local-6989586621679744962"><span class="hs-identifier hs-type">layout'</span></a></span></span><span> </span><span id="local-6989586621679744961"><span class="annot"><a href="#local-6989586621679744961"><span class="hs-identifier hs-type">device'</span></a></span></span><span> </span><span id="local-6989586621679744960"><span class="annot"><a href="#local-6989586621679744960"><span class="hs-identifier hs-type">dataType'</span></a></span></span><span> </span><span id="local-6989586621679744959"><span class="annot"><a href="#local-6989586621679744959"><span class="hs-identifier hs-type">shape'</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-47"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744968"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744967"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744966"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744965"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744964"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-48"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744963"><span class="hs-identifier hs-type">gradient'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744962"><span class="hs-identifier hs-type">layout'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744961"><span class="hs-identifier hs-type">device'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744960"><span class="hs-identifier hs-type">dataType'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744959"><span class="hs-identifier hs-type">shape'</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-49"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span>
+</span><span id="line-50"></span><span>      </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier hs-type">Gradient</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#WithoutGradient"><span class="hs-identifier hs-type">WithoutGradient</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>      </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679744967"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744962"><span class="hs-identifier hs-type">layout'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-52"></span><span>      </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679744966"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744961"><span class="hs-identifier hs-type">device'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span>      </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Seq"><span class="hs-identifier hs-type">Seq</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679744965"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744960"><span class="hs-identifier hs-type">dataType'</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.DType.html#DataType"><span class="hs-identifier hs-type">DataType</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="../../../../hasktorch/html/src"><span class="hs-identifier hs-type">Bool</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span>      </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Class.html#BroadcastShapesF"><span class="hs-identifier hs-type">BroadcastShapesF</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744964"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744959"><span class="hs-identifier hs-type">shape'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span id="local-6989586621679744814"><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679744814"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="gt"><span class="annot"><span class="annottext">gt :: Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#gt"><span class="hs-operator hs-var hs-var">`gt`</span></a></span></span><span> </span><span id="local-6989586621679744813"><span class="annot"><span class="annottext">Tensor gradient' layout' device' dataType' shape'
+</span><a href="#local-6989586621679744813"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO
+  (Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify (Layout LayoutType) layout layout')
+     (Unify (Device (DeviceType Nat)) device device')
+     (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape'))
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify (Layout LayoutType) layout layout')
+     (Unify (Device (DeviceType Nat)) device device')
+     (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+forall a. IO a -&gt; a
+</span><span class="hs-identifier hs-var">unsafePerformIO</span></span><span> </span><span class="annot"><span class="annottext">(IO
+   (Tensor
+      ('Gradient 'WithoutGradient)
+      (Unify (Layout LayoutType) layout layout')
+      (Unify (Device (DeviceType Nat)) device device')
+      (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+      (BroadcastShapesF shape shape'))
+ -&gt; Tensor
+      ('Gradient 'WithoutGradient)
+      (Unify (Layout LayoutType) layout layout')
+      (Unify (Device (DeviceType Nat)) device device')
+      (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+      (BroadcastShapesF shape shape'))
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        (Unify (Layout LayoutType) layout layout')
+        (Unify (Device (DeviceType Nat)) device device')
+        (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+        (BroadcastShapesF shape shape'))
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify (Layout LayoutType) layout layout')
+     (Unify (Device (DeviceType Nat)) device device')
+     (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(ForeignPtr Tensor -&gt; ForeignPtr Tensor -&gt; IO (ForeignPtr Tensor))
+-&gt; Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        (Unify (Layout LayoutType) layout layout')
+        (Unify (Device (DeviceType Nat)) device device')
+        (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+        (BroadcastShapesF shape shape'))
+forall a ca x1 cx1 y cy.
+(Castable a ca, Castable x1 cx1, Castable y cy) =&gt;
+(ca -&gt; cx1 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; IO y
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">cast2</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Tensor -&gt; ForeignPtr Tensor -&gt; IO (ForeignPtr Tensor)
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.gt_tt</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679744814"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient' layout' device' dataType' shape'
+</span><a href="#local-6989586621679744813"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><span id="line-56"></span><span id="local-6989586621679744811"><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679744811"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="lt"><span class="annot"><span class="annottext">lt :: Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#lt"><span class="hs-operator hs-var hs-var">`lt`</span></a></span></span><span> </span><span id="local-6989586621679744810"><span class="annot"><span class="annottext">Tensor gradient' layout' device' dataType' shape'
+</span><a href="#local-6989586621679744810"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO
+  (Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify (Layout LayoutType) layout layout')
+     (Unify (Device (DeviceType Nat)) device device')
+     (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape'))
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify (Layout LayoutType) layout layout')
+     (Unify (Device (DeviceType Nat)) device device')
+     (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+forall a. IO a -&gt; a
+</span><span class="hs-identifier hs-var">unsafePerformIO</span></span><span> </span><span class="annot"><span class="annottext">(IO
+   (Tensor
+      ('Gradient 'WithoutGradient)
+      (Unify (Layout LayoutType) layout layout')
+      (Unify (Device (DeviceType Nat)) device device')
+      (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+      (BroadcastShapesF shape shape'))
+ -&gt; Tensor
+      ('Gradient 'WithoutGradient)
+      (Unify (Layout LayoutType) layout layout')
+      (Unify (Device (DeviceType Nat)) device device')
+      (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+      (BroadcastShapesF shape shape'))
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        (Unify (Layout LayoutType) layout layout')
+        (Unify (Device (DeviceType Nat)) device device')
+        (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+        (BroadcastShapesF shape shape'))
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify (Layout LayoutType) layout layout')
+     (Unify (Device (DeviceType Nat)) device device')
+     (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(ForeignPtr Tensor -&gt; ForeignPtr Tensor -&gt; IO (ForeignPtr Tensor))
+-&gt; Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        (Unify (Layout LayoutType) layout layout')
+        (Unify (Device (DeviceType Nat)) device device')
+        (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+        (BroadcastShapesF shape shape'))
+forall a ca x1 cx1 y cy.
+(Castable a ca, Castable x1 cx1, Castable y cy) =&gt;
+(ca -&gt; cx1 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; IO y
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">cast2</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Tensor -&gt; ForeignPtr Tensor -&gt; IO (ForeignPtr Tensor)
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.lt_tt</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679744811"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient' layout' device' dataType' shape'
+</span><a href="#local-6989586621679744810"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><span id="line-57"></span><span id="local-6989586621679744808"><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679744808"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="ge"><span class="annot"><span class="annottext">ge :: Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#ge"><span class="hs-operator hs-var hs-var">`ge`</span></a></span></span><span> </span><span id="local-6989586621679744807"><span class="annot"><span class="annottext">Tensor gradient' layout' device' dataType' shape'
+</span><a href="#local-6989586621679744807"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO
+  (Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify (Layout LayoutType) layout layout')
+     (Unify (Device (DeviceType Nat)) device device')
+     (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape'))
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify (Layout LayoutType) layout layout')
+     (Unify (Device (DeviceType Nat)) device device')
+     (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+forall a. IO a -&gt; a
+</span><span class="hs-identifier hs-var">unsafePerformIO</span></span><span> </span><span class="annot"><span class="annottext">(IO
+   (Tensor
+      ('Gradient 'WithoutGradient)
+      (Unify (Layout LayoutType) layout layout')
+      (Unify (Device (DeviceType Nat)) device device')
+      (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+      (BroadcastShapesF shape shape'))
+ -&gt; Tensor
+      ('Gradient 'WithoutGradient)
+      (Unify (Layout LayoutType) layout layout')
+      (Unify (Device (DeviceType Nat)) device device')
+      (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+      (BroadcastShapesF shape shape'))
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        (Unify (Layout LayoutType) layout layout')
+        (Unify (Device (DeviceType Nat)) device device')
+        (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+        (BroadcastShapesF shape shape'))
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify (Layout LayoutType) layout layout')
+     (Unify (Device (DeviceType Nat)) device device')
+     (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(ForeignPtr Tensor -&gt; ForeignPtr Tensor -&gt; IO (ForeignPtr Tensor))
+-&gt; Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        (Unify (Layout LayoutType) layout layout')
+        (Unify (Device (DeviceType Nat)) device device')
+        (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+        (BroadcastShapesF shape shape'))
+forall a ca x1 cx1 y cy.
+(Castable a ca, Castable x1 cx1, Castable y cy) =&gt;
+(ca -&gt; cx1 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; IO y
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">cast2</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Tensor -&gt; ForeignPtr Tensor -&gt; IO (ForeignPtr Tensor)
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.ge_tt</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679744808"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient' layout' device' dataType' shape'
+</span><a href="#local-6989586621679744807"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><span id="line-58"></span><span id="local-6989586621679744805"><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679744805"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="le"><span class="annot"><span class="annottext">le :: Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#le"><span class="hs-operator hs-var hs-var">`le`</span></a></span></span><span> </span><span id="local-6989586621679744804"><span class="annot"><span class="annottext">Tensor gradient' layout' device' dataType' shape'
+</span><a href="#local-6989586621679744804"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO
+  (Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify (Layout LayoutType) layout layout')
+     (Unify (Device (DeviceType Nat)) device device')
+     (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape'))
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify (Layout LayoutType) layout layout')
+     (Unify (Device (DeviceType Nat)) device device')
+     (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+forall a. IO a -&gt; a
+</span><span class="hs-identifier hs-var">unsafePerformIO</span></span><span> </span><span class="annot"><span class="annottext">(IO
+   (Tensor
+      ('Gradient 'WithoutGradient)
+      (Unify (Layout LayoutType) layout layout')
+      (Unify (Device (DeviceType Nat)) device device')
+      (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+      (BroadcastShapesF shape shape'))
+ -&gt; Tensor
+      ('Gradient 'WithoutGradient)
+      (Unify (Layout LayoutType) layout layout')
+      (Unify (Device (DeviceType Nat)) device device')
+      (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+      (BroadcastShapesF shape shape'))
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        (Unify (Layout LayoutType) layout layout')
+        (Unify (Device (DeviceType Nat)) device device')
+        (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+        (BroadcastShapesF shape shape'))
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify (Layout LayoutType) layout layout')
+     (Unify (Device (DeviceType Nat)) device device')
+     (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(ForeignPtr Tensor -&gt; ForeignPtr Tensor -&gt; IO (ForeignPtr Tensor))
+-&gt; Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        (Unify (Layout LayoutType) layout layout')
+        (Unify (Device (DeviceType Nat)) device device')
+        (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+        (BroadcastShapesF shape shape'))
+forall a ca x1 cx1 y cy.
+(Castable a ca, Castable x1 cx1, Castable y cy) =&gt;
+(ca -&gt; cx1 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; IO y
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">cast2</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Tensor -&gt; ForeignPtr Tensor -&gt; IO (ForeignPtr Tensor)
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.le_tt</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679744805"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient' layout' device' dataType' shape'
+</span><a href="#local-6989586621679744804"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><span id="line-59"></span><span id="local-6989586621679744802"><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679744802"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="eq"><span class="annot"><span class="annottext">eq :: Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#eq"><span class="hs-operator hs-var hs-var">`eq`</span></a></span></span><span> </span><span id="local-6989586621679744801"><span class="annot"><span class="annottext">Tensor gradient' layout' device' dataType' shape'
+</span><a href="#local-6989586621679744801"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO
+  (Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify (Layout LayoutType) layout layout')
+     (Unify (Device (DeviceType Nat)) device device')
+     (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape'))
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify (Layout LayoutType) layout layout')
+     (Unify (Device (DeviceType Nat)) device device')
+     (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+forall a. IO a -&gt; a
+</span><span class="hs-identifier hs-var">unsafePerformIO</span></span><span> </span><span class="annot"><span class="annottext">(IO
+   (Tensor
+      ('Gradient 'WithoutGradient)
+      (Unify (Layout LayoutType) layout layout')
+      (Unify (Device (DeviceType Nat)) device device')
+      (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+      (BroadcastShapesF shape shape'))
+ -&gt; Tensor
+      ('Gradient 'WithoutGradient)
+      (Unify (Layout LayoutType) layout layout')
+      (Unify (Device (DeviceType Nat)) device device')
+      (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+      (BroadcastShapesF shape shape'))
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        (Unify (Layout LayoutType) layout layout')
+        (Unify (Device (DeviceType Nat)) device device')
+        (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+        (BroadcastShapesF shape shape'))
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify (Layout LayoutType) layout layout')
+     (Unify (Device (DeviceType Nat)) device device')
+     (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(ForeignPtr Tensor -&gt; ForeignPtr Tensor -&gt; IO (ForeignPtr Tensor))
+-&gt; Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        (Unify (Layout LayoutType) layout layout')
+        (Unify (Device (DeviceType Nat)) device device')
+        (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+        (BroadcastShapesF shape shape'))
+forall a ca x1 cx1 y cy.
+(Castable a ca, Castable x1 cx1, Castable y cy) =&gt;
+(ca -&gt; cx1 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; IO y
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">cast2</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Tensor -&gt; ForeignPtr Tensor -&gt; IO (ForeignPtr Tensor)
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.eq_tt</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679744802"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient' layout' device' dataType' shape'
+</span><a href="#local-6989586621679744801"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><span id="line-60"></span><span id="local-6989586621679744799"><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679744799"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="ne"><span class="annot"><span class="annottext">ne :: Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#ne"><span class="hs-operator hs-var hs-var">`ne`</span></a></span></span><span> </span><span id="local-6989586621679744798"><span class="annot"><span class="annottext">Tensor gradient' layout' device' dataType' shape'
+</span><a href="#local-6989586621679744798"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO
+  (Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify (Layout LayoutType) layout layout')
+     (Unify (Device (DeviceType Nat)) device device')
+     (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape'))
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify (Layout LayoutType) layout layout')
+     (Unify (Device (DeviceType Nat)) device device')
+     (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+forall a. IO a -&gt; a
+</span><span class="hs-identifier hs-var">unsafePerformIO</span></span><span> </span><span class="annot"><span class="annottext">(IO
+   (Tensor
+      ('Gradient 'WithoutGradient)
+      (Unify (Layout LayoutType) layout layout')
+      (Unify (Device (DeviceType Nat)) device device')
+      (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+      (BroadcastShapesF shape shape'))
+ -&gt; Tensor
+      ('Gradient 'WithoutGradient)
+      (Unify (Layout LayoutType) layout layout')
+      (Unify (Device (DeviceType Nat)) device device')
+      (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+      (BroadcastShapesF shape shape'))
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        (Unify (Layout LayoutType) layout layout')
+        (Unify (Device (DeviceType Nat)) device device')
+        (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+        (BroadcastShapesF shape shape'))
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify (Layout LayoutType) layout layout')
+     (Unify (Device (DeviceType Nat)) device device')
+     (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(ForeignPtr Tensor -&gt; ForeignPtr Tensor -&gt; IO (ForeignPtr Tensor))
+-&gt; Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        (Unify (Layout LayoutType) layout layout')
+        (Unify (Device (DeviceType Nat)) device device')
+        (Seq (Unify (DataType DType) dataType dataType') ('DataType 'Bool))
+        (BroadcastShapesF shape shape'))
+forall a ca x1 cx1 y cy.
+(Castable a ca, Castable x1 cx1, Castable y cy) =&gt;
+(ca -&gt; cx1 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; IO y
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">cast2</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Tensor -&gt; ForeignPtr Tensor -&gt; IO (ForeignPtr Tensor)
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.ne_tt</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679744799"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient' layout' device' dataType' shape'
+</span><a href="#local-6989586621679744798"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><span id="line-61"></span><span id="%3E."><span class="annot"><span class="annottext">&gt;. :: Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#%3E."><span class="hs-operator hs-var hs-var">(&gt;.)</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+forall (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)])
+       (gradient' :: Gradient RequiresGradient)
+       (layout' :: Layout LayoutType) (device' :: Device (DeviceType Nat))
+       (dataType' :: DataType DType)
+       (shape' :: Shape [Dim (Name Symbol) (Size Nat)]).
+Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#gt"><span class="hs-identifier hs-var">gt</span></a></span><span>
+</span><span id="line-62"></span><span id="%3C."><span class="annot"><span class="annottext">&lt;. :: Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#%3C."><span class="hs-operator hs-var hs-var">(&lt;.)</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+forall (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)])
+       (gradient' :: Gradient RequiresGradient)
+       (layout' :: Layout LayoutType) (device' :: Device (DeviceType Nat))
+       (dataType' :: DataType DType)
+       (shape' :: Shape [Dim (Name Symbol) (Size Nat)]).
+Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#lt"><span class="hs-identifier hs-var">lt</span></a></span><span>
+</span><span id="line-63"></span><span id="%3E%3D."><span class="annot"><span class="annottext">&gt;=. :: Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#%3E%3D."><span class="hs-operator hs-var hs-var">(&gt;=.)</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+forall (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)])
+       (gradient' :: Gradient RequiresGradient)
+       (layout' :: Layout LayoutType) (device' :: Device (DeviceType Nat))
+       (dataType' :: DataType DType)
+       (shape' :: Shape [Dim (Name Symbol) (Size Nat)]).
+Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#ge"><span class="hs-identifier hs-var">ge</span></a></span><span>
+</span><span id="line-64"></span><span id="%3C%3D."><span class="annot"><span class="annottext">&lt;=. :: Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#%3C%3D."><span class="hs-operator hs-var hs-var">(&lt;=.)</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+forall (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)])
+       (gradient' :: Gradient RequiresGradient)
+       (layout' :: Layout LayoutType) (device' :: Device (DeviceType Nat))
+       (dataType' :: DataType DType)
+       (shape' :: Shape [Dim (Name Symbol) (Size Nat)]).
+Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#le"><span class="hs-identifier hs-var">le</span></a></span><span>
+</span><span id="line-65"></span><span id="%3D%3D."><span class="annot"><span class="annottext">==. :: Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#%3D%3D."><span class="hs-operator hs-var hs-var">(==.)</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+forall (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)])
+       (gradient' :: Gradient RequiresGradient)
+       (layout' :: Layout LayoutType) (device' :: Device (DeviceType Nat))
+       (dataType' :: DataType DType)
+       (shape' :: Shape [Dim (Name Symbol) (Size Nat)]).
+Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#eq"><span class="hs-identifier hs-var">eq</span></a></span><span>
+</span><span id="line-66"></span><span id="%2F%3D."><span class="annot"><span class="annottext">/=. :: Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#%2F%3D."><span class="hs-operator hs-var hs-var">(/=.)</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+forall (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)])
+       (gradient' :: Gradient RequiresGradient)
+       (layout' :: Layout LayoutType) (device' :: Device (DeviceType Nat))
+       (dataType' :: DataType DType)
+       (shape' :: Shape [Dim (Name Symbol) (Size Nat)]).
+Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (layout &lt;+&gt; layout')
+     (device &lt;+&gt; device')
+     (Seq (dataType &lt;+&gt; dataType') ('DataType 'Bool))
+     (BroadcastShapesF shape shape')
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#ne"><span class="hs-identifier hs-var">ne</span></a></span><span>
+</span><span id="line-67"></span><span>
+</span><span id="line-68"></span><span id="local-6989586621679744795"><span id="local-6989586621679744796"></span></span><span class="hs-keyword">data</span><span> </span><span id="Order"><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#Order"><span class="hs-identifier hs-var">Order</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Ascending"><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#Ascending"><span class="hs-identifier hs-var">Ascending</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Descending"><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#Descending"><span class="hs-identifier hs-var">Descending</span></a></span></span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679744787"><span id="local-6989586621679744789"><span id="local-6989586621679744791"><span class="annot"><span class="annottext">Int -&gt; Order -&gt; ShowS
+[Order] -&gt; ShowS
+Order -&gt; String
+(Int -&gt; Order -&gt; ShowS)
+-&gt; (Order -&gt; String) -&gt; ([Order] -&gt; ShowS) -&gt; Show Order
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+showList :: [Order] -&gt; ShowS
+$cshowList :: [Order] -&gt; ShowS
+show :: Order -&gt; String
+$cshow :: Order -&gt; String
+showsPrec :: Int -&gt; Order -&gt; ShowS
+$cshowsPrec :: Int -&gt; Order -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679744782"><span id="local-6989586621679744784"><span class="annot"><span class="annottext">Order -&gt; Order -&gt; Bool
+(Order -&gt; Order -&gt; Bool) -&gt; (Order -&gt; Order -&gt; Bool) -&gt; Eq Order
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+/= :: Order -&gt; Order -&gt; Bool
+$c/= :: Order -&gt; Order -&gt; Bool
+== :: Order -&gt; Order -&gt; Bool
+$c== :: Order -&gt; Order -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679744766"><span id="local-6989586621679744768"><span id="local-6989586621679744770"><span id="local-6989586621679744772"><span id="local-6989586621679744774"><span id="local-6989586621679744776"><span id="local-6989586621679744778"><span class="annot"><span class="annottext">Eq Order
+Eq Order
+-&gt; (Order -&gt; Order -&gt; Ordering)
+-&gt; (Order -&gt; Order -&gt; Bool)
+-&gt; (Order -&gt; Order -&gt; Bool)
+-&gt; (Order -&gt; Order -&gt; Bool)
+-&gt; (Order -&gt; Order -&gt; Bool)
+-&gt; (Order -&gt; Order -&gt; Order)
+-&gt; (Order -&gt; Order -&gt; Order)
+-&gt; Ord Order
+Order -&gt; Order -&gt; Bool
+Order -&gt; Order -&gt; Ordering
+Order -&gt; Order -&gt; Order
+forall a.
+Eq a
+-&gt; (a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+min :: Order -&gt; Order -&gt; Order
+$cmin :: Order -&gt; Order -&gt; Order
+max :: Order -&gt; Order -&gt; Order
+$cmax :: Order -&gt; Order -&gt; Order
+&gt;= :: Order -&gt; Order -&gt; Bool
+$c&gt;= :: Order -&gt; Order -&gt; Bool
+&gt; :: Order -&gt; Order -&gt; Bool
+$c&gt; :: Order -&gt; Order -&gt; Bool
+&lt;= :: Order -&gt; Order -&gt; Bool
+$c&lt;= :: Order -&gt; Order -&gt; Bool
+&lt; :: Order -&gt; Order -&gt; Bool
+$c&lt; :: Order -&gt; Order -&gt; Bool
+compare :: Order -&gt; Order -&gt; Ordering
+$ccompare :: Order -&gt; Order -&gt; Ordering
+$cp1Ord :: Eq Order
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(forall x. Order -&gt; Rep Order x)
+-&gt; (forall x. Rep Order x -&gt; Order) -&gt; Generic Order
+forall x. Rep Order x -&gt; Order
+forall x. Order -&gt; Rep Order x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cto :: forall x. Rep Order x -&gt; Order
+$cfrom :: forall x. Order -&gt; Rep Order x
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-69"></span><span>
+</span><span id="line-70"></span><span class="hs-keyword">data</span><span> </span><span id="Sorted"><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#Sorted"><span class="hs-identifier hs-var">Sorted</span></a></span></span><span> </span><span id="local-6989586621679744761"><span class="annot"><a href="#local-6989586621679744761"><span class="hs-identifier hs-type">gradient</span></a></span></span><span> </span><span id="local-6989586621679744760"><span class="annot"><a href="#local-6989586621679744760"><span class="hs-identifier hs-type">layout</span></a></span></span><span> </span><span id="local-6989586621679744759"><span class="annot"><a href="#local-6989586621679744759"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span id="local-6989586621679744758"><span class="annot"><a href="#local-6989586621679744758"><span class="hs-identifier hs-type">dataType</span></a></span></span><span> </span><span id="local-6989586621679744757"><span class="annot"><a href="#local-6989586621679744757"><span class="hs-identifier hs-type">shape</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-71"></span><span>  </span><span id="Sorted"><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#Sorted"><span class="hs-identifier hs-var">Sorted</span></a></span></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-72"></span><span>    </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679744866"><span class="annot"><a href="#local-6989586621679744866"><span class="hs-identifier hs-type">gradient</span></a></span></span><span> </span><span id="local-6989586621679744865"><span class="annot"><a href="#local-6989586621679744865"><span class="hs-identifier hs-type">layout</span></a></span></span><span> </span><span id="local-6989586621679744864"><span class="annot"><a href="#local-6989586621679744864"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span id="local-6989586621679744863"><span class="annot"><a href="#local-6989586621679744863"><span class="hs-identifier hs-type">dataType</span></a></span></span><span> </span><span id="local-6989586621679744862"><span class="annot"><a href="#local-6989586621679744862"><span class="hs-identifier hs-type">shape</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-73"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="sorted"><span class="annot"><span class="annottext">Sorted gradient layout device dataType shape
+-&gt; Tensor gradient layout device dataType shape
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#sorted"><span class="hs-identifier hs-var hs-var">sorted</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744866"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744865"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744864"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744863"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744862"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-74"></span><span>      </span><span id="indices"><span class="annot"><span class="annottext">Sorted gradient layout device dataType shape
+-&gt; Tensor
+     ('Gradient 'WithoutGradient) layout device ('DataType 'Int64) shape
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#indices"><span class="hs-identifier hs-var hs-var">indices</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier hs-type">Gradient</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#WithoutGradient"><span class="hs-identifier hs-type">WithoutGradient</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679744865"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744864"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.DType.html#DataType"><span class="hs-identifier hs-type">DataType</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="../../../../hasktorch/html/src"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679744862"><span class="hs-identifier hs-type">shape</span></a></span><span>
+</span><span id="line-75"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-76"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#Sorted"><span class="hs-identifier hs-type">Sorted</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744866"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744865"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744864"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744863"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744862"><span class="hs-identifier hs-type">shape</span></a></span><span>
+</span><span id="line-77"></span><span>
+</span><span id="line-78"></span><span class="hs-keyword">type</span><span> </span><span id="SortErrorMessage"><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#SortErrorMessage"><span class="hs-identifier hs-var">SortErrorMessage</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679744752"><span class="annot"><a href="#local-6989586621679744752"><span class="hs-identifier hs-type">by</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#By"><span class="hs-identifier hs-type">By</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Symbol</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679744751"><span class="annot"><a href="#local-6989586621679744751"><span class="hs-identifier hs-type">dims</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Dim"><span class="hs-identifier hs-type">Dim</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Name"><span class="hs-identifier hs-type">Name</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Symbol</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Size"><span class="hs-identifier hs-type">Size</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-79"></span><span>  </span><span class="annot"><span class="hs-string">&quot;Cannot apply sort on the dimension matching&quot;</span></span><span>
+</span><span id="line-80"></span><span>    </span><span class="annot"><a href="../file:///nix/store/a8ll3m7yfhm0g8j77q9rvjhgdb07zpwk-type-errors-pretty-lib-type-errors-pretty-0.0.1.1-haddock-doc/share/doc/type-errors-pretty/html/src"><span class="hs-operator hs-type">%</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;&quot;</span></span><span>
+</span><span id="line-81"></span><span>    </span><span class="annot"><a href="../file:///nix/store/a8ll3m7yfhm0g8j77q9rvjhgdb07zpwk-type-errors-pretty-lib-type-errors-pretty-0.0.1.1-haddock-doc/share/doc/type-errors-pretty/html/src"><span class="hs-operator hs-type">%</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;    '&quot;</span></span><span> </span><span class="annot"><a href="../file:///nix/store/a8ll3m7yfhm0g8j77q9rvjhgdb07zpwk-type-errors-pretty-lib-type-errors-pretty-0.0.1.1-haddock-doc/share/doc/type-errors-pretty/html/src"><span class="hs-operator hs-type">&lt;&gt;</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744752"><span class="hs-identifier hs-type">by</span></a></span><span> </span><span class="annot"><a href="../file:///nix/store/a8ll3m7yfhm0g8j77q9rvjhgdb07zpwk-type-errors-pretty-lib-type-errors-pretty-0.0.1.1-haddock-doc/share/doc/type-errors-pretty/html/src"><span class="hs-operator hs-type">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;'&quot;</span></span><span>
+</span><span id="line-82"></span><span>    </span><span class="annot"><a href="../file:///nix/store/a8ll3m7yfhm0g8j77q9rvjhgdb07zpwk-type-errors-pretty-lib-type-errors-pretty-0.0.1.1-haddock-doc/share/doc/type-errors-pretty/html/src"><span class="hs-operator hs-type">%</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;&quot;</span></span><span>
+</span><span id="line-83"></span><span>    </span><span class="annot"><a href="../file:///nix/store/a8ll3m7yfhm0g8j77q9rvjhgdb07zpwk-type-errors-pretty-lib-type-errors-pretty-0.0.1.1-haddock-doc/share/doc/type-errors-pretty/html/src"><span class="hs-operator hs-type">%</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;in the shape&quot;</span></span><span>
+</span><span id="line-84"></span><span>    </span><span class="annot"><a href="../file:///nix/store/a8ll3m7yfhm0g8j77q9rvjhgdb07zpwk-type-errors-pretty-lib-type-errors-pretty-0.0.1.1-haddock-doc/share/doc/type-errors-pretty/html/src"><span class="hs-operator hs-type">%</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;&quot;</span></span><span>
+</span><span id="line-85"></span><span>    </span><span class="annot"><a href="../file:///nix/store/a8ll3m7yfhm0g8j77q9rvjhgdb07zpwk-type-errors-pretty-lib-type-errors-pretty-0.0.1.1-haddock-doc/share/doc/type-errors-pretty/html/src"><span class="hs-operator hs-type">%</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;    '&quot;</span></span><span> </span><span class="annot"><a href="../file:///nix/store/a8ll3m7yfhm0g8j77q9rvjhgdb07zpwk-type-errors-pretty-lib-type-errors-pretty-0.0.1.1-haddock-doc/share/doc/type-errors-pretty/html/src"><span class="hs-operator hs-type">&lt;&gt;</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744751"><span class="hs-identifier hs-type">dims</span></a></span><span> </span><span class="annot"><a href="../file:///nix/store/a8ll3m7yfhm0g8j77q9rvjhgdb07zpwk-type-errors-pretty-lib-type-errors-pretty-0.0.1.1-haddock-doc/share/doc/type-errors-pretty/html/src"><span class="hs-operator hs-type">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;'.&quot;</span></span><span>
+</span><span id="line-86"></span><span>    </span><span class="annot"><a href="../file:///nix/store/a8ll3m7yfhm0g8j77q9rvjhgdb07zpwk-type-errors-pretty-lib-type-errors-pretty-0.0.1.1-haddock-doc/share/doc/type-errors-pretty/html/src"><span class="hs-operator hs-type">%</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;&quot;</span></span><span>
+</span><span id="line-87"></span><span>
+</span><span id="line-88"></span><span class="hs-keyword">type</span><span> </span><span class="hs-keyword">family</span><span> </span><span id="SortCheckF"><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#SortCheckF"><span class="hs-identifier hs-var">SortCheckF</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679744749"><span class="annot"><a href="#local-6989586621679744749"><span class="hs-identifier hs-type">by</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#By"><span class="hs-identifier hs-type">By</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Symbol</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679744748"><span class="annot"><a href="#local-6989586621679744748"><span class="hs-identifier hs-type">dims</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Dim"><span class="hs-identifier hs-type">Dim</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Name"><span class="hs-identifier hs-type">Name</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Symbol</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Size"><span class="hs-identifier hs-type">Size</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679744747"><span class="annot"><a href="#local-6989586621679744747"><span class="hs-identifier hs-type">result</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Dim"><span class="hs-identifier hs-type">Dim</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Name"><span class="hs-identifier hs-type">Name</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Symbol</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Size"><span class="hs-identifier hs-type">Size</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Dim"><span class="hs-identifier hs-type">Dim</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Name"><span class="hs-identifier hs-type">Name</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Symbol</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Size"><span class="hs-identifier hs-type">Size</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-89"></span><span>  </span><span id="SortCheckF"><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#SortCheckF"><span class="hs-identifier hs-var">SortCheckF</span></a></span></span><span> </span><span id="local-6989586621679744746"><span class="annot"><a href="#local-6989586621679744746"><span class="hs-identifier hs-type hs-type">by</span></a></span></span><span> </span><span id="local-6989586621679744745"><span class="annot"><a href="#local-6989586621679744745"><span class="hs-identifier hs-type hs-type">dims</span></a></span></span><span> </span><span class="hs-special">'</span><span class="annot"><span class="hs-identifier hs-type">Nothing</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">TypeError</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#SortErrorMessage"><span class="hs-identifier hs-type">SortErrorMessage</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744746"><span class="hs-identifier hs-type">by</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744745"><span class="hs-identifier hs-type">dims</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-90"></span><span>  </span><span id="SortCheckF"><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#SortCheckF"><span class="hs-identifier hs-var">SortCheckF</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679744744"><span class="annot"><a href="#local-6989586621679744744"><span class="hs-identifier hs-type hs-type">dims</span></a></span></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="#local-6989586621679744744"><span class="hs-identifier hs-type">dims</span></a></span><span>
+</span><span id="line-91"></span><span>
+</span><span id="line-92"></span><span class="hs-keyword">type</span><span> </span><span class="hs-keyword">family</span><span> </span><span id="SortF"><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#SortF"><span class="hs-identifier hs-var">SortF</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679744743"><span class="annot"><a href="#local-6989586621679744743"><span class="hs-identifier hs-type">selectDim</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SelectDim"><span class="hs-identifier hs-type">SelectDim</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#By"><span class="hs-identifier hs-type">By</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Symbol</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679744742"><span class="annot"><a href="#local-6989586621679744742"><span class="hs-identifier hs-type">shape</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier hs-type">Shape</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Dim"><span class="hs-identifier hs-type">Dim</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Name"><span class="hs-identifier hs-type">Name</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Symbol</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Size"><span class="hs-identifier hs-type">Size</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier hs-type">Shape</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Dim"><span class="hs-identifier hs-type">Dim</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Name"><span class="hs-identifier hs-type">Name</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Symbol</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Size"><span class="hs-identifier hs-type">Size</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-93"></span><span>  </span><span id="SortF"><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#SortF"><span class="hs-identifier hs-var">SortF</span></a></span></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#UncheckedSelectDim"><span class="hs-identifier hs-type">UncheckedSelectDim</span></a></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#UncheckedShape"><span class="hs-identifier hs-type">UncheckedShape</span></a></span><span>
+</span><span id="line-94"></span><span>  </span><span id="SortF"><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#SortF"><span class="hs-identifier hs-var">SortF</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#UncheckedShape"><span class="hs-identifier hs-type">UncheckedShape</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#UncheckedShape"><span class="hs-identifier hs-type">UncheckedShape</span></a></span><span>
+</span><span id="line-95"></span><span>  </span><span id="SortF"><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#SortF"><span class="hs-identifier hs-var">SortF</span></a></span></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SelectDim"><span class="hs-identifier hs-type">SelectDim</span></a></span><span> </span><span id="local-6989586621679744738"><span class="annot"><a href="#local-6989586621679744738"><span class="hs-identifier hs-type hs-type">by</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier hs-type">Shape</span></a></span><span> </span><span id="local-6989586621679744736"><span class="annot"><a href="#local-6989586621679744736"><span class="hs-identifier hs-type hs-type">dims</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier hs-type">Shape</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#SortCheckF"><span class="hs-identifier hs-type">SortCheckF</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744738"><span class="hs-identifier hs-type">by</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744736"><span class="hs-identifier hs-type">dims</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Class.html#GetDimImplF"><span class="hs-identifier hs-type">GetDimImplF</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744738"><span class="hs-identifier hs-type">by</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744736"><span class="hs-identifier hs-type">dims</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-96"></span><span>
+</span><span id="line-97"></span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#sSort"><span class="hs-identifier hs-type">sSort</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-98"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679744843"><span class="annot"><a href="#local-6989586621679744843"><span class="hs-identifier hs-type">selectDim</span></a></span></span><span> </span><span id="local-6989586621679744842"><span class="annot"><a href="#local-6989586621679744842"><span class="hs-identifier hs-type">gradient</span></a></span></span><span> </span><span id="local-6989586621679744841"><span class="annot"><a href="#local-6989586621679744841"><span class="hs-identifier hs-type">layout</span></a></span></span><span> </span><span id="local-6989586621679744840"><span class="annot"><a href="#local-6989586621679744840"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span id="local-6989586621679744839"><span class="annot"><a href="#local-6989586621679744839"><span class="hs-identifier hs-type">dataType</span></a></span></span><span> </span><span id="local-6989586621679744838"><span class="annot"><a href="#local-6989586621679744838"><span class="hs-identifier hs-type">shape</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-99"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SSelectDim"><span class="hs-identifier hs-type">SSelectDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744843"><span class="hs-identifier hs-type">selectDim</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-100"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#Order"><span class="hs-identifier hs-type">Order</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-101"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744842"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744841"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744840"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744839"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744838"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-102"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#Sorted"><span class="hs-identifier hs-type">Sorted</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744842"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744841"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744840"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744839"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#SortF"><span class="hs-identifier hs-type">SortF</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744843"><span class="hs-identifier hs-type">selectDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744838"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-103"></span><span id="sSort"><span class="annot"><span class="annottext">sSort :: SSelectDim selectDim
+-&gt; Order
+-&gt; Tensor gradient layout device dataType shape
+-&gt; Sorted gradient layout device dataType (SortF selectDim shape)
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#sSort"><span class="hs-identifier hs-var hs-var">sSort</span></a></span></span><span> </span><span id="local-6989586621679744734"><span class="annot"><span class="annottext">SSelectDim selectDim
+</span><a href="#local-6989586621679744734"><span class="hs-identifier hs-var">by</span></a></span></span><span> </span><span id="local-6989586621679744733"><span class="annot"><span class="annottext">Order
+</span><a href="#local-6989586621679744733"><span class="hs-identifier hs-var">order</span></a></span></span><span> </span><span id="local-6989586621679744732"><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679744732"><span class="hs-identifier hs-var">tensor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-104"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679744731"><span class="annot"><span class="annottext">by' :: By String Integer
+</span><a href="#local-6989586621679744731"><span class="hs-identifier hs-var hs-var">by'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IsChecked (By String Integer) -&gt; By String Integer
+forall a. IsChecked a -&gt; a
+</span><a href="Torch.GraduallyTyped.Prelude.html#forgetIsChecked"><span class="hs-identifier hs-var">forgetIsChecked</span></a></span><span> </span><span class="annot"><span class="annottext">(IsChecked (By String Integer) -&gt; By String Integer)
+-&gt; IsChecked (By String Integer) -&gt; By String Integer
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Sing selectDim -&gt; Demote (SelectDim (By Symbol Nat))
+forall k (a :: k). SingKind k =&gt; Sing a -&gt; Demote k
+</span><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier hs-var">fromSing</span></a></span><span> </span><span class="annot"><span class="annottext">Sing selectDim
+SSelectDim selectDim
+</span><a href="#local-6989586621679744734"><span class="hs-identifier hs-var">by</span></a></span><span>
+</span><span id="line-105"></span><span>   </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">(Tensor gradient layout device dataType (SortF selectDim shape)
+ -&gt; Tensor
+      ('Gradient 'WithoutGradient)
+      layout
+      device
+      ('DataType 'Int64)
+      (SortF selectDim shape)
+ -&gt; Sorted gradient layout device dataType (SortF selectDim shape))
+-&gt; (Tensor gradient layout device dataType (SortF selectDim shape),
+    Tensor
+      ('Gradient 'WithoutGradient)
+      layout
+      device
+      ('DataType 'Int64)
+      (SortF selectDim shape))
+-&gt; Sorted gradient layout device dataType (SortF selectDim shape)
+forall a b c. (a -&gt; b -&gt; c) -&gt; (a, b) -&gt; c
+</span><span class="hs-identifier hs-var">uncurry</span></span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType (SortF selectDim shape)
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     layout
+     device
+     ('DataType 'Int64)
+     (SortF selectDim shape)
+-&gt; Sorted gradient layout device dataType (SortF selectDim shape)
+forall (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)]).
+Tensor gradient layout device dataType shape
+-&gt; Tensor
+     ('Gradient 'WithoutGradient) layout device ('DataType 'Int64) shape
+-&gt; Sorted gradient layout device dataType shape
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#Sorted"><span class="hs-identifier hs-var">Sorted</span></a></span><span> </span><span class="annot"><span class="annottext">((Tensor gradient layout device dataType (SortF selectDim shape),
+  Tensor
+    ('Gradient 'WithoutGradient)
+    layout
+    device
+    ('DataType 'Int64)
+    (SortF selectDim shape))
+ -&gt; Sorted gradient layout device dataType (SortF selectDim shape))
+-&gt; (Tensor gradient layout device dataType (SortF selectDim shape),
+    Tensor
+      ('Gradient 'WithoutGradient)
+      layout
+      device
+      ('DataType 'Int64)
+      (SortF selectDim shape))
+-&gt; Sorted gradient layout device dataType (SortF selectDim shape)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">By String Integer
+</span><a href="#local-6989586621679744731"><span class="hs-identifier hs-var">by'</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-106"></span><span>        </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#ByName"><span class="hs-identifier hs-type">ByName</span></a></span><span> </span><span id="local-6989586621679744727"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679744727"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">IO
+  (Tensor gradient layout device dataType (SortF selectDim shape),
+   Tensor
+     ('Gradient 'WithoutGradient)
+     layout
+     device
+     ('DataType 'Int64)
+     (SortF selectDim shape))
+-&gt; (Tensor gradient layout device dataType (SortF selectDim shape),
+    Tensor
+      ('Gradient 'WithoutGradient)
+      layout
+      device
+      ('DataType 'Int64)
+      (SortF selectDim shape))
+forall a. IO a -&gt; a
+</span><span class="hs-identifier hs-var">unsafePerformIO</span></span><span> </span><span class="annot"><span class="annottext">(IO
+   (Tensor gradient layout device dataType (SortF selectDim shape),
+    Tensor
+      ('Gradient 'WithoutGradient)
+      layout
+      device
+      ('DataType 'Int64)
+      (SortF selectDim shape))
+ -&gt; (Tensor gradient layout device dataType (SortF selectDim shape),
+     Tensor
+       ('Gradient 'WithoutGradient)
+       layout
+       device
+       ('DataType 'Int64)
+       (SortF selectDim shape)))
+-&gt; IO
+     (Tensor gradient layout device dataType (SortF selectDim shape),
+      Tensor
+        ('Gradient 'WithoutGradient)
+        layout
+        device
+        ('DataType 'Int64)
+        (SortF selectDim shape))
+-&gt; (Tensor gradient layout device dataType (SortF selectDim shape),
+    Tensor
+      ('Gradient 'WithoutGradient)
+      layout
+      device
+      ('DataType 'Int64)
+      (SortF selectDim shape))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(ForeignPtr Tensor
+ -&gt; ForeignPtr Dimname
+ -&gt; CBool
+ -&gt; IO (ForeignPtr (StdTuple '(Tensor, Tensor))))
+-&gt; Tensor gradient layout device dataType shape
+-&gt; String
+-&gt; Bool
+-&gt; IO
+     (Tensor gradient layout device dataType (SortF selectDim shape),
+      Tensor
+        ('Gradient 'WithoutGradient)
+        layout
+        device
+        ('DataType 'Int64)
+        (SortF selectDim shape))
+forall a ca x1 cx1 x2 cx2 y cy.
+(Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable y cy) =&gt;
+(ca -&gt; cx1 -&gt; cx2 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; x2 -&gt; IO y
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">cast3</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Tensor
+-&gt; ForeignPtr Dimname
+-&gt; CBool
+-&gt; IO (ForeignPtr (StdTuple '(Tensor, Tensor)))
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.sort_tnb</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679744732"><span class="hs-identifier hs-var">tensor</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679744727"><span class="hs-identifier hs-var">name</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Order
+</span><a href="#local-6989586621679744733"><span class="hs-identifier hs-var">order</span></a></span><span> </span><span class="annot"><span class="annottext">Order -&gt; Order -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Order
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#Descending"><span class="hs-identifier hs-var">Descending</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-107"></span><span>        </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#ByIndex"><span class="hs-identifier hs-type">ByIndex</span></a></span><span> </span><span id="local-6989586621679744724"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621679744724"><span class="hs-identifier hs-var">index</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">IO
+  (Tensor gradient layout device dataType (SortF selectDim shape),
+   Tensor
+     ('Gradient 'WithoutGradient)
+     layout
+     device
+     ('DataType 'Int64)
+     (SortF selectDim shape))
+-&gt; (Tensor gradient layout device dataType (SortF selectDim shape),
+    Tensor
+      ('Gradient 'WithoutGradient)
+      layout
+      device
+      ('DataType 'Int64)
+      (SortF selectDim shape))
+forall a. IO a -&gt; a
+</span><span class="hs-identifier hs-var">unsafePerformIO</span></span><span> </span><span class="annot"><span class="annottext">(IO
+   (Tensor gradient layout device dataType (SortF selectDim shape),
+    Tensor
+      ('Gradient 'WithoutGradient)
+      layout
+      device
+      ('DataType 'Int64)
+      (SortF selectDim shape))
+ -&gt; (Tensor gradient layout device dataType (SortF selectDim shape),
+     Tensor
+       ('Gradient 'WithoutGradient)
+       layout
+       device
+       ('DataType 'Int64)
+       (SortF selectDim shape)))
+-&gt; IO
+     (Tensor gradient layout device dataType (SortF selectDim shape),
+      Tensor
+        ('Gradient 'WithoutGradient)
+        layout
+        device
+        ('DataType 'Int64)
+        (SortF selectDim shape))
+-&gt; (Tensor gradient layout device dataType (SortF selectDim shape),
+    Tensor
+      ('Gradient 'WithoutGradient)
+      layout
+      device
+      ('DataType 'Int64)
+      (SortF selectDim shape))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(ForeignPtr Tensor
+ -&gt; Int64 -&gt; CBool -&gt; IO (ForeignPtr (StdTuple '(Tensor, Tensor))))
+-&gt; Tensor gradient layout device dataType shape
+-&gt; Int
+-&gt; Bool
+-&gt; IO
+     (Tensor gradient layout device dataType (SortF selectDim shape),
+      Tensor
+        ('Gradient 'WithoutGradient)
+        layout
+        device
+        ('DataType 'Int64)
+        (SortF selectDim shape))
+forall a ca x1 cx1 x2 cx2 y cy.
+(Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable y cy) =&gt;
+(ca -&gt; cx1 -&gt; cx2 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; x2 -&gt; IO y
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">cast3</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Tensor
+-&gt; Int64 -&gt; CBool -&gt; IO (ForeignPtr (StdTuple '(Tensor, Tensor)))
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.sort_tlb</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679744732"><span class="hs-identifier hs-var">tensor</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Integer -&gt; Int
+forall a. Num a =&gt; Integer -&gt; a
+</span><span class="hs-identifier hs-var">fromInteger</span></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621679744724"><span class="hs-identifier hs-var">index</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Order
+</span><a href="#local-6989586621679744733"><span class="hs-identifier hs-var">order</span></a></span><span> </span><span class="annot"><span class="annottext">Order -&gt; Order -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Order
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#Descending"><span class="hs-identifier hs-var">Descending</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-108"></span><span>
+</span><span id="line-109"></span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#sort"><span class="hs-identifier hs-type">sort</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-110"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679744721"><span class="annot"><a href="#local-6989586621679744721"><span class="hs-identifier hs-type">selectDim</span></a></span></span><span> </span><span id="local-6989586621679744720"><span class="annot"><a href="#local-6989586621679744720"><span class="hs-identifier hs-type">gradient</span></a></span></span><span> </span><span id="local-6989586621679744719"><span class="annot"><a href="#local-6989586621679744719"><span class="hs-identifier hs-type">layout</span></a></span></span><span> </span><span id="local-6989586621679744718"><span class="annot"><a href="#local-6989586621679744718"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span id="local-6989586621679744717"><span class="annot"><a href="#local-6989586621679744717"><span class="hs-identifier hs-type">dataType</span></a></span></span><span> </span><span id="local-6989586621679744716"><span class="annot"><a href="#local-6989586621679744716"><span class="hs-identifier hs-type">shape</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-111"></span><span>  </span><span class="annot"><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier hs-type">SingI</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744721"><span class="hs-identifier hs-type">selectDim</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-112"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#Order"><span class="hs-identifier hs-type">Order</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-113"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744720"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744719"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744718"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744717"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744716"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-114"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#Sorted"><span class="hs-identifier hs-type">Sorted</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744720"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744719"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744718"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744717"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#SortF"><span class="hs-identifier hs-type">SortF</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744721"><span class="hs-identifier hs-type">selectDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679744716"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-115"></span><span id="sort"><span class="annot"><span class="annottext">sort :: Order
+-&gt; Tensor gradient layout device dataType shape
+-&gt; Sorted gradient layout device dataType (SortF selectDim shape)
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#sort"><span class="hs-identifier hs-var hs-var">sort</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SSelectDim selectDim
+-&gt; Order
+-&gt; Tensor gradient layout device dataType shape
+-&gt; Sorted gradient layout device dataType (SortF selectDim shape)
+forall (selectDim :: SelectDim (By Symbol Nat))
+       (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)]).
+SSelectDim selectDim
+-&gt; Order
+-&gt; Tensor gradient layout device dataType shape
+-&gt; Sorted gradient layout device dataType (SortF selectDim shape)
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Comparison.html#sSort"><span class="hs-identifier hs-var">sSort</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SingI selectDim =&gt; Sing selectDim
+forall k (a :: k). SingI a =&gt; Sing a
+</span><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier hs-var">sing</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679744721"><span class="hs-identifier hs-type">selectDim</span></a></span><span class="hs-special">)</span></pre></body></html>

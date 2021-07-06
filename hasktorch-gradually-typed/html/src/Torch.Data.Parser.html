@@ -1,0 +1,853 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE FlexibleInstances #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE KindSignatures #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE LambdaCase #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE RankNTypes #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE TypeApplications #-}</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.Data.Parser</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Applicative</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Alternative</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">liftA2</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">optional</span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">MonadPlus</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">mfilter</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">replicateM</span></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/046mbhpbxs17y8f6rznrw22fzgsmw1rq-logict-lib-logict-0.7.0.3-haddock-doc/share/doc/logict/html/src"><span class="hs-identifier">Control.Monad.Logic</span></a></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.State</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">MonadState</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">StateT</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">get</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">put</span></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.Trans</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">MonadTrans</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">lift</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier">Control.Monad.Trans.Free</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier">FreeF</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier">FreeT</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier">iterT</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier">iterTM</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier">wrap</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Char</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">isAlpha</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">isAlphaNum</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">isDigit</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">isSpace</span></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Foldable</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">asum</span></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Functor</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-operator">($&gt;)</span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Kind</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Type</span></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.List</span></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-identifier">Text.Parser.Char</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Text</span></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-identifier">Text.Parser.Combinators</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Text</span></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-identifier">Text.Parser.Token</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Text</span></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Text.Read</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">readMaybe</span></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span>
+</span><span id="line-26"></span><span class="hs-comment">-- | @Parser b i a@ is a parser that consumes a stream of @i@ tokens and as a</span><span>
+</span><span id="line-27"></span><span class="hs-comment">-- result yields a value of type @a@, while operating under the @b@</span><span>
+</span><span id="line-28"></span><span class="hs-comment">-- non-determinism monad.</span><span>
+</span><span id="line-29"></span><span class="hs-comment">--</span><span>
+</span><span id="line-30"></span><span class="hs-comment">-- For most purposes, the non-determinism monad @b@ should be a 'MonadPlus'.</span><span>
+</span><span id="line-31"></span><span class="hs-comment">-- Useful examples include @[]@ or @Logic@ if you want backtracking,</span><span>
+</span><span id="line-32"></span><span class="hs-comment">-- and 'Maybe' if you want no backtracking.</span><span>
+</span><span id="line-33"></span><span class="hs-comment">--</span><span>
+</span><span id="line-34"></span><span class="hs-comment">-- Use @'StateT' s []@ if you want to maintain a state @s@ that is</span><span>
+</span><span id="line-35"></span><span class="hs-comment">-- automatically reverted when backtracking via @[]@.</span><span>
+</span><span id="line-36"></span><span class="hs-comment">--</span><span>
+</span><span id="line-37"></span><span class="hs-comment">-- 'hoistFreeT' can be used to change the backtracking monad.</span><span>
+</span><span id="line-38"></span><span class="hs-comment">--</span><span>
+</span><span id="line-39"></span><span class="hs-comment">-- 'FreeT' provides instances for 'Functor', 'Applicative', 'Monad',</span><span>
+</span><span id="line-40"></span><span class="hs-comment">-- 'Alternative' and 'MonadPlus'.</span><span>
+</span><span id="line-41"></span><span class="hs-keyword">type</span><span> </span><span id="Parser"><span class="annot"><a href="Torch.Data.Parser.html#Parser"><span class="hs-identifier hs-var">Parser</span></a></span></span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-special">(</span><span id="local-6989586621679738798"><span class="annot"><a href="#local-6989586621679738798"><span class="hs-identifier hs-type">b</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Type</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Type</span></span><span class="hs-special">)</span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-special">(</span><span id="local-6989586621679738797"><span class="annot"><a href="#local-6989586621679738797"><span class="hs-identifier hs-type">i</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Type</span></span><span class="hs-special">)</span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-special">(</span><span id="local-6989586621679738796"><span class="annot"><a href="#local-6989586621679738796"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Type</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-45"></span><span>  </span><span class="annot"><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier hs-type">FreeT</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="hs-glyph">-&gt;</span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679738797"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679738798"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738796"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-46"></span><span>
+</span><span id="line-47"></span><span id="local-6989586621679738794"><span id="local-6989586621679738795"><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679738788"><span id="local-6989586621679738790"><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Applicative</span></span><span> </span><span class="annot"><a href="#local-6989586621679738795"><span class="hs-identifier hs-type">f</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/046mbhpbxs17y8f6rznrw22fzgsmw1rq-logict-lib-logict-0.7.0.3-haddock-doc/share/doc/logict/html/src"><span class="hs-identifier hs-type">MonadLogic</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738794"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="../file:///nix/store/046mbhpbxs17y8f6rznrw22fzgsmw1rq-logict-lib-logict-0.7.0.3-haddock-doc/share/doc/logict/html/src"><span class="hs-identifier hs-type">MonadLogic</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier hs-type">FreeT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738795"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738794"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-comment">-- msplit :: FreeT f b a -&gt; FreeT f b (Maybe (a, FreeT f b a))</span><span>
+</span><span id="line-49"></span><span>  </span><span id="local-6989586621679738783"><span class="annot"><span class="annottext">msplit :: FreeT f b a -&gt; FreeT f b (Maybe (a, FreeT f b a))
+</span><a href="../file:///nix/store/046mbhpbxs17y8f6rznrw22fzgsmw1rq-logict-lib-logict-0.7.0.3-haddock-doc/share/doc/logict/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">msplit</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier hs-type">FreeT</span></a></span><span> </span><span id="local-6989586621679738780"><span class="annot"><span class="annottext">b (FreeF f a (FreeT f b a))
+</span><a href="#local-6989586621679738780"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">b (FreeF
+     f (Maybe (a, FreeT f b a)) (FreeT f b (Maybe (a, FreeT f b a))))
+-&gt; FreeT f b (Maybe (a, FreeT f b a))
+forall (f :: * -&gt; *) (m :: * -&gt; *) a.
+m (FreeF f a (FreeT f m a)) -&gt; FreeT f m a
+</span><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier hs-var">FreeT</span></a></span><span> </span><span class="annot"><span class="annottext">(b (FreeF
+      f (Maybe (a, FreeT f b a)) (FreeT f b (Maybe (a, FreeT f b a))))
+ -&gt; FreeT f b (Maybe (a, FreeT f b a)))
+-&gt; b (FreeF
+        f (Maybe (a, FreeT f b a)) (FreeT f b (Maybe (a, FreeT f b a))))
+-&gt; FreeT f b (Maybe (a, FreeT f b a))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">b (FreeF f a (FreeT f b a))
+-&gt; [f (FreeT f b a)]
+-&gt; b (FreeF
+        f (Maybe (a, FreeT f b a)) (FreeT f b (Maybe (a, FreeT f b a))))
+forall (m :: * -&gt; *) (f :: * -&gt; *) a.
+(MonadLogic m, Applicative f) =&gt;
+m (FreeF f a (FreeT f m a))
+-&gt; [f (FreeT f m a)]
+-&gt; m (FreeF
+        f (Maybe (a, FreeT f m a)) (FreeT f m (Maybe (a, FreeT f m a))))
+</span><a href="#local-6989586621679738779"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="annot"><span class="annottext">b (FreeF f a (FreeT f b a))
+</span><a href="#local-6989586621679738780"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-50"></span><span>    </span><span class="hs-keyword">where</span><span>
+</span><span id="line-51"></span><span>      </span><span id="local-6989586621679738779"><span class="annot"><span class="annottext">go :: m (FreeF f a (FreeT f m a))
+-&gt; [f (FreeT f m a)]
+-&gt; m (FreeF
+        f (Maybe (a, FreeT f m a)) (FreeT f m (Maybe (a, FreeT f m a))))
+</span><a href="#local-6989586621679738779"><span class="hs-identifier hs-var hs-var">go</span></a></span></span><span> </span><span id="local-6989586621679738778"><span class="annot"><span class="annottext">m (FreeF f a (FreeT f m a))
+</span><a href="#local-6989586621679738778"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span id="local-6989586621679738777"><span class="annot"><span class="annottext">[f (FreeT f m a)]
+</span><a href="#local-6989586621679738777"><span class="hs-identifier hs-var">ws</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-52"></span><span>        </span><span id="local-6989586621679738776"><span class="annot"><span class="annottext">Maybe (FreeF f a (FreeT f m a), m (FreeF f a (FreeT f m a)))
+</span><a href="#local-6989586621679738776"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">m (FreeF f a (FreeT f m a))
+-&gt; m (Maybe (FreeF f a (FreeT f m a), m (FreeF f a (FreeT f m a))))
+forall (m :: * -&gt; *) a. MonadLogic m =&gt; m a -&gt; m (Maybe (a, m a))
+</span><a href="../file:///nix/store/046mbhpbxs17y8f6rznrw22fzgsmw1rq-logict-lib-logict-0.7.0.3-haddock-doc/share/doc/logict/html/src"><span class="hs-identifier hs-var">msplit</span></a></span><span> </span><span class="annot"><span class="annottext">m (FreeF f a (FreeT f m a))
+</span><a href="#local-6989586621679738778"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><span id="line-53"></span><span>        </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Maybe (FreeF f a (FreeT f m a), m (FreeF f a (FreeT f m a)))
+</span><a href="#local-6989586621679738776"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-54"></span><span>          </span><span class="annot"><span class="annottext">Maybe (FreeF f a (FreeT f m a), m (FreeF f a (FreeT f m a)))
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">FreeF
+  f (Maybe (a, FreeT f m a)) (FreeT f m (Maybe (a, FreeT f m a)))
+-&gt; m (FreeF
+        f (Maybe (a, FreeT f m a)) (FreeT f m (Maybe (a, FreeT f m a))))
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(FreeF
+   f (Maybe (a, FreeT f m a)) (FreeT f m (Maybe (a, FreeT f m a)))
+ -&gt; m (FreeF
+         f (Maybe (a, FreeT f m a)) (FreeT f m (Maybe (a, FreeT f m a)))))
+-&gt; FreeF
+     f (Maybe (a, FreeT f m a)) (FreeT f m (Maybe (a, FreeT f m a)))
+-&gt; m (FreeF
+        f (Maybe (a, FreeT f m a)) (FreeT f m (Maybe (a, FreeT f m a))))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">[f (FreeT f m a)]
+</span><a href="#local-6989586621679738777"><span class="hs-identifier hs-var">ws</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-55"></span><span>            </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe (a, FreeT f m a)
+-&gt; FreeF
+     f (Maybe (a, FreeT f m a)) (FreeT f m (Maybe (a, FreeT f m a)))
+forall (f :: * -&gt; *) a b. a -&gt; FreeF f a b
+</span><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier hs-var">Pure</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe (a, FreeT f m a)
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-56"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679738774"><span class="annot"><span class="annottext">f (FreeT f m a)
+</span><a href="#local-6989586621679738774"><span class="hs-identifier hs-var">w</span></a></span></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span id="local-6989586621679738773"><span class="annot"><span class="annottext">[f (FreeT f m a)]
+</span><a href="#local-6989586621679738773"><span class="hs-identifier hs-var">ws</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-57"></span><span>              </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679738772"><span class="annot"><span class="annottext">go' :: f [a] -&gt; [f a] -&gt; f [a]
+</span><a href="#local-6989586621679738772"><span class="hs-identifier hs-var hs-var">go'</span></a></span></span><span> </span><span id="local-6989586621679738771"><span class="annot"><span class="annottext">f [a]
+</span><a href="#local-6989586621679738771"><span class="hs-identifier hs-var">fas</span></a></span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">f [a]
+</span><a href="#local-6989586621679738771"><span class="hs-identifier hs-var">fas</span></a></span><span>
+</span><span id="line-58"></span><span>                  </span><span class="annot"><a href="#local-6989586621679738772"><span class="hs-identifier hs-var">go'</span></a></span><span> </span><span id="local-6989586621679738770"><span class="annot"><span class="annottext">f [a]
+</span><a href="#local-6989586621679738770"><span class="hs-identifier hs-var">fas</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679738769"><span class="annot"><span class="annottext">f a
+</span><a href="#local-6989586621679738769"><span class="hs-identifier hs-var">w</span></a></span></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span id="local-6989586621679738768"><span class="annot"><span class="annottext">[f a]
+</span><a href="#local-6989586621679738768"><span class="hs-identifier hs-var">ws</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">f [a] -&gt; [f a] -&gt; f [a]
+</span><a href="#local-6989586621679738772"><span class="hs-identifier hs-var">go'</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(a -&gt; [a] -&gt; [a]) -&gt; f a -&gt; f [a] -&gt; f [a]
+forall (f :: * -&gt; *) a b c.
+Applicative f =&gt;
+(a -&gt; b -&gt; c) -&gt; f a -&gt; f b -&gt; f c
+</span><span class="hs-identifier hs-var">liftA2</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">:</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">f a
+</span><a href="#local-6989586621679738769"><span class="hs-identifier hs-var">w</span></a></span><span> </span><span class="annot"><span class="annottext">f [a]
+</span><a href="#local-6989586621679738770"><span class="hs-identifier hs-var">fas</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[f a]
+</span><a href="#local-6989586621679738768"><span class="hs-identifier hs-var">ws</span></a></span><span>
+</span><span id="line-59"></span><span>               </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">f (FreeT f m (Maybe (a, FreeT f m a)))
+-&gt; FreeF
+     f (Maybe (a, FreeT f m a)) (FreeT f m (Maybe (a, FreeT f m a)))
+forall (f :: * -&gt; *) a b. f b -&gt; FreeF f a b
+</span><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier hs-var">Free</span></a></span><span> </span><span class="annot"><span class="annottext">(f (FreeT f m (Maybe (a, FreeT f m a)))
+ -&gt; FreeF
+      f (Maybe (a, FreeT f m a)) (FreeT f m (Maybe (a, FreeT f m a))))
+-&gt; f (FreeT f m (Maybe (a, FreeT f m a)))
+-&gt; FreeF
+     f (Maybe (a, FreeT f m a)) (FreeT f m (Maybe (a, FreeT f m a)))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">([FreeT f m a] -&gt; FreeT f m (Maybe (a, FreeT f m a)))
+-&gt; f [FreeT f m a] -&gt; f (FreeT f m (Maybe (a, FreeT f m a)))
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">FreeT f m a -&gt; FreeT f m (Maybe (a, FreeT f m a))
+forall (m :: * -&gt; *) a. MonadLogic m =&gt; m a -&gt; m (Maybe (a, m a))
+</span><a href="../file:///nix/store/046mbhpbxs17y8f6rznrw22fzgsmw1rq-logict-lib-logict-0.7.0.3-haddock-doc/share/doc/logict/html/src"><span class="hs-identifier hs-var">msplit</span></a></span><span> </span><span class="annot"><span class="annottext">(FreeT f m a -&gt; FreeT f m (Maybe (a, FreeT f m a)))
+-&gt; ([FreeT f m a] -&gt; FreeT f m a)
+-&gt; [FreeT f m a]
+-&gt; FreeT f m (Maybe (a, FreeT f m a))
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">[FreeT f m a] -&gt; FreeT f m a
+forall (t :: * -&gt; *) (f :: * -&gt; *) a.
+(Foldable t, Alternative f) =&gt;
+t (f a) -&gt; f a
+</span><span class="hs-identifier hs-var">asum</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">f [FreeT f m a] -&gt; [f (FreeT f m a)] -&gt; f [FreeT f m a]
+forall (f :: * -&gt; *) a. Applicative f =&gt; f [a] -&gt; [f a] -&gt; f [a]
+</span><a href="#local-6989586621679738772"><span class="hs-identifier hs-var">go'</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(FreeT f m a -&gt; [FreeT f m a])
+-&gt; f (FreeT f m a) -&gt; f [FreeT f m a]
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="annot"><span class="annottext">FreeT f m a -&gt; [FreeT f m a]
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">f (FreeT f m a)
+</span><a href="#local-6989586621679738774"><span class="hs-identifier hs-var">w</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[f (FreeT f m a)]
+</span><a href="#local-6989586621679738773"><span class="hs-identifier hs-var">ws</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-60"></span><span>          </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679738765"><span class="annot"><span class="annottext">FreeF f a (FreeT f m a)
+</span><a href="#local-6989586621679738765"><span class="hs-identifier hs-var">val</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679738764"><span class="annot"><span class="annottext">m (FreeF f a (FreeT f m a))
+</span><a href="#local-6989586621679738764"><span class="hs-identifier hs-var">b'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-61"></span><span>            </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">FreeF f a (FreeT f m a)
+</span><a href="#local-6989586621679738765"><span class="hs-identifier hs-var">val</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-62"></span><span>              </span><span class="annot"><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier hs-type">Pure</span></a></span><span> </span><span id="local-6989586621679738763"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679738763"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">FreeF
+  f (Maybe (a, FreeT f m a)) (FreeT f m (Maybe (a, FreeT f m a)))
+-&gt; m (FreeF
+        f (Maybe (a, FreeT f m a)) (FreeT f m (Maybe (a, FreeT f m a))))
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(FreeF
+   f (Maybe (a, FreeT f m a)) (FreeT f m (Maybe (a, FreeT f m a)))
+ -&gt; m (FreeF
+         f (Maybe (a, FreeT f m a)) (FreeT f m (Maybe (a, FreeT f m a)))))
+-&gt; (Maybe (a, FreeT f m a)
+    -&gt; FreeF
+         f (Maybe (a, FreeT f m a)) (FreeT f m (Maybe (a, FreeT f m a))))
+-&gt; Maybe (a, FreeT f m a)
+-&gt; m (FreeF
+        f (Maybe (a, FreeT f m a)) (FreeT f m (Maybe (a, FreeT f m a))))
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Maybe (a, FreeT f m a)
+-&gt; FreeF
+     f (Maybe (a, FreeT f m a)) (FreeT f m (Maybe (a, FreeT f m a)))
+forall (f :: * -&gt; *) a b. a -&gt; FreeF f a b
+</span><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier hs-var">Pure</span></a></span><span> </span><span class="annot"><span class="annottext">(Maybe (a, FreeT f m a)
+ -&gt; m (FreeF
+         f (Maybe (a, FreeT f m a)) (FreeT f m (Maybe (a, FreeT f m a)))))
+-&gt; Maybe (a, FreeT f m a)
+-&gt; m (FreeF
+        f (Maybe (a, FreeT f m a)) (FreeT f m (Maybe (a, FreeT f m a))))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(a, FreeT f m a) -&gt; Maybe (a, FreeT f m a)
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679738763"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">m (FreeF f a (FreeT f m a)) -&gt; FreeT f m a
+forall (f :: * -&gt; *) (m :: * -&gt; *) a.
+m (FreeF f a (FreeT f m a)) -&gt; FreeT f m a
+</span><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier hs-var">FreeT</span></a></span><span> </span><span class="annot"><span class="annottext">m (FreeF f a (FreeT f m a))
+</span><a href="#local-6989586621679738764"><span class="hs-identifier hs-var">b'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-63"></span><span>              </span><span class="annot"><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier hs-type">Free</span></a></span><span> </span><span id="local-6989586621679738762"><span class="annot"><span class="annottext">f (FreeT f m a)
+</span><a href="#local-6989586621679738762"><span class="hs-identifier hs-var">w</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">m (FreeF f a (FreeT f m a))
+-&gt; [f (FreeT f m a)]
+-&gt; m (FreeF
+        f (Maybe (a, FreeT f m a)) (FreeT f m (Maybe (a, FreeT f m a))))
+</span><a href="#local-6989586621679738779"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="annot"><span class="annottext">m (FreeF f a (FreeT f m a))
+</span><a href="#local-6989586621679738764"><span class="hs-identifier hs-var">b'</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">f (FreeT f m a)
+</span><a href="#local-6989586621679738762"><span class="hs-identifier hs-var">w</span></a></span><span> </span><span class="annot"><span class="annottext">f (FreeT f m a) -&gt; [f (FreeT f m a)] -&gt; [f (FreeT f m a)]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span> </span><span class="annot"><span class="annottext">[f (FreeT f m a)]
+</span><a href="#local-6989586621679738777"><span class="hs-identifier hs-var">ws</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-64"></span><span>
+</span><span id="line-65"></span><span>  </span><span id="local-6989586621679738761"><span class="annot"><span class="annottext">ifte :: FreeT f b a -&gt; (a -&gt; FreeT f b b) -&gt; FreeT f b b -&gt; FreeT f b b
+</span><a href="../file:///nix/store/046mbhpbxs17y8f6rznrw22fzgsmw1rq-logict-lib-logict-0.7.0.3-haddock-doc/share/doc/logict/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">ifte</span></a></span></span><span> </span><span id="local-6989586621679738759"><span class="annot"><span class="annottext">FreeT f b a
+</span><a href="#local-6989586621679738759"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span id="local-6989586621679738758"><span class="annot"><span class="annottext">a -&gt; FreeT f b b
+</span><a href="#local-6989586621679738758"><span class="hs-identifier hs-var">th</span></a></span></span><span> </span><span id="local-6989586621679738757"><span class="annot"><span class="annottext">FreeT f b b
+</span><a href="#local-6989586621679738757"><span class="hs-identifier hs-var">el</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FreeT f b a -&gt; FreeT f b (Maybe (a, FreeT f b a))
+forall (m :: * -&gt; *) a. MonadLogic m =&gt; m a -&gt; m (Maybe (a, m a))
+</span><a href="../file:///nix/store/046mbhpbxs17y8f6rznrw22fzgsmw1rq-logict-lib-logict-0.7.0.3-haddock-doc/share/doc/logict/html/src"><span class="hs-identifier hs-var">msplit</span></a></span><span> </span><span class="annot"><span class="annottext">FreeT f b a
+</span><a href="#local-6989586621679738759"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">FreeT f b (Maybe (a, FreeT f b a))
+-&gt; (Maybe (a, FreeT f b a) -&gt; FreeT f b b) -&gt; FreeT f b b
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
+</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="annot"><span class="annottext">FreeT f b b
+-&gt; ((a, FreeT f b a) -&gt; FreeT f b b)
+-&gt; Maybe (a, FreeT f b a)
+-&gt; FreeT f b b
+forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
+</span><span class="hs-identifier hs-var">maybe</span></span><span> </span><span class="annot"><span class="annottext">FreeT f b b
+</span><a href="#local-6989586621679738757"><span class="hs-identifier hs-var">el</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621679738755"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679738755"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679738754"><span class="annot"><span class="annottext">FreeT f b a
+</span><a href="#local-6989586621679738754"><span class="hs-identifier hs-var">m</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">a -&gt; FreeT f b b
+</span><a href="#local-6989586621679738758"><span class="hs-identifier hs-var">th</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679738755"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">FreeT f b b -&gt; FreeT f b b -&gt; FreeT f b b
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
+</span><span class="hs-operator hs-var">&lt;|&gt;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">FreeT f b a
+</span><a href="#local-6989586621679738754"><span class="hs-identifier hs-var">m</span></a></span><span> </span><span class="annot"><span class="annottext">FreeT f b a -&gt; (a -&gt; FreeT f b b) -&gt; FreeT f b b
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
+</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; FreeT f b b
+</span><a href="#local-6989586621679738758"><span class="hs-identifier hs-var">th</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-66"></span><span>
+</span><span id="line-67"></span><span>  </span><span id="local-6989586621679738752"><span class="annot"><span class="annottext">once :: FreeT f b a -&gt; FreeT f b a
+</span><a href="../file:///nix/store/046mbhpbxs17y8f6rznrw22fzgsmw1rq-logict-lib-logict-0.7.0.3-haddock-doc/share/doc/logict/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">once</span></a></span></span><span> </span><span id="local-6989586621679738750"><span class="annot"><span class="annottext">FreeT f b a
+</span><a href="#local-6989586621679738750"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-68"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679738749"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679738749"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">FreeT f b a
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">FreeT f b (a, FreeT f b a)
+-&gt; ((a, FreeT f b a) -&gt; FreeT f b (a, FreeT f b a))
+-&gt; Maybe (a, FreeT f b a)
+-&gt; FreeT f b (a, FreeT f b a)
+forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
+</span><span class="hs-identifier hs-var">maybe</span></span><span> </span><span class="annot"><span class="annottext">FreeT f b (a, FreeT f b a)
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a
+</span><span class="hs-identifier hs-var">empty</span></span><span> </span><span class="annot"><span class="annottext">(a, FreeT f b a) -&gt; FreeT f b (a, FreeT f b a)
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Maybe (a, FreeT f b a) -&gt; FreeT f b (a, FreeT f b a))
+-&gt; FreeT f b (Maybe (a, FreeT f b a)) -&gt; FreeT f b (a, FreeT f b a)
+forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
+</span><span class="hs-operator hs-var">=&lt;&lt;</span></span><span> </span><span class="annot"><span class="annottext">FreeT f b a -&gt; FreeT f b (Maybe (a, FreeT f b a))
+forall (m :: * -&gt; *) a. MonadLogic m =&gt; m a -&gt; m (Maybe (a, m a))
+</span><a href="../file:///nix/store/046mbhpbxs17y8f6rznrw22fzgsmw1rq-logict-lib-logict-0.7.0.3-haddock-doc/share/doc/logict/html/src"><span class="hs-identifier hs-var">msplit</span></a></span><span> </span><span class="annot"><span class="annottext">FreeT f b a
+</span><a href="#local-6989586621679738750"><span class="hs-identifier hs-var">m</span></a></span><span>
+</span><span id="line-69"></span><span>    </span><span class="annot"><span class="annottext">a -&gt; FreeT f b a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679738749"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-70"></span><span>
+</span><span id="line-71"></span><span>  </span><span id="local-6989586621679738746"><span class="annot"><span class="annottext">lnot :: FreeT f b a -&gt; FreeT f b ()
+</span><a href="../file:///nix/store/046mbhpbxs17y8f6rznrw22fzgsmw1rq-logict-lib-logict-0.7.0.3-haddock-doc/share/doc/logict/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">lnot</span></a></span></span><span> </span><span id="local-6989586621679738744"><span class="annot"><span class="annottext">FreeT f b a
+</span><a href="#local-6989586621679738744"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FreeT f b a -&gt; (a -&gt; FreeT f b ()) -&gt; FreeT f b () -&gt; FreeT f b ()
+forall (m :: * -&gt; *) a b.
+MonadLogic m =&gt;
+m a -&gt; (a -&gt; m b) -&gt; m b -&gt; m b
+</span><a href="../file:///nix/store/046mbhpbxs17y8f6rznrw22fzgsmw1rq-logict-lib-logict-0.7.0.3-haddock-doc/share/doc/logict/html/src"><span class="hs-identifier hs-var">ifte</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">FreeT f b a -&gt; FreeT f b a
+forall (m :: * -&gt; *) a. MonadLogic m =&gt; m a -&gt; m a
+</span><a href="../file:///nix/store/046mbhpbxs17y8f6rznrw22fzgsmw1rq-logict-lib-logict-0.7.0.3-haddock-doc/share/doc/logict/html/src"><span class="hs-identifier hs-var">once</span></a></span><span> </span><span class="annot"><span class="annottext">FreeT f b a
+</span><a href="#local-6989586621679738744"><span class="hs-identifier hs-var">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">FreeT f b () -&gt; a -&gt; FreeT f b ()
+forall a b. a -&gt; b -&gt; a
+</span><span class="hs-identifier hs-var">const</span></span><span> </span><span class="annot"><span class="annottext">FreeT f b ()
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a
+</span><span class="hs-identifier hs-var">empty</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">() -&gt; FreeT f b ()
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span></span></span><span>
+</span><span id="line-72"></span><span>
+</span><span id="line-73"></span><span class="hs-comment">-- lnot m = msplit m &gt;&gt;= maybe (pure ()) (const empty)</span><span>
+</span><span id="line-74"></span><span>
+</span><span id="line-75"></span><span class="hs-comment">-- | Recurse over a parser.</span><span>
+</span><span id="line-76"></span><span class="hs-comment">--</span><span>
+</span><span id="line-77"></span><span class="hs-comment">-- Tears down the free monad transformer over the '(-&gt;) i' functor using iteration:</span><span>
+</span><span id="line-78"></span><span class="hs-comment">-- @</span><span>
+</span><span id="line-79"></span><span class="hs-comment">-- recurse next parser = next parser (\parser' -&gt; next parser' (\parser'' -&gt; next parser'' (\parser''' -&gt; next parser''' (...))))</span><span>
+</span><span id="line-80"></span><span class="hs-comment">-- @</span><span>
+</span><span id="line-81"></span><span class="annot"><a href="Torch.Data.Parser.html#recurse"><span class="hs-identifier hs-type">recurse</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-82"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679738959"><span class="annot"><a href="#local-6989586621679738959"><span class="hs-identifier hs-type">t</span></a></span></span><span> </span><span id="local-6989586621679738962"><span class="annot"><a href="#local-6989586621679738962"><span class="hs-identifier hs-type">b</span></a></span></span><span> </span><span id="local-6989586621679738961"><span class="annot"><a href="#local-6989586621679738961"><span class="hs-identifier hs-type">i</span></a></span></span><span> </span><span id="local-6989586621679738960"><span class="annot"><a href="#local-6989586621679738960"><span class="hs-identifier hs-type">a</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-83"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Data.Parser.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738962"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738961"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738960"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Data.Parser.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738962"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738961"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738960"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738959"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738962"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738960"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738959"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738962"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738960"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-84"></span><span>  </span><span class="annot"><a href="Torch.Data.Parser.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738962"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738961"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738960"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-85"></span><span>  </span><span class="annot"><a href="#local-6989586621679738959"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738962"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738960"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-86"></span><span id="recurse"><span class="annot"><span class="annottext">recurse :: (Parser b i a -&gt; (Parser b i a -&gt; t b a) -&gt; t b a)
+-&gt; Parser b i a -&gt; t b a
+</span><a href="Torch.Data.Parser.html#recurse"><span class="hs-identifier hs-var hs-var">recurse</span></a></span></span><span> </span><span id="local-6989586621679738741"><span class="annot"><span class="annottext">Parser b i a -&gt; (Parser b i a -&gt; t b a) -&gt; t b a
+</span><a href="#local-6989586621679738741"><span class="hs-identifier hs-var">next</span></a></span></span><span> </span><span id="local-6989586621679738740"><span class="annot"><span class="annottext">Parser b i a
+</span><a href="#local-6989586621679738740"><span class="hs-identifier hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-87"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679738739"><span class="annot"><span class="annottext">cont :: Parser b i a -&gt; t b a
+</span><a href="#local-6989586621679738739"><span class="hs-identifier hs-var hs-var">cont</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Parser b i a -&gt; (Parser b i a -&gt; t b a) -&gt; t b a)
+-&gt; Parser b i a -&gt; t b a
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (b :: * -&gt; *) i a.
+(Parser b i a -&gt; (Parser b i a -&gt; t b a) -&gt; t b a)
+-&gt; Parser b i a -&gt; t b a
+</span><a href="Torch.Data.Parser.html#recurse"><span class="hs-identifier hs-var">recurse</span></a></span><span> </span><span class="annot"><span class="annottext">Parser b i a -&gt; (Parser b i a -&gt; t b a) -&gt; t b a
+</span><a href="#local-6989586621679738741"><span class="hs-identifier hs-var">next</span></a></span><span>
+</span><span id="line-88"></span><span>   </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Parser b i a -&gt; (Parser b i a -&gt; t b a) -&gt; t b a
+</span><a href="#local-6989586621679738741"><span class="hs-identifier hs-var">next</span></a></span><span> </span><span class="annot"><span class="annottext">Parser b i a
+</span><a href="#local-6989586621679738740"><span class="hs-identifier hs-var">parser</span></a></span><span> </span><span class="annot"><span class="annottext">Parser b i a -&gt; t b a
+</span><a href="#local-6989586621679738739"><span class="hs-identifier hs-var">cont</span></a></span><span>
+</span><span id="line-89"></span><span>
+</span><span id="line-90"></span><span class="annot"><a href="Torch.Data.Parser.html#parseStream"><span class="hs-identifier hs-type">parseStream</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679738940"><span class="annot"><a href="#local-6989586621679738940"><span class="hs-identifier hs-type">s</span></a></span></span><span> </span><span id="local-6989586621679738941"><span class="annot"><a href="#local-6989586621679738941"><span class="hs-identifier hs-type">b</span></a></span></span><span> </span><span id="local-6989586621679738939"><span class="annot"><a href="#local-6989586621679738939"><span class="hs-identifier hs-type">i</span></a></span></span><span> </span><span id="local-6989586621679738938"><span class="annot"><a href="#local-6989586621679738938"><span class="hs-identifier hs-type">a</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="annot"><a href="#local-6989586621679738941"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679738940"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738941"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679738939"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679738940"><span class="hs-identifier hs-type">s</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Data.Parser.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">StateT</span></span><span> </span><span class="annot"><a href="#local-6989586621679738940"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738941"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679738939"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738938"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738940"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738941"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679738938"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679738940"><span class="hs-identifier hs-type">s</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-91"></span><span id="parseStream"><span class="annot"><span class="annottext">parseStream :: (s -&gt; b (i, s)) -&gt; Parser (StateT s b) i a -&gt; s -&gt; b (a, s)
+</span><a href="Torch.Data.Parser.html#parseStream"><span class="hs-identifier hs-var hs-var">parseStream</span></a></span></span><span> </span><span id="local-6989586621679738737"><span class="annot"><span class="annottext">s -&gt; b (i, s)
+</span><a href="#local-6989586621679738737"><span class="hs-identifier hs-var">next</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">StateT s b a -&gt; s -&gt; b (a, s)
+forall s (m :: * -&gt; *) a. StateT s m a -&gt; s -&gt; m (a, s)
+</span><span class="hs-identifier hs-var hs-var">runStateT</span></span><span> </span><span class="annot"><span class="annottext">(StateT s b a -&gt; s -&gt; b (a, s))
+-&gt; (Parser (StateT s b) i a -&gt; StateT s b a)
+-&gt; Parser (StateT s b) i a
+-&gt; s
+-&gt; b (a, s)
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">((i -&gt; StateT s b a) -&gt; StateT s b a)
+-&gt; Parser (StateT s b) i a -&gt; StateT s b a
+forall (f :: * -&gt; *) (m :: * -&gt; *) a.
+(Functor f, Monad m) =&gt;
+(f (m a) -&gt; m a) -&gt; FreeT f m a -&gt; m a
+</span><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier hs-var">iterT</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(s -&gt; b (i, s)) -&gt; StateT s b i
+forall s (m :: * -&gt; *) a. (s -&gt; m (a, s)) -&gt; StateT s m a
+</span><span class="hs-identifier hs-var">StateT</span></span><span> </span><span class="annot"><span class="annottext">s -&gt; b (i, s)
+</span><a href="#local-6989586621679738737"><span class="hs-identifier hs-var">next</span></a></span><span> </span><span class="annot"><span class="annottext">StateT s b i -&gt; (i -&gt; StateT s b a) -&gt; StateT s b a
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
+</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span class="hs-special">)</span><span>
+</span><span id="line-92"></span><span>
+</span><span id="line-93"></span><span class="annot"><a href="Torch.Data.Parser.html#parseString"><span class="hs-identifier hs-type">parseString</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679738923"><span class="annot"><a href="#local-6989586621679738923"><span class="hs-identifier hs-type">b</span></a></span></span><span> </span><span id="local-6989586621679738922"><span class="annot"><a href="#local-6989586621679738922"><span class="hs-identifier hs-type">i</span></a></span></span><span> </span><span id="local-6989586621679738921"><span class="annot"><a href="#local-6989586621679738921"><span class="hs-identifier hs-type">a</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadPlus</span></span><span> </span><span class="annot"><a href="#local-6989586621679738923"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.Data.Parser.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">StateT</span></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679738922"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">]</span><span> </span><span class="annot"><a href="#local-6989586621679738923"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679738922"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738921"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679738922"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738923"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679738921"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679738922"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-94"></span><span id="parseString"><span class="annot"><span class="annottext">parseString :: Parser (StateT [i] b) i a -&gt; [i] -&gt; b (a, [i])
+</span><a href="Torch.Data.Parser.html#parseString"><span class="hs-identifier hs-var hs-var">parseString</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([i] -&gt; b (i, [i]))
+-&gt; Parser (StateT [i] b) i a -&gt; [i] -&gt; b (a, [i])
+forall s (b :: * -&gt; *) i a.
+Monad b =&gt;
+(s -&gt; b (i, s)) -&gt; Parser (StateT s b) i a -&gt; s -&gt; b (a, s)
+</span><a href="Torch.Data.Parser.html#parseStream"><span class="hs-identifier hs-var">parseStream</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">b (i, [i])
+-&gt; ((i, [i]) -&gt; b (i, [i])) -&gt; Maybe (i, [i]) -&gt; b (i, [i])
+forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
+</span><span class="hs-identifier hs-var">maybe</span></span><span> </span><span class="annot"><span class="annottext">b (i, [i])
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a
+</span><span class="hs-identifier hs-var">empty</span></span><span> </span><span class="annot"><span class="annottext">(i, [i]) -&gt; b (i, [i])
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Maybe (i, [i]) -&gt; b (i, [i]))
+-&gt; ([i] -&gt; Maybe (i, [i])) -&gt; [i] -&gt; b (i, [i])
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">[i] -&gt; Maybe (i, [i])
+forall a. [a] -&gt; Maybe (a, [a])
+</span><span class="hs-identifier hs-var">uncons</span></span><span class="hs-special">)</span><span>
+</span><span id="line-95"></span><span>
+</span><span id="line-96"></span><span class="hs-comment">-- | @token@ is trivial parser that consumes a single token @i@ and yields it.</span><span>
+</span><span id="line-97"></span><span class="hs-comment">--</span><span>
+</span><span id="line-98"></span><span class="hs-comment">-- Other parsers can be derived from this one using methods of the</span><span>
+</span><span id="line-99"></span><span class="hs-comment">-- 'Functor', 'Applicative', 'Monad', 'Alternative', and 'MonadPlus' typeclasses</span><span>
+</span><span id="line-100"></span><span class="hs-comment">-- and the parser combinators in this module.</span><span>
+</span><span id="line-101"></span><span class="annot"><a href="Torch.Data.Parser.html#token"><span class="hs-identifier hs-type">token</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679738888"><span class="annot"><a href="#local-6989586621679738888"><span class="hs-identifier hs-type">b</span></a></span></span><span> </span><span id="local-6989586621679738887"><span class="annot"><a href="#local-6989586621679738887"><span class="hs-identifier hs-type">i</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="annot"><a href="#local-6989586621679738888"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.Data.Parser.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738888"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738887"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738887"><span class="hs-identifier hs-type">i</span></a></span><span>
+</span><span id="line-102"></span><span id="token"><span class="annot"><span class="annottext">token :: Parser b i i
+</span><a href="Torch.Data.Parser.html#token"><span class="hs-identifier hs-var hs-var">token</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(i -&gt; Parser b i i) -&gt; Parser b i i
+forall (f :: * -&gt; *) (m :: * -&gt; *) a.
+MonadFree f m =&gt;
+f (m a) -&gt; m a
+</span><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier hs-var">wrap</span></a></span><span> </span><span class="annot"><span class="annottext">((i -&gt; Parser b i i) -&gt; Parser b i i)
+-&gt; (i -&gt; Parser b i i) -&gt; Parser b i i
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">b (FreeF ((-&gt;) i) i (Parser b i i)) -&gt; Parser b i i
+forall (f :: * -&gt; *) (m :: * -&gt; *) a.
+m (FreeF f a (FreeT f m a)) -&gt; FreeT f m a
+</span><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier hs-var">FreeT</span></a></span><span> </span><span class="annot"><span class="annottext">(b (FreeF ((-&gt;) i) i (Parser b i i)) -&gt; Parser b i i)
+-&gt; (i -&gt; b (FreeF ((-&gt;) i) i (Parser b i i))) -&gt; i -&gt; Parser b i i
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">FreeF ((-&gt;) i) i (Parser b i i)
+-&gt; b (FreeF ((-&gt;) i) i (Parser b i i))
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(FreeF ((-&gt;) i) i (Parser b i i)
+ -&gt; b (FreeF ((-&gt;) i) i (Parser b i i)))
+-&gt; (i -&gt; FreeF ((-&gt;) i) i (Parser b i i))
+-&gt; i
+-&gt; b (FreeF ((-&gt;) i) i (Parser b i i))
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">i -&gt; FreeF ((-&gt;) i) i (Parser b i i)
+forall (f :: * -&gt; *) a b. a -&gt; FreeF f a b
+</span><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier hs-var">Pure</span></a></span><span>
+</span><span id="line-103"></span><span>
+</span><span id="line-104"></span><span id="local-6989586621679738901"><span id="local-6989586621679738902"><span class="annot"><a href="Torch.Data.Parser.html#eof"><span class="hs-identifier hs-type">eof</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Alternative</span></span><span> </span><span class="annot"><a href="#local-6989586621679738902"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.Data.Parser.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">StateT</span></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679738901"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">]</span><span> </span><span class="annot"><a href="#local-6989586621679738902"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679738901"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span></span></span><span>
+</span><span id="line-105"></span><span id="eof"><span class="annot"><span class="annottext">eof :: Parser (StateT [i] b) i ()
+</span><a href="Torch.Data.Parser.html#eof"><span class="hs-identifier hs-var hs-var">eof</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">StateT [i] b (FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ()))
+-&gt; Parser (StateT [i] b) i ()
+forall (f :: * -&gt; *) (m :: * -&gt; *) a.
+m (FreeF f a (FreeT f m a)) -&gt; FreeT f m a
+</span><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier hs-var">FreeT</span></a></span><span> </span><span class="annot"><span class="annottext">(StateT [i] b (FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ()))
+ -&gt; Parser (StateT [i] b) i ())
+-&gt; (([i]
+     -&gt; b (FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ()), [i]))
+    -&gt; StateT [i] b (FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ())))
+-&gt; ([i] -&gt; b (FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ()), [i]))
+-&gt; Parser (StateT [i] b) i ()
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">([i] -&gt; b (FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ()), [i]))
+-&gt; StateT [i] b (FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ()))
+forall s (m :: * -&gt; *) a. (s -&gt; m (a, s)) -&gt; StateT s m a
+</span><span class="hs-identifier hs-var">StateT</span></span><span> </span><span class="annot"><span class="annottext">(([i] -&gt; b (FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ()), [i]))
+ -&gt; Parser (StateT [i] b) i ())
+-&gt; ([i] -&gt; b (FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ()), [i]))
+-&gt; Parser (StateT [i] b) i ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679738730"><span class="annot"><span class="annottext">[i]
+</span><a href="#local-6989586621679738730"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-106"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">[i]
+</span><a href="#local-6989586621679738730"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-107"></span><span>    </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ()), [i])
+-&gt; b (FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ()), [i])
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">() -&gt; FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ())
+forall (f :: * -&gt; *) a b. a -&gt; FreeF f a b
+</span><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier hs-var">Pure</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[i]
+</span><a href="#local-6989586621679738730"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-108"></span><span>    </span><span class="annot"><span class="annottext">[i]
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">b (FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ()), [i])
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a
+</span><span class="hs-identifier hs-var">empty</span></span><span>
+</span><span id="line-109"></span><span>
+</span><span id="line-110"></span><span class="hs-comment">-- &gt;&gt;&gt; parseString @[] (sequence [token &lt;* notFollowedBy (is 'a'), token]) &quot;ab&quot;</span><span>
+</span><span id="line-111"></span><span class="hs-comment">-- [(&quot;ab&quot;,&quot;&quot;)]</span><span>
+</span><span id="line-112"></span><span class="hs-comment">-- &gt;&gt;&gt; parseString @[] (sequence [token &lt;* notFollowedBy (is 'a'), token]) &quot;aa&quot;</span><span>
+</span><span id="line-113"></span><span class="hs-comment">-- []</span><span>
+</span><span id="line-114"></span><span class="hs-comment">-- &gt;&gt;&gt; parseString @[] (notFollowedBy (traverse is &quot;ab&quot;)) &quot;a&quot;</span><span>
+</span><span id="line-115"></span><span class="hs-comment">-- [((),&quot;a&quot;)]</span><span>
+</span><span id="line-116"></span><span class="hs-comment">-- &gt;&gt;&gt; parseString @[] (notFollowedBy (traverse is &quot;ab&quot;)) &quot;ab&quot;</span><span>
+</span><span id="line-117"></span><span class="hs-comment">-- []</span><span>
+</span><span id="line-118"></span><span class="annot"><a href="Torch.Data.Parser.html#notFollowedBy"><span class="hs-identifier hs-type">notFollowedBy</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-119"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679738899"><span class="annot"><a href="#local-6989586621679738899"><span class="hs-identifier hs-type">b</span></a></span></span><span> </span><span id="local-6989586621679738898"><span class="annot"><a href="#local-6989586621679738898"><span class="hs-identifier hs-type">i</span></a></span></span><span> </span><span id="local-6989586621679738897"><span class="annot"><a href="#local-6989586621679738897"><span class="hs-identifier hs-type">a</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-120"></span><span>  </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Alternative</span></span><span> </span><span class="annot"><a href="#local-6989586621679738899"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Foldable</span></span><span> </span><span class="annot"><a href="#local-6989586621679738899"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadPlus</span></span><span> </span><span class="annot"><a href="#local-6989586621679738899"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-121"></span><span>  </span><span class="annot"><a href="Torch.Data.Parser.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">StateT</span></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679738898"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">]</span><span> </span><span class="annot"><a href="#local-6989586621679738899"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679738898"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738897"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-122"></span><span>  </span><span class="annot"><a href="Torch.Data.Parser.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">StateT</span></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679738898"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">]</span><span> </span><span class="annot"><a href="#local-6989586621679738899"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679738898"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-123"></span><span id="notFollowedBy"><span class="annot"><span class="annottext">notFollowedBy :: Parser (StateT [i] b) i a -&gt; Parser (StateT [i] b) i ()
+</span><a href="Torch.Data.Parser.html#notFollowedBy"><span class="hs-identifier hs-var hs-var">notFollowedBy</span></a></span></span><span> </span><span id="local-6989586621679738728"><span class="annot"><span class="annottext">Parser (StateT [i] b) i a
+</span><a href="#local-6989586621679738728"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">StateT [i] b (FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ()))
+-&gt; Parser (StateT [i] b) i ()
+forall (f :: * -&gt; *) (m :: * -&gt; *) a.
+m (FreeF f a (FreeT f m a)) -&gt; FreeT f m a
+</span><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier hs-var">FreeT</span></a></span><span> </span><span class="annot"><span class="annottext">(StateT [i] b (FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ()))
+ -&gt; Parser (StateT [i] b) i ())
+-&gt; (([i]
+     -&gt; b (FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ()), [i]))
+    -&gt; StateT [i] b (FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ())))
+-&gt; ([i] -&gt; b (FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ()), [i]))
+-&gt; Parser (StateT [i] b) i ()
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">([i] -&gt; b (FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ()), [i]))
+-&gt; StateT [i] b (FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ()))
+forall s (m :: * -&gt; *) a. (s -&gt; m (a, s)) -&gt; StateT s m a
+</span><span class="hs-identifier hs-var">StateT</span></span><span> </span><span class="annot"><span class="annottext">(([i] -&gt; b (FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ()), [i]))
+ -&gt; Parser (StateT [i] b) i ())
+-&gt; ([i] -&gt; b (FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ()), [i]))
+-&gt; Parser (StateT [i] b) i ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679738727"><span class="annot"><span class="annottext">[i]
+</span><a href="#local-6989586621679738727"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-124"></span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">b (a, [i]) -&gt; Bool
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Bool
+</span><span class="hs-identifier hs-var">null</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parser (StateT [i] b) i a -&gt; [i] -&gt; b (a, [i])
+forall (b :: * -&gt; *) i a.
+MonadPlus b =&gt;
+Parser (StateT [i] b) i a -&gt; [i] -&gt; b (a, [i])
+</span><a href="Torch.Data.Parser.html#parseString"><span class="hs-identifier hs-var">parseString</span></a></span><span> </span><span class="annot"><span class="annottext">Parser (StateT [i] b) i a
+</span><a href="#local-6989586621679738728"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">[i]
+</span><a href="#local-6989586621679738727"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-125"></span><span>    </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">(FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ()), [i])
+-&gt; b (FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ()), [i])
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">() -&gt; FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ())
+forall (f :: * -&gt; *) a b. a -&gt; FreeF f a b
+</span><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier hs-var">Pure</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[i]
+</span><a href="#local-6989586621679738727"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-126"></span><span>    </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">b (FreeF ((-&gt;) i) () (Parser (StateT [i] b) i ()), [i])
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a
+</span><span class="hs-identifier hs-var">empty</span></span><span>
+</span><span id="line-127"></span><span>
+</span><span id="line-128"></span><span id="local-6989586621679738724"><span id="local-6989586621679738725"><span class="hs-keyword">instance</span><span>
+</span><span id="line-129"></span><span>  </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Alternative</span></span><span> </span><span class="annot"><a href="#local-6989586621679738725"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Foldable</span></span><span> </span><span class="annot"><a href="#local-6989586621679738725"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadPlus</span></span><span> </span><span class="annot"><a href="#local-6989586621679738725"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-130"></span><span>  </span><span class="annot"><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-identifier hs-type">Text.Parsing</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier hs-type">FreeT</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="hs-glyph">-&gt;</span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679738724"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">StateT</span></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679738724"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">]</span><span> </span><span class="annot"><a href="#local-6989586621679738725"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-131"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-132"></span><span>  </span><span id="local-6989586621679738714"><span class="annot"><span class="annottext">try :: FreeT ((-&gt;) i) (StateT [i] b) a -&gt; FreeT ((-&gt;) i) (StateT [i] b) a
+</span><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">try</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FreeT ((-&gt;) i) (StateT [i] b) a -&gt; FreeT ((-&gt;) i) (StateT [i] b) a
+forall a. a -&gt; a
+</span><span class="hs-identifier hs-var">id</span></span><span>
+</span><span id="line-133"></span><span>  </span><span id="local-6989586621679738711"><span class="annot"><span class="annottext">&lt;?&gt; :: FreeT ((-&gt;) i) (StateT [i] b) a
+-&gt; String -&gt; FreeT ((-&gt;) i) (StateT [i] b) a
+</span><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-operator hs-var hs-var hs-var hs-var">(&lt;?&gt;)</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FreeT ((-&gt;) i) (StateT [i] b) a
+-&gt; String -&gt; FreeT ((-&gt;) i) (StateT [i] b) a
+forall a b. a -&gt; b -&gt; a
+</span><span class="hs-identifier hs-var">const</span></span><span>
+</span><span id="line-134"></span><span>  </span><span id="local-6989586621679738709"><span class="annot"><span class="annottext">skipMany :: FreeT ((-&gt;) i) (StateT [i] b) a -&gt; FreeT ((-&gt;) i) (StateT [i] b) ()
+</span><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">skipMany</span></a></span></span><span> </span><span id="local-6989586621679738707"><span class="annot"><span class="annottext">FreeT ((-&gt;) i) (StateT [i] b) a
+</span><a href="#local-6989586621679738707"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FreeT ((-&gt;) i) (StateT [i] b) ()
+</span><a href="#local-6989586621679738706"><span class="hs-identifier hs-var">scan</span></a></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679738706"><span class="annot"><span class="annottext">scan :: FreeT ((-&gt;) i) (StateT [i] b) ()
+</span><a href="#local-6989586621679738706"><span class="hs-identifier hs-var hs-var">scan</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">FreeT ((-&gt;) i) (StateT [i] b) a
+</span><a href="#local-6989586621679738707"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">FreeT ((-&gt;) i) (StateT [i] b) a
+-&gt; FreeT ((-&gt;) i) (StateT [i] b) ()
+-&gt; FreeT ((-&gt;) i) (StateT [i] b) ()
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f a -&gt; f b -&gt; f b
+</span><span class="hs-operator hs-var">*&gt;</span></span><span> </span><span class="annot"><span class="annottext">FreeT ((-&gt;) i) (StateT [i] b) ()
+</span><a href="#local-6989586621679738706"><span class="hs-identifier hs-var">scan</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">FreeT ((-&gt;) i) (StateT [i] b) ()
+-&gt; FreeT ((-&gt;) i) (StateT [i] b) ()
+-&gt; FreeT ((-&gt;) i) (StateT [i] b) ()
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
+</span><span class="hs-operator hs-var">&lt;|&gt;</span></span><span> </span><span class="annot"><span class="annottext">() -&gt; FreeT ((-&gt;) i) (StateT [i] b) ()
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-135"></span><span>  </span><span id="local-6989586621679738705"><span class="annot"><span class="annottext">skipSome :: FreeT ((-&gt;) i) (StateT [i] b) a -&gt; FreeT ((-&gt;) i) (StateT [i] b) ()
+</span><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">skipSome</span></a></span></span><span> </span><span id="local-6989586621679738703"><span class="annot"><span class="annottext">FreeT ((-&gt;) i) (StateT [i] b) a
+</span><a href="#local-6989586621679738703"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FreeT ((-&gt;) i) (StateT [i] b) a
+</span><a href="#local-6989586621679738703"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">FreeT ((-&gt;) i) (StateT [i] b) a
+-&gt; FreeT ((-&gt;) i) (StateT [i] b) ()
+-&gt; FreeT ((-&gt;) i) (StateT [i] b) ()
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f a -&gt; f b -&gt; f b
+</span><span class="hs-operator hs-var">*&gt;</span></span><span> </span><span class="annot"><span class="annottext">FreeT ((-&gt;) i) (StateT [i] b) a -&gt; FreeT ((-&gt;) i) (StateT [i] b) ()
+forall (m :: * -&gt; *) a. Parsing m =&gt; m a -&gt; m ()
+</span><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-identifier hs-var">Text.skipMany</span></a></span><span> </span><span class="annot"><span class="annottext">FreeT ((-&gt;) i) (StateT [i] b) a
+</span><a href="#local-6989586621679738703"><span class="hs-identifier hs-var">p</span></a></span><span>
+</span><span id="line-136"></span><span>  </span><span id="local-6989586621679738702"><span class="annot"><span class="annottext">unexpected :: String -&gt; FreeT ((-&gt;) i) (StateT [i] b) a
+</span><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">unexpected</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FreeT ((-&gt;) i) (StateT [i] b) a
+-&gt; String -&gt; FreeT ((-&gt;) i) (StateT [i] b) a
+forall a b. a -&gt; b -&gt; a
+</span><span class="hs-identifier hs-var">const</span></span><span> </span><span class="annot"><span class="annottext">FreeT ((-&gt;) i) (StateT [i] b) a
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a
+</span><span class="hs-identifier hs-var">empty</span></span><span>
+</span><span id="line-137"></span><span>  </span><span id="local-6989586621679738700"><span class="annot"><span class="annottext">eof :: FreeT ((-&gt;) i) (StateT [i] b) ()
+</span><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">eof</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FreeT ((-&gt;) i) (StateT [i] b) ()
+forall (b :: * -&gt; *) i. Alternative b =&gt; Parser (StateT [i] b) i ()
+</span><a href="Torch.Data.Parser.html#eof"><span class="hs-identifier hs-var">Torch.Data.Parser.eof</span></a></span><span>
+</span><span id="line-138"></span><span>  </span><span id="local-6989586621679738698"><span class="annot"><span class="annottext">notFollowedBy :: FreeT ((-&gt;) i) (StateT [i] b) a -&gt; FreeT ((-&gt;) i) (StateT [i] b) ()
+</span><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">notFollowedBy</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FreeT ((-&gt;) i) (StateT [i] b) a -&gt; FreeT ((-&gt;) i) (StateT [i] b) ()
+forall (b :: * -&gt; *) i a.
+(Alternative b, Foldable b, MonadPlus b) =&gt;
+Parser (StateT [i] b) i a -&gt; Parser (StateT [i] b) i ()
+</span><a href="Torch.Data.Parser.html#notFollowedBy"><span class="hs-identifier hs-var">Torch.Data.Parser.notFollowedBy</span></a></span></span></span><span>
+</span><span id="line-139"></span><span>
+</span><span id="line-140"></span><span id="local-6989586621679738696"><span class="hs-keyword">instance</span><span>
+</span><span id="line-141"></span><span>  </span><span id="local-6989586621679738688"><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Alternative</span></span><span> </span><span class="annot"><a href="#local-6989586621679738696"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Foldable</span></span><span> </span><span class="annot"><a href="#local-6989586621679738696"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadPlus</span></span><span> </span><span class="annot"><a href="#local-6989586621679738696"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-142"></span><span>  </span><span class="annot"><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-identifier hs-type">Text.CharParsing</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier hs-type">FreeT</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="hs-glyph">-&gt;</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">StateT</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span class="hs-special">]</span><span> </span><span class="annot"><a href="#local-6989586621679738696"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span></span><span>
+</span><span id="line-143"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-144"></span><span>  </span><span id="local-6989586621679738686"><span class="annot"><span class="annottext">satisfy :: (Char -&gt; Bool) -&gt; FreeT ((-&gt;) Char) (StateT String b) Char
+</span><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">satisfy</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; FreeT ((-&gt;) Char) (StateT String b) Char
+forall (b :: * -&gt; *) i. MonadPlus b =&gt; (i -&gt; Bool) -&gt; Parser b i i
+</span><a href="Torch.Data.Parser.html#satisfy"><span class="hs-identifier hs-var">Torch.Data.Parser.satisfy</span></a></span><span>
+</span><span id="line-145"></span><span>  </span><span id="local-6989586621679738683"><span class="annot"><span class="annottext">char :: Char -&gt; FreeT ((-&gt;) Char) (StateT String b) Char
+</span><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">char</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Char -&gt; FreeT ((-&gt;) Char) (StateT String b) Char
+forall (b :: * -&gt; *) i. (MonadPlus b, Eq i) =&gt; i -&gt; Parser b i i
+</span><a href="Torch.Data.Parser.html#isToken"><span class="hs-identifier hs-var">isToken</span></a></span><span>
+</span><span id="line-146"></span><span>  </span><span id="local-6989586621679738680"><span class="annot"><span class="annottext">notChar :: Char -&gt; FreeT ((-&gt;) Char) (StateT String b) Char
+</span><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">notChar</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Char -&gt; FreeT ((-&gt;) Char) (StateT String b) Char
+forall (b :: * -&gt; *) i. (MonadPlus b, Eq i) =&gt; i -&gt; Parser b i i
+</span><a href="Torch.Data.Parser.html#isNotToken"><span class="hs-identifier hs-var">isNotToken</span></a></span><span>
+</span><span id="line-147"></span><span>  </span><span id="local-6989586621679738677"><span class="annot"><span class="annottext">anyChar :: FreeT ((-&gt;) Char) (StateT String b) Char
+</span><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">anyChar</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FreeT ((-&gt;) Char) (StateT String b) Char
+forall (b :: * -&gt; *) i. Monad b =&gt; Parser b i i
+</span><a href="Torch.Data.Parser.html#token"><span class="hs-identifier hs-var">token</span></a></span><span>
+</span><span id="line-148"></span><span>  </span><span id="local-6989586621679738675"><span class="annot"><span class="annottext">string :: String -&gt; FreeT ((-&gt;) Char) (StateT String b) String
+</span><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">string</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; FreeT ((-&gt;) Char) (StateT String b) String
+forall (t :: * -&gt; *) (b :: * -&gt; *) i.
+(Traversable t, MonadPlus b, Eq i) =&gt;
+t i -&gt; Parser b i (t i)
+</span><a href="Torch.Data.Parser.html#isString"><span class="hs-identifier hs-var">isString</span></a></span></span><span>
+</span><span id="line-149"></span><span>
+</span><span id="line-150"></span><span id="local-6989586621679738672"><span class="hs-keyword">instance</span><span>
+</span><span id="line-151"></span><span>  </span><span id="local-6989586621679738661"><span id="local-6989586621679738663"><span id="local-6989586621679738665"><span id="local-6989586621679738667"><span id="local-6989586621679738669"><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Alternative</span></span><span> </span><span class="annot"><a href="#local-6989586621679738672"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Foldable</span></span><span> </span><span class="annot"><a href="#local-6989586621679738672"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadPlus</span></span><span> </span><span class="annot"><a href="#local-6989586621679738672"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-152"></span><span>  </span><span class="annot"><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-identifier hs-type">Text.TokenParsing</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/q154yhzyqbj85jbmxvqr5brnw9x6zgxr-free-lib-free-5.1.6-haddock-doc/share/doc/free/html/src"><span class="hs-identifier hs-type">FreeT</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="hs-glyph">-&gt;</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">StateT</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span class="hs-special">]</span><span> </span><span class="annot"><a href="#local-6989586621679738672"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span></span></span></span></span></span></span><span>
+</span><span id="line-153"></span><span>
+</span><span id="line-154"></span><span class="hs-comment">-- | @satisfy p@ is a simple parser that consumes a single token @i@ and yields it</span><span>
+</span><span id="line-155"></span><span class="hs-comment">-- if and only if @p i@ evaluates to 'True'. Otherwise, the parser fails.</span><span>
+</span><span id="line-156"></span><span class="annot"><a href="Torch.Data.Parser.html#satisfy"><span class="hs-identifier hs-type">satisfy</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679738892"><span class="annot"><a href="#local-6989586621679738892"><span class="hs-identifier hs-type">b</span></a></span></span><span> </span><span id="local-6989586621679738891"><span class="annot"><a href="#local-6989586621679738891"><span class="hs-identifier hs-type">i</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadPlus</span></span><span> </span><span class="annot"><a href="#local-6989586621679738892"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679738891"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Data.Parser.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738892"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738891"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738891"><span class="hs-identifier hs-type">i</span></a></span><span>
+</span><span id="line-157"></span><span id="satisfy"><span class="annot"><span class="annottext">satisfy :: (i -&gt; Bool) -&gt; Parser b i i
+</span><a href="Torch.Data.Parser.html#satisfy"><span class="hs-identifier hs-var hs-var">satisfy</span></a></span></span><span> </span><span id="local-6989586621679738659"><span class="annot"><span class="annottext">i -&gt; Bool
+</span><a href="#local-6989586621679738659"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(i -&gt; Bool) -&gt; Parser b i i -&gt; Parser b i i
+forall (m :: * -&gt; *) a. MonadPlus m =&gt; (a -&gt; Bool) -&gt; m a -&gt; m a
+</span><span class="hs-identifier hs-var">mfilter</span></span><span> </span><span class="annot"><span class="annottext">i -&gt; Bool
+</span><a href="#local-6989586621679738659"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">Parser b i i
+forall (b :: * -&gt; *) i. Monad b =&gt; Parser b i i
+</span><a href="Torch.Data.Parser.html#token"><span class="hs-identifier hs-var">token</span></a></span><span>
+</span><span id="line-158"></span><span>
+</span><span id="line-159"></span><span class="hs-comment">-- | @is i@ is a simple parser that consumes a single token and yields it</span><span>
+</span><span id="line-160"></span><span class="hs-comment">-- if and only if it is equal to @i@. Otherwise, the parser fails.</span><span>
+</span><span id="line-161"></span><span class="annot"><a href="Torch.Data.Parser.html#isToken"><span class="hs-identifier hs-type">isToken</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679738890"><span class="annot"><a href="#local-6989586621679738890"><span class="hs-identifier hs-type">b</span></a></span></span><span> </span><span id="local-6989586621679738889"><span class="annot"><a href="#local-6989586621679738889"><span class="hs-identifier hs-type">i</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">MonadPlus</span></span><span> </span><span class="annot"><a href="#local-6989586621679738890"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Eq</span></span><span> </span><span class="annot"><a href="#local-6989586621679738889"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738889"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Data.Parser.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738890"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738889"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738889"><span class="hs-identifier hs-type">i</span></a></span><span>
+</span><span id="line-162"></span><span id="isToken"><span class="annot"><span class="annottext">isToken :: i -&gt; Parser b i i
+</span><a href="Torch.Data.Parser.html#isToken"><span class="hs-identifier hs-var hs-var">isToken</span></a></span></span><span> </span><span id="local-6989586621679738658"><span class="annot"><span class="annottext">i
+</span><a href="#local-6989586621679738658"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(i -&gt; Bool) -&gt; Parser b i i
+forall (b :: * -&gt; *) i. MonadPlus b =&gt; (i -&gt; Bool) -&gt; Parser b i i
+</span><a href="Torch.Data.Parser.html#satisfy"><span class="hs-identifier hs-var">Torch.Data.Parser.satisfy</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">i -&gt; i -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">i
+</span><a href="#local-6989586621679738658"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-163"></span><span>
+</span><span id="line-164"></span><span class="hs-comment">-- | @isNot i@ is a simple parser that consumes a single token and yields it</span><span>
+</span><span id="line-165"></span><span class="hs-comment">-- if and only if it is not equal to @i@. If the token is equal to @i@,</span><span>
+</span><span id="line-166"></span><span class="hs-comment">-- the parser fails.</span><span>
+</span><span id="line-167"></span><span class="annot"><a href="Torch.Data.Parser.html#isNotToken"><span class="hs-identifier hs-type">isNotToken</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679738657"><span class="annot"><a href="#local-6989586621679738657"><span class="hs-identifier hs-type">b</span></a></span></span><span> </span><span id="local-6989586621679738656"><span class="annot"><a href="#local-6989586621679738656"><span class="hs-identifier hs-type">i</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">MonadPlus</span></span><span> </span><span class="annot"><a href="#local-6989586621679738657"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Eq</span></span><span> </span><span class="annot"><a href="#local-6989586621679738656"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738656"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Data.Parser.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738657"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738656"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738656"><span class="hs-identifier hs-type">i</span></a></span><span>
+</span><span id="line-168"></span><span id="isNotToken"><span class="annot"><span class="annottext">isNotToken :: i -&gt; Parser b i i
+</span><a href="Torch.Data.Parser.html#isNotToken"><span class="hs-identifier hs-var hs-var">isNotToken</span></a></span></span><span> </span><span id="local-6989586621679738655"><span class="annot"><span class="annottext">i
+</span><a href="#local-6989586621679738655"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(i -&gt; Bool) -&gt; Parser b i i
+forall (b :: * -&gt; *) i. MonadPlus b =&gt; (i -&gt; Bool) -&gt; Parser b i i
+</span><a href="Torch.Data.Parser.html#satisfy"><span class="hs-identifier hs-var">Torch.Data.Parser.satisfy</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">i -&gt; i -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">/=</span></span><span> </span><span class="annot"><span class="annottext">i
+</span><a href="#local-6989586621679738655"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-169"></span><span>
+</span><span id="line-170"></span><span class="hs-comment">-- | Stateful scanner.</span><span>
+</span><span id="line-171"></span><span class="hs-comment">--</span><span>
+</span><span id="line-172"></span><span class="hs-comment">-- &gt;&gt;&gt; :{</span><span>
+</span><span id="line-173"></span><span class="hs-comment">--   f s a | &quot;ell&quot; `isInfixOf` (s ++ [a]) = Nothing</span><span>
+</span><span id="line-174"></span><span class="hs-comment">--         | otherwise                    = Just (s ++ [a])</span><span>
+</span><span id="line-175"></span><span class="hs-comment">-- :}</span><span>
+</span><span id="line-176"></span><span class="hs-comment">--</span><span>
+</span><span id="line-177"></span><span class="hs-comment">-- &gt;&gt;&gt; head $ parseString @[] (scan f &quot;&quot; token) &quot;hello 123&quot;</span><span>
+</span><span id="line-178"></span><span class="hs-comment">-- (&quot;hel&quot;,&quot;lo 123&quot;)</span><span>
+</span><span id="line-179"></span><span id="local-6989586621679738855"><span id="local-6989586621679738856"><span id="local-6989586621679738857"><span class="annot"><a href="Torch.Data.Parser.html#scan"><span class="hs-identifier hs-type">scan</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Alternative</span></span><span> </span><span class="annot"><a href="#local-6989586621679738857"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="annot"><a href="#local-6989586621679738857"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679738856"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738855"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="#local-6989586621679738856"><span class="hs-identifier hs-type">s</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738856"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738857"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738855"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738857"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679738855"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span></span></span></span><span>
+</span><span id="line-180"></span><span id="scan"><span class="annot"><span class="annottext">scan :: (s -&gt; a -&gt; Maybe s) -&gt; s -&gt; m a -&gt; m [a]
+</span><a href="Torch.Data.Parser.html#scan"><span class="hs-identifier hs-var hs-var">scan</span></a></span></span><span> </span><span id="local-6989586621679738652"><span class="annot"><span class="annottext">s -&gt; a -&gt; Maybe s
+</span><a href="#local-6989586621679738652"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679738651"><span class="annot"><span class="annottext">s
+</span><a href="#local-6989586621679738651"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span id="local-6989586621679738650"><span class="annot"><span class="annottext">m a
+</span><a href="#local-6989586621679738650"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">s -&gt; m [a]
+</span><a href="#local-6989586621679738649"><span class="hs-identifier hs-var">many_p</span></a></span><span> </span><span class="annot"><span class="annottext">s
+</span><a href="#local-6989586621679738651"><span class="hs-identifier hs-var">s</span></a></span><span>
+</span><span id="line-181"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-182"></span><span>    </span><span id="local-6989586621679738649"><span class="annot"><span class="annottext">many_p :: s -&gt; m [a]
+</span><a href="#local-6989586621679738649"><span class="hs-identifier hs-var hs-var">many_p</span></a></span></span><span> </span><span id="local-6989586621679738648"><span class="annot"><span class="annottext">s
+</span><a href="#local-6989586621679738648"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">s -&gt; m [a]
+</span><a href="#local-6989586621679738647"><span class="hs-identifier hs-var">many1_p</span></a></span><span> </span><span class="annot"><span class="annottext">s
+</span><a href="#local-6989586621679738648"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="annot"><span class="annottext">m [a] -&gt; m [a] -&gt; m [a]
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
+</span><span class="hs-operator hs-var">&lt;|&gt;</span></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; m [a]
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-183"></span><span>    </span><span id="local-6989586621679738647"><span class="annot"><span class="annottext">many1_p :: s -&gt; m [a]
+</span><a href="#local-6989586621679738647"><span class="hs-identifier hs-var hs-var">many1_p</span></a></span></span><span> </span><span id="local-6989586621679738646"><span class="annot"><span class="annottext">s
+</span><a href="#local-6989586621679738646"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">m a
+</span><a href="#local-6989586621679738650"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">m a -&gt; (a -&gt; m [a]) -&gt; m [a]
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
+</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679738645"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679738645"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">m [a] -&gt; (s -&gt; m [a]) -&gt; Maybe s -&gt; m [a]
+forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
+</span><span class="hs-identifier hs-var">maybe</span></span><span> </span><span class="annot"><span class="annottext">m [a]
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a
+</span><span class="hs-identifier hs-var">empty</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">([a] -&gt; [a]) -&gt; m [a] -&gt; m [a]
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679738645"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; [a] -&gt; [a]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(m [a] -&gt; m [a]) -&gt; (s -&gt; m [a]) -&gt; s -&gt; m [a]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">s -&gt; m [a]
+</span><a href="#local-6989586621679738649"><span class="hs-identifier hs-var">many_p</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">s -&gt; a -&gt; Maybe s
+</span><a href="#local-6989586621679738652"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">s
+</span><a href="#local-6989586621679738646"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679738645"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-184"></span><span>
+</span><span id="line-185"></span><span class="hs-comment">-- | @atMost n p@ applies the parser @p@ at most @n@ times and returns</span><span>
+</span><span id="line-186"></span><span class="hs-comment">-- every parsing result. If parsing of @p@ succeeds less the @n@ times,</span><span>
+</span><span id="line-187"></span><span class="hs-comment">-- @repeatP n p@ succeeds as well.</span><span>
+</span><span id="line-188"></span><span class="hs-comment">--</span><span>
+</span><span id="line-189"></span><span class="hs-comment">-- &gt;&gt;&gt; head $ parseString @[] (atMost 2 (isToken 'a')) &quot;aaaaaab&quot;</span><span>
+</span><span id="line-190"></span><span class="hs-comment">-- (&quot;aa&quot;,&quot;aaaab&quot;)</span><span>
+</span><span id="line-191"></span><span id="local-6989586621679738643"><span id="local-6989586621679738644"><span class="annot"><a href="Torch.Data.Parser.html#atMost"><span class="hs-identifier hs-type">atMost</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Alternative</span></span><span> </span><span class="annot"><a href="#local-6989586621679738644"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="annot"><a href="#local-6989586621679738644"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738644"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738643"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738644"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679738643"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span></span></span><span>
+</span><span id="line-192"></span><span id="atMost"><span class="annot"><span class="annottext">atMost :: Int -&gt; m a -&gt; m [a]
+</span><a href="Torch.Data.Parser.html#atMost"><span class="hs-identifier hs-var hs-var">atMost</span></a></span></span><span> </span><span id="local-6989586621679738641"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679738641"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-193"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679738640"><span class="annot"><span class="annottext">f :: Int -&gt; p -&gt; Maybe Int
+</span><a href="#local-6989586621679738640"><span class="hs-identifier hs-var hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679738639"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679738639"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="annot"><span class="annottext">p
+</span><span class="hs-identifier">_</span></span><span>
+</span><span id="line-194"></span><span>        </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679738639"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679738641"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Int
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-195"></span><span>        </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Maybe Int
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679738639"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span>
+</span><span id="line-196"></span><span>   </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">(Int -&gt; a -&gt; Maybe Int) -&gt; Int -&gt; m a -&gt; m [a]
+forall (m :: * -&gt; *) s a.
+(Alternative m, Monad m) =&gt;
+(s -&gt; a -&gt; Maybe s) -&gt; s -&gt; m a -&gt; m [a]
+</span><a href="Torch.Data.Parser.html#scan"><span class="hs-identifier hs-var">scan</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; a -&gt; Maybe Int
+forall p. Int -&gt; p -&gt; Maybe Int
+</span><a href="#local-6989586621679738640"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-197"></span><span>
+</span><span id="line-198"></span><span class="hs-comment">-- | @eitherP p p'@ combines the two alternatives @p@ and @p'@.</span><span>
+</span><span id="line-199"></span><span id="local-6989586621679738635"><span id="local-6989586621679738636"><span id="local-6989586621679738637"><span class="annot"><a href="Torch.Data.Parser.html#eitherP"><span class="hs-identifier hs-type">eitherP</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Alternative</span></span><span> </span><span class="annot"><a href="#local-6989586621679738637"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738637"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738636"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738637"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738635"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738637"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="#local-6989586621679738636"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738635"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span></span></span></span><span>
+</span><span id="line-200"></span><span id="eitherP"><span class="annot"><span class="annottext">eitherP :: f a -&gt; f b -&gt; f (Either a b)
+</span><a href="Torch.Data.Parser.html#eitherP"><span class="hs-identifier hs-var hs-var">eitherP</span></a></span></span><span> </span><span id="local-6989586621679738633"><span class="annot"><span class="annottext">f a
+</span><a href="#local-6989586621679738633"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span id="local-6989586621679738632"><span class="annot"><span class="annottext">f b
+</span><a href="#local-6989586621679738632"><span class="hs-identifier hs-var">p'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; Either a b
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(a -&gt; Either a b) -&gt; f a -&gt; f (Either a b)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">f a
+</span><a href="#local-6989586621679738633"><span class="hs-identifier hs-var">p</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">f (Either a b) -&gt; f (Either a b) -&gt; f (Either a b)
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
+</span><span class="hs-operator hs-var">&lt;|&gt;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">b -&gt; Either a b
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">(b -&gt; Either a b) -&gt; f b -&gt; f (Either a b)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">f b
+</span><a href="#local-6989586621679738632"><span class="hs-identifier hs-var">p'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-201"></span><span>
+</span><span id="line-202"></span><span class="hs-comment">-- | @void p@ applies the parser @p@ and discards its result.</span><span>
+</span><span id="line-203"></span><span id="local-6989586621679738629"><span id="local-6989586621679738630"><span class="annot"><a href="Torch.Data.Parser.html#void"><span class="hs-identifier hs-type">void</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Functor</span></span><span> </span><span class="annot"><a href="#local-6989586621679738630"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738630"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738629"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738630"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span></span></span><span>
+</span><span id="line-204"></span><span id="void"><span class="annot"><span class="annottext">void :: f a -&gt; f ()
+</span><a href="Torch.Data.Parser.html#void"><span class="hs-identifier hs-var hs-var">void</span></a></span></span><span> </span><span id="local-6989586621679738627"><span class="annot"><span class="annottext">f a
+</span><a href="#local-6989586621679738627"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">f a
+</span><a href="#local-6989586621679738627"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">f a -&gt; () -&gt; f ()
+forall (f :: * -&gt; *) a b. Functor f =&gt; f a -&gt; b -&gt; f b
+</span><span class="hs-operator hs-var">$&gt;</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-205"></span><span>
+</span><span id="line-206"></span><span class="hs-comment">-- | @combine p p'@ merges the results of @p@ and @p'@ using the 'Semigroup' instance.</span><span>
+</span><span id="line-207"></span><span id="local-6989586621679738833"><span id="local-6989586621679738834"><span class="annot"><a href="Torch.Data.Parser.html#combine"><span class="hs-identifier hs-type">combine</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Applicative</span></span><span> </span><span class="annot"><a href="#local-6989586621679738834"><span class="hs-identifier hs-type">f</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Semigroup</span></span><span> </span><span class="annot"><a href="#local-6989586621679738833"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738834"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738833"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738834"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738833"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738834"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738833"><span class="hs-identifier hs-type">a</span></a></span></span></span><span>
+</span><span id="line-208"></span><span id="combine"><span class="annot"><span class="annottext">combine :: f a -&gt; f a -&gt; f a
+</span><a href="Torch.Data.Parser.html#combine"><span class="hs-identifier hs-var hs-var">combine</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(a -&gt; a -&gt; a) -&gt; f a -&gt; f a -&gt; f a
+forall (f :: * -&gt; *) a b c.
+Applicative f =&gt;
+(a -&gt; b -&gt; c) -&gt; f a -&gt; f b -&gt; f c
+</span><span class="hs-identifier hs-var">liftA2</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; a -&gt; a
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">(&lt;&gt;)</span></span><span>
+</span><span id="line-209"></span><span>
+</span><span id="line-210"></span><span class="hs-comment">-- | @combines ps@ merges the results of the parsers @ps@ using the 'Monoid' instance.</span><span>
+</span><span id="line-211"></span><span id="local-6989586621679738624"><span id="local-6989586621679738625"><span class="annot"><a href="Torch.Data.Parser.html#combines"><span class="hs-identifier hs-type">combines</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Applicative</span></span><span> </span><span class="annot"><a href="#local-6989586621679738625"><span class="hs-identifier hs-type">f</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Monoid</span></span><span> </span><span class="annot"><a href="#local-6989586621679738624"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679738625"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738624"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738625"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738624"><span class="hs-identifier hs-type">a</span></a></span></span></span><span>
+</span><span id="line-212"></span><span id="combines"><span class="annot"><span class="annottext">combines :: [f a] -&gt; f a
+</span><a href="Torch.Data.Parser.html#combines"><span class="hs-identifier hs-var hs-var">combines</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(f a -&gt; f a -&gt; f a) -&gt; f a -&gt; [f a] -&gt; f a
+forall (t :: * -&gt; *) b a.
+Foldable t =&gt;
+(b -&gt; a -&gt; b) -&gt; b -&gt; t a -&gt; b
+</span><span class="hs-identifier hs-var">foldl</span></span><span> </span><span class="annot"><span class="annottext">f a -&gt; f a -&gt; f a
+forall (f :: * -&gt; *) a.
+(Applicative f, Semigroup a) =&gt;
+f a -&gt; f a -&gt; f a
+</span><a href="Torch.Data.Parser.html#combine"><span class="hs-identifier hs-var">combine</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; f a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">a
+forall a. Monoid a =&gt; a
+</span><span class="hs-identifier hs-var">mempty</span></span><span class="hs-special">)</span><span>
+</span><span id="line-213"></span><span>
+</span><span id="line-214"></span><span class="hs-comment">-- | @isString s@ is a simple parser that consumes 'Char' tokens and yields them</span><span>
+</span><span id="line-215"></span><span class="hs-comment">-- if and only if they assemble the 'String' @s@. Otherwise, the parser fails.</span><span>
+</span><span id="line-216"></span><span id="local-6989586621679738884"><span id="local-6989586621679738885"><span id="local-6989586621679738886"><span class="annot"><a href="Torch.Data.Parser.html#isString"><span class="hs-identifier hs-type">isString</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Traversable</span></span><span> </span><span class="annot"><a href="#local-6989586621679738886"><span class="hs-identifier hs-type">t</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadPlus</span></span><span> </span><span class="annot"><a href="#local-6989586621679738885"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Eq</span></span><span> </span><span class="annot"><a href="#local-6989586621679738884"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738886"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738884"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Data.Parser.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738885"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738884"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679738886"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738884"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">)</span></span></span></span><span>
+</span><span id="line-217"></span><span id="isString"><span class="annot"><span class="annottext">isString :: t i -&gt; Parser b i (t i)
+</span><a href="Torch.Data.Parser.html#isString"><span class="hs-identifier hs-var hs-var">isString</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(i -&gt; FreeT ((-&gt;) i) b i) -&gt; t i -&gt; Parser b i (t i)
+forall (t :: * -&gt; *) (f :: * -&gt; *) a b.
+(Traversable t, Applicative f) =&gt;
+(a -&gt; f b) -&gt; t a -&gt; f (t b)
+</span><span class="hs-identifier hs-var">traverse</span></span><span> </span><span class="annot"><span class="annottext">i -&gt; FreeT ((-&gt;) i) b i
+forall (b :: * -&gt; *) i. (MonadPlus b, Eq i) =&gt; i -&gt; Parser b i i
+</span><a href="Torch.Data.Parser.html#isToken"><span class="hs-identifier hs-var">isToken</span></a></span><span>
+</span><span id="line-218"></span><span>
+</span><span id="line-219"></span><span class="hs-comment">-- | @string@ matches any string</span><span>
+</span><span id="line-220"></span><span class="hs-comment">--</span><span>
+</span><span id="line-221"></span><span class="hs-comment">-- &gt;&gt;&gt; parseString @[] string &quot;a string&quot;</span><span>
+</span><span id="line-222"></span><span class="hs-comment">-- [(&quot;a string&quot;,&quot;&quot;),(&quot;a strin&quot;,&quot;g&quot;),(&quot;a stri&quot;,&quot;ng&quot;),(&quot;a str&quot;,&quot;ing&quot;),(&quot;a st&quot;,&quot;ring&quot;),(&quot;a s&quot;,&quot;tring&quot;),(&quot;a &quot;,&quot;string&quot;),(&quot;a&quot;,&quot; string&quot;),(&quot;&quot;,&quot;a string&quot;)]</span><span>
+</span><span id="line-223"></span><span class="hs-comment">--</span><span>
+</span><span id="line-224"></span><span class="hs-comment">-- -- &gt;&gt;&gt; p = string @[] &gt;&gt;= \s -&gt; (guard (&quot;dog&quot; `isInfixOf` s) &gt;&gt; pure s)</span><span>
+</span><span id="line-225"></span><span class="hs-comment">-- -- &gt;&gt;&gt; head $ parseString p &quot;this is a string with a dog&quot;</span><span>
+</span><span id="line-226"></span><span class="hs-comment">-- -- (&quot;this is a string with a dog&quot;,&quot;&quot;)</span><span>
+</span><span id="line-227"></span><span class="hs-comment">-- -- &gt;&gt;&gt; p = string @[] &gt;&gt;= \s -&gt; (guard (not $ &quot;dog&quot; `isInfixOf` s) &gt;&gt; pure s)</span><span>
+</span><span id="line-228"></span><span class="hs-comment">-- -- &gt;&gt;&gt; head $ parseString p &quot;this is also string with a dog&quot;</span><span>
+</span><span id="line-229"></span><span class="hs-comment">-- -- (&quot;this is also string with a do&quot;,&quot;g&quot;)</span><span>
+</span><span id="line-230"></span><span id="local-6989586621679738619"><span id="local-6989586621679738620"><span class="annot"><a href="Torch.Data.Parser.html#string"><span class="hs-identifier hs-type">string</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadPlus</span></span><span> </span><span class="annot"><a href="#local-6989586621679738620"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.Data.Parser.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738620"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738619"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679738619"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">]</span></span></span><span>
+</span><span id="line-231"></span><span id="string"><span class="annot"><span class="annottext">string :: Parser b i [i]
+</span><a href="Torch.Data.Parser.html#string"><span class="hs-identifier hs-var hs-var">string</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FreeT ((-&gt;) i) b i -&gt; Parser b i [i]
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f [a]
+</span><span class="hs-identifier hs-var">many</span></span><span> </span><span class="annot"><span class="annottext">FreeT ((-&gt;) i) b i
+forall (b :: * -&gt; *) i. Monad b =&gt; Parser b i i
+</span><a href="Torch.Data.Parser.html#token"><span class="hs-identifier hs-var">token</span></a></span><span>
+</span><span id="line-232"></span><span>
+</span><span id="line-233"></span><span class="hs-comment">-- string1 :: MonadPlus b =&gt; Parser b i [i]</span><span>
+</span><span id="line-234"></span><span class="hs-comment">-- string1 = many1 token</span><span>
+</span><span id="line-235"></span><span>
+</span><span id="line-236"></span><span>
+</span><span id="line-237"></span><span class="hs-comment">-- alphas1 :: MonadPlus b =&gt; Parser b Char String</span><span>
+</span><span id="line-238"></span><span class="hs-comment">-- alphas1 = many1 (satisfy isAlpha)</span><span>
+</span><span id="line-239"></span><span>
+</span><span id="line-240"></span><span class="hs-comment">-- alphaNums1 :: MonadPlus b =&gt; Parser b Char String</span><span>
+</span><span id="line-241"></span><span class="hs-comment">-- alphaNums1 = many1 (satisfy isAlphaNum)</span><span>
+</span><span id="line-242"></span><span>
+</span><span id="line-243"></span><span id="local-6989586621679738616"><span class="annot"><a href="Torch.Data.Parser.html#intP"><span class="hs-identifier hs-type">intP</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-identifier hs-type">Text.CharParsing</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738616"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="annot"><a href="#local-6989586621679738616"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738616"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span></span><span>
+</span><span id="line-244"></span><span id="intP"><span class="annot"><span class="annottext">intP :: m Int
+</span><a href="Torch.Data.Parser.html#intP"><span class="hs-identifier hs-var hs-var">intP</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">m Char -&gt; m String
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f [a]
+</span><span class="hs-identifier hs-var">some</span></span><span> </span><span class="annot"><span class="annottext">m Char
+forall (m :: * -&gt; *). CharParsing m =&gt; m Char
+</span><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-identifier hs-var">Text.digit</span></a></span><span> </span><span class="annot"><span class="annottext">m String -&gt; (String -&gt; m Int) -&gt; m Int
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
+</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="annot"><span class="annottext">m Int -&gt; (Int -&gt; m Int) -&gt; Maybe Int -&gt; m Int
+forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
+</span><span class="hs-identifier hs-var">maybe</span></span><span> </span><span class="annot"><span class="annottext">m Int
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a
+</span><span class="hs-identifier hs-var">empty</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; m Int
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Maybe Int -&gt; m Int) -&gt; (String -&gt; Maybe Int) -&gt; String -&gt; m Int
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Maybe Int
+forall a. Read a =&gt; String -&gt; Maybe a
+</span><span class="hs-identifier hs-var">readMaybe</span></span><span>
+</span><span id="line-245"></span><span>
+</span><span id="line-246"></span><span id="local-6989586621679738612"><span class="annot"><a href="Torch.Data.Parser.html#doubleP"><span class="hs-identifier hs-type">doubleP</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-identifier hs-type">Text.CharParsing</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738612"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="annot"><a href="#local-6989586621679738612"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679738612"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span></span><span>
+</span><span id="line-247"></span><span id="doubleP"><span class="annot"><span class="annottext">doubleP :: m Double
+</span><a href="Torch.Data.Parser.html#doubleP"><span class="hs-identifier hs-var hs-var">doubleP</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">m Char -&gt; m String
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f [a]
+</span><span class="hs-identifier hs-var">some</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; m Char
+forall (m :: * -&gt; *). CharParsing m =&gt; (Char -&gt; Bool) -&gt; m Char
+</span><a href="../file:///nix/store/3mbl54gihlp0ilg9wcm9x7h71jawmmaz-parsers-lib-parsers-0.12.10-haddock-doc/share/doc/parsers/html/src"><span class="hs-identifier hs-var">Text.satisfy</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; Bool
+</span><span class="hs-identifier hs-var">not</span></span><span> </span><span class="annot"><span class="annottext">(Bool -&gt; Bool) -&gt; (Char -&gt; Bool) -&gt; Char -&gt; Bool
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
+</span><span class="hs-identifier hs-var">isSpace</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">m String -&gt; (String -&gt; m Double) -&gt; m Double
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
+</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="annot"><span class="annottext">m Double -&gt; (Double -&gt; m Double) -&gt; Maybe Double -&gt; m Double
+forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
+</span><span class="hs-identifier hs-var">maybe</span></span><span> </span><span class="annot"><span class="annottext">m Double
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a
+</span><span class="hs-identifier hs-var">empty</span></span><span> </span><span class="annot"><span class="annottext">Double -&gt; m Double
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Maybe Double -&gt; m Double)
+-&gt; (String -&gt; Maybe Double) -&gt; String -&gt; m Double
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Maybe Double
+forall a. Read a =&gt; String -&gt; Maybe a
+</span><span class="hs-identifier hs-var">readMaybe</span></span><span>
+</span><span id="line-248"></span></pre></body></html>

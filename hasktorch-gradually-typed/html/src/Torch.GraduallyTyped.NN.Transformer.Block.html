@@ -1,0 +1,1806 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE AllowAmbiguousTypes #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE ConstraintKinds #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE DataKinds #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE FlexibleInstances #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE GADTs #-}</span><span>
+</span><span id="line-7"></span><span class="hs-pragma">{-# LANGUAGE KindSignatures #-}</span><span>
+</span><span id="line-8"></span><span class="hs-pragma">{-# LANGUAGE MultiParamTypeClasses #-}</span><span>
+</span><span id="line-9"></span><span class="hs-pragma">{-# LANGUAGE PartialTypeSignatures #-}</span><span>
+</span><span id="line-10"></span><span class="hs-pragma">{-# LANGUAGE RecordWildCards #-}</span><span>
+</span><span id="line-11"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-12"></span><span class="hs-pragma">{-# LANGUAGE StandaloneKindSignatures #-}</span><span>
+</span><span id="line-13"></span><span class="hs-pragma">{-# LANGUAGE TypeApplications #-}</span><span>
+</span><span id="line-14"></span><span class="hs-pragma">{-# LANGUAGE TypeFamilies #-}</span><span>
+</span><span id="line-15"></span><span class="hs-pragma">{-# LANGUAGE TypeOperators #-}</span><span>
+</span><span id="line-16"></span><span class="hs-pragma">{-# LANGUAGE UndecidableInstances #-}</span><span>
+</span><span id="line-17"></span><span class="hs-pragma">{-# LANGUAGE NoStarIsType #-}</span><span>
+</span><span id="line-18"></span><span class="hs-pragma">{-# OPTIONS_GHC -v2 -Wall #-}</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.Block</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/y93sl1ahi24xw24f0y8xsbhzkmpzqzqh-indexed-lib-indexed-0.1.3-haddock-doc/share/doc/indexed/html/src"><span class="hs-identifier">Control.Monad.Indexed</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/y93sl1ahi24xw24f0y8xsbhzkmpzqzqh-indexed-lib-indexed-0.1.3-haddock-doc/share/doc/indexed/html/src"><span class="hs-identifier">ireturn</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/y93sl1ahi24xw24f0y8xsbhzkmpzqzqh-indexed-lib-indexed-0.1.3-haddock-doc/share/doc/indexed/html/src"><span class="hs-operator">(&gt;&gt;&gt;=)</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/8vjaffqxij7bih93d9mlzmc7ksanlw0i-indexed-extras-lib-indexed-extras-0.2-haddock-doc/share/doc/indexed-extras/html/src"><span class="hs-identifier">Control.Monad.Indexed.State</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/8vjaffqxij7bih93d9mlzmc7ksanlw0i-indexed-extras-lib-indexed-extras-0.2-haddock-doc/share/doc/indexed-extras/html/src"><span class="hs-identifier">IxState</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/y93sl1ahi24xw24f0y8xsbhzkmpzqzqh-indexed-lib-indexed-0.1.3-haddock-doc/share/doc/indexed/html/src"><span class="hs-identifier">Data.Functor.Indexed</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/y93sl1ahi24xw24f0y8xsbhzkmpzqzqh-indexed-lib-indexed-0.1.3-haddock-doc/share/doc/indexed/html/src"><span class="hs-operator">(&lt;&lt;$&gt;&gt;)</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/y93sl1ahi24xw24f0y8xsbhzkmpzqzqh-indexed-lib-indexed-0.1.3-haddock-doc/share/doc/indexed/html/src"><span class="hs-operator">(&lt;&lt;*&gt;&gt;)</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Kind</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Type</span></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier">Data.Singletons</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier">SingI</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier">sing</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.TypeLits</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Nat</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Symbol</span></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../../../../hasktorch/html/src"><span class="hs-identifier">Torch.DType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../../../../hasktorch/html/src"><span class="hs-identifier">DType</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.DType.html"><span class="hs-identifier">Torch.GraduallyTyped.DType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.DType.html#DataType"><span class="hs-identifier">DataType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.DType.html#SDataType"><span class="hs-identifier">SDataType</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Device.html"><span class="hs-identifier">Torch.GraduallyTyped.Device</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#Device"><span class="hs-identifier">Device</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#DeviceType"><span class="hs-identifier">DeviceType</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#SDevice"><span class="hs-identifier">SDevice</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Class</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier">HasForward</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasInitialize"><span class="hs-identifier">HasInitialize</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier">HasStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.FeedForwardNetwork.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.FeedForwardNetwork</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.FeedForwardNetwork.html#TransformerFeedForwardNetwork"><span class="hs-identifier">TransformerFeedForwardNetwork</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.SelfAttention.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.SelfAttention</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.SelfAttention.html#SelfAttention"><span class="hs-identifier">SelfAttention</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#STransformerStyle"><span class="hs-identifier">STransformerStyle</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#TransformerStyle"><span class="hs-identifier">TransformerStyle</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html"><span class="hs-identifier">Torch.GraduallyTyped.Random</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier">Generator</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html"><span class="hs-identifier">Torch.GraduallyTyped.RequiresGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier">Gradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#RequiresGradient"><span class="hs-identifier">RequiresGradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier">SGradient</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Shape.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Dim"><span class="hs-identifier">Dim</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Name"><span class="hs-identifier">Name</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SDim"><span class="hs-identifier">SDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Size"><span class="hs-identifier">Size</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span class="hs-comment">-- | Transformer encoder block consisting of self-attention and a feed-forward network.</span><span>
+</span><span id="line-40"></span><span class="hs-comment">--</span><span>
+</span><span id="line-41"></span><span class="hs-comment">-- TODO: Some transformers use LayerDrop, see https://arxiv.org/abs/1909.11556, during training.</span><span>
+</span><span id="line-42"></span><span class="hs-comment">-- To support this, we will need a layer wrapper that is either the identity function or the wrapped layer</span><span>
+</span><span id="line-43"></span><span class="hs-comment">-- based on a uniformly random draw from a supplied generator.</span><span>
+</span><span id="line-44"></span><span class="hs-comment">-- Complications will arise due to the gradual typing...</span><span>
+</span><span id="line-45"></span><span class="hs-keyword">data</span><span>
+</span><span id="line-46"></span><span>  </span><span id="TransformerBlock"><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Block.html#TransformerBlock"><span class="hs-identifier hs-var">TransformerBlock</span></a></span></span><span>
+</span><span id="line-47"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679754190"><span class="annot"><a href="#local-6989586621679754190"><span class="hs-identifier hs-type">style</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#TransformerStyle"><span class="hs-identifier hs-type">TransformerStyle</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679754189"><span class="annot"><a href="#local-6989586621679754189"><span class="hs-identifier hs-type">gradient</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier hs-type">Gradient</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#RequiresGradient"><span class="hs-identifier hs-type">RequiresGradient</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679754188"><span class="annot"><a href="#local-6989586621679754188"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#Device"><span class="hs-identifier hs-type">Device</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#DeviceType"><span class="hs-identifier hs-type">DeviceType</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679754187"><span class="annot"><a href="#local-6989586621679754187"><span class="hs-identifier hs-type">dataType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.DType.html#DataType"><span class="hs-identifier hs-type">DataType</span></a></span><span> </span><span class="annot"><a href="../../../../hasktorch/html/src"><span class="hs-identifier hs-type">DType</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679754186"><span class="annot"><a href="#local-6989586621679754186"><span class="hs-identifier hs-type">headDim</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Dim"><span class="hs-identifier hs-type">Dim</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Name"><span class="hs-identifier hs-type">Name</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Symbol</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Size"><span class="hs-identifier hs-type">Size</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-52"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679754185"><span class="annot"><a href="#local-6989586621679754185"><span class="hs-identifier hs-type">headEmbedDim</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Dim"><span class="hs-identifier hs-type">Dim</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Name"><span class="hs-identifier hs-type">Name</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Symbol</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Size"><span class="hs-identifier hs-type">Size</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679754184"><span class="annot"><a href="#local-6989586621679754184"><span class="hs-identifier hs-type">embedDim</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Dim"><span class="hs-identifier hs-type">Dim</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Name"><span class="hs-identifier hs-type">Name</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Symbol</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Size"><span class="hs-identifier hs-type">Size</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679754183"><span class="annot"><a href="#local-6989586621679754183"><span class="hs-identifier hs-type">queryEmbedDim</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Dim"><span class="hs-identifier hs-type">Dim</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Name"><span class="hs-identifier hs-type">Name</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Symbol</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Size"><span class="hs-identifier hs-type">Size</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679754182"><span class="annot"><a href="#local-6989586621679754182"><span class="hs-identifier hs-type">ffnDim</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Dim"><span class="hs-identifier hs-type">Dim</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Name"><span class="hs-identifier hs-type">Name</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Symbol</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Size"><span class="hs-identifier hs-type">Size</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-56"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679754181"><span class="annot"><a href="#local-6989586621679754181"><span class="hs-identifier hs-type">dropoutP</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Type</span></span><span class="hs-special">)</span><span>
+</span><span id="line-57"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-58"></span><span>  </span><span id="TransformerBlock"><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Block.html#TransformerBlock"><span class="hs-identifier hs-var">TransformerBlock</span></a></span></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-59"></span><span>    </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679754301"><span class="annot"><a href="#local-6989586621679754301"><span class="hs-identifier hs-type">style</span></a></span></span><span> </span><span id="local-6989586621679754300"><span class="annot"><a href="#local-6989586621679754300"><span class="hs-identifier hs-type">gradient</span></a></span></span><span> </span><span id="local-6989586621679754299"><span class="annot"><a href="#local-6989586621679754299"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span id="local-6989586621679754298"><span class="annot"><a href="#local-6989586621679754298"><span class="hs-identifier hs-type">dataType</span></a></span></span><span> </span><span id="local-6989586621679754297"><span class="annot"><a href="#local-6989586621679754297"><span class="hs-identifier hs-type">headDim</span></a></span></span><span> </span><span id="local-6989586621679754296"><span class="annot"><a href="#local-6989586621679754296"><span class="hs-identifier hs-type">headEmbedDim</span></a></span></span><span> </span><span id="local-6989586621679754295"><span class="annot"><a href="#local-6989586621679754295"><span class="hs-identifier hs-type">embedDim</span></a></span></span><span> </span><span id="local-6989586621679754294"><span class="annot"><a href="#local-6989586621679754294"><span class="hs-identifier hs-type">queryEmbedDim</span></a></span></span><span> </span><span id="local-6989586621679754292"><span class="annot"><a href="#local-6989586621679754292"><span class="hs-identifier hs-type">ffnDim</span></a></span></span><span> </span><span id="local-6989586621679754293"><span class="annot"><a href="#local-6989586621679754293"><span class="hs-identifier hs-type">dropoutP</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-60"></span><span>    </span><span class="hs-special">{</span><span> </span><span class="hs-comment">-- | self-attention layer</span><span>
+</span><span id="line-61"></span><span>      </span><span id="tbSelfAttention"><span class="annot"><span class="annottext">TransformerBlock
+  style
+  gradient
+  device
+  dataType
+  headDim
+  headEmbedDim
+  embedDim
+  queryEmbedDim
+  ffnDim
+  dropoutP
+-&gt; SelfAttention
+     style
+     gradient
+     device
+     dataType
+     headDim
+     headEmbedDim
+     embedDim
+     queryEmbedDim
+     dropoutP
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Block.html#tbSelfAttention"><span class="hs-identifier hs-var hs-var">tbSelfAttention</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.SelfAttention.html#SelfAttention"><span class="hs-identifier hs-type">SelfAttention</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754301"><span class="hs-identifier hs-type">style</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754300"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754299"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754298"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754297"><span class="hs-identifier hs-type">headDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754296"><span class="hs-identifier hs-type">headEmbedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754295"><span class="hs-identifier hs-type">embedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754294"><span class="hs-identifier hs-type">queryEmbedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754293"><span class="hs-identifier hs-type">dropoutP</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-62"></span><span>      </span><span class="hs-comment">-- | feed-forward network</span><span>
+</span><span id="line-63"></span><span>      </span><span id="tbFeedForwardNetwork"><span class="annot"><span class="annottext">TransformerBlock
+  style
+  gradient
+  device
+  dataType
+  headDim
+  headEmbedDim
+  embedDim
+  queryEmbedDim
+  ffnDim
+  dropoutP
+-&gt; TransformerFeedForwardNetwork
+     style gradient device dataType queryEmbedDim ffnDim dropoutP
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Block.html#tbFeedForwardNetwork"><span class="hs-identifier hs-var hs-var">tbFeedForwardNetwork</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.FeedForwardNetwork.html#TransformerFeedForwardNetwork"><span class="hs-identifier hs-type">TransformerFeedForwardNetwork</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754301"><span class="hs-identifier hs-type">style</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754300"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754299"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754298"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754294"><span class="hs-identifier hs-type">queryEmbedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754292"><span class="hs-identifier hs-type">ffnDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754293"><span class="hs-identifier hs-type">dropoutP</span></a></span><span>
+</span><span id="line-64"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-65"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Block.html#TransformerBlock"><span class="hs-identifier hs-type">TransformerBlock</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754301"><span class="hs-identifier hs-type">style</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754300"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754299"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754298"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754297"><span class="hs-identifier hs-type">headDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754296"><span class="hs-identifier hs-type">headEmbedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754295"><span class="hs-identifier hs-type">embedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754294"><span class="hs-identifier hs-type">queryEmbedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754292"><span class="hs-identifier hs-type">ffnDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754293"><span class="hs-identifier hs-type">dropoutP</span></a></span><span>
+</span><span id="line-66"></span><span>
+</span><span id="line-67"></span><span id="local-6989586621679754165"><span id="local-6989586621679754166"><span id="local-6989586621679754167"><span id="local-6989586621679754168"><span id="local-6989586621679754169"><span id="local-6989586621679754170"><span id="local-6989586621679754171"><span id="local-6989586621679754172"><span id="local-6989586621679754173"><span id="local-6989586621679754174"><span id="local-6989586621679754175"><span id="local-6989586621679754176"><span id="local-6989586621679754177"><span class="hs-keyword">instance</span><span>
+</span><span id="line-68"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasInitialize"><span class="hs-identifier hs-type">HasInitialize</span></a></span><span>
+</span><span id="line-69"></span><span>      </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.SelfAttention.html#SelfAttention"><span class="hs-identifier hs-type">SelfAttention</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754177"><span class="hs-identifier hs-type">style</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754176"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754175"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754174"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754173"><span class="hs-identifier hs-type">headDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754172"><span class="hs-identifier hs-type">headEmbedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754171"><span class="hs-identifier hs-type">embedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754170"><span class="hs-identifier hs-type">queryEmbedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754169"><span class="hs-identifier hs-type">dropoutP</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-70"></span><span>      </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-type">SGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754176"><span class="hs-identifier hs-type">gradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#SDevice"><span class="hs-identifier hs-type">SDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754175"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.DType.html#SDataType"><span class="hs-identifier hs-type">SDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754174"><span class="hs-identifier hs-type">dataType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SDim"><span class="hs-identifier hs-type">SDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754173"><span class="hs-identifier hs-type">headDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SDim"><span class="hs-identifier hs-type">SDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754172"><span class="hs-identifier hs-type">headEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SDim"><span class="hs-identifier hs-type">SDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754171"><span class="hs-identifier hs-type">embedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SDim"><span class="hs-identifier hs-type">SDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754170"><span class="hs-identifier hs-type">queryEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679754169"><span class="hs-identifier hs-type">dropoutP</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">)</span><span>
+</span><span id="line-71"></span><span>      </span><span class="annot"><a href="#local-6989586621679754168"><span class="hs-identifier hs-type">generator</span></a></span><span>
+</span><span id="line-72"></span><span>      </span><span class="annot"><a href="#local-6989586621679754167"><span class="hs-identifier hs-type">generator'</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-73"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasInitialize"><span class="hs-identifier hs-type">HasInitialize</span></a></span><span>
+</span><span id="line-74"></span><span>      </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.FeedForwardNetwork.html#TransformerFeedForwardNetwork"><span class="hs-identifier hs-type">TransformerFeedForwardNetwork</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754177"><span class="hs-identifier hs-type">style</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754176"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754175"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754174"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754170"><span class="hs-identifier hs-type">queryEmbedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754166"><span class="hs-identifier hs-type">ffnDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754169"><span class="hs-identifier hs-type">dropoutP</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-75"></span><span>      </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-type">SGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754176"><span class="hs-identifier hs-type">gradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#SDevice"><span class="hs-identifier hs-type">SDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754175"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.DType.html#SDataType"><span class="hs-identifier hs-type">SDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754174"><span class="hs-identifier hs-type">dataType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SDim"><span class="hs-identifier hs-type">SDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754170"><span class="hs-identifier hs-type">queryEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SDim"><span class="hs-identifier hs-type">SDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754166"><span class="hs-identifier hs-type">ffnDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679754169"><span class="hs-identifier hs-type">dropoutP</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">)</span><span>
+</span><span id="line-76"></span><span>      </span><span class="annot"><a href="#local-6989586621679754167"><span class="hs-identifier hs-type">generator'</span></a></span><span>
+</span><span id="line-77"></span><span>      </span><span class="annot"><a href="#local-6989586621679754165"><span class="hs-identifier hs-type">generator''</span></a></span><span>
+</span><span id="line-78"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-79"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasInitialize"><span class="hs-identifier hs-type">HasInitialize</span></a></span><span>
+</span><span id="line-80"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Block.html#TransformerBlock"><span class="hs-identifier hs-type">TransformerBlock</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754177"><span class="hs-identifier hs-type">style</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754176"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754175"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754174"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754173"><span class="hs-identifier hs-type">headDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754172"><span class="hs-identifier hs-type">headEmbedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754171"><span class="hs-identifier hs-type">embedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754170"><span class="hs-identifier hs-type">queryEmbedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754166"><span class="hs-identifier hs-type">ffnDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754169"><span class="hs-identifier hs-type">dropoutP</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-81"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-type">SGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754176"><span class="hs-identifier hs-type">gradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#SDevice"><span class="hs-identifier hs-type">SDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754175"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.DType.html#SDataType"><span class="hs-identifier hs-type">SDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754174"><span class="hs-identifier hs-type">dataType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SDim"><span class="hs-identifier hs-type">SDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754173"><span class="hs-identifier hs-type">headDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SDim"><span class="hs-identifier hs-type">SDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754172"><span class="hs-identifier hs-type">headEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SDim"><span class="hs-identifier hs-type">SDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754171"><span class="hs-identifier hs-type">embedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SDim"><span class="hs-identifier hs-type">SDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754170"><span class="hs-identifier hs-type">queryEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SDim"><span class="hs-identifier hs-type">SDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754166"><span class="hs-identifier hs-type">ffnDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679754169"><span class="hs-identifier hs-type">dropoutP</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">)</span><span>
+</span><span id="line-82"></span><span>    </span><span class="annot"><a href="#local-6989586621679754168"><span class="hs-identifier hs-type">generator</span></a></span><span>
+</span><span id="line-83"></span><span>    </span><span class="annot"><a href="#local-6989586621679754165"><span class="hs-identifier hs-type">generator''</span></a></span><span>
+</span><span id="line-84"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-85"></span><span>  </span><span id="local-6989586621679754162"><span class="annot"><span class="annottext">initialize :: (SGradient gradient, SDevice device, SDataType dataType,
+ SDim headDim, SDim headEmbedDim, SDim embedDim, SDim queryEmbedDim,
+ SDim ffnDim, dropoutP, Double)
+-&gt; generator
+-&gt; (TransformerBlock
+      style
+      gradient
+      device
+      dataType
+      headDim
+      headEmbedDim
+      embedDim
+      queryEmbedDim
+      ffnDim
+      dropoutP,
+    generator'')
+</span><a href="Torch.GraduallyTyped.NN.Class.html#initialize"><span class="hs-identifier hs-var hs-var hs-var hs-var">initialize</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679754160"><span class="annot"><span class="annottext">SGradient gradient
+</span><a href="#local-6989586621679754160"><span class="hs-identifier hs-var">gradient</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679754159"><span class="annot"><span class="annottext">SDevice device
+</span><a href="#local-6989586621679754159"><span class="hs-identifier hs-var">device</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679754158"><span class="annot"><span class="annottext">SDataType dataType
+</span><a href="#local-6989586621679754158"><span class="hs-identifier hs-var">dataType</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679754157"><span class="annot"><span class="annottext">SDim headDim
+</span><a href="#local-6989586621679754157"><span class="hs-identifier hs-var">headDim</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679754156"><span class="annot"><span class="annottext">SDim headEmbedDim
+</span><a href="#local-6989586621679754156"><span class="hs-identifier hs-var">headEmbedDim</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679754155"><span class="annot"><span class="annottext">SDim embedDim
+</span><a href="#local-6989586621679754155"><span class="hs-identifier hs-var">embedDim</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679754154"><span class="annot"><span class="annottext">SDim queryEmbedDim
+</span><a href="#local-6989586621679754154"><span class="hs-identifier hs-var">queryEmbedDim</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679754153"><span class="annot"><span class="annottext">SDim ffnDim
+</span><a href="#local-6989586621679754153"><span class="hs-identifier hs-var">ffnDim</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679754152"><span class="annot"><span class="annottext">dropoutP
+</span><a href="#local-6989586621679754152"><span class="hs-identifier hs-var">dropoutP</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679754151"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679754151"><span class="hs-identifier hs-var">eps</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-86"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679754150"><span class="annot"><span class="annottext">selfAttention :: IxState
+  generator
+  generator'
+  (SelfAttention
+     style
+     gradient
+     device
+     dataType
+     headDim
+     headEmbedDim
+     embedDim
+     queryEmbedDim
+     dropoutP)
+</span><a href="#local-6989586621679754150"><span class="hs-identifier hs-var hs-var">selfAttention</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(generator
+ -&gt; (SelfAttention
+       style
+       gradient
+       device
+       dataType
+       headDim
+       headEmbedDim
+       embedDim
+       queryEmbedDim
+       dropoutP,
+     generator'))
+-&gt; IxState
+     generator
+     generator'
+     (SelfAttention
+        style
+        gradient
+        device
+        dataType
+        headDim
+        headEmbedDim
+        embedDim
+        queryEmbedDim
+        dropoutP)
+forall i j a. (i -&gt; (a, j)) -&gt; IxState i j a
+</span><a href="../file:///nix/store/8vjaffqxij7bih93d9mlzmc7ksanlw0i-indexed-extras-lib-indexed-extras-0.2-haddock-doc/share/doc/indexed-extras/html/src"><span class="hs-identifier hs-var">IxState</span></a></span><span> </span><span class="annot"><span class="annottext">((generator
+  -&gt; (SelfAttention
+        style
+        gradient
+        device
+        dataType
+        headDim
+        headEmbedDim
+        embedDim
+        queryEmbedDim
+        dropoutP,
+      generator'))
+ -&gt; IxState
+      generator
+      generator'
+      (SelfAttention
+         style
+         gradient
+         device
+         dataType
+         headDim
+         headEmbedDim
+         embedDim
+         queryEmbedDim
+         dropoutP))
+-&gt; ((SGradient gradient, SDevice device, SDataType dataType,
+     SDim headDim, SDim headEmbedDim, SDim embedDim, SDim queryEmbedDim,
+     dropoutP, Double)
+    -&gt; generator
+    -&gt; (SelfAttention
+          style
+          gradient
+          device
+          dataType
+          headDim
+          headEmbedDim
+          embedDim
+          queryEmbedDim
+          dropoutP,
+        generator'))
+-&gt; (SGradient gradient, SDevice device, SDataType dataType,
+    SDim headDim, SDim headEmbedDim, SDim embedDim, SDim queryEmbedDim,
+    dropoutP, Double)
+-&gt; IxState
+     generator
+     generator'
+     (SelfAttention
+        style
+        gradient
+        device
+        dataType
+        headDim
+        headEmbedDim
+        embedDim
+        queryEmbedDim
+        dropoutP)
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(SGradient gradient, SDevice device, SDataType dataType,
+ SDim headDim, SDim headEmbedDim, SDim embedDim, SDim queryEmbedDim,
+ dropoutP, Double)
+-&gt; generator
+-&gt; (SelfAttention
+      style
+      gradient
+      device
+      dataType
+      headDim
+      headEmbedDim
+      embedDim
+      queryEmbedDim
+      dropoutP,
+    generator')
+forall model input generator generatorOutput.
+HasInitialize model input generator generatorOutput =&gt;
+input -&gt; generator -&gt; (model, generatorOutput)
+</span><a href="Torch.GraduallyTyped.NN.Class.html#initialize"><span class="hs-identifier hs-var">initialize</span></a></span><span> </span><span class="annot"><span class="annottext">((SGradient gradient, SDevice device, SDataType dataType,
+  SDim headDim, SDim headEmbedDim, SDim embedDim, SDim queryEmbedDim,
+  dropoutP, Double)
+ -&gt; IxState
+      generator
+      generator'
+      (SelfAttention
+         style
+         gradient
+         device
+         dataType
+         headDim
+         headEmbedDim
+         embedDim
+         queryEmbedDim
+         dropoutP))
+-&gt; (SGradient gradient, SDevice device, SDataType dataType,
+    SDim headDim, SDim headEmbedDim, SDim embedDim, SDim queryEmbedDim,
+    dropoutP, Double)
+-&gt; IxState
+     generator
+     generator'
+     (SelfAttention
+        style
+        gradient
+        device
+        dataType
+        headDim
+        headEmbedDim
+        embedDim
+        queryEmbedDim
+        dropoutP)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SGradient gradient
+</span><a href="#local-6989586621679754160"><span class="hs-identifier hs-var">gradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDevice device
+</span><a href="#local-6989586621679754159"><span class="hs-identifier hs-var">device</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDataType dataType
+</span><a href="#local-6989586621679754158"><span class="hs-identifier hs-var">dataType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim headDim
+</span><a href="#local-6989586621679754157"><span class="hs-identifier hs-var">headDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim headEmbedDim
+</span><a href="#local-6989586621679754156"><span class="hs-identifier hs-var">headEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim embedDim
+</span><a href="#local-6989586621679754155"><span class="hs-identifier hs-var">embedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim queryEmbedDim
+</span><a href="#local-6989586621679754154"><span class="hs-identifier hs-var">queryEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">dropoutP
+</span><a href="#local-6989586621679754152"><span class="hs-identifier hs-var">dropoutP</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679754151"><span class="hs-identifier hs-var">eps</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-87"></span><span>        </span><span id="local-6989586621679754147"><span class="annot"><span class="annottext">feedForwardNetwork :: IxState
+  generator'
+  generator''
+  (TransformerFeedForwardNetwork
+     style gradient device dataType queryEmbedDim ffnDim dropoutP)
+</span><a href="#local-6989586621679754147"><span class="hs-identifier hs-var hs-var">feedForwardNetwork</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(generator'
+ -&gt; (TransformerFeedForwardNetwork
+       style gradient device dataType queryEmbedDim ffnDim dropoutP,
+     generator''))
+-&gt; IxState
+     generator'
+     generator''
+     (TransformerFeedForwardNetwork
+        style gradient device dataType queryEmbedDim ffnDim dropoutP)
+forall i j a. (i -&gt; (a, j)) -&gt; IxState i j a
+</span><a href="../file:///nix/store/8vjaffqxij7bih93d9mlzmc7ksanlw0i-indexed-extras-lib-indexed-extras-0.2-haddock-doc/share/doc/indexed-extras/html/src"><span class="hs-identifier hs-var">IxState</span></a></span><span> </span><span class="annot"><span class="annottext">((generator'
+  -&gt; (TransformerFeedForwardNetwork
+        style gradient device dataType queryEmbedDim ffnDim dropoutP,
+      generator''))
+ -&gt; IxState
+      generator'
+      generator''
+      (TransformerFeedForwardNetwork
+         style gradient device dataType queryEmbedDim ffnDim dropoutP))
+-&gt; ((SGradient gradient, SDevice device, SDataType dataType,
+     SDim queryEmbedDim, SDim ffnDim, dropoutP, Double)
+    -&gt; generator'
+    -&gt; (TransformerFeedForwardNetwork
+          style gradient device dataType queryEmbedDim ffnDim dropoutP,
+        generator''))
+-&gt; (SGradient gradient, SDevice device, SDataType dataType,
+    SDim queryEmbedDim, SDim ffnDim, dropoutP, Double)
+-&gt; IxState
+     generator'
+     generator''
+     (TransformerFeedForwardNetwork
+        style gradient device dataType queryEmbedDim ffnDim dropoutP)
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(SGradient gradient, SDevice device, SDataType dataType,
+ SDim queryEmbedDim, SDim ffnDim, dropoutP, Double)
+-&gt; generator'
+-&gt; (TransformerFeedForwardNetwork
+      style gradient device dataType queryEmbedDim ffnDim dropoutP,
+    generator'')
+forall model input generator generatorOutput.
+HasInitialize model input generator generatorOutput =&gt;
+input -&gt; generator -&gt; (model, generatorOutput)
+</span><a href="Torch.GraduallyTyped.NN.Class.html#initialize"><span class="hs-identifier hs-var">initialize</span></a></span><span> </span><span class="annot"><span class="annottext">((SGradient gradient, SDevice device, SDataType dataType,
+  SDim queryEmbedDim, SDim ffnDim, dropoutP, Double)
+ -&gt; IxState
+      generator'
+      generator''
+      (TransformerFeedForwardNetwork
+         style gradient device dataType queryEmbedDim ffnDim dropoutP))
+-&gt; (SGradient gradient, SDevice device, SDataType dataType,
+    SDim queryEmbedDim, SDim ffnDim, dropoutP, Double)
+-&gt; IxState
+     generator'
+     generator''
+     (TransformerFeedForwardNetwork
+        style gradient device dataType queryEmbedDim ffnDim dropoutP)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SGradient gradient
+</span><a href="#local-6989586621679754160"><span class="hs-identifier hs-var">gradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDevice device
+</span><a href="#local-6989586621679754159"><span class="hs-identifier hs-var">device</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDataType dataType
+</span><a href="#local-6989586621679754158"><span class="hs-identifier hs-var">dataType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim queryEmbedDim
+</span><a href="#local-6989586621679754154"><span class="hs-identifier hs-var">queryEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim ffnDim
+</span><a href="#local-6989586621679754153"><span class="hs-identifier hs-var">ffnDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">dropoutP
+</span><a href="#local-6989586621679754152"><span class="hs-identifier hs-var">dropoutP</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679754151"><span class="hs-identifier hs-var">eps</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-88"></span><span>     </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">IxState
+  generator
+  generator''
+  (TransformerBlock
+     style
+     gradient
+     device
+     dataType
+     headDim
+     headEmbedDim
+     embedDim
+     queryEmbedDim
+     ffnDim
+     dropoutP)
+-&gt; generator
+-&gt; (TransformerBlock
+      style
+      gradient
+      device
+      dataType
+      headDim
+      headEmbedDim
+      embedDim
+      queryEmbedDim
+      ffnDim
+      dropoutP,
+    generator'')
+forall i j a. IxState i j a -&gt; i -&gt; (a, j)
+</span><a href="../file:///nix/store/8vjaffqxij7bih93d9mlzmc7ksanlw0i-indexed-extras-lib-indexed-extras-0.2-haddock-doc/share/doc/indexed-extras/html/src"><span class="hs-identifier hs-var hs-var">runIxState</span></a></span><span> </span><span class="annot"><span class="annottext">(IxState
+   generator
+   generator''
+   (TransformerBlock
+      style
+      gradient
+      device
+      dataType
+      headDim
+      headEmbedDim
+      embedDim
+      queryEmbedDim
+      ffnDim
+      dropoutP)
+ -&gt; generator
+ -&gt; (TransformerBlock
+       style
+       gradient
+       device
+       dataType
+       headDim
+       headEmbedDim
+       embedDim
+       queryEmbedDim
+       ffnDim
+       dropoutP,
+     generator''))
+-&gt; IxState
+     generator
+     generator''
+     (TransformerBlock
+        style
+        gradient
+        device
+        dataType
+        headDim
+        headEmbedDim
+        embedDim
+        queryEmbedDim
+        ffnDim
+        dropoutP)
+-&gt; generator
+-&gt; (TransformerBlock
+      style
+      gradient
+      device
+      dataType
+      headDim
+      headEmbedDim
+      embedDim
+      queryEmbedDim
+      ffnDim
+      dropoutP,
+    generator'')
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">SelfAttention
+  style
+  gradient
+  device
+  dataType
+  headDim
+  headEmbedDim
+  embedDim
+  queryEmbedDim
+  dropoutP
+-&gt; TransformerFeedForwardNetwork
+     style gradient device dataType queryEmbedDim ffnDim dropoutP
+-&gt; TransformerBlock
+     style
+     gradient
+     device
+     dataType
+     headDim
+     headEmbedDim
+     embedDim
+     queryEmbedDim
+     ffnDim
+     dropoutP
+forall (style :: TransformerStyle)
+       (gradient :: Gradient RequiresGradient)
+       (device :: Device (DeviceType Nat)) (dataType :: DataType DType)
+       (headDim :: Dim (Name Symbol) (Size Nat))
+       (headEmbedDim :: Dim (Name Symbol) (Size Nat))
+       (embedDim :: Dim (Name Symbol) (Size Nat))
+       (queryEmbedDim :: Dim (Name Symbol) (Size Nat))
+       (ffnDim :: Dim (Name Symbol) (Size Nat)) dropoutP.
+SelfAttention
+  style
+  gradient
+  device
+  dataType
+  headDim
+  headEmbedDim
+  embedDim
+  queryEmbedDim
+  dropoutP
+-&gt; TransformerFeedForwardNetwork
+     style gradient device dataType queryEmbedDim ffnDim dropoutP
+-&gt; TransformerBlock
+     style
+     gradient
+     device
+     dataType
+     headDim
+     headEmbedDim
+     embedDim
+     queryEmbedDim
+     ffnDim
+     dropoutP
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Block.html#TransformerBlock"><span class="hs-identifier hs-var">TransformerBlock</span></a></span><span> </span><span class="annot"><span class="annottext">(SelfAttention
+   style
+   gradient
+   device
+   dataType
+   headDim
+   headEmbedDim
+   embedDim
+   queryEmbedDim
+   dropoutP
+ -&gt; TransformerFeedForwardNetwork
+      style gradient device dataType queryEmbedDim ffnDim dropoutP
+ -&gt; TransformerBlock
+      style
+      gradient
+      device
+      dataType
+      headDim
+      headEmbedDim
+      embedDim
+      queryEmbedDim
+      ffnDim
+      dropoutP)
+-&gt; IxState
+     generator
+     generator'
+     (SelfAttention
+        style
+        gradient
+        device
+        dataType
+        headDim
+        headEmbedDim
+        embedDim
+        queryEmbedDim
+        dropoutP)
+-&gt; IxState
+     generator
+     generator'
+     (TransformerFeedForwardNetwork
+        style gradient device dataType queryEmbedDim ffnDim dropoutP
+      -&gt; TransformerBlock
+           style
+           gradient
+           device
+           dataType
+           headDim
+           headEmbedDim
+           embedDim
+           queryEmbedDim
+           ffnDim
+           dropoutP)
+forall k1 k2 (f :: k1 -&gt; k2 -&gt; Type -&gt; Type) a b (j :: k1)
+       (k3 :: k2).
+IxFunctor f =&gt;
+(a -&gt; b) -&gt; f j k3 a -&gt; f j k3 b
+</span><a href="../file:///nix/store/y93sl1ahi24xw24f0y8xsbhzkmpzqzqh-indexed-lib-indexed-0.1.3-haddock-doc/share/doc/indexed/html/src"><span class="hs-operator hs-var">&lt;&lt;$&gt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">IxState
+  generator
+  generator'
+  (SelfAttention
+     style
+     gradient
+     device
+     dataType
+     headDim
+     headEmbedDim
+     embedDim
+     queryEmbedDim
+     dropoutP)
+</span><a href="#local-6989586621679754150"><span class="hs-identifier hs-var">selfAttention</span></a></span><span> </span><span class="annot"><span class="annottext">IxState
+  generator
+  generator'
+  (TransformerFeedForwardNetwork
+     style gradient device dataType queryEmbedDim ffnDim dropoutP
+   -&gt; TransformerBlock
+        style
+        gradient
+        device
+        dataType
+        headDim
+        headEmbedDim
+        embedDim
+        queryEmbedDim
+        ffnDim
+        dropoutP)
+-&gt; IxState
+     generator'
+     generator''
+     (TransformerFeedForwardNetwork
+        style gradient device dataType queryEmbedDim ffnDim dropoutP)
+-&gt; IxState
+     generator
+     generator''
+     (TransformerBlock
+        style
+        gradient
+        device
+        dataType
+        headDim
+        headEmbedDim
+        embedDim
+        queryEmbedDim
+        ffnDim
+        dropoutP)
+forall k1 (f :: k1 -&gt; k1 -&gt; Type -&gt; Type) (i :: k1) (j :: k1) a b
+       (k2 :: k1).
+IxApplicative f =&gt;
+f i j (a -&gt; b) -&gt; f j k2 a -&gt; f i k2 b
+</span><a href="../file:///nix/store/y93sl1ahi24xw24f0y8xsbhzkmpzqzqh-indexed-lib-indexed-0.1.3-haddock-doc/share/doc/indexed/html/src"><span class="hs-operator hs-var">&lt;&lt;*&gt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">IxState
+  generator'
+  generator''
+  (TransformerFeedForwardNetwork
+     style gradient device dataType queryEmbedDim ffnDim dropoutP)
+</span><a href="#local-6989586621679754147"><span class="hs-identifier hs-var">feedForwardNetwork</span></a></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span>
+</span><span id="line-89"></span><span>
+</span><span id="line-90"></span><span id="local-6989586621679754136"><span id="local-6989586621679754137"><span id="local-6989586621679754138"><span id="local-6989586621679754139"><span id="local-6989586621679754140"><span id="local-6989586621679754141"><span id="local-6989586621679754142"><span id="local-6989586621679754143"><span id="local-6989586621679754144"><span id="local-6989586621679754145"><span class="hs-keyword">instance</span><span>
+</span><span id="line-91"></span><span>  </span><span class="annot"><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier hs-type">SingI</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754145"><span class="hs-identifier hs-type">style</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-92"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span>
+</span><span id="line-93"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Block.html#TransformerBlock"><span class="hs-identifier hs-type">TransformerBlock</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754145"><span class="hs-identifier hs-type">style</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754144"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754143"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754142"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754141"><span class="hs-identifier hs-type">headDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754140"><span class="hs-identifier hs-type">headEmbedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754139"><span class="hs-identifier hs-type">embedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754138"><span class="hs-identifier hs-type">queryEmbedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754137"><span class="hs-identifier hs-type">ffnDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754136"><span class="hs-identifier hs-type">dropoutP</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-94"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-type">SGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754144"><span class="hs-identifier hs-type">gradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#SDevice"><span class="hs-identifier hs-type">SDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754143"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.DType.html#SDataType"><span class="hs-identifier hs-type">SDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754142"><span class="hs-identifier hs-type">dataType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SDim"><span class="hs-identifier hs-type">SDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754141"><span class="hs-identifier hs-type">headDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SDim"><span class="hs-identifier hs-type">SDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754140"><span class="hs-identifier hs-type">headEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SDim"><span class="hs-identifier hs-type">SDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754139"><span class="hs-identifier hs-type">embedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SDim"><span class="hs-identifier hs-type">SDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754138"><span class="hs-identifier hs-type">queryEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SDim"><span class="hs-identifier hs-type">SDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754137"><span class="hs-identifier hs-type">ffnDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679754136"><span class="hs-identifier hs-type">dropoutP</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">)</span><span>
+</span><span id="line-95"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-96"></span><span>  </span><span id="local-6989586621679754132"><span class="annot"><span class="annottext">fromStateDict :: (SGradient gradient, SDevice device, SDataType dataType,
+ SDim headDim, SDim headEmbedDim, SDim embedDim, SDim queryEmbedDim,
+ SDim ffnDim, dropoutP, Double)
+-&gt; StateDictKey
+-&gt; m (TransformerBlock
+        style
+        gradient
+        device
+        dataType
+        headDim
+        headEmbedDim
+        embedDim
+        queryEmbedDim
+        ffnDim
+        dropoutP)
+</span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromStateDict</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679754130"><span class="annot"><span class="annottext">SGradient gradient
+</span><a href="#local-6989586621679754130"><span class="hs-identifier hs-var">gradient</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679754129"><span class="annot"><span class="annottext">SDevice device
+</span><a href="#local-6989586621679754129"><span class="hs-identifier hs-var">device</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679754128"><span class="annot"><span class="annottext">SDataType dataType
+</span><a href="#local-6989586621679754128"><span class="hs-identifier hs-var">dataType</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679754127"><span class="annot"><span class="annottext">SDim headDim
+</span><a href="#local-6989586621679754127"><span class="hs-identifier hs-var">headDim</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679754126"><span class="annot"><span class="annottext">SDim headEmbedDim
+</span><a href="#local-6989586621679754126"><span class="hs-identifier hs-var">headEmbedDim</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679754125"><span class="annot"><span class="annottext">SDim embedDim
+</span><a href="#local-6989586621679754125"><span class="hs-identifier hs-var">embedDim</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679754124"><span class="annot"><span class="annottext">SDim queryEmbedDim
+</span><a href="#local-6989586621679754124"><span class="hs-identifier hs-var">queryEmbedDim</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679754123"><span class="annot"><span class="annottext">SDim ffnDim
+</span><a href="#local-6989586621679754123"><span class="hs-identifier hs-var">ffnDim</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679754122"><span class="annot"><span class="annottext">dropoutP
+</span><a href="#local-6989586621679754122"><span class="hs-identifier hs-var">dropoutP</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679754121"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679754121"><span class="hs-identifier hs-var">eps</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679754120"><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754120"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-97"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679754119"><span class="annot"><span class="annottext">selfAttention :: STransformerStyle style
+-&gt; m (SelfAttention
+        style
+        gradient
+        device
+        dataType
+        headDim
+        headEmbedDim
+        embedDim
+        queryEmbedDim
+        dropoutP)
+</span><a href="#local-6989586621679754119"><span class="hs-identifier hs-var hs-var">selfAttention</span></a></span></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#ST5"><span class="hs-identifier hs-var">ST5</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SGradient gradient, SDevice device, SDataType dataType,
+ SDim headDim, SDim headEmbedDim, SDim embedDim, SDim queryEmbedDim,
+ dropoutP, Double)
+-&gt; StateDictKey
+-&gt; m (SelfAttention
+        'T5
+        gradient
+        device
+        dataType
+        headDim
+        headEmbedDim
+        embedDim
+        queryEmbedDim
+        dropoutP)
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+input -&gt; StateDictKey -&gt; m model
+</span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var">fromStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SGradient gradient
+</span><a href="#local-6989586621679754130"><span class="hs-identifier hs-var">gradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDevice device
+</span><a href="#local-6989586621679754129"><span class="hs-identifier hs-var">device</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDataType dataType
+</span><a href="#local-6989586621679754128"><span class="hs-identifier hs-var">dataType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim headDim
+</span><a href="#local-6989586621679754127"><span class="hs-identifier hs-var">headDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim headEmbedDim
+</span><a href="#local-6989586621679754126"><span class="hs-identifier hs-var">headEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim embedDim
+</span><a href="#local-6989586621679754125"><span class="hs-identifier hs-var">embedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim queryEmbedDim
+</span><a href="#local-6989586621679754124"><span class="hs-identifier hs-var">queryEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">dropoutP
+</span><a href="#local-6989586621679754122"><span class="hs-identifier hs-var">dropoutP</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679754121"><span class="hs-identifier hs-var">eps</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754120"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey -&gt; StateDictKey -&gt; StateDictKey
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><span class="hs-string">&quot;layer.0.&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-98"></span><span>        </span><span class="annot"><a href="#local-6989586621679754119"><span class="hs-identifier hs-var">selfAttention</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SByT5"><span class="hs-identifier hs-var">SByT5</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SGradient gradient, SDevice device, SDataType dataType,
+ SDim headDim, SDim headEmbedDim, SDim embedDim, SDim queryEmbedDim,
+ dropoutP, Double)
+-&gt; StateDictKey
+-&gt; m (SelfAttention
+        'ByT5
+        gradient
+        device
+        dataType
+        headDim
+        headEmbedDim
+        embedDim
+        queryEmbedDim
+        dropoutP)
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+input -&gt; StateDictKey -&gt; m model
+</span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var">fromStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SGradient gradient
+</span><a href="#local-6989586621679754130"><span class="hs-identifier hs-var">gradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDevice device
+</span><a href="#local-6989586621679754129"><span class="hs-identifier hs-var">device</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDataType dataType
+</span><a href="#local-6989586621679754128"><span class="hs-identifier hs-var">dataType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim headDim
+</span><a href="#local-6989586621679754127"><span class="hs-identifier hs-var">headDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim headEmbedDim
+</span><a href="#local-6989586621679754126"><span class="hs-identifier hs-var">headEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim embedDim
+</span><a href="#local-6989586621679754125"><span class="hs-identifier hs-var">embedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim queryEmbedDim
+</span><a href="#local-6989586621679754124"><span class="hs-identifier hs-var">queryEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">dropoutP
+</span><a href="#local-6989586621679754122"><span class="hs-identifier hs-var">dropoutP</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679754121"><span class="hs-identifier hs-var">eps</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754120"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey -&gt; StateDictKey -&gt; StateDictKey
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><span class="hs-string">&quot;layer.0.&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-99"></span><span>        </span><span class="annot"><a href="#local-6989586621679754119"><span class="hs-identifier hs-var">selfAttention</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SBART"><span class="hs-identifier hs-var">SBART</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SGradient gradient, SDevice device, SDataType dataType,
+ SDim headDim, SDim headEmbedDim, SDim embedDim, SDim queryEmbedDim,
+ dropoutP, Double)
+-&gt; StateDictKey
+-&gt; m (SelfAttention
+        'BART
+        gradient
+        device
+        dataType
+        headDim
+        headEmbedDim
+        embedDim
+        queryEmbedDim
+        dropoutP)
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+input -&gt; StateDictKey -&gt; m model
+</span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var">fromStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SGradient gradient
+</span><a href="#local-6989586621679754130"><span class="hs-identifier hs-var">gradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDevice device
+</span><a href="#local-6989586621679754129"><span class="hs-identifier hs-var">device</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDataType dataType
+</span><a href="#local-6989586621679754128"><span class="hs-identifier hs-var">dataType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim headDim
+</span><a href="#local-6989586621679754127"><span class="hs-identifier hs-var">headDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim headEmbedDim
+</span><a href="#local-6989586621679754126"><span class="hs-identifier hs-var">headEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim embedDim
+</span><a href="#local-6989586621679754125"><span class="hs-identifier hs-var">embedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim queryEmbedDim
+</span><a href="#local-6989586621679754124"><span class="hs-identifier hs-var">queryEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">dropoutP
+</span><a href="#local-6989586621679754122"><span class="hs-identifier hs-var">dropoutP</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679754121"><span class="hs-identifier hs-var">eps</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754120"><span class="hs-identifier hs-var">k</span></a></span><span>
+</span><span id="line-100"></span><span>        </span><span class="annot"><a href="#local-6989586621679754119"><span class="hs-identifier hs-var">selfAttention</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SMBART"><span class="hs-identifier hs-var">SMBART</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SGradient gradient, SDevice device, SDataType dataType,
+ SDim headDim, SDim headEmbedDim, SDim embedDim, SDim queryEmbedDim,
+ dropoutP, Double)
+-&gt; StateDictKey
+-&gt; m (SelfAttention
+        'MBART
+        gradient
+        device
+        dataType
+        headDim
+        headEmbedDim
+        embedDim
+        queryEmbedDim
+        dropoutP)
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+input -&gt; StateDictKey -&gt; m model
+</span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var">fromStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SGradient gradient
+</span><a href="#local-6989586621679754130"><span class="hs-identifier hs-var">gradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDevice device
+</span><a href="#local-6989586621679754129"><span class="hs-identifier hs-var">device</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDataType dataType
+</span><a href="#local-6989586621679754128"><span class="hs-identifier hs-var">dataType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim headDim
+</span><a href="#local-6989586621679754127"><span class="hs-identifier hs-var">headDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim headEmbedDim
+</span><a href="#local-6989586621679754126"><span class="hs-identifier hs-var">headEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim embedDim
+</span><a href="#local-6989586621679754125"><span class="hs-identifier hs-var">embedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim queryEmbedDim
+</span><a href="#local-6989586621679754124"><span class="hs-identifier hs-var">queryEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">dropoutP
+</span><a href="#local-6989586621679754122"><span class="hs-identifier hs-var">dropoutP</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679754121"><span class="hs-identifier hs-var">eps</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754120"><span class="hs-identifier hs-var">k</span></a></span><span>
+</span><span id="line-101"></span><span>        </span><span class="annot"><a href="#local-6989586621679754119"><span class="hs-identifier hs-var">selfAttention</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SPegasus"><span class="hs-identifier hs-var">SPegasus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SGradient gradient, SDevice device, SDataType dataType,
+ SDim headDim, SDim headEmbedDim, SDim embedDim, SDim queryEmbedDim,
+ dropoutP, Double)
+-&gt; StateDictKey
+-&gt; m (SelfAttention
+        'Pegasus
+        gradient
+        device
+        dataType
+        headDim
+        headEmbedDim
+        embedDim
+        queryEmbedDim
+        dropoutP)
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+input -&gt; StateDictKey -&gt; m model
+</span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var">fromStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SGradient gradient
+</span><a href="#local-6989586621679754130"><span class="hs-identifier hs-var">gradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDevice device
+</span><a href="#local-6989586621679754129"><span class="hs-identifier hs-var">device</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDataType dataType
+</span><a href="#local-6989586621679754128"><span class="hs-identifier hs-var">dataType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim headDim
+</span><a href="#local-6989586621679754127"><span class="hs-identifier hs-var">headDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim headEmbedDim
+</span><a href="#local-6989586621679754126"><span class="hs-identifier hs-var">headEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim embedDim
+</span><a href="#local-6989586621679754125"><span class="hs-identifier hs-var">embedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim queryEmbedDim
+</span><a href="#local-6989586621679754124"><span class="hs-identifier hs-var">queryEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">dropoutP
+</span><a href="#local-6989586621679754122"><span class="hs-identifier hs-var">dropoutP</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679754121"><span class="hs-identifier hs-var">eps</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754120"><span class="hs-identifier hs-var">k</span></a></span><span>
+</span><span id="line-102"></span><span>        </span><span class="annot"><a href="#local-6989586621679754119"><span class="hs-identifier hs-var">selfAttention</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SBERT"><span class="hs-identifier hs-var">SBERT</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SGradient gradient, SDevice device, SDataType dataType,
+ SDim headDim, SDim headEmbedDim, SDim embedDim, SDim queryEmbedDim,
+ dropoutP, Double)
+-&gt; StateDictKey
+-&gt; m (SelfAttention
+        'BERT
+        gradient
+        device
+        dataType
+        headDim
+        headEmbedDim
+        embedDim
+        queryEmbedDim
+        dropoutP)
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+input -&gt; StateDictKey -&gt; m model
+</span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var">fromStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SGradient gradient
+</span><a href="#local-6989586621679754130"><span class="hs-identifier hs-var">gradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDevice device
+</span><a href="#local-6989586621679754129"><span class="hs-identifier hs-var">device</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDataType dataType
+</span><a href="#local-6989586621679754128"><span class="hs-identifier hs-var">dataType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim headDim
+</span><a href="#local-6989586621679754127"><span class="hs-identifier hs-var">headDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim headEmbedDim
+</span><a href="#local-6989586621679754126"><span class="hs-identifier hs-var">headEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim embedDim
+</span><a href="#local-6989586621679754125"><span class="hs-identifier hs-var">embedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim queryEmbedDim
+</span><a href="#local-6989586621679754124"><span class="hs-identifier hs-var">queryEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">dropoutP
+</span><a href="#local-6989586621679754122"><span class="hs-identifier hs-var">dropoutP</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679754121"><span class="hs-identifier hs-var">eps</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754120"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey -&gt; StateDictKey -&gt; StateDictKey
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><span class="hs-string">&quot;attention.&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-103"></span><span>        </span><span class="annot"><a href="#local-6989586621679754119"><span class="hs-identifier hs-var">selfAttention</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SRoBERTa"><span class="hs-identifier hs-var">SRoBERTa</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SGradient gradient, SDevice device, SDataType dataType,
+ SDim headDim, SDim headEmbedDim, SDim embedDim, SDim queryEmbedDim,
+ dropoutP, Double)
+-&gt; StateDictKey
+-&gt; m (SelfAttention
+        'RoBERTa
+        gradient
+        device
+        dataType
+        headDim
+        headEmbedDim
+        embedDim
+        queryEmbedDim
+        dropoutP)
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+input -&gt; StateDictKey -&gt; m model
+</span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var">fromStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SGradient gradient
+</span><a href="#local-6989586621679754130"><span class="hs-identifier hs-var">gradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDevice device
+</span><a href="#local-6989586621679754129"><span class="hs-identifier hs-var">device</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDataType dataType
+</span><a href="#local-6989586621679754128"><span class="hs-identifier hs-var">dataType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim headDim
+</span><a href="#local-6989586621679754127"><span class="hs-identifier hs-var">headDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim headEmbedDim
+</span><a href="#local-6989586621679754126"><span class="hs-identifier hs-var">headEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim embedDim
+</span><a href="#local-6989586621679754125"><span class="hs-identifier hs-var">embedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim queryEmbedDim
+</span><a href="#local-6989586621679754124"><span class="hs-identifier hs-var">queryEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">dropoutP
+</span><a href="#local-6989586621679754122"><span class="hs-identifier hs-var">dropoutP</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679754121"><span class="hs-identifier hs-var">eps</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754120"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey -&gt; StateDictKey -&gt; StateDictKey
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><span class="hs-string">&quot;attention.&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-104"></span><span>        </span><span class="annot"><a href="#local-6989586621679754119"><span class="hs-identifier hs-var">selfAttention</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SGPT2"><span class="hs-identifier hs-var">SGPT2</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">m (SelfAttention
+     style
+     gradient
+     device
+     dataType
+     headDim
+     headEmbedDim
+     embedDim
+     queryEmbedDim
+     dropoutP)
+forall a. HasCallStack =&gt; a
+</span><span class="hs-identifier hs-var">undefined</span></span><span>
+</span><span id="line-105"></span><span>        </span><span id="local-6989586621679754109"><span class="annot"><span class="annottext">feedForwardNetwork :: STransformerStyle style
+-&gt; m (TransformerFeedForwardNetwork
+        style gradient device dataType queryEmbedDim ffnDim dropoutP)
+</span><a href="#local-6989586621679754109"><span class="hs-identifier hs-var hs-var">feedForwardNetwork</span></a></span></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#ST5"><span class="hs-identifier hs-var">ST5</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SGradient gradient, SDevice device, SDataType dataType,
+ SDim queryEmbedDim, SDim ffnDim, dropoutP, Double)
+-&gt; StateDictKey
+-&gt; m (TransformerFeedForwardNetwork
+        'T5 gradient device dataType queryEmbedDim ffnDim dropoutP)
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+input -&gt; StateDictKey -&gt; m model
+</span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var">fromStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SGradient gradient
+</span><a href="#local-6989586621679754130"><span class="hs-identifier hs-var">gradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDevice device
+</span><a href="#local-6989586621679754129"><span class="hs-identifier hs-var">device</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDataType dataType
+</span><a href="#local-6989586621679754128"><span class="hs-identifier hs-var">dataType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim queryEmbedDim
+</span><a href="#local-6989586621679754124"><span class="hs-identifier hs-var">queryEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim ffnDim
+</span><a href="#local-6989586621679754123"><span class="hs-identifier hs-var">ffnDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">dropoutP
+</span><a href="#local-6989586621679754122"><span class="hs-identifier hs-var">dropoutP</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679754121"><span class="hs-identifier hs-var">eps</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754120"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey -&gt; StateDictKey -&gt; StateDictKey
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><span class="hs-string">&quot;layer.1.&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-106"></span><span>        </span><span class="annot"><a href="#local-6989586621679754109"><span class="hs-identifier hs-var">feedForwardNetwork</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SByT5"><span class="hs-identifier hs-var">SByT5</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SGradient gradient, SDevice device, SDataType dataType,
+ SDim queryEmbedDim, SDim ffnDim, dropoutP, Double)
+-&gt; StateDictKey
+-&gt; m (TransformerFeedForwardNetwork
+        'ByT5 gradient device dataType queryEmbedDim ffnDim dropoutP)
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+input -&gt; StateDictKey -&gt; m model
+</span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var">fromStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SGradient gradient
+</span><a href="#local-6989586621679754130"><span class="hs-identifier hs-var">gradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDevice device
+</span><a href="#local-6989586621679754129"><span class="hs-identifier hs-var">device</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDataType dataType
+</span><a href="#local-6989586621679754128"><span class="hs-identifier hs-var">dataType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim queryEmbedDim
+</span><a href="#local-6989586621679754124"><span class="hs-identifier hs-var">queryEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim ffnDim
+</span><a href="#local-6989586621679754123"><span class="hs-identifier hs-var">ffnDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">dropoutP
+</span><a href="#local-6989586621679754122"><span class="hs-identifier hs-var">dropoutP</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679754121"><span class="hs-identifier hs-var">eps</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754120"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey -&gt; StateDictKey -&gt; StateDictKey
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><span class="hs-string">&quot;layer.1.&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-107"></span><span>        </span><span class="annot"><a href="#local-6989586621679754109"><span class="hs-identifier hs-var">feedForwardNetwork</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SBART"><span class="hs-identifier hs-var">SBART</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SGradient gradient, SDevice device, SDataType dataType,
+ SDim queryEmbedDim, SDim ffnDim, dropoutP, Double)
+-&gt; StateDictKey
+-&gt; m (TransformerFeedForwardNetwork
+        'BART gradient device dataType queryEmbedDim ffnDim dropoutP)
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+input -&gt; StateDictKey -&gt; m model
+</span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var">fromStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SGradient gradient
+</span><a href="#local-6989586621679754130"><span class="hs-identifier hs-var">gradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDevice device
+</span><a href="#local-6989586621679754129"><span class="hs-identifier hs-var">device</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDataType dataType
+</span><a href="#local-6989586621679754128"><span class="hs-identifier hs-var">dataType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim queryEmbedDim
+</span><a href="#local-6989586621679754124"><span class="hs-identifier hs-var">queryEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim ffnDim
+</span><a href="#local-6989586621679754123"><span class="hs-identifier hs-var">ffnDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">dropoutP
+</span><a href="#local-6989586621679754122"><span class="hs-identifier hs-var">dropoutP</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679754121"><span class="hs-identifier hs-var">eps</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754120"><span class="hs-identifier hs-var">k</span></a></span><span>
+</span><span id="line-108"></span><span>        </span><span class="annot"><a href="#local-6989586621679754109"><span class="hs-identifier hs-var">feedForwardNetwork</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SMBART"><span class="hs-identifier hs-var">SMBART</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SGradient gradient, SDevice device, SDataType dataType,
+ SDim queryEmbedDim, SDim ffnDim, dropoutP, Double)
+-&gt; StateDictKey
+-&gt; m (TransformerFeedForwardNetwork
+        'MBART gradient device dataType queryEmbedDim ffnDim dropoutP)
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+input -&gt; StateDictKey -&gt; m model
+</span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var">fromStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SGradient gradient
+</span><a href="#local-6989586621679754130"><span class="hs-identifier hs-var">gradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDevice device
+</span><a href="#local-6989586621679754129"><span class="hs-identifier hs-var">device</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDataType dataType
+</span><a href="#local-6989586621679754128"><span class="hs-identifier hs-var">dataType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim queryEmbedDim
+</span><a href="#local-6989586621679754124"><span class="hs-identifier hs-var">queryEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim ffnDim
+</span><a href="#local-6989586621679754123"><span class="hs-identifier hs-var">ffnDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">dropoutP
+</span><a href="#local-6989586621679754122"><span class="hs-identifier hs-var">dropoutP</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679754121"><span class="hs-identifier hs-var">eps</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754120"><span class="hs-identifier hs-var">k</span></a></span><span>
+</span><span id="line-109"></span><span>        </span><span class="annot"><a href="#local-6989586621679754109"><span class="hs-identifier hs-var">feedForwardNetwork</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SPegasus"><span class="hs-identifier hs-var">SPegasus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SGradient gradient, SDevice device, SDataType dataType,
+ SDim queryEmbedDim, SDim ffnDim, dropoutP, Double)
+-&gt; StateDictKey
+-&gt; m (TransformerFeedForwardNetwork
+        'Pegasus gradient device dataType queryEmbedDim ffnDim dropoutP)
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+input -&gt; StateDictKey -&gt; m model
+</span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var">fromStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SGradient gradient
+</span><a href="#local-6989586621679754130"><span class="hs-identifier hs-var">gradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDevice device
+</span><a href="#local-6989586621679754129"><span class="hs-identifier hs-var">device</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDataType dataType
+</span><a href="#local-6989586621679754128"><span class="hs-identifier hs-var">dataType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim queryEmbedDim
+</span><a href="#local-6989586621679754124"><span class="hs-identifier hs-var">queryEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim ffnDim
+</span><a href="#local-6989586621679754123"><span class="hs-identifier hs-var">ffnDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">dropoutP
+</span><a href="#local-6989586621679754122"><span class="hs-identifier hs-var">dropoutP</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679754121"><span class="hs-identifier hs-var">eps</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754120"><span class="hs-identifier hs-var">k</span></a></span><span>
+</span><span id="line-110"></span><span>        </span><span class="annot"><a href="#local-6989586621679754109"><span class="hs-identifier hs-var">feedForwardNetwork</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SBERT"><span class="hs-identifier hs-var">SBERT</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SGradient gradient, SDevice device, SDataType dataType,
+ SDim queryEmbedDim, SDim ffnDim, dropoutP, Double)
+-&gt; StateDictKey
+-&gt; m (TransformerFeedForwardNetwork
+        'BERT gradient device dataType queryEmbedDim ffnDim dropoutP)
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+input -&gt; StateDictKey -&gt; m model
+</span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var">fromStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SGradient gradient
+</span><a href="#local-6989586621679754130"><span class="hs-identifier hs-var">gradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDevice device
+</span><a href="#local-6989586621679754129"><span class="hs-identifier hs-var">device</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDataType dataType
+</span><a href="#local-6989586621679754128"><span class="hs-identifier hs-var">dataType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim queryEmbedDim
+</span><a href="#local-6989586621679754124"><span class="hs-identifier hs-var">queryEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim ffnDim
+</span><a href="#local-6989586621679754123"><span class="hs-identifier hs-var">ffnDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">dropoutP
+</span><a href="#local-6989586621679754122"><span class="hs-identifier hs-var">dropoutP</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679754121"><span class="hs-identifier hs-var">eps</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754120"><span class="hs-identifier hs-var">k</span></a></span><span>
+</span><span id="line-111"></span><span>        </span><span class="annot"><a href="#local-6989586621679754109"><span class="hs-identifier hs-var">feedForwardNetwork</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SRoBERTa"><span class="hs-identifier hs-var">SRoBERTa</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SGradient gradient, SDevice device, SDataType dataType,
+ SDim queryEmbedDim, SDim ffnDim, dropoutP, Double)
+-&gt; StateDictKey
+-&gt; m (TransformerFeedForwardNetwork
+        'RoBERTa gradient device dataType queryEmbedDim ffnDim dropoutP)
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+input -&gt; StateDictKey -&gt; m model
+</span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var">fromStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SGradient gradient
+</span><a href="#local-6989586621679754130"><span class="hs-identifier hs-var">gradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDevice device
+</span><a href="#local-6989586621679754129"><span class="hs-identifier hs-var">device</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDataType dataType
+</span><a href="#local-6989586621679754128"><span class="hs-identifier hs-var">dataType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim queryEmbedDim
+</span><a href="#local-6989586621679754124"><span class="hs-identifier hs-var">queryEmbedDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDim ffnDim
+</span><a href="#local-6989586621679754123"><span class="hs-identifier hs-var">ffnDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">dropoutP
+</span><a href="#local-6989586621679754122"><span class="hs-identifier hs-var">dropoutP</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679754121"><span class="hs-identifier hs-var">eps</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754120"><span class="hs-identifier hs-var">k</span></a></span><span>
+</span><span id="line-112"></span><span>        </span><span class="annot"><a href="#local-6989586621679754109"><span class="hs-identifier hs-var">feedForwardNetwork</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SGPT2"><span class="hs-identifier hs-var">SGPT2</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">m (TransformerFeedForwardNetwork
+     style gradient device dataType queryEmbedDim ffnDim dropoutP)
+forall a. HasCallStack =&gt; a
+</span><span class="hs-identifier hs-var">undefined</span></span><span>
+</span><span id="line-113"></span><span>     </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">SelfAttention
+  style
+  gradient
+  device
+  dataType
+  headDim
+  headEmbedDim
+  embedDim
+  queryEmbedDim
+  dropoutP
+-&gt; TransformerFeedForwardNetwork
+     style gradient device dataType queryEmbedDim ffnDim dropoutP
+-&gt; TransformerBlock
+     style
+     gradient
+     device
+     dataType
+     headDim
+     headEmbedDim
+     embedDim
+     queryEmbedDim
+     ffnDim
+     dropoutP
+forall (style :: TransformerStyle)
+       (gradient :: Gradient RequiresGradient)
+       (device :: Device (DeviceType Nat)) (dataType :: DataType DType)
+       (headDim :: Dim (Name Symbol) (Size Nat))
+       (headEmbedDim :: Dim (Name Symbol) (Size Nat))
+       (embedDim :: Dim (Name Symbol) (Size Nat))
+       (queryEmbedDim :: Dim (Name Symbol) (Size Nat))
+       (ffnDim :: Dim (Name Symbol) (Size Nat)) dropoutP.
+SelfAttention
+  style
+  gradient
+  device
+  dataType
+  headDim
+  headEmbedDim
+  embedDim
+  queryEmbedDim
+  dropoutP
+-&gt; TransformerFeedForwardNetwork
+     style gradient device dataType queryEmbedDim ffnDim dropoutP
+-&gt; TransformerBlock
+     style
+     gradient
+     device
+     dataType
+     headDim
+     headEmbedDim
+     embedDim
+     queryEmbedDim
+     ffnDim
+     dropoutP
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Block.html#TransformerBlock"><span class="hs-identifier hs-var">TransformerBlock</span></a></span><span>
+</span><span id="line-114"></span><span>          </span><span class="annot"><span class="annottext">(SelfAttention
+   style
+   gradient
+   device
+   dataType
+   headDim
+   headEmbedDim
+   embedDim
+   queryEmbedDim
+   dropoutP
+ -&gt; TransformerFeedForwardNetwork
+      style gradient device dataType queryEmbedDim ffnDim dropoutP
+ -&gt; TransformerBlock
+      style
+      gradient
+      device
+      dataType
+      headDim
+      headEmbedDim
+      embedDim
+      queryEmbedDim
+      ffnDim
+      dropoutP)
+-&gt; m (SelfAttention
+        style
+        gradient
+        device
+        dataType
+        headDim
+        headEmbedDim
+        embedDim
+        queryEmbedDim
+        dropoutP)
+-&gt; m (TransformerFeedForwardNetwork
+        style gradient device dataType queryEmbedDim ffnDim dropoutP
+      -&gt; TransformerBlock
+           style
+           gradient
+           device
+           dataType
+           headDim
+           headEmbedDim
+           embedDim
+           queryEmbedDim
+           ffnDim
+           dropoutP)
+forall (f :: Type -&gt; Type) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+-&gt; m (SelfAttention
+        style
+        gradient
+        device
+        dataType
+        headDim
+        headEmbedDim
+        embedDim
+        queryEmbedDim
+        dropoutP)
+</span><a href="#local-6989586621679754119"><span class="hs-identifier hs-var">selfAttention</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SingI style =&gt; Sing style
+forall k (a :: k). SingI a =&gt; Sing a
+</span><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier hs-var">sing</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679754145"><span class="hs-identifier hs-type">style</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-115"></span><span>          </span><span class="annot"><span class="annottext">m (TransformerFeedForwardNetwork
+     style gradient device dataType queryEmbedDim ffnDim dropoutP
+   -&gt; TransformerBlock
+        style
+        gradient
+        device
+        dataType
+        headDim
+        headEmbedDim
+        embedDim
+        queryEmbedDim
+        ffnDim
+        dropoutP)
+-&gt; m (TransformerFeedForwardNetwork
+        style gradient device dataType queryEmbedDim ffnDim dropoutP)
+-&gt; m (TransformerBlock
+        style
+        gradient
+        device
+        dataType
+        headDim
+        headEmbedDim
+        embedDim
+        queryEmbedDim
+        ffnDim
+        dropoutP)
+forall (f :: Type -&gt; Type) a b.
+Applicative f =&gt;
+f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+-&gt; m (TransformerFeedForwardNetwork
+        style gradient device dataType queryEmbedDim ffnDim dropoutP)
+</span><a href="#local-6989586621679754109"><span class="hs-identifier hs-var">feedForwardNetwork</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SingI style =&gt; Sing style
+forall k (a :: k). SingI a =&gt; Sing a
+</span><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier hs-var">sing</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679754145"><span class="hs-identifier hs-type">style</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-116"></span><span>  </span><span id="local-6989586621679754107"><span class="annot"><span class="annottext">toStateDict :: StateDictKey
+-&gt; TransformerBlock
+     style
+     gradient
+     device
+     dataType
+     headDim
+     headEmbedDim
+     embedDim
+     queryEmbedDim
+     ffnDim
+     dropoutP
+-&gt; m ()
+</span><a href="Torch.GraduallyTyped.NN.Class.html#toStateDict"><span class="hs-identifier hs-var hs-var hs-var hs-var">toStateDict</span></a></span></span><span> </span><span id="local-6989586621679754105"><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754105"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Block.html#TransformerBlock"><span class="hs-identifier hs-type">TransformerBlock</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679754103"><span id="local-6989586621679754104"><span class="annot"><span class="annottext">SelfAttention
+  style
+  gradient
+  device
+  dataType
+  headDim
+  headEmbedDim
+  embedDim
+  queryEmbedDim
+  dropoutP
+TransformerFeedForwardNetwork
+  style gradient device dataType queryEmbedDim ffnDim dropoutP
+tbFeedForwardNetwork :: TransformerFeedForwardNetwork
+  style gradient device dataType queryEmbedDim ffnDim dropoutP
+tbSelfAttention :: SelfAttention
+  style
+  gradient
+  device
+  dataType
+  headDim
+  headEmbedDim
+  embedDim
+  queryEmbedDim
+  dropoutP
+tbFeedForwardNetwork :: forall (style :: TransformerStyle)
+       (gradient :: Gradient RequiresGradient)
+       (device :: Device (DeviceType Nat)) (dataType :: DataType DType)
+       (headDim :: Dim (Name Symbol) (Size Nat))
+       (headEmbedDim :: Dim (Name Symbol) (Size Nat))
+       (embedDim :: Dim (Name Symbol) (Size Nat))
+       (queryEmbedDim :: Dim (Name Symbol) (Size Nat))
+       (ffnDim :: Dim (Name Symbol) (Size Nat)) dropoutP.
+TransformerBlock
+  style
+  gradient
+  device
+  dataType
+  headDim
+  headEmbedDim
+  embedDim
+  queryEmbedDim
+  ffnDim
+  dropoutP
+-&gt; TransformerFeedForwardNetwork
+     style gradient device dataType queryEmbedDim ffnDim dropoutP
+tbSelfAttention :: forall (style :: TransformerStyle)
+       (gradient :: Gradient RequiresGradient)
+       (device :: Device (DeviceType Nat)) (dataType :: DataType DType)
+       (headDim :: Dim (Name Symbol) (Size Nat))
+       (headEmbedDim :: Dim (Name Symbol) (Size Nat))
+       (embedDim :: Dim (Name Symbol) (Size Nat))
+       (queryEmbedDim :: Dim (Name Symbol) (Size Nat))
+       (ffnDim :: Dim (Name Symbol) (Size Nat)) dropoutP.
+TransformerBlock
+  style
+  gradient
+  device
+  dataType
+  headDim
+  headEmbedDim
+  embedDim
+  queryEmbedDim
+  ffnDim
+  dropoutP
+-&gt; SelfAttention
+     style
+     gradient
+     device
+     dataType
+     headDim
+     headEmbedDim
+     embedDim
+     queryEmbedDim
+     dropoutP
+</span><a href="#local-6989586621679754103"><span class="hs-glyph hs-var hs-var hs-var hs-var">..</span></a></span></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-117"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679754102"><span class="annot"><span class="annottext">selfAttention :: STransformerStyle style
+-&gt; SelfAttention
+     style
+     gradient
+     device
+     dataType
+     headDim
+     headEmbedDim
+     embedDim
+     queryEmbedDim
+     dropoutP
+-&gt; m ()
+</span><a href="#local-6989586621679754102"><span class="hs-identifier hs-var hs-var">selfAttention</span></a></span></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#ST5"><span class="hs-identifier hs-var">ST5</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">StateDictKey
+-&gt; SelfAttention
+     'T5
+     gradient
+     device
+     dataType
+     headDim
+     headEmbedDim
+     embedDim
+     queryEmbedDim
+     dropoutP
+-&gt; m ()
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+StateDictKey -&gt; model -&gt; m ()
+</span><a href="Torch.GraduallyTyped.NN.Class.html#toStateDict"><span class="hs-identifier hs-var">toStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754105"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey -&gt; StateDictKey -&gt; StateDictKey
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><span class="hs-string">&quot;layer.0.&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-118"></span><span>        </span><span class="annot"><a href="#local-6989586621679754102"><span class="hs-identifier hs-var">selfAttention</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SByT5"><span class="hs-identifier hs-var">SByT5</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">StateDictKey
+-&gt; SelfAttention
+     'ByT5
+     gradient
+     device
+     dataType
+     headDim
+     headEmbedDim
+     embedDim
+     queryEmbedDim
+     dropoutP
+-&gt; m ()
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+StateDictKey -&gt; model -&gt; m ()
+</span><a href="Torch.GraduallyTyped.NN.Class.html#toStateDict"><span class="hs-identifier hs-var">toStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754105"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey -&gt; StateDictKey -&gt; StateDictKey
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><span class="hs-string">&quot;layer.0.&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-119"></span><span>        </span><span class="annot"><a href="#local-6989586621679754102"><span class="hs-identifier hs-var">selfAttention</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SBART"><span class="hs-identifier hs-var">SBART</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">StateDictKey
+-&gt; SelfAttention
+     'BART
+     gradient
+     device
+     dataType
+     headDim
+     headEmbedDim
+     embedDim
+     queryEmbedDim
+     dropoutP
+-&gt; m ()
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+StateDictKey -&gt; model -&gt; m ()
+</span><a href="Torch.GraduallyTyped.NN.Class.html#toStateDict"><span class="hs-identifier hs-var">toStateDict</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754105"><span class="hs-identifier hs-var">k</span></a></span><span>
+</span><span id="line-120"></span><span>        </span><span class="annot"><a href="#local-6989586621679754102"><span class="hs-identifier hs-var">selfAttention</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SMBART"><span class="hs-identifier hs-var">SMBART</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">StateDictKey
+-&gt; SelfAttention
+     'MBART
+     gradient
+     device
+     dataType
+     headDim
+     headEmbedDim
+     embedDim
+     queryEmbedDim
+     dropoutP
+-&gt; m ()
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+StateDictKey -&gt; model -&gt; m ()
+</span><a href="Torch.GraduallyTyped.NN.Class.html#toStateDict"><span class="hs-identifier hs-var">toStateDict</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754105"><span class="hs-identifier hs-var">k</span></a></span><span>
+</span><span id="line-121"></span><span>        </span><span class="annot"><a href="#local-6989586621679754102"><span class="hs-identifier hs-var">selfAttention</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SPegasus"><span class="hs-identifier hs-var">SPegasus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">StateDictKey
+-&gt; SelfAttention
+     'Pegasus
+     gradient
+     device
+     dataType
+     headDim
+     headEmbedDim
+     embedDim
+     queryEmbedDim
+     dropoutP
+-&gt; m ()
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+StateDictKey -&gt; model -&gt; m ()
+</span><a href="Torch.GraduallyTyped.NN.Class.html#toStateDict"><span class="hs-identifier hs-var">toStateDict</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754105"><span class="hs-identifier hs-var">k</span></a></span><span>
+</span><span id="line-122"></span><span>        </span><span class="annot"><a href="#local-6989586621679754102"><span class="hs-identifier hs-var">selfAttention</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SBERT"><span class="hs-identifier hs-var">SBERT</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">StateDictKey
+-&gt; SelfAttention
+     'BERT
+     gradient
+     device
+     dataType
+     headDim
+     headEmbedDim
+     embedDim
+     queryEmbedDim
+     dropoutP
+-&gt; m ()
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+StateDictKey -&gt; model -&gt; m ()
+</span><a href="Torch.GraduallyTyped.NN.Class.html#toStateDict"><span class="hs-identifier hs-var">toStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754105"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey -&gt; StateDictKey -&gt; StateDictKey
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><span class="hs-string">&quot;attention.&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-123"></span><span>        </span><span class="annot"><a href="#local-6989586621679754102"><span class="hs-identifier hs-var">selfAttention</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SRoBERTa"><span class="hs-identifier hs-var">SRoBERTa</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">StateDictKey
+-&gt; SelfAttention
+     'RoBERTa
+     gradient
+     device
+     dataType
+     headDim
+     headEmbedDim
+     embedDim
+     queryEmbedDim
+     dropoutP
+-&gt; m ()
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+StateDictKey -&gt; model -&gt; m ()
+</span><a href="Torch.GraduallyTyped.NN.Class.html#toStateDict"><span class="hs-identifier hs-var">toStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754105"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey -&gt; StateDictKey -&gt; StateDictKey
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><span class="hs-string">&quot;attention.&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-124"></span><span>        </span><span class="annot"><a href="#local-6989586621679754102"><span class="hs-identifier hs-var">selfAttention</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SGPT2"><span class="hs-identifier hs-var">SGPT2</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SelfAttention
+  style
+  gradient
+  device
+  dataType
+  headDim
+  headEmbedDim
+  embedDim
+  queryEmbedDim
+  dropoutP
+-&gt; m ()
+forall a. HasCallStack =&gt; a
+</span><span class="hs-identifier hs-var">undefined</span></span><span>
+</span><span id="line-125"></span><span>        </span><span id="local-6989586621679754101"><span class="annot"><span class="annottext">feedForwardNetwork :: STransformerStyle style
+-&gt; TransformerFeedForwardNetwork
+     style gradient device dataType queryEmbedDim ffnDim dropoutP
+-&gt; m ()
+</span><a href="#local-6989586621679754101"><span class="hs-identifier hs-var hs-var">feedForwardNetwork</span></a></span></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#ST5"><span class="hs-identifier hs-var">ST5</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">StateDictKey
+-&gt; TransformerFeedForwardNetwork
+     'T5 gradient device dataType queryEmbedDim ffnDim dropoutP
+-&gt; m ()
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+StateDictKey -&gt; model -&gt; m ()
+</span><a href="Torch.GraduallyTyped.NN.Class.html#toStateDict"><span class="hs-identifier hs-var">toStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754105"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey -&gt; StateDictKey -&gt; StateDictKey
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><span class="hs-string">&quot;layer.1.&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-126"></span><span>        </span><span class="annot"><a href="#local-6989586621679754101"><span class="hs-identifier hs-var">feedForwardNetwork</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SByT5"><span class="hs-identifier hs-var">SByT5</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">StateDictKey
+-&gt; TransformerFeedForwardNetwork
+     'ByT5 gradient device dataType queryEmbedDim ffnDim dropoutP
+-&gt; m ()
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+StateDictKey -&gt; model -&gt; m ()
+</span><a href="Torch.GraduallyTyped.NN.Class.html#toStateDict"><span class="hs-identifier hs-var">toStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754105"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey -&gt; StateDictKey -&gt; StateDictKey
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><span class="hs-string">&quot;layer.1.&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-127"></span><span>        </span><span class="annot"><a href="#local-6989586621679754101"><span class="hs-identifier hs-var">feedForwardNetwork</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SBART"><span class="hs-identifier hs-var">SBART</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">StateDictKey
+-&gt; TransformerFeedForwardNetwork
+     'BART gradient device dataType queryEmbedDim ffnDim dropoutP
+-&gt; m ()
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+StateDictKey -&gt; model -&gt; m ()
+</span><a href="Torch.GraduallyTyped.NN.Class.html#toStateDict"><span class="hs-identifier hs-var">toStateDict</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754105"><span class="hs-identifier hs-var">k</span></a></span><span>
+</span><span id="line-128"></span><span>        </span><span class="annot"><a href="#local-6989586621679754101"><span class="hs-identifier hs-var">feedForwardNetwork</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SMBART"><span class="hs-identifier hs-var">SMBART</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">StateDictKey
+-&gt; TransformerFeedForwardNetwork
+     'MBART gradient device dataType queryEmbedDim ffnDim dropoutP
+-&gt; m ()
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+StateDictKey -&gt; model -&gt; m ()
+</span><a href="Torch.GraduallyTyped.NN.Class.html#toStateDict"><span class="hs-identifier hs-var">toStateDict</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754105"><span class="hs-identifier hs-var">k</span></a></span><span>
+</span><span id="line-129"></span><span>        </span><span class="annot"><a href="#local-6989586621679754101"><span class="hs-identifier hs-var">feedForwardNetwork</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SPegasus"><span class="hs-identifier hs-var">SPegasus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">StateDictKey
+-&gt; TransformerFeedForwardNetwork
+     'Pegasus gradient device dataType queryEmbedDim ffnDim dropoutP
+-&gt; m ()
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+StateDictKey -&gt; model -&gt; m ()
+</span><a href="Torch.GraduallyTyped.NN.Class.html#toStateDict"><span class="hs-identifier hs-var">toStateDict</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754105"><span class="hs-identifier hs-var">k</span></a></span><span>
+</span><span id="line-130"></span><span>        </span><span class="annot"><a href="#local-6989586621679754101"><span class="hs-identifier hs-var">feedForwardNetwork</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SBERT"><span class="hs-identifier hs-var">SBERT</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">StateDictKey
+-&gt; TransformerFeedForwardNetwork
+     'BERT gradient device dataType queryEmbedDim ffnDim dropoutP
+-&gt; m ()
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+StateDictKey -&gt; model -&gt; m ()
+</span><a href="Torch.GraduallyTyped.NN.Class.html#toStateDict"><span class="hs-identifier hs-var">toStateDict</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754105"><span class="hs-identifier hs-var">k</span></a></span><span>
+</span><span id="line-131"></span><span>        </span><span class="annot"><a href="#local-6989586621679754101"><span class="hs-identifier hs-var">feedForwardNetwork</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SRoBERTa"><span class="hs-identifier hs-var">SRoBERTa</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">StateDictKey
+-&gt; TransformerFeedForwardNetwork
+     'RoBERTa gradient device dataType queryEmbedDim ffnDim dropoutP
+-&gt; m ()
+forall model input (m :: Type -&gt; Type).
+(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
+StateDictKey -&gt; model -&gt; m ()
+</span><a href="Torch.GraduallyTyped.NN.Class.html#toStateDict"><span class="hs-identifier hs-var">toStateDict</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679754105"><span class="hs-identifier hs-var">k</span></a></span><span>
+</span><span id="line-132"></span><span>        </span><span class="annot"><a href="#local-6989586621679754101"><span class="hs-identifier hs-var">feedForwardNetwork</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SGPT2"><span class="hs-identifier hs-var">SGPT2</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TransformerFeedForwardNetwork
+  style gradient device dataType queryEmbedDim ffnDim dropoutP
+-&gt; m ()
+forall a. HasCallStack =&gt; a
+</span><span class="hs-identifier hs-var">undefined</span></span><span>
+</span><span id="line-133"></span><span>     </span><span class="hs-keyword">in</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-134"></span><span>          </span><span class="hs-special">(</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+-&gt; SelfAttention
+     style
+     gradient
+     device
+     dataType
+     headDim
+     headEmbedDim
+     embedDim
+     queryEmbedDim
+     dropoutP
+-&gt; m ()
+</span><a href="#local-6989586621679754102"><span class="hs-identifier hs-var">selfAttention</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SingI style =&gt; Sing style
+forall k (a :: k). SingI a =&gt; Sing a
+</span><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier hs-var">sing</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679754145"><span class="hs-identifier hs-type">style</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">SelfAttention
+  style
+  gradient
+  device
+  dataType
+  headDim
+  headEmbedDim
+  embedDim
+  queryEmbedDim
+  dropoutP
+</span><a href="#local-6989586621679754104"><span class="hs-identifier hs-var">tbSelfAttention</span></a></span><span>
+</span><span id="line-135"></span><span>          </span><span class="hs-special">(</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">STransformerStyle style
+-&gt; TransformerFeedForwardNetwork
+     style gradient device dataType queryEmbedDim ffnDim dropoutP
+-&gt; m ()
+</span><a href="#local-6989586621679754101"><span class="hs-identifier hs-var">feedForwardNetwork</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SingI style =&gt; Sing style
+forall k (a :: k). SingI a =&gt; Sing a
+</span><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier hs-var">sing</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679754145"><span class="hs-identifier hs-type">style</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">TransformerFeedForwardNetwork
+  style gradient device dataType queryEmbedDim ffnDim dropoutP
+</span><a href="#local-6989586621679754103"><span class="hs-identifier hs-var">tbFeedForwardNetwork</span></a></span><span>
+</span><span id="line-136"></span><span>          </span><span class="annot"><span class="annottext">() -&gt; m ()
+forall (f :: Type -&gt; Type) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span></span></span></span></span></span></span></span></span></span></span><span>
+</span><span id="line-137"></span><span>
+</span><span id="line-138"></span><span class="hs-comment">-- | 'HasForward' instance for 'TransformerBlock'.</span><span>
+</span><span id="line-139"></span><span class="hs-comment">--</span><span>
+</span><span id="line-140"></span><span class="hs-comment">-- @</span><span>
+</span><span id="line-141"></span><span class="hs-comment">--      &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;</span><span>
+</span><span id="line-142"></span><span class="hs-comment">--      &#9474; query &#9474;  &#9474; attentionBias &#9474;</span><span>
+</span><span id="line-143"></span><span class="hs-comment">--      &#9492;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9496;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</span><span>
+</span><span id="line-144"></span><span class="hs-comment">--          &#9474;              &#9474;</span><span>
+</span><span id="line-145"></span><span class="hs-comment">--          &#9660;              &#9474;</span><span>
+</span><span id="line-146"></span><span class="hs-comment">--   tbSelfAttention&#9668;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</span><span>
+</span><span id="line-147"></span><span class="hs-comment">--          &#9660;</span><span>
+</span><span id="line-148"></span><span class="hs-comment">-- tbFeedForwardNetwork</span><span>
+</span><span id="line-149"></span><span class="hs-comment">--          &#9474;</span><span>
+</span><span id="line-150"></span><span class="hs-comment">--          &#9660;</span><span>
+</span><span id="line-151"></span><span class="hs-comment">--      &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;</span><span>
+</span><span id="line-152"></span><span class="hs-comment">--      &#9474; query &#9474;</span><span>
+</span><span id="line-153"></span><span class="hs-comment">--      &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</span><span>
+</span><span id="line-154"></span><span class="hs-comment">-- @</span><span>
+</span><span id="line-155"></span><span id="local-6989586621679754085"><span id="local-6989586621679754086"><span id="local-6989586621679754087"><span id="local-6989586621679754088"><span id="local-6989586621679754089"><span id="local-6989586621679754090"><span id="local-6989586621679754091"><span id="local-6989586621679754092"><span id="local-6989586621679754093"><span id="local-6989586621679754094"><span id="local-6989586621679754095"><span id="local-6989586621679754096"><span id="local-6989586621679754097"><span id="local-6989586621679754098"><span id="local-6989586621679754099"><span id="local-6989586621679754100"><span class="hs-keyword">instance</span><span>
+</span><span id="line-156"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span>
+</span><span id="line-157"></span><span>      </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.SelfAttention.html#SelfAttention"><span class="hs-identifier hs-type">SelfAttention</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754100"><span class="hs-identifier hs-type">style</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754099"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754098"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754097"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754096"><span class="hs-identifier hs-type">headDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754095"><span class="hs-identifier hs-type">headEmbedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754094"><span class="hs-identifier hs-type">embedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754093"><span class="hs-identifier hs-type">queryEmbedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754092"><span class="hs-identifier hs-type">dropoutP</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-158"></span><span>      </span><span class="annot"><a href="#local-6989586621679754091"><span class="hs-identifier hs-type">input</span></a></span><span>
+</span><span id="line-159"></span><span>      </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754090"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-160"></span><span>      </span><span class="annot"><a href="#local-6989586621679754089"><span class="hs-identifier hs-type">selfAttentionOutput</span></a></span><span>
+</span><span id="line-161"></span><span>      </span><span class="annot"><a href="#local-6989586621679754088"><span class="hs-identifier hs-type">selfAttentionGeneratorOutput</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-162"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span>
+</span><span id="line-163"></span><span>      </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.FeedForwardNetwork.html#TransformerFeedForwardNetwork"><span class="hs-identifier hs-type">TransformerFeedForwardNetwork</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754100"><span class="hs-identifier hs-type">style</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754099"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754098"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754097"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754093"><span class="hs-identifier hs-type">queryEmbedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754087"><span class="hs-identifier hs-type">ffnDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754092"><span class="hs-identifier hs-type">dropoutP</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-164"></span><span>      </span><span class="annot"><a href="#local-6989586621679754089"><span class="hs-identifier hs-type">selfAttentionOutput</span></a></span><span>
+</span><span id="line-165"></span><span>      </span><span class="annot"><a href="#local-6989586621679754088"><span class="hs-identifier hs-type">selfAttentionGeneratorOutput</span></a></span><span>
+</span><span id="line-166"></span><span>      </span><span class="annot"><a href="#local-6989586621679754086"><span class="hs-identifier hs-type">output</span></a></span><span>
+</span><span id="line-167"></span><span>      </span><span class="annot"><a href="#local-6989586621679754085"><span class="hs-identifier hs-type">generatorOutput</span></a></span><span>
+</span><span id="line-168"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-169"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span>
+</span><span id="line-170"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Block.html#TransformerBlock"><span class="hs-identifier hs-type">TransformerBlock</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754100"><span class="hs-identifier hs-type">style</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754099"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754098"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754097"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754096"><span class="hs-identifier hs-type">headDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754095"><span class="hs-identifier hs-type">headEmbedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754094"><span class="hs-identifier hs-type">embedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754093"><span class="hs-identifier hs-type">queryEmbedDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754087"><span class="hs-identifier hs-type">ffnDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754092"><span class="hs-identifier hs-type">dropoutP</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-171"></span><span>    </span><span class="annot"><a href="#local-6989586621679754091"><span class="hs-identifier hs-type">input</span></a></span><span>
+</span><span id="line-172"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679754090"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-173"></span><span>    </span><span class="annot"><a href="#local-6989586621679754086"><span class="hs-identifier hs-type">output</span></a></span><span>
+</span><span id="line-174"></span><span>    </span><span class="annot"><a href="#local-6989586621679754085"><span class="hs-identifier hs-type">generatorOutput</span></a></span><span>
+</span><span id="line-175"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-176"></span><span>  </span><span id="local-6989586621679754082"><span class="annot"><span class="annottext">forward :: TransformerBlock
+  style
+  gradient
+  device
+  dataType
+  headDim
+  headEmbedDim
+  embedDim
+  queryEmbedDim
+  ffnDim
+  dropoutP
+-&gt; input -&gt; Generator generatorDevice -&gt; (output, generatorOutput)
+</span><a href="Torch.GraduallyTyped.NN.Class.html#forward"><span class="hs-identifier hs-var hs-var hs-var hs-var">forward</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Block.html#TransformerBlock"><span class="hs-identifier hs-type">TransformerBlock</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679754079"><span id="local-6989586621679754080"><span class="annot"><span class="annottext">SelfAttention
+  style
+  gradient
+  device
+  dataType
+  headDim
+  headEmbedDim
+  embedDim
+  queryEmbedDim
+  dropoutP
+TransformerFeedForwardNetwork
+  style gradient device dataType queryEmbedDim ffnDim dropoutP
+tbFeedForwardNetwork :: TransformerFeedForwardNetwork
+  style gradient device dataType queryEmbedDim ffnDim dropoutP
+tbSelfAttention :: SelfAttention
+  style
+  gradient
+  device
+  dataType
+  headDim
+  headEmbedDim
+  embedDim
+  queryEmbedDim
+  dropoutP
+tbFeedForwardNetwork :: forall (style :: TransformerStyle)
+       (gradient :: Gradient RequiresGradient)
+       (device :: Device (DeviceType Nat)) (dataType :: DataType DType)
+       (headDim :: Dim (Name Symbol) (Size Nat))
+       (headEmbedDim :: Dim (Name Symbol) (Size Nat))
+       (embedDim :: Dim (Name Symbol) (Size Nat))
+       (queryEmbedDim :: Dim (Name Symbol) (Size Nat))
+       (ffnDim :: Dim (Name Symbol) (Size Nat)) dropoutP.
+TransformerBlock
+  style
+  gradient
+  device
+  dataType
+  headDim
+  headEmbedDim
+  embedDim
+  queryEmbedDim
+  ffnDim
+  dropoutP
+-&gt; TransformerFeedForwardNetwork
+     style gradient device dataType queryEmbedDim ffnDim dropoutP
+tbSelfAttention :: forall (style :: TransformerStyle)
+       (gradient :: Gradient RequiresGradient)
+       (device :: Device (DeviceType Nat)) (dataType :: DataType DType)
+       (headDim :: Dim (Name Symbol) (Size Nat))
+       (headEmbedDim :: Dim (Name Symbol) (Size Nat))
+       (embedDim :: Dim (Name Symbol) (Size Nat))
+       (queryEmbedDim :: Dim (Name Symbol) (Size Nat))
+       (ffnDim :: Dim (Name Symbol) (Size Nat)) dropoutP.
+TransformerBlock
+  style
+  gradient
+  device
+  dataType
+  headDim
+  headEmbedDim
+  embedDim
+  queryEmbedDim
+  ffnDim
+  dropoutP
+-&gt; SelfAttention
+     style
+     gradient
+     device
+     dataType
+     headDim
+     headEmbedDim
+     embedDim
+     queryEmbedDim
+     dropoutP
+</span><a href="#local-6989586621679754079"><span class="hs-glyph hs-var hs-var hs-var hs-var">..</span></a></span></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679754078"><span class="annot"><span class="annottext">input
+</span><a href="#local-6989586621679754078"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-177"></span><span>    </span><span class="annot"><span class="annottext">IxState (Generator generatorDevice) generatorOutput output
+-&gt; Generator generatorDevice -&gt; (output, generatorOutput)
+forall i j a. IxState i j a -&gt; i -&gt; (a, j)
+</span><a href="../file:///nix/store/8vjaffqxij7bih93d9mlzmc7ksanlw0i-indexed-extras-lib-indexed-extras-0.2-haddock-doc/share/doc/indexed-extras/html/src"><span class="hs-identifier hs-var hs-var">runIxState</span></a></span><span> </span><span class="annot"><span class="annottext">(IxState (Generator generatorDevice) generatorOutput output
+ -&gt; Generator generatorDevice -&gt; (output, generatorOutput))
+-&gt; IxState (Generator generatorDevice) generatorOutput output
+-&gt; Generator generatorDevice
+-&gt; (output, generatorOutput)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-178"></span><span>      </span><span class="annot"><span class="annottext">input
+-&gt; IxState
+     (Generator generatorDevice) (Generator generatorDevice) input
+forall k (m :: k -&gt; k -&gt; Type -&gt; Type) a (i :: k).
+IxPointed m =&gt;
+a -&gt; m i i a
+</span><a href="../file:///nix/store/y93sl1ahi24xw24f0y8xsbhzkmpzqzqh-indexed-lib-indexed-0.1.3-haddock-doc/share/doc/indexed/html/src"><span class="hs-identifier hs-var">ireturn</span></a></span><span> </span><span class="annot"><span class="annottext">input
+</span><a href="#local-6989586621679754078"><span class="hs-identifier hs-var">input</span></a></span><span>
+</span><span id="line-179"></span><span>        </span><span class="annot"><span class="annottext">IxState
+  (Generator generatorDevice) (Generator generatorDevice) input
+-&gt; (input
+    -&gt; IxState
+         (Generator generatorDevice)
+         selfAttentionGeneratorOutput
+         selfAttentionOutput)
+-&gt; IxState
+     (Generator generatorDevice)
+     selfAttentionGeneratorOutput
+     selfAttentionOutput
+forall k1 (m :: k1 -&gt; k1 -&gt; Type -&gt; Type) (i :: k1) (j :: k1) a
+       (k2 :: k1) b.
+IxMonad m =&gt;
+m i j a -&gt; (a -&gt; m j k2 b) -&gt; m i k2 b
+</span><a href="../file:///nix/store/y93sl1ahi24xw24f0y8xsbhzkmpzqzqh-indexed-lib-indexed-0.1.3-haddock-doc/share/doc/indexed/html/src"><span class="hs-operator hs-var">&gt;&gt;&gt;=</span></a></span><span> </span><span class="annot"><span class="annottext">(Generator generatorDevice
+ -&gt; (selfAttentionOutput, selfAttentionGeneratorOutput))
+-&gt; IxState
+     (Generator generatorDevice)
+     selfAttentionGeneratorOutput
+     selfAttentionOutput
+forall i j a. (i -&gt; (a, j)) -&gt; IxState i j a
+</span><a href="../file:///nix/store/8vjaffqxij7bih93d9mlzmc7ksanlw0i-indexed-extras-lib-indexed-extras-0.2-haddock-doc/share/doc/indexed-extras/html/src"><span class="hs-identifier hs-var">IxState</span></a></span><span> </span><span class="annot"><span class="annottext">((Generator generatorDevice
+  -&gt; (selfAttentionOutput, selfAttentionGeneratorOutput))
+ -&gt; IxState
+      (Generator generatorDevice)
+      selfAttentionGeneratorOutput
+      selfAttentionOutput)
+-&gt; (input
+    -&gt; Generator generatorDevice
+    -&gt; (selfAttentionOutput, selfAttentionGeneratorOutput))
+-&gt; input
+-&gt; IxState
+     (Generator generatorDevice)
+     selfAttentionGeneratorOutput
+     selfAttentionOutput
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">SelfAttention
+  style
+  gradient
+  device
+  dataType
+  headDim
+  headEmbedDim
+  embedDim
+  queryEmbedDim
+  dropoutP
+-&gt; input
+-&gt; Generator generatorDevice
+-&gt; (selfAttentionOutput, selfAttentionGeneratorOutput)
+forall model input generator output generatorOutput.
+HasForward model input generator output generatorOutput =&gt;
+model -&gt; input -&gt; generator -&gt; (output, generatorOutput)
+</span><a href="Torch.GraduallyTyped.NN.Class.html#forward"><span class="hs-identifier hs-var">forward</span></a></span><span> </span><span class="annot"><span class="annottext">SelfAttention
+  style
+  gradient
+  device
+  dataType
+  headDim
+  headEmbedDim
+  embedDim
+  queryEmbedDim
+  dropoutP
+</span><a href="#local-6989586621679754080"><span class="hs-identifier hs-var">tbSelfAttention</span></a></span><span>
+</span><span id="line-180"></span><span>        </span><span class="annot"><span class="annottext">IxState
+  (Generator generatorDevice)
+  selfAttentionGeneratorOutput
+  selfAttentionOutput
+-&gt; (selfAttentionOutput
+    -&gt; IxState selfAttentionGeneratorOutput generatorOutput output)
+-&gt; IxState (Generator generatorDevice) generatorOutput output
+forall k1 (m :: k1 -&gt; k1 -&gt; Type -&gt; Type) (i :: k1) (j :: k1) a
+       (k2 :: k1) b.
+IxMonad m =&gt;
+m i j a -&gt; (a -&gt; m j k2 b) -&gt; m i k2 b
+</span><a href="../file:///nix/store/y93sl1ahi24xw24f0y8xsbhzkmpzqzqh-indexed-lib-indexed-0.1.3-haddock-doc/share/doc/indexed/html/src"><span class="hs-operator hs-var">&gt;&gt;&gt;=</span></a></span><span> </span><span class="annot"><span class="annottext">(selfAttentionGeneratorOutput -&gt; (output, generatorOutput))
+-&gt; IxState selfAttentionGeneratorOutput generatorOutput output
+forall i j a. (i -&gt; (a, j)) -&gt; IxState i j a
+</span><a href="../file:///nix/store/8vjaffqxij7bih93d9mlzmc7ksanlw0i-indexed-extras-lib-indexed-extras-0.2-haddock-doc/share/doc/indexed-extras/html/src"><span class="hs-identifier hs-var">IxState</span></a></span><span> </span><span class="annot"><span class="annottext">((selfAttentionGeneratorOutput -&gt; (output, generatorOutput))
+ -&gt; IxState selfAttentionGeneratorOutput generatorOutput output)
+-&gt; (selfAttentionOutput
+    -&gt; selfAttentionGeneratorOutput -&gt; (output, generatorOutput))
+-&gt; selfAttentionOutput
+-&gt; IxState selfAttentionGeneratorOutput generatorOutput output
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">TransformerFeedForwardNetwork
+  style gradient device dataType queryEmbedDim ffnDim dropoutP
+-&gt; selfAttentionOutput
+-&gt; selfAttentionGeneratorOutput
+-&gt; (output, generatorOutput)
+forall model input generator output generatorOutput.
+HasForward model input generator output generatorOutput =&gt;
+model -&gt; input -&gt; generator -&gt; (output, generatorOutput)
+</span><a href="Torch.GraduallyTyped.NN.Class.html#forward"><span class="hs-identifier hs-var">forward</span></a></span><span> </span><span class="annot"><span class="annottext">TransformerFeedForwardNetwork
+  style gradient device dataType queryEmbedDim ffnDim dropoutP
+</span><a href="#local-6989586621679754079"><span class="hs-identifier hs-var">tbFeedForwardNetwork</span></a></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span>
+</span><span id="line-181"></span></pre></body></html>
