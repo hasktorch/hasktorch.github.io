@@ -340,7 +340,7 @@ Dense :: LayoutType
 Sparse :: LayoutType
 type DenseSym0 = 'Dense :: LayoutType
 type SparseSym0 = 'Sparse :: LayoutType
-data SLayoutType z_azcO
+data SLayoutType z_azcT
 [SDense] :: SLayoutType ('Dense :: LayoutType)
 [SSparse] :: SLayoutType ('Sparse :: LayoutType)
 class KnownLayoutType (layoutType :: LayoutType)
@@ -508,7 +508,7 @@ type QInt8Sym0 = 'QInt8 :: DType
 type QUInt8Sym0 = 'QUInt8 :: DType
 type QInt32Sym0 = 'QInt32 :: DType
 type BFloat16Sym0 = 'BFloat16 :: DType
-data SDType z_aCH8
+data SDType z_aCHd
 [SBool] :: SDType ('Bool :: DType)
 [SUInt8] :: SDType ('UInt8 :: DType)
 [SInt8] :: SDType ('Int8 :: DType)
@@ -594,7 +594,7 @@ WithGradient :: RequiresGradient
 WithoutGradient :: RequiresGradient
 type WithGradientSym0 = 'WithGradient :: RequiresGradient
 type WithoutGradientSym0 = 'WithoutGradient :: RequiresGradient
-data SRequiresGradient z_aFeE
+data SRequiresGradient z_aFeJ
 [SWithGradient] :: SRequiresGradient ('WithGradient :: RequiresGradient)
 [SWithoutGradient] :: SRequiresGradient ('WithoutGradient :: RequiresGradient)
 class KnownRequiresGradient (requiresGradient :: RequiresGradient)
@@ -1778,13 +1778,218 @@ tril :: forall gradient layout device dataType shape. Int -> Tensor gradient lay
 maskedFill :: forall gradient layout device dataType shape value gradient' layout' device' dataType' shape'. Scalar value => Tensor gradient layout device dataType shape -> value -> Tensor gradient' layout' device' dataType' shape' -> Tensor (Seq (gradient <+> 'Gradient 'WithoutGradient) gradient') (layout <+> (layout' <+> 'Layout 'Dense)) (device <+> device') (Seq (dataType <+> 'DataType 'Bool) dataType') (BroadcastShapesF shape shape')
 
 module Torch.GraduallyTyped.Tensor.MathOperations.Reduction
-allT :: forall requiresGradient layout device shape. Tensor requiresGradient layout device ('DataType 'Bool) shape -> Tensor requiresGradient layout device ('DataType 'Bool) ('Shape '[])
-type MeanErrorMessage (by :: By Symbol Nat) (dims :: [Dim (Name Symbol) (Size Nat)]) = "Cannot apply mean on the dimension matching" % "" % "    '" <> by <> "'" % "" % "in the shape" % "" % "    '" <> dims <> "'." % ""
-type family MeanCheckF (by :: By Symbol Nat) (dims :: [Dim (Name Symbol) (Size Nat)]) (result :: Maybe [Dim (Name Symbol) (Size Nat)]) :: [Dim (Name Symbol) (Size Nat)]
+type ReductionErrorMessage (reduction :: Symbol) (by :: By Symbol Nat) (dims :: [Dim (Name Symbol) (Size Nat)]) = "Cannot apply '" <> reduction <> "' on the dimension matching" % "" % "    '" <> by <> "'" % "" % "in the shape" % "" % "    '" <> dims <> "'." % ""
+type family ReductionCheckF (reduction :: Symbol) (by :: By Symbol Nat) (dims :: [Dim (Name Symbol) (Size Nat)]) (result :: Maybe [Dim (Name Symbol) (Size Nat)]) :: [Dim (Name Symbol) (Size Nat)]
+type family BoolReductionF (reduction :: Symbol) (selectDim :: SelectDim (By Symbol Nat)) (shape :: Shape [Dim (Name Symbol) (Size Nat)]) :: Shape [Dim (Name Symbol) (Size Nat)]
+
+-- | Tests if all element in input evaluates to True.
+--   
+--   <pre>
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
+--   
+--   &gt;&gt;&gt; shape = SShape $ SName @"*" :&amp;: SSize @2 :|: SName @"*" :&amp;: SSize @4 :|: SNil
+--   
+--   &gt;&gt;&gt; (t, _) = sRandn (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat) shape g
+--   
+--   &gt;&gt;&gt; t' &lt;- all $ bool t
+--   
+--   &gt;&gt;&gt; :type t'
+--   t'
+--     :: Tensor
+--          ('Gradient 'WithoutGradient)
+--          ('Layout 'Dense)
+--          ('Device 'CPU)
+--          ('DataType 'Bool)
+--          ('Shape '[])
+--   </pre>
+all :: forall requiresGradient layout device dataType shape m. MonadThrow m => Tensor requiresGradient layout device dataType shape -> m (Tensor requiresGradient layout device ('DataType 'Bool) ('Shape '[]))
+
+-- | Reduces each row of the input tensor in the selected dimension to True
+--   if all elements in the row evaluate to True and False otherwise. For a
+--   version that accepts non-singleton parameters see <a>allDim</a>.
+--   
+--   <pre>
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
+--   
+--   &gt;&gt;&gt; shape = SShape $ SName @"*" :&amp;: SSize @2 :|: SName @"*" :&amp;: SSize @4 :|: SNil
+--   
+--   &gt;&gt;&gt; (t, _) = sRandn (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat) shape g
+--   
+--   &gt;&gt;&gt; t' &lt;- sAllDim (SSelectDim (SByIndex @1)) $ bool t
+--   
+--   &gt;&gt;&gt; :type t'
+--   t'
+--     :: Tensor
+--          ('Gradient 'WithoutGradient)
+--          ('Layout 'Dense)
+--          ('Device 'CPU)
+--          ('DataType 'Bool)
+--          ('Shape '[ 'Dim ('Name "*") ('Size 2), 'Dim ('Name "*") ('Size 1)])
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; sAllDim (SUncheckedSelectDim (ByIndex 3)) t
+--   *** Exception: HasktorchException "Exception: Dimension out of range (expected to be in range of [-2, 1], but got 3)...
+--   </pre>
+sAllDim :: forall selectDim gradient layout device dataType shape m. MonadThrow m => SSelectDim selectDim -> Tensor gradient layout device dataType shape -> m (Tensor gradient layout device ('DataType 'Bool) (BoolReductionF "all" selectDim shape))
+
+-- | Reduces each row of the input tensor in the selected dimension to True
+--   if all elements in the row evaluate to True and False otherwise. For a
+--   version that accepts singleton parameters see <a>sAllDim</a>.
+--   
+--   <pre>
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
+--   
+--   &gt;&gt;&gt; type Shape' = 'Shape '[ 'Dim ('Name "*") ('Size 2), 'Dim ('Name "*") ('Size 4) ]
+--   
+--   &gt;&gt;&gt; (t, _) = randn @('Gradient 'WithoutGradient) @('Layout 'Dense) @('Device 'CPU) @('DataType 'Float) @Shape' g
+--   
+--   &gt;&gt;&gt; t' &lt;- allDim @('SelectDim ('ByIndex 1)) $ bool t
+--   
+--   &gt;&gt;&gt; :type t'
+--   t'
+--     :: Tensor
+--          ('Gradient 'WithoutGradient)
+--          ('Layout 'Dense)
+--          ('Device 'CPU)
+--          ('DataType 'Bool)
+--          ('Shape '[ 'Dim ('Name "*") ('Size 2), 'Dim ('Name "*") ('Size 1)])
+--   </pre>
+allDim :: forall selectDim gradient layout device dataType shape m. (SingI selectDim, MonadThrow m) => Tensor gradient layout device dataType shape -> m (Tensor gradient layout device ('DataType 'Bool) (BoolReductionF "all" selectDim shape))
+
+-- | Tests if any element in input evaluates to True.
+--   
+--   <pre>
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
+--   
+--   &gt;&gt;&gt; shape = SShape $ SName @"*" :&amp;: SSize @2 :|: SName @"*" :&amp;: SSize @4 :|: SNil
+--   
+--   &gt;&gt;&gt; (t, _) = sRandn (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat) shape g
+--   
+--   &gt;&gt;&gt; t' &lt;- any $ bool t
+--   
+--   &gt;&gt;&gt; :type t'
+--   t'
+--     :: Tensor
+--          ('Gradient 'WithoutGradient)
+--          ('Layout 'Dense)
+--          ('Device 'CPU)
+--          ('DataType 'Bool)
+--          ('Shape '[])
+--   </pre>
+any :: forall requiresGradient layout device dataType shape m. MonadThrow m => Tensor requiresGradient layout device dataType shape -> m (Tensor requiresGradient layout device ('DataType 'Bool) ('Shape '[]))
+
+-- | Reduces each row of the input tensor in the selected dimension to True
+--   if any element in the row evaluates to True and False otherwise. For a
+--   version that accepts non-singleton parameters see <a>anyDim</a>.
+--   
+--   <pre>
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
+--   
+--   &gt;&gt;&gt; shape = SShape $ SName @"*" :&amp;: SSize @2 :|: SName @"*" :&amp;: SSize @4 :|: SNil
+--   
+--   &gt;&gt;&gt; (t, _) = sRandn (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat) shape g
+--   
+--   &gt;&gt;&gt; t' &lt;- sAnyDim (SSelectDim (SByIndex @1)) $ bool t
+--   
+--   &gt;&gt;&gt; :type t'
+--   t'
+--     :: Tensor
+--          ('Gradient 'WithoutGradient)
+--          ('Layout 'Dense)
+--          ('Device 'CPU)
+--          ('DataType 'Bool)
+--          ('Shape '[ 'Dim ('Name "*") ('Size 2), 'Dim ('Name "*") ('Size 1)])
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; sAnyDim (SUncheckedSelectDim (ByIndex 3)) t
+--   *** Exception: HasktorchException "Exception: Dimension out of range (expected to be in range of [-2, 1], but got 3)...
+--   </pre>
+sAnyDim :: forall selectDim gradient layout device shape dataType m. MonadThrow m => SSelectDim selectDim -> Tensor gradient layout device dataType shape -> m (Tensor gradient layout device ('DataType 'Bool) (BoolReductionF "any" selectDim shape))
+
+-- | Reduces each row of the input tensor in the selected dimension to True
+--   if any element in the row evaluates to True and False otherwise. For a
+--   version that accepts singleton parameters see <a>sAnyDim</a>.
+--   
+--   <pre>
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
+--   
+--   &gt;&gt;&gt; type Shape' = 'Shape '[ 'Dim ('Name "*") ('Size 2), 'Dim ('Name "*") ('Size 4) ]
+--   
+--   &gt;&gt;&gt; (t, _) = randn @('Gradient 'WithoutGradient) @('Layout 'Dense) @('Device 'CPU) @('DataType 'Float) @Shape' g
+--   
+--   &gt;&gt;&gt; t' &lt;- anyDim @('SelectDim ('ByIndex 1)) $ bool t
+--   
+--   &gt;&gt;&gt; :type t'
+--   t'
+--     :: Tensor
+--          ('Gradient 'WithoutGradient)
+--          ('Layout 'Dense)
+--          ('Device 'CPU)
+--          ('DataType 'Bool)
+--          ('Shape '[ 'Dim ('Name "*") ('Size 2), 'Dim ('Name "*") ('Size 1)])
+--   </pre>
+anyDim :: forall selectDim gradient layout device dataType shape m. (SingI selectDim, MonadThrow m) => Tensor gradient layout device dataType shape -> m (Tensor gradient layout device ('DataType 'Bool) (BoolReductionF "any" selectDim shape))
 type family MeanSelectDimsF (bys :: [By Symbol Nat]) (dims :: [Dim (Name Symbol) (Size Nat)]) :: [Dim (Name Symbol) (Size Nat)]
 type family MeanF (selectDims :: SelectDims [By Symbol Nat]) (shape :: Shape [Dim (Name Symbol) (Size Nat)]) :: Shape [Dim (Name Symbol) (Size Nat)]
-sMeanDim :: forall selectDims gradient layout device dataType shape. SSelectDims selectDims -> Tensor gradient layout device dataType shape -> Tensor gradient layout device dataType (MeanF selectDims shape)
-meanDim :: forall selectDims gradient layout device dataType shape. SingI selectDims => Tensor gradient layout device dataType shape -> Tensor gradient layout device dataType (MeanF selectDims shape)
+
+-- | Reduces the mean value over each row of the input tensor in the
+--   dimensions selected by <tt>selectDims</tt>. For a version that accepts
+--   non-singleton parameters see <tt>meanDim</tt>.
+--   
+--   <pre>
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
+--   
+--   &gt;&gt;&gt; shape = SShape $ SName @"batch" :&amp;: SSize @8 :|: SName @"width" :&amp;: SSize @224 :|: SName @"height" :&amp;: SSize @224 :|: SNil
+--   
+--   &gt;&gt;&gt; (t, _) = sRandn (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat) shape g
+--   
+--   &gt;&gt;&gt; t' &lt;- sMeanDims (SSelectDims $ SCons (SByName @"width") $ SCons (SByName @"height") SNil) t
+--   
+--   &gt;&gt;&gt; :type t'
+--   t'
+--     :: Tensor
+--          ('Gradient 'WithoutGradient)
+--          ('Layout 'Dense)
+--          ('Device 'CPU)
+--          ('DataType 'Float)
+--          ('Shape
+--             '[ 'Dim ('Name "batch") ('Size 8), 'Dim ('Name "width") ('Size 1),
+--                'Dim ('Name "height") ('Size 1)])
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; sMeanDims (SUncheckedSelectDims [ByName "feature"]) t
+--   *** Exception: HasktorchException "Exception: Name 'feature' not found in Tensor['batch', 'width', 'height']...
+--   </pre>
+sMeanDims :: forall selectDims gradient layout device dataType shape m. MonadThrow m => SSelectDims selectDims -> Tensor gradient layout device dataType shape -> m (Tensor gradient layout device dataType (MeanF selectDims shape))
+
+-- | Reduce the mean value over each row of the input tensor in the
+--   dimensions selected by <tt>selectDims</tt>. For a version that accepts
+--   singleton parameters see <tt>sMeanDim</tt>.
+--   
+--   <pre>
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
+--   
+--   &gt;&gt;&gt; type Shape' = 'Shape '[ 'Dim ('Name "batch") ('Size 8), 'Dim ('Name "feature") ('Size 4) ]
+--   
+--   &gt;&gt;&gt; (t, _) = randn @('Gradient 'WithoutGradient) @('Layout 'Dense) @('Device 'CPU) @('DataType 'Float) @Shape' g
+--   
+--   &gt;&gt;&gt; t' &lt;- meanDims @('SelectDims '[ 'ByName "feature" ]) t
+--   
+--   &gt;&gt;&gt; :type t'
+--   t'
+--     :: Tensor
+--          ('Gradient 'WithoutGradient)
+--          ('Layout 'Dense)
+--          ('Device 'CPU)
+--          ('DataType 'Float)
+--          ('Shape
+--             '[ 'Dim ('Name "batch") ('Size 8),
+--                'Dim ('Name "feature") ('Size 1)])
+--   </pre>
+meanDims :: forall selectDims gradient layout device dataType shape m. (SingI selectDims, MonadThrow m) => Tensor gradient layout device dataType shape -> m (Tensor gradient layout device dataType (MeanF selectDims shape))
 
 module Torch.GraduallyTyped.Tensor.MathOperations.Comparison
 gt :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') (Seq (dataType <+> dataType') ('DataType 'Bool)) (BroadcastShapesF shape shape')
@@ -3029,7 +3234,7 @@ type PegasusSym0 = 'Pegasus :: TransformerStyle
 type BERTSym0 = 'BERT :: TransformerStyle
 type RoBERTaSym0 = 'RoBERTa :: TransformerStyle
 type GPT2Sym0 = 'GPT2 :: TransformerStyle
-data STransformerStyle z_a1nvb
+data STransformerStyle z_a1nMm
 [ST5] :: STransformerStyle ('T5 :: TransformerStyle)
 [SByT5] :: STransformerStyle ('ByT5 :: TransformerStyle)
 [SBART] :: STransformerStyle ('BART :: TransformerStyle)
@@ -3045,7 +3250,7 @@ WithMLMHead :: TransformerHead
 type WithoutHeadSym0 = 'WithoutHead :: TransformerHead
 type WithLMHeadSym0 = 'WithLMHead :: TransformerHead
 type WithMLMHeadSym0 = 'WithMLMHead :: TransformerHead
-data STransformerHead z_a1nBP
+data STransformerHead z_a1nT0
 [SWithoutHead] :: STransformerHead ('WithoutHead :: TransformerHead)
 [SWithLMHead] :: STransformerHead ('WithLMHead :: TransformerHead)
 [SWithMLMHead] :: STransformerHead ('WithMLMHead :: TransformerHead)
