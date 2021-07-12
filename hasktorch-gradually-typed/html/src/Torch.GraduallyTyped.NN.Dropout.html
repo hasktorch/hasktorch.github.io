@@ -13,110 +13,126 @@
 </span><span id="line-13"></span><span>
 </span><span id="line-14"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.GraduallyTyped.NN.Dropout</span><span> </span><span class="hs-keyword">where</span><span>
 </span><span id="line-15"></span><span>
-</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Kind</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Type</span></span><span class="hs-special">)</span><span>
-</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
-</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Class</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier">HasForward</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasInitialize"><span class="hs-identifier">HasInitialize</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier">HasStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html"><span class="hs-identifier">Torch.GraduallyTyped.Random</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier">Generator</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Scalar.html"><span class="hs-identifier">Torch.GraduallyTyped.Scalar</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Scalar.html#Scalar"><span class="hs-identifier">Scalar</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Tensor.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier">Tensor</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html"><span class="hs-identifier">Torch.GraduallyTyped.Unify</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-keyword">type</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator">(&lt;+&gt;)</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Unsafe.Coerce</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">unsafeCoerce</span></span><span class="hs-special">)</span><span>
-</span><span id="line-24"></span><span>
-</span><span id="line-25"></span><span class="hs-comment">-- | Given a random generator, randomly zeroes some of the elements of</span><span>
-</span><span id="line-26"></span><span class="hs-comment">-- the input tensor with probability 'p' using samples from a Bernoulli distribution.</span><span>
-</span><span id="line-27"></span><span class="hs-comment">-- Each channel will be zeroed out independently on every 'forward' call.</span><span>
-</span><span id="line-28"></span><span id="local-6989586621679767410"><span id="local-6989586621679767411"></span></span><span class="hs-keyword">newtype</span><span> </span><span id="Dropout"><span class="annot"><a href="Torch.GraduallyTyped.NN.Dropout.html#Dropout"><span class="hs-identifier hs-var">Dropout</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679767409"><span class="annot"><a href="#local-6989586621679767409"><span class="hs-identifier hs-type">p</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Type</span></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-29"></span><span>  </span><span id="Dropout"><span class="annot"><a href="Torch.GraduallyTyped.NN.Dropout.html#Dropout"><span class="hs-identifier hs-var">Dropout</span></a></span></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-30"></span><span>    </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679767465"><span class="annot"><a href="#local-6989586621679767465"><span class="hs-identifier hs-type">p</span></a></span></span><span class="hs-operator">.</span><span>
-</span><span id="line-31"></span><span>    </span><span class="hs-comment">-- | probability of an element to be zeroed</span><span>
-</span><span id="line-32"></span><span>    </span><span class="annot"><a href="#local-6989586621679767465"><span class="hs-identifier hs-type">p</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-33"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Dropout.html#Dropout"><span class="hs-identifier hs-type">Dropout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679767465"><span class="hs-identifier hs-type">p</span></a></span><span>
-</span><span id="line-34"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679767402"><span id="local-6989586621679767404"><span id="local-6989586621679767406"><span class="annot"><span class="annottext">Int -&gt; Dropout p -&gt; ShowS
-[Dropout p] -&gt; ShowS
-Dropout p -&gt; String
-(Int -&gt; Dropout p -&gt; ShowS)
--&gt; (Dropout p -&gt; String)
--&gt; ([Dropout p] -&gt; ShowS)
--&gt; Show (Dropout p)
-forall p. Show p =&gt; Int -&gt; Dropout p -&gt; ShowS
-forall p. Show p =&gt; [Dropout p] -&gt; ShowS
-forall p. Show p =&gt; Dropout p -&gt; String
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Class</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier">HasForward</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasInitialize"><span class="hs-identifier">HasInitialize</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier">HasStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier">ModelSpec</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Functional.Dropout.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Functional.Dropout</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Functional.Dropout.html#dropout"><span class="hs-identifier">dropout</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Tensor.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier">Tensor</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html"><span class="hs-identifier">Torch.GraduallyTyped.Unify</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-keyword">type</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator">(&lt;+&gt;)</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="hs-comment">-- | Given a random generator, randomly zeroes some of the elements of</span><span>
+</span><span id="line-23"></span><span class="hs-comment">-- the input tensor with probability 'p' using samples from a Bernoulli distribution.</span><span>
+</span><span id="line-24"></span><span class="hs-comment">-- Each channel will be zeroed out independently on every 'forward' call.</span><span>
+</span><span id="line-25"></span><span id="local-6989586621679802725"><span id="local-6989586621679802726"></span></span><span class="hs-keyword">newtype</span><span> </span><span id="Dropout"><span class="annot"><a href="Torch.GraduallyTyped.NN.Dropout.html#Dropout"><span class="hs-identifier hs-var">Dropout</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-26"></span><span>  </span><span id="Dropout"><span class="annot"><a href="Torch.GraduallyTyped.NN.Dropout.html#Dropout"><span class="hs-identifier hs-var">Dropout</span></a></span></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-27"></span><span>    </span><span class="hs-comment">-- | probability of an element to be zeroed</span><span>
+</span><span id="line-28"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-29"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Dropout.html#Dropout"><span class="hs-identifier hs-type">Dropout</span></a></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679802718"><span id="local-6989586621679802720"><span id="local-6989586621679802722"><span class="annot"><span class="annottext">Int -&gt; Dropout -&gt; ShowS
+[Dropout] -&gt; ShowS
+Dropout -&gt; String
+(Int -&gt; Dropout -&gt; ShowS)
+-&gt; (Dropout -&gt; String) -&gt; ([Dropout] -&gt; ShowS) -&gt; Show Dropout
 forall a.
 (Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
-showList :: [Dropout p] -&gt; ShowS
-$cshowList :: forall p. Show p =&gt; [Dropout p] -&gt; ShowS
-show :: Dropout p -&gt; String
-$cshow :: forall p. Show p =&gt; Dropout p -&gt; String
-showsPrec :: Int -&gt; Dropout p -&gt; ShowS
-$cshowsPrec :: forall p. Show p =&gt; Int -&gt; Dropout p -&gt; ShowS
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(forall x. Dropout p -&gt; Rep (Dropout p) x)
--&gt; (forall x. Rep (Dropout p) x -&gt; Dropout p)
--&gt; Generic (Dropout p)
-forall x. Rep (Dropout p) x -&gt; Dropout p
-forall x. Dropout p -&gt; Rep (Dropout p) x
+showList :: [Dropout] -&gt; ShowS
+$cshowList :: [Dropout] -&gt; ShowS
+show :: Dropout -&gt; String
+$cshow :: Dropout -&gt; String
+showsPrec :: Int -&gt; Dropout -&gt; ShowS
+$cshowsPrec :: Int -&gt; Dropout -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(forall x. Dropout -&gt; Rep Dropout x)
+-&gt; (forall x. Rep Dropout x -&gt; Dropout) -&gt; Generic Dropout
+forall x. Rep Dropout x -&gt; Dropout
+forall x. Dropout -&gt; Rep Dropout x
 forall a.
 (forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
-forall p x. Rep (Dropout p) x -&gt; Dropout p
-forall p x. Dropout p -&gt; Rep (Dropout p) x
-$cto :: forall p x. Rep (Dropout p) x -&gt; Dropout p
-$cfrom :: forall p x. Dropout p -&gt; Rep (Dropout p) x
+$cto :: forall x. Rep Dropout x -&gt; Dropout
+$cfrom :: forall x. Dropout -&gt; Rep Dropout x
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></span><span class="hs-special">)</span><span>
-</span><span id="line-35"></span><span>
-</span><span id="line-36"></span><span id="local-6989586621679767396"><span id="local-6989586621679767397"><span class="hs-keyword">instance</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Scalar.html#Scalar"><span class="hs-identifier hs-type">Scalar</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679767397"><span class="hs-identifier hs-type">p</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasInitialize"><span class="hs-identifier hs-type">HasInitialize</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Dropout.html#Dropout"><span class="hs-identifier hs-type">Dropout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679767397"><span class="hs-identifier hs-type">p</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679767397"><span class="hs-identifier hs-type">p</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679767396"><span class="hs-identifier hs-type">generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679767396"><span class="hs-identifier hs-type">generator</span></a></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-37"></span><span>  </span><span id="local-6989586621679767393"><span class="annot"><span class="annottext">initialize :: p -&gt; generator -&gt; (Dropout p, generator)
-</span><a href="Torch.GraduallyTyped.NN.Class.html#initialize"><span class="hs-identifier hs-var hs-var hs-var hs-var">initialize</span></a></span></span><span> </span><span id="local-6989586621679767391"><span class="annot"><span class="annottext">p
-</span><a href="#local-6989586621679767391"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span id="local-6989586621679767390"><span class="annot"><span class="annottext">generator
-</span><a href="#local-6989586621679767390"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">p -&gt; Dropout p
-forall p. p -&gt; Dropout p
-</span><a href="Torch.GraduallyTyped.NN.Dropout.html#Dropout"><span class="hs-identifier hs-var">Dropout</span></a></span><span> </span><span class="annot"><span class="annottext">p
-</span><a href="#local-6989586621679767391"><span class="hs-identifier hs-var">p</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">generator
-</span><a href="#local-6989586621679767390"><span class="hs-identifier hs-var">g</span></a></span><span class="hs-special">)</span></span></span><span>
-</span><span id="line-38"></span><span>
-</span><span id="line-39"></span><span id="local-6989586621679767389"><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Dropout.html#Dropout"><span class="hs-identifier hs-type">Dropout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679767389"><span class="hs-identifier hs-type">p</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679767389"><span class="hs-identifier hs-type">p</span></a></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-40"></span><span>  </span><span id="local-6989586621679767385"><span class="annot"><span class="annottext">fromStateDict :: p -&gt; String -&gt; m (Dropout p)
-</span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromStateDict</span></a></span></span><span> </span><span id="local-6989586621679767383"><span class="annot"><span class="annottext">p
-</span><a href="#local-6989586621679767383"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="annot"><span class="annottext">String
-</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Dropout p -&gt; m (Dropout p)
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">type</span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="ModelSpec"><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier hs-var">ModelSpec</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Dropout.html#Dropout"><span class="hs-identifier hs-type">Dropout</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Dropout.html#Dropout"><span class="hs-identifier hs-type">Dropout</span></a></span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span id="local-6989586621679802713"><span class="hs-keyword">instance</span><span>
+</span><span id="line-35"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasInitialize"><span class="hs-identifier hs-type">HasInitialize</span></a></span><span>
+</span><span id="line-36"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Dropout.html#Dropout"><span class="hs-identifier hs-type">Dropout</span></a></span><span>
+</span><span id="line-37"></span><span>    </span><span class="annot"><a href="#local-6989586621679802713"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span>
+</span><span id="line-38"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Dropout.html#Dropout"><span class="hs-identifier hs-type">Dropout</span></a></span><span>
+</span><span id="line-39"></span><span>    </span><span class="annot"><a href="#local-6989586621679802713"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-41"></span><span>  </span><span id="local-6989586621679802710"><span class="annot"><span class="annottext">initialize :: ModelSpec Dropout
+-&gt; Generator generatorDevice
+-&gt; m (Dropout, Generator generatorDevice)
+</span><a href="Torch.GraduallyTyped.NN.Class.html#initialize"><span class="hs-identifier hs-var hs-var hs-var hs-var">initialize</span></a></span></span><span> </span><span id="local-6989586621679802708"><span class="annot"><span class="annottext">ModelSpec Dropout
+</span><a href="#local-6989586621679802708"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Dropout, Generator generatorDevice)
+-&gt; m (Dropout, Generator generatorDevice)
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
-</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Dropout p -&gt; m (Dropout p)) -&gt; Dropout p -&gt; m (Dropout p)
-forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">p -&gt; Dropout p
-forall p. p -&gt; Dropout p
-</span><a href="Torch.GraduallyTyped.NN.Dropout.html#Dropout"><span class="hs-identifier hs-var">Dropout</span></a></span><span> </span><span class="annot"><span class="annottext">p
-</span><a href="#local-6989586621679767383"><span class="hs-identifier hs-var">p</span></a></span><span>
-</span><span id="line-41"></span><span>  </span><span id="local-6989586621679767382"><span class="annot"><span class="annottext">toStateDict :: String -&gt; Dropout p -&gt; m ()
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">((Dropout, Generator generatorDevice)
+ -&gt; m (Dropout, Generator generatorDevice))
+-&gt; (Generator generatorDevice
+    -&gt; (Dropout, Generator generatorDevice))
+-&gt; Generator generatorDevice
+-&gt; m (Dropout, Generator generatorDevice)
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ModelSpec Dropout
+Dropout
+</span><a href="#local-6989586621679802708"><span class="hs-identifier hs-var">spec</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span></span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Dropout.html#Dropout"><span class="hs-identifier hs-type">Dropout</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-44"></span><span>  </span><span id="local-6989586621679802703"><span class="annot"><span class="annottext">fromStateDict :: ModelSpec Dropout -&gt; String -&gt; m Dropout
+</span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromStateDict</span></a></span></span><span> </span><span id="local-6989586621679802701"><span class="annot"><span class="annottext">ModelSpec Dropout
+</span><a href="#local-6989586621679802701"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Dropout -&gt; m Dropout
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">ModelSpec Dropout
+Dropout
+</span><a href="#local-6989586621679802701"><span class="hs-identifier hs-var">spec</span></a></span><span>
+</span><span id="line-45"></span><span>  </span><span id="local-6989586621679802700"><span class="annot"><span class="annottext">toStateDict :: String -&gt; Dropout -&gt; m ()
 </span><a href="Torch.GraduallyTyped.NN.Class.html#toStateDict"><span class="hs-identifier hs-var hs-var hs-var hs-var">toStateDict</span></a></span></span><span> </span><span class="annot"><span class="annottext">String
-</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Dropout p
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Dropout
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">() -&gt; m ()
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
-</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span></span><span>
-</span><span id="line-42"></span><span>
-</span><span id="line-43"></span><span id="local-6989586621679767370"><span id="local-6989586621679767371"><span id="local-6989586621679767372"><span id="local-6989586621679767373"><span id="local-6989586621679767374"><span id="local-6989586621679767375"><span id="local-6989586621679767376"><span id="local-6989586621679767377"><span id="local-6989586621679767378"><span id="local-6989586621679767379"><span id="local-6989586621679767380"><span class="hs-keyword">instance</span><span>
-</span><span id="line-44"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Scalar.html#Scalar"><span class="hs-identifier hs-type">Scalar</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679767380"><span class="hs-identifier hs-type">p</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-45"></span><span>    </span><span class="annot"><a href="#local-6989586621679767379"><span class="hs-identifier hs-type">input</span></a></span><span> </span><span class="annot"><span class="hs-glyph hs-type">~</span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679767378"><span class="hs-identifier hs-type">requiresGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679767377"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679767376"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679767375"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679767374"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-46"></span><span>    </span><span class="annot"><a href="#local-6989586621679767373"><span class="hs-identifier hs-type">generator</span></a></span><span> </span><span class="annot"><span class="hs-glyph hs-type">~</span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679767372"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-47"></span><span>    </span><span class="annot"><a href="#local-6989586621679767371"><span class="hs-identifier hs-type">output</span></a></span><span> </span><span class="annot"><span class="hs-glyph hs-type">~</span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679767378"><span class="hs-identifier hs-type">requiresGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679767377"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679767376"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679767372"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679767375"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679767374"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-48"></span><span>    </span><span class="annot"><a href="#local-6989586621679767370"><span class="hs-identifier hs-type">generatorOutput</span></a></span><span> </span><span class="annot"><span class="hs-glyph hs-type">~</span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679767376"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679767372"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-49"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
-</span><span id="line-50"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span>
-</span><span id="line-51"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Dropout.html#Dropout"><span class="hs-identifier hs-type">Dropout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679767380"><span class="hs-identifier hs-type">p</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-52"></span><span>    </span><span class="annot"><a href="#local-6989586621679767379"><span class="hs-identifier hs-type">input</span></a></span><span>
-</span><span id="line-53"></span><span>    </span><span class="annot"><a href="#local-6989586621679767373"><span class="hs-identifier hs-type">generator</span></a></span><span>
-</span><span id="line-54"></span><span>    </span><span class="annot"><a href="#local-6989586621679767371"><span class="hs-identifier hs-type">output</span></a></span><span>
-</span><span id="line-55"></span><span>    </span><span class="annot"><a href="#local-6989586621679767370"><span class="hs-identifier hs-type">generatorOutput</span></a></span><span>
-</span><span id="line-56"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-57"></span><span>  </span><span id="local-6989586621679767367"><span class="annot"><span class="annottext">forward :: Dropout p -&gt; input -&gt; generator -&gt; m (output, generatorOutput)
-</span><a href="Torch.GraduallyTyped.NN.Class.html#forward"><span class="hs-identifier hs-var hs-var hs-var hs-var">forward</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Dropout.html#Dropout"><span class="hs-identifier hs-type">Dropout</span></a></span><span> </span><span id="local-6989586621679767365"><span class="annot"><span class="annottext">p
-</span><a href="#local-6989586621679767365"><span class="hs-identifier hs-var">_p</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679767364"><span class="annot"><span class="annottext">input
-</span><a href="#local-6989586621679767364"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span id="local-6989586621679767363"><span class="annot"><span class="annottext">generator
-</span><a href="#local-6989586621679767363"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(output, generatorOutput) -&gt; m (output, generatorOutput)
-forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
-</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">((output, generatorOutput) -&gt; m (output, generatorOutput))
--&gt; (output, generatorOutput) -&gt; m (output, generatorOutput)
-forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(input, generator) -&gt; (output, generatorOutput)
-forall a b. a -&gt; b
-</span><span class="hs-identifier hs-var">unsafeCoerce</span></span><span> </span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679767379"><span class="hs-identifier hs-type">input</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679767373"><span class="hs-identifier hs-type">generator</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679767371"><span class="hs-identifier hs-type">output</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679767370"><span class="hs-identifier hs-type">generatorOutput</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">input
-</span><a href="#local-6989586621679767364"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">generator
-</span><a href="#local-6989586621679767363"><span class="hs-identifier hs-var">g</span></a></span><span class="hs-special">)</span></span></span></span></span></span></span></span></span></span></span></span><span>
-</span><span id="line-58"></span></pre></body></html>
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-46"></span><span>
+</span><span id="line-47"></span><span id="local-6989586621679802690"><span id="local-6989586621679802691"><span id="local-6989586621679802692"><span id="local-6989586621679802693"><span id="local-6989586621679802694"><span id="local-6989586621679802695"><span id="local-6989586621679802696"><span id="local-6989586621679802697"><span id="local-6989586621679802698"><span class="hs-keyword">instance</span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="#local-6989586621679802698"><span class="hs-identifier hs-type">input</span></a></span><span> </span><span class="annot"><span class="hs-glyph hs-type">~</span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679802697"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679802696"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679802695"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679802694"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679802693"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-49"></span><span>    </span><span class="annot"><a href="#local-6989586621679802692"><span class="hs-identifier hs-type">output</span></a></span><span> </span><span class="annot"><span class="hs-glyph hs-type">~</span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679802697"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679802696"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679802695"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679802691"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679802694"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679802693"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-50"></span><span>    </span><span class="annot"><a href="#local-6989586621679802690"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span> </span><span class="annot"><span class="hs-glyph hs-type">~</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679802695"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679802691"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-52"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span>
+</span><span id="line-53"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Dropout.html#Dropout"><span class="hs-identifier hs-type">Dropout</span></a></span><span>
+</span><span id="line-54"></span><span>    </span><span class="annot"><a href="#local-6989586621679802698"><span class="hs-identifier hs-type">input</span></a></span><span>
+</span><span id="line-55"></span><span>    </span><span class="annot"><a href="#local-6989586621679802691"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span>
+</span><span id="line-56"></span><span>    </span><span class="annot"><a href="#local-6989586621679802692"><span class="hs-identifier hs-type">output</span></a></span><span>
+</span><span id="line-57"></span><span>    </span><span class="annot"><a href="#local-6989586621679802690"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-59"></span><span>  </span><span id="local-6989586621679802687"><span class="annot"><span class="annottext">forward :: Dropout
+-&gt; input
+-&gt; Generator generatorDevice
+-&gt; m (output, Generator generatorOutputDevice)
+</span><a href="Torch.GraduallyTyped.NN.Class.html#forward"><span class="hs-identifier hs-var hs-var hs-var hs-var">forward</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Dropout.html#Dropout"><span class="hs-identifier hs-type">Dropout</span></a></span><span> </span><span id="local-6989586621679802685"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679802685"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679802684"><span class="annot"><span class="annottext">input
+</span><a href="#local-6989586621679802684"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span id="local-6989586621679802683"><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679802683"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+-&gt; Tensor gradient layout device dataType shape
+-&gt; Generator generatorDevice
+-&gt; m (Tensor
+        gradient layout (device &lt;+&gt; generatorDevice) dataType shape,
+      Generator (device &lt;+&gt; generatorDevice))
+forall (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)])
+       (generatorDevice :: Device (DeviceType Nat)) (m :: * -&gt; *).
+MonadThrow m =&gt;
+Double
+-&gt; Tensor gradient layout device dataType shape
+-&gt; Generator generatorDevice
+-&gt; m (Tensor
+        gradient layout (device &lt;+&gt; generatorDevice) dataType shape,
+      Generator (device &lt;+&gt; generatorDevice))
+</span><a href="Torch.GraduallyTyped.NN.Functional.Dropout.html#dropout"><span class="hs-identifier hs-var">dropout</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679802685"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">input
+Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679802684"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679802683"><span class="hs-identifier hs-var">g</span></a></span></span></span></span></span></span></span></span></span></span><span>
+</span><span id="line-60"></span></pre></body></html>

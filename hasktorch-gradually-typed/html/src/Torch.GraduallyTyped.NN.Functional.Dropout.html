@@ -1,0 +1,246 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE AllowAmbiguousTypes #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DataKinds #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE FlexibleInstances #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE KindSignatures #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE MultiParamTypeClasses #-}</span><span>
+</span><span id="line-7"></span><span class="hs-pragma">{-# LANGUAGE PartialTypeSignatures #-}</span><span>
+</span><span id="line-8"></span><span class="hs-pragma">{-# LANGUAGE RankNTypes #-}</span><span>
+</span><span id="line-9"></span><span class="hs-pragma">{-# LANGUAGE RecordWildCards #-}</span><span>
+</span><span id="line-10"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-11"></span><span class="hs-pragma">{-# LANGUAGE TupleSections #-}</span><span>
+</span><span id="line-12"></span><span class="hs-pragma">{-# LANGUAGE TypeApplications #-}</span><span>
+</span><span id="line-13"></span><span class="hs-pragma">{-# LANGUAGE TypeFamilies #-}</span><span>
+</span><span id="line-14"></span><span class="hs-pragma">{-# LANGUAGE TypeFamilyDependencies #-}</span><span>
+</span><span id="line-15"></span><span class="hs-pragma">{-# LANGUAGE TypeOperators #-}</span><span>
+</span><span id="line-16"></span><span class="hs-pragma">{-# OPTIONS_GHC -Wall #-}</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.GraduallyTyped.NN.Functional.Dropout</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/ifacyhfpnb9wrd20q18ymi87z39k1h67-exceptions-lib-exceptions-0.10.4-haddock-doc/share/doc/exceptions/html/src"><span class="hs-identifier">Control.Monad.Catch</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/ifacyhfpnb9wrd20q18ymi87z39k1h67-exceptions-lib-exceptions-0.10.4-haddock-doc/share/doc/exceptions/html/src"><span class="hs-identifier">MonadThrow</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Foreign.ForeignPtr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">ForeignPtr</span></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html"><span class="hs-identifier">Torch.GraduallyTyped.Random</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier">Generator</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#withGenerator"><span class="hs-identifier">withGenerator</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Tensor.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier">Tensor</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html"><span class="hs-identifier">Torch.GraduallyTyped.Unify</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-keyword">type</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator">(&lt;+&gt;)</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">Torch.Internal.Cast</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">cast3</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">Torch.Internal.GC</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">unsafeThrowableIO</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">Torch.Internal.Managed.Native</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">ATen</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">_fused_dropout_tdG</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">Torch.Internal.Managed.Type.Tuple</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">ATen</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">Torch.Internal.Type</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">ATen</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier">Tensor</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Unsafe.Coerce</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">unsafeCoerce</span></span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="hs-comment">-- $setup</span><span>
+</span><span id="line-33"></span><span class="hs-comment">-- &gt;&gt;&gt; import Data.Singletons.Prelude.List (SList (..))</span><span>
+</span><span id="line-34"></span><span class="hs-comment">-- &gt;&gt;&gt; import Torch.GraduallyTyped</span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span class="hs-comment">-- | Dropout randomly zeroes some of the elements of</span><span>
+</span><span id="line-37"></span><span class="hs-comment">-- the input tensor with probability 'p' using samples from a Bernoulli distribution.</span><span>
+</span><span id="line-38"></span><span class="annot"><a href="Torch.GraduallyTyped.NN.Functional.Dropout.html#dropout"><span class="hs-identifier hs-type">dropout</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679800395"><span class="annot"><a href="#local-6989586621679800395"><span class="hs-identifier hs-type">gradient</span></a></span></span><span> </span><span id="local-6989586621679800394"><span class="annot"><a href="#local-6989586621679800394"><span class="hs-identifier hs-type">layout</span></a></span></span><span> </span><span id="local-6989586621679800393"><span class="annot"><a href="#local-6989586621679800393"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span id="local-6989586621679800392"><span class="annot"><a href="#local-6989586621679800392"><span class="hs-identifier hs-type">dataType</span></a></span></span><span> </span><span id="local-6989586621679800391"><span class="annot"><a href="#local-6989586621679800391"><span class="hs-identifier hs-type">shape</span></a></span></span><span> </span><span id="local-6989586621679800390"><span class="annot"><a href="#local-6989586621679800390"><span class="hs-identifier hs-type">generatorDevice</span></a></span></span><span> </span><span id="local-6989586621679800389"><span class="annot"><a href="#local-6989586621679800389"><span class="hs-identifier hs-type">m</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-40"></span><span>  </span><span class="annot"><a href="../file:///nix/store/ifacyhfpnb9wrd20q18ymi87z39k1h67-exceptions-lib-exceptions-0.10.4-haddock-doc/share/doc/exceptions/html/src"><span class="hs-identifier hs-type">MonadThrow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800389"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-comment">-- | probability of an element to be zeroed</span><span>
+</span><span id="line-42"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-comment">-- | input</span><span>
+</span><span id="line-44"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800395"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800394"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800393"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800392"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800391"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-comment">-- | generator</span><span>
+</span><span id="line-46"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800390"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-comment">-- | output</span><span>
+</span><span id="line-48"></span><span>  </span><span class="annot"><a href="#local-6989586621679800389"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800395"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800394"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679800393"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800390"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679800392"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800391"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679800393"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800390"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span id="dropout"><span class="annot"><span class="annottext">dropout :: Double
+-&gt; Tensor gradient layout device dataType shape
+-&gt; Generator generatorDevice
+-&gt; m (Tensor
+        gradient layout (device &lt;+&gt; generatorDevice) dataType shape,
+      Generator (device &lt;+&gt; generatorDevice))
+</span><a href="Torch.GraduallyTyped.NN.Functional.Dropout.html#dropout"><span class="hs-identifier hs-var hs-var">dropout</span></a></span></span><span> </span><span id="local-6989586621679800388"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679800388"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span id="local-6989586621679800387"><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679800387"><span class="hs-identifier hs-var">tensor</span></a></span></span><span> </span><span id="local-6989586621679800386"><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679800386"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-50"></span><span>  </span><span class="annot"><span class="annottext">(Tensor
+   gradient
+   layout
+   (Unify (Device (DeviceType Nat)) device generatorDevice)
+   dataType
+   shape,
+ Generator (Unify (Device (DeviceType Nat)) device generatorDevice))
+-&gt; m (Tensor
+        gradient
+        layout
+        (Unify (Device (DeviceType Nat)) device generatorDevice)
+        dataType
+        shape,
+      Generator (Unify (Device (DeviceType Nat)) device generatorDevice))
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span>
+</span><span id="line-51"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+-&gt; Tensor
+     gradient layout (device &lt;+&gt; generatorDevice) dataType shape
+forall a b. a -&gt; b
+</span><span class="hs-identifier hs-var">unsafeCoerce</span></span><span>
+</span><span id="line-52"></span><span>        </span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800395"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800394"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800393"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800392"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800391"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span>        </span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800395"><span class="hs-identifier hs-type">gradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800394"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679800393"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800390"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679800392"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800391"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span>        </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679800387"><span class="hs-identifier hs-var">tensor</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-55"></span><span>      </span><span class="annot"><span class="annottext">Generator generatorDevice -&gt; Generator (device &lt;+&gt; generatorDevice)
+forall a b. a -&gt; b
+</span><span class="hs-identifier hs-var">unsafeCoerce</span></span><span>
+</span><span id="line-56"></span><span>        </span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800390"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-57"></span><span>        </span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679800393"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679800390"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-58"></span><span>        </span><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679800386"><span class="hs-identifier hs-var">g</span></a></span><span>
+</span><span id="line-59"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-60"></span><span class="annot"><a href="Torch.GraduallyTyped.NN.Functional.Dropout.html#dropout"><span class="hs-identifier hs-var">dropout</span></a></span><span> </span><span id="local-6989586621679800385"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679800385"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span id="local-6989586621679800384"><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679800384"><span class="hs-identifier hs-var">tensor</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#UnsafeGenerator"><span class="hs-identifier hs-type">UnsafeGenerator</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679800380"><span id="local-6989586621679800381"><span id="local-6989586621679800382"><span class="annot"><span class="annottext">Word64
+TVar (Maybe (ForeignPtr Generator))
+DeviceType Int16
+generatorState :: forall (device :: Device (DeviceType Nat)).
+Generator device -&gt; TVar (Maybe (ForeignPtr Generator))
+generatorDeviceType :: forall (device :: Device (DeviceType Nat)).
+Generator device -&gt; DeviceType Int16
+generatorSeed :: forall (device :: Device (DeviceType Nat)).
+Generator device -&gt; Word64
+generatorState :: TVar (Maybe (ForeignPtr Generator))
+generatorDeviceType :: DeviceType Int16
+generatorSeed :: Word64
+</span><a href="Torch.GraduallyTyped.Random.html#generatorState"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO
+  (Tensor
+     gradient
+     layout
+     (Unify (Device (DeviceType Nat)) device generatorDevice)
+     dataType
+     shape,
+   Generator (Unify (Device (DeviceType Nat)) device generatorDevice))
+-&gt; m (Tensor
+        gradient
+        layout
+        (Unify (Device (DeviceType Nat)) device generatorDevice)
+        dataType
+        shape,
+      Generator (Unify (Device (DeviceType Nat)) device generatorDevice))
+forall a (m :: * -&gt; *). MonadThrow m =&gt; IO a -&gt; m a
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">unsafeThrowableIO</span></a></span><span> </span><span class="annot"><span class="annottext">(IO
+   (Tensor
+      gradient
+      layout
+      (Unify (Device (DeviceType Nat)) device generatorDevice)
+      dataType
+      shape,
+    Generator (Unify (Device (DeviceType Nat)) device generatorDevice))
+ -&gt; m (Tensor
+         gradient
+         layout
+         (Unify (Device (DeviceType Nat)) device generatorDevice)
+         dataType
+         shape,
+       Generator
+         (Unify (Device (DeviceType Nat)) device generatorDevice)))
+-&gt; IO
+     (Tensor
+        gradient
+        layout
+        (Unify (Device (DeviceType Nat)) device generatorDevice)
+        dataType
+        shape,
+      Generator (Unify (Device (DeviceType Nat)) device generatorDevice))
+-&gt; m (Tensor
+        gradient
+        layout
+        (Unify (Device (DeviceType Nat)) device generatorDevice)
+        dataType
+        shape,
+      Generator (Unify (Device (DeviceType Nat)) device generatorDevice))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-61"></span><span>  </span><span class="hs-special">(</span><span id="local-6989586621679800376"><span class="annot"><span class="annottext">ForeignPtr Tensor
+</span><a href="#local-6989586621679800376"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679800375"><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679800375"><span class="hs-identifier hs-var">nextGeneratorSeed</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679800374"><span class="annot"><span class="annottext">TVar (Maybe (ForeignPtr Generator))
+</span><a href="#local-6989586621679800374"><span class="hs-identifier hs-var">nextGeneratorState</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span>
+</span><span id="line-62"></span><span>    </span><span class="annot"><span class="annottext">(ForeignPtr Generator -&gt; IO (ForeignPtr Tensor))
+-&gt; Word64
+-&gt; DeviceType Int16
+-&gt; TVar (Maybe (ForeignPtr Generator))
+-&gt; IO
+     (ForeignPtr Tensor, Word64, TVar (Maybe (ForeignPtr Generator)))
+</span><a href="Torch.GraduallyTyped.Random.html#withGenerator"><span class="hs-identifier hs-var">withGenerator</span></a></span><span>
+</span><span id="line-63"></span><span>      </span><span class="hs-special">(</span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679800373"><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><a href="#local-6989586621679800373"><span class="hs-identifier hs-var">gptr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-64"></span><span>          </span><span class="hs-special">(</span><span id="local-6989586621679800372"><span class="annot"><span class="annottext">ForeignPtr Tensor
+</span><a href="#local-6989586621679800372"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">ForeignPtr Tensor
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Tensor</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(ForeignPtr Tensor
+ -&gt; CDouble
+ -&gt; ForeignPtr Generator
+ -&gt; IO (ForeignPtr (StdTuple '(Tensor, Tensor))))
+-&gt; Tensor gradient layout device dataType shape
+-&gt; Double
+-&gt; ForeignPtr Generator
+-&gt; IO (ForeignPtr Tensor, ForeignPtr Tensor)
+forall a ca x1 cx1 x2 cx2 y cy.
+(Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable y cy) =&gt;
+(ca -&gt; cx1 -&gt; cx2 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; x2 -&gt; IO y
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">cast3</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Tensor
+-&gt; CDouble
+-&gt; ForeignPtr Generator
+-&gt; IO (ForeignPtr (StdTuple '(Tensor, Tensor)))
+</span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen._fused_dropout_tdG</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679800384"><span class="hs-identifier hs-var">tensor</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679800385"><span class="hs-identifier hs-var">p</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><a href="#local-6989586621679800373"><span class="hs-identifier hs-var">gptr</span></a></span><span>
+</span><span id="line-65"></span><span>          </span><span class="annot"><span class="annottext">ForeignPtr Tensor -&gt; IO (ForeignPtr Tensor)
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Tensor
+</span><a href="#local-6989586621679800372"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-66"></span><span>      </span><span class="hs-special">)</span><span>
+</span><span id="line-67"></span><span>      </span><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679800382"><span class="hs-identifier hs-var">generatorSeed</span></a></span><span>
+</span><span id="line-68"></span><span>      </span><span class="annot"><span class="annottext">DeviceType Int16
+</span><a href="#local-6989586621679800381"><span class="hs-identifier hs-var">generatorDeviceType</span></a></span><span>
+</span><span id="line-69"></span><span>      </span><span class="annot"><span class="annottext">TVar (Maybe (ForeignPtr Generator))
+</span><a href="#local-6989586621679800380"><span class="hs-identifier hs-var">generatorState</span></a></span><span>
+</span><span id="line-70"></span><span>  </span><span class="annot"><span class="annottext">(Tensor
+   gradient
+   layout
+   (Unify (Device (DeviceType Nat)) device generatorDevice)
+   dataType
+   shape,
+ Generator (Unify (Device (DeviceType Nat)) device generatorDevice))
+-&gt; IO
+     (Tensor
+        gradient
+        layout
+        (Unify (Device (DeviceType Nat)) device generatorDevice)
+        dataType
+        shape,
+      Generator (Unify (Device (DeviceType Nat)) device generatorDevice))
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ForeignPtr Tensor
+-&gt; Tensor
+     gradient
+     layout
+     (Unify (Device (DeviceType Nat)) device generatorDevice)
+     dataType
+     shape
+forall (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)]).
+ForeignPtr Tensor -&gt; Tensor gradient layout device dataType shape
+</span><a href="Torch.GraduallyTyped.Tensor.Type.html#UnsafeTensor"><span class="hs-identifier hs-var">UnsafeTensor</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Tensor
+</span><a href="#local-6989586621679800376"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Word64
+-&gt; DeviceType Int16
+-&gt; TVar (Maybe (ForeignPtr Generator))
+-&gt; Generator
+     (Unify (Device (DeviceType Nat)) device generatorDevice)
+forall (device :: Device (DeviceType Nat)).
+Word64
+-&gt; DeviceType Int16
+-&gt; TVar (Maybe (ForeignPtr Generator))
+-&gt; Generator device
+</span><a href="Torch.GraduallyTyped.Random.html#UnsafeGenerator"><span class="hs-identifier hs-var">UnsafeGenerator</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679800375"><span class="hs-identifier hs-var">nextGeneratorSeed</span></a></span><span> </span><span class="annot"><span class="annottext">DeviceType Int16
+</span><a href="#local-6989586621679800381"><span class="hs-identifier hs-var">generatorDeviceType</span></a></span><span> </span><span class="annot"><span class="annottext">TVar (Maybe (ForeignPtr Generator))
+</span><a href="#local-6989586621679800374"><span class="hs-identifier hs-var">nextGeneratorState</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-71"></span></pre></body></html>

@@ -8,7 +8,7 @@
 </span><span id="line-8"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.BERT</span><span>
 </span><span id="line-9"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.BERT.Common.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.BERT.Common</span></a></span><span class="hs-special">,</span><span>
 </span><span id="line-10"></span><span>    </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.BERT.BaseUncased.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.BERT.BaseUncased</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-11"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.BERT.html#testForwardBERTBaseUncased"><span class="hs-identifier">testForwardBERTBaseUncased</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span class="hs-comment">-- testForwardBERTBaseUncased,</span><span>
 </span><span id="line-12"></span><span>  </span><span class="hs-special">)</span><span>
 </span><span id="line-13"></span><span class="hs-keyword">where</span><span>
 </span><span id="line-14"></span><span>
@@ -27,7 +27,7 @@
 </span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html"><span class="hs-identifier">Torch.GraduallyTyped.RequiresGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier">SGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#SRequiresGradient"><span class="hs-identifier">SRequiresGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
 </span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Shape.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Dim"><span class="hs-identifier">Dim</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Name"><span class="hs-identifier">Name</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SDim"><span class="hs-identifier">SDim</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SName"><span class="hs-identifier">SName</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SShape"><span class="hs-identifier">SShape</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SSize"><span class="hs-identifier">SSize</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Size"><span class="hs-identifier">Size</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-keyword">pattern</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%26%3A"><span class="hs-operator">(:&amp;:)</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-keyword">pattern</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%7C%3A"><span class="hs-operator">(:|:)</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Creation.html"><span class="hs-identifier">Torch.GraduallyTyped.Tensor.Creation</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Creation.html#sArangeNaturals"><span class="hs-identifier">sArangeNaturals</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Creation.html#sZeros"><span class="hs-identifier">sZeros</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Tensor.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier">Tensor</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Tensor.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier">Tensor</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#TensorSpec"><span class="hs-identifier">TensorSpec</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
 </span><span id="line-31"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../../../../hasktorch/html/src"><span class="hs-identifier">Torch.Tensor</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Tensor</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../../../../hasktorch/html/src"><span class="hs-identifier">Tensor</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../../../../hasktorch/html/src"><span class="hs-identifier">asValue</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-32"></span><span>
 </span><span id="line-33"></span><span class="hs-keyword">type</span><span> </span><span id="TestBERTSeqDim"><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.BERT.html#TestBERTSeqDim"><span class="hs-identifier hs-var">TestBERTSeqDim</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Dim"><span class="hs-identifier hs-type">Dim</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Name"><span class="hs-identifier hs-type">Name</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;*&quot;</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Size"><span class="hs-identifier hs-type">Size</span></a></span><span> </span><span class="annot"><span class="hs-number">9</span></span><span class="hs-special">)</span><span>
@@ -112,12 +112,56 @@ forall (size :: Nat). KnownNat size =&gt; SSize ('Size size)
   ('DataType 'Int64)
   ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim])
 </span><a href="Torch.GraduallyTyped.NN.Transformer.BERT.html#testBERTInputType"><span class="hs-identifier hs-var hs-var">testBERTInputType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-48"></span><span>  </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithoutGradient)
+</span><span id="line-48"></span><span>  </span><span class="annot"><span class="annottext">TensorSpec
+  ('Gradient 'WithoutGradient)
+  ('Layout 'Dense)
+  ('Device 'CPU)
+  ('DataType 'Int64)
+  ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim])
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim])
+forall (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)]).
+TensorSpec gradient layout device dataType shape
+-&gt; Tensor gradient layout device dataType shape
+</span><a href="Torch.GraduallyTyped.Tensor.Creation.html#sZeros"><span class="hs-identifier hs-var">sZeros</span></a></span><span> </span><span class="annot"><span class="annottext">(TensorSpec
+   ('Gradient 'WithoutGradient)
+   ('Layout 'Dense)
+   ('Device 'CPU)
+   ('DataType 'Int64)
+   ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim])
+ -&gt; Tensor
+      ('Gradient 'WithoutGradient)
+      ('Layout 'Dense)
+      ('Device 'CPU)
+      ('DataType 'Int64)
+      ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim]))
+-&gt; TensorSpec
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim])
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim])
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-49"></span><span>    </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithoutGradient)
 -&gt; SLayout ('Layout 'Dense)
 -&gt; SDevice ('Device 'CPU)
 -&gt; SDataType ('DataType 'Int64)
 -&gt; SShape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim])
--&gt; Tensor
+-&gt; TensorSpec
      ('Gradient 'WithoutGradient)
      ('Layout 'Dense)
      ('Device 'CPU)
@@ -132,31 +176,31 @@ SGradient gradient
 -&gt; SDevice device
 -&gt; SDataType dataType
 -&gt; SShape shape
--&gt; Tensor gradient layout device dataType shape
-</span><a href="Torch.GraduallyTyped.Tensor.Creation.html#sZeros"><span class="hs-identifier hs-var">sZeros</span></a></span><span>
-</span><span id="line-49"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
+-&gt; TensorSpec gradient layout device dataType shape
+</span><a href="Torch.GraduallyTyped.Tensor.Type.html#TensorSpec"><span class="hs-identifier hs-var">TensorSpec</span></a></span><span>
+</span><span id="line-50"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
 -&gt; SGradient ('Gradient 'WithoutGradient)
 forall (requiresGradient :: RequiresGradient).
 SRequiresGradient requiresGradient
 -&gt; SGradient ('Gradient requiresGradient)
 </span><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-var">SGradient</span></a></span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
 </span><a href="Torch.GraduallyTyped.RequiresGradient.html#SWithoutGradient"><span class="hs-identifier hs-var">SWithoutGradient</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-50"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SLayoutType 'Dense -&gt; SLayout ('Layout 'Dense)
+</span><span id="line-51"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SLayoutType 'Dense -&gt; SLayout ('Layout 'Dense)
 forall (layoutType :: LayoutType).
 SLayoutType layoutType -&gt; SLayout ('Layout layoutType)
 </span><a href="Torch.GraduallyTyped.Layout.html#SLayout"><span class="hs-identifier hs-var">SLayout</span></a></span><span> </span><span class="annot"><span class="annottext">SLayoutType 'Dense
 </span><a href="Torch.GraduallyTyped.Layout.html#SDense"><span class="hs-identifier hs-var">SDense</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-51"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SDeviceType 'CPU -&gt; SDevice ('Device 'CPU)
+</span><span id="line-52"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SDeviceType 'CPU -&gt; SDevice ('Device 'CPU)
 forall (deviceType :: DeviceType Nat).
 SDeviceType deviceType -&gt; SDevice ('Device deviceType)
 </span><a href="Torch.GraduallyTyped.Device.html#SDevice"><span class="hs-identifier hs-var">SDevice</span></a></span><span> </span><span class="annot"><span class="annottext">SDeviceType 'CPU
 </span><a href="Torch.GraduallyTyped.Device.html#SCPU"><span class="hs-identifier hs-var">SCPU</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-52"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SDType 'Int64 -&gt; SDataType ('DataType 'Int64)
+</span><span id="line-53"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SDType 'Int64 -&gt; SDataType ('DataType 'Int64)
 forall (dType :: DType).
 SDType dType -&gt; SDataType ('DataType dType)
 </span><a href="Torch.GraduallyTyped.DType.html#SDataType"><span class="hs-identifier hs-var">SDataType</span></a></span><span> </span><span class="annot"><span class="annottext">SDType 'Int64
 </span><a href="Torch.GraduallyTyped.DType.html#SInt64"><span class="hs-identifier hs-var">SInt64</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-53"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SList '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim]
+</span><span id="line-54"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SList '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim]
 -&gt; SShape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim])
 forall (dims :: [Dim (Name Symbol) (Size Nat)]).
 SList dims -&gt; SShape ('Shape dims)
@@ -187,704 +231,35 @@ SDim dim -&gt; SList dims -&gt; SList (dim : dims)
 </span><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%7C%3A"><span class="hs-operator hs-var">:|:</span></a></span><span> </span><span class="annot"><span class="annottext">SList '[]
 forall a. SList '[]
 </span><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier hs-var">SNil</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-54"></span><span>
-</span><span id="line-55"></span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.BERT.html#testForwardBERTBaseUncased"><span class="hs-identifier hs-type">testForwardBERTBaseUncased</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
-</span><span id="line-56"></span><span id="testForwardBERTBaseUncased"><span class="annot"><span class="annottext">testForwardBERTBaseUncased :: IO ()
-</span><a href="Torch.GraduallyTyped.NN.Transformer.BERT.html#testForwardBERTBaseUncased"><span class="hs-identifier hs-var hs-var">testForwardBERTBaseUncased</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-57"></span><span>  </span><span class="hs-keyword">do</span><span>
-</span><span id="line-58"></span><span>    </span><span id="local-6989586621679773603"><span class="annot"><span class="annottext">StateDict
-</span><a href="#local-6989586621679773603"><span class="hs-identifier hs-var">stateDict</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">FilePath -&gt; IO StateDict
-</span><a href="Torch.GraduallyTyped.NN.Class.html#stateDictFromPretrained"><span class="hs-identifier hs-var">stateDictFromPretrained</span></a></span><span> </span><span class="annot"><span class="annottext">FilePath
-</span><span class="hs-string">&quot;/tmp/bert-base-uncased-state-dict.pt&quot;</span></span><span>
-</span><span id="line-59"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.BERT.Common.html#BERTModel"><span class="hs-identifier hs-type">BERTModel</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.BERT.Common.html#GBERTModel"><span class="hs-identifier hs-type">GBERTModel</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679773600"><span class="annot"><span class="annottext">BERTModelF
-  'WithMLMHead
-  BERTBaseUncasedNumLayers
-  ('Gradient 'WithoutGradient)
-  ('Device 'CPU)
-  BERTBaseUncasedHeadDim
-  BERTBaseUncasedHeadEmbedDim
-  BERTBaseUncasedEmbedDim
-  BERTBaseUncasedEmbedDim
-  BERTBaseUncasedFFNDim
-  BERTBaseUncasedVocabDim
-  BERTBaseUncasedTypeVocabDim
-bertModel :: forall bertModel. GBERTModel bertModel -&gt; bertModel
-bertModel :: BERTModelF
-  'WithMLMHead
-  BERTBaseUncasedNumLayers
-  ('Gradient 'WithoutGradient)
-  ('Device 'CPU)
-  BERTBaseUncasedHeadDim
-  BERTBaseUncasedHeadEmbedDim
-  BERTBaseUncasedEmbedDim
-  BERTBaseUncasedEmbedDim
-  BERTBaseUncasedFFNDim
-  BERTBaseUncasedVocabDim
-  BERTBaseUncasedTypeVocabDim
-</span><a href="Torch.GraduallyTyped.NN.Transformer.BERT.Common.html#bertModel"><span class="hs-glyph hs-var hs-var">..</span></a></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">&lt;-</span><span>
-</span><span id="line-60"></span><span>      </span><span class="annot"><span class="annottext">(StateT
-   StateDict
-   IO
-   (BERTModel
-      'WithMLMHead
-      BERTBaseUncasedNumLayers
-      ('Gradient 'WithoutGradient)
-      ('Device 'CPU)
-      BERTBaseUncasedHeadDim
-      BERTBaseUncasedHeadEmbedDim
-      BERTBaseUncasedEmbedDim
-      BERTBaseUncasedEmbedDim
-      BERTBaseUncasedFFNDim
-      BERTBaseUncasedVocabDim
-      BERTBaseUncasedTypeVocabDim)
- -&gt; StateDict
- -&gt; IO
-      (BERTModel
-         'WithMLMHead
-         BERTBaseUncasedNumLayers
-         ('Gradient 'WithoutGradient)
-         ('Device 'CPU)
-         BERTBaseUncasedHeadDim
-         BERTBaseUncasedHeadEmbedDim
-         BERTBaseUncasedEmbedDim
-         BERTBaseUncasedEmbedDim
-         BERTBaseUncasedFFNDim
-         BERTBaseUncasedVocabDim
-         BERTBaseUncasedTypeVocabDim))
--&gt; StateDict
--&gt; StateT
-     StateDict
-     IO
-     (BERTModel
-        'WithMLMHead
-        BERTBaseUncasedNumLayers
-        ('Gradient 'WithoutGradient)
-        ('Device 'CPU)
-        BERTBaseUncasedHeadDim
-        BERTBaseUncasedHeadEmbedDim
-        BERTBaseUncasedEmbedDim
-        BERTBaseUncasedEmbedDim
-        BERTBaseUncasedFFNDim
-        BERTBaseUncasedVocabDim
-        BERTBaseUncasedTypeVocabDim)
--&gt; IO
-     (BERTModel
-        'WithMLMHead
-        BERTBaseUncasedNumLayers
-        ('Gradient 'WithoutGradient)
-        ('Device 'CPU)
-        BERTBaseUncasedHeadDim
-        BERTBaseUncasedHeadEmbedDim
-        BERTBaseUncasedEmbedDim
-        BERTBaseUncasedEmbedDim
-        BERTBaseUncasedFFNDim
-        BERTBaseUncasedVocabDim
-        BERTBaseUncasedTypeVocabDim)
-forall a b c. (a -&gt; b -&gt; c) -&gt; b -&gt; a -&gt; c
-</span><span class="hs-identifier hs-var">flip</span></span><span> </span><span class="annot"><span class="annottext">StateT
-  StateDict
-  IO
-  (BERTModel
-     'WithMLMHead
-     BERTBaseUncasedNumLayers
-     ('Gradient 'WithoutGradient)
-     ('Device 'CPU)
-     BERTBaseUncasedHeadDim
-     BERTBaseUncasedHeadEmbedDim
-     BERTBaseUncasedEmbedDim
-     BERTBaseUncasedEmbedDim
-     BERTBaseUncasedFFNDim
-     BERTBaseUncasedVocabDim
-     BERTBaseUncasedTypeVocabDim)
--&gt; StateDict
--&gt; IO
-     (BERTModel
-        'WithMLMHead
-        BERTBaseUncasedNumLayers
-        ('Gradient 'WithoutGradient)
-        ('Device 'CPU)
-        BERTBaseUncasedHeadDim
-        BERTBaseUncasedHeadEmbedDim
-        BERTBaseUncasedEmbedDim
-        BERTBaseUncasedEmbedDim
-        BERTBaseUncasedFFNDim
-        BERTBaseUncasedVocabDim
-        BERTBaseUncasedTypeVocabDim)
-forall (m :: * -&gt; *) s a. Monad m =&gt; StateT s m a -&gt; s -&gt; m a
-</span><span class="hs-identifier hs-var">evalStateT</span></span><span> </span><span class="annot"><span class="annottext">StateDict
-</span><a href="#local-6989586621679773603"><span class="hs-identifier hs-var">stateDict</span></a></span><span> </span><span class="annot"><span class="annottext">(StateT
-   StateDict
-   IO
-   (BERTModel
-      'WithMLMHead
-      BERTBaseUncasedNumLayers
-      ('Gradient 'WithoutGradient)
-      ('Device 'CPU)
-      BERTBaseUncasedHeadDim
-      BERTBaseUncasedHeadEmbedDim
-      BERTBaseUncasedEmbedDim
-      BERTBaseUncasedEmbedDim
-      BERTBaseUncasedFFNDim
-      BERTBaseUncasedVocabDim
-      BERTBaseUncasedTypeVocabDim)
- -&gt; IO
-      (BERTModel
-         'WithMLMHead
-         BERTBaseUncasedNumLayers
-         ('Gradient 'WithoutGradient)
-         ('Device 'CPU)
-         BERTBaseUncasedHeadDim
-         BERTBaseUncasedHeadEmbedDim
-         BERTBaseUncasedEmbedDim
-         BERTBaseUncasedEmbedDim
-         BERTBaseUncasedFFNDim
-         BERTBaseUncasedVocabDim
-         BERTBaseUncasedTypeVocabDim))
--&gt; StateT
-     StateDict
-     IO
-     (BERTModel
-        'WithMLMHead
-        BERTBaseUncasedNumLayers
-        ('Gradient 'WithoutGradient)
-        ('Device 'CPU)
-        BERTBaseUncasedHeadDim
-        BERTBaseUncasedHeadEmbedDim
-        BERTBaseUncasedEmbedDim
-        BERTBaseUncasedEmbedDim
-        BERTBaseUncasedFFNDim
-        BERTBaseUncasedVocabDim
-        BERTBaseUncasedTypeVocabDim)
--&gt; IO
-     (BERTModel
-        'WithMLMHead
-        BERTBaseUncasedNumLayers
-        ('Gradient 'WithoutGradient)
-        ('Device 'CPU)
-        BERTBaseUncasedHeadDim
-        BERTBaseUncasedHeadEmbedDim
-        BERTBaseUncasedEmbedDim
-        BERTBaseUncasedEmbedDim
-        BERTBaseUncasedFFNDim
-        BERTBaseUncasedVocabDim
-        BERTBaseUncasedTypeVocabDim)
-forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span>
-</span><span id="line-61"></span><span>        </span><span class="annot"><span class="annottext">(SGradient ('Gradient 'WithoutGradient), SDevice ('Device 'CPU))
--&gt; FilePath
--&gt; StateT
-     StateDict
-     IO
-     (BERTModel
-        'WithMLMHead
-        BERTBaseUncasedNumLayers
-        ('Gradient 'WithoutGradient)
-        ('Device 'CPU)
-        BERTBaseUncasedHeadDim
-        BERTBaseUncasedHeadEmbedDim
-        BERTBaseUncasedEmbedDim
-        BERTBaseUncasedEmbedDim
-        BERTBaseUncasedFFNDim
-        BERTBaseUncasedVocabDim
-        BERTBaseUncasedTypeVocabDim)
-forall model input (m :: * -&gt; *).
-(HasStateDict model input, MonadThrow m, MonadState StateDict m) =&gt;
-input -&gt; FilePath -&gt; m model
-</span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var">fromStateDict</span></a></span><span> </span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.BERT.BaseUncased.html#BERTBaseUncased"><span class="hs-identifier hs-type">BERTBaseUncased</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#WithMLMHead"><span class="hs-identifier hs-type">WithMLMHead</span></a></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
--&gt; SGradient ('Gradient 'WithoutGradient)
-forall (requiresGradient :: RequiresGradient).
-SRequiresGradient requiresGradient
--&gt; SGradient ('Gradient requiresGradient)
-</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-var">SGradient</span></a></span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
-</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SWithoutGradient"><span class="hs-identifier hs-var">SWithoutGradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SDeviceType 'CPU -&gt; SDevice ('Device 'CPU)
-forall (deviceType :: DeviceType Nat).
-SDeviceType deviceType -&gt; SDevice ('Device deviceType)
-</span><a href="Torch.GraduallyTyped.Device.html#SDevice"><span class="hs-identifier hs-var">SDevice</span></a></span><span> </span><span class="annot"><span class="annottext">SDeviceType 'CPU
-</span><a href="Torch.GraduallyTyped.Device.html#SCPU"><span class="hs-identifier hs-var">SCPU</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">FilePath
-</span><span class="hs-string">&quot;&quot;</span></span><span>
-</span><span id="line-62"></span><span>    </span><span id="local-6989586621679773596"><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithoutGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  ('DataType 'Int64)
-  ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim])
-</span><a href="#local-6989586621679773596"><span class="hs-identifier hs-var">encoderInput</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO
-  (Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType 'Int64)
-     ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim]))
-</span><a href="Torch.GraduallyTyped.NN.Transformer.BERT.html#testBERTInput"><span class="hs-identifier hs-var">testBERTInput</span></a></span><span>
-</span><span id="line-63"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679773595"><span class="annot"><span class="annottext">encoderInputType :: Tensor
-  ('Gradient 'WithoutGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  ('DataType 'Int64)
-  ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim])
-</span><a href="#local-6989586621679773595"><span class="hs-identifier hs-var hs-var">encoderInputType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithoutGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  ('DataType 'Int64)
-  ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim])
-</span><a href="Torch.GraduallyTyped.NN.Transformer.BERT.html#testBERTInputType"><span class="hs-identifier hs-var">testBERTInputType</span></a></span><span>
-</span><span id="line-64"></span><span>        </span><span id="local-6989586621679773594"><span class="annot"><span class="annottext">pos :: Tensor
-  ('Gradient 'WithoutGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  ('DataType 'Int64)
-  ('Shape '[TestBERTSeqDim])
-</span><a href="#local-6989586621679773594"><span class="hs-identifier hs-var hs-var">pos</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-65"></span><span>          </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithoutGradient)
--&gt; SLayout ('Layout 'Dense)
--&gt; SDevice ('Device 'CPU)
--&gt; SDataType ('DataType 'Int64)
--&gt; SSize ('Size 9)
--&gt; Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType 'Int64)
-     ('Shape '[TestBERTSeqDim])
-forall (gradient :: Gradient RequiresGradient)
-       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
-       (dataType :: DataType DType) (size :: Size Nat)
-       (shape :: Shape [Dim (Name Symbol) (Size Nat)]).
-(shape ~ 'Shape '[ 'Dim ('Name &quot;*&quot;) size]) =&gt;
-SGradient gradient
--&gt; SLayout layout
--&gt; SDevice device
--&gt; SDataType dataType
--&gt; SSize size
--&gt; Tensor gradient layout device dataType shape
-</span><a href="Torch.GraduallyTyped.Tensor.Creation.html#sArangeNaturals"><span class="hs-identifier hs-var">sArangeNaturals</span></a></span><span>
-</span><span id="line-66"></span><span>            </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
--&gt; SGradient ('Gradient 'WithoutGradient)
-forall (requiresGradient :: RequiresGradient).
-SRequiresGradient requiresGradient
--&gt; SGradient ('Gradient requiresGradient)
-</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-var">SGradient</span></a></span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
-</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SWithoutGradient"><span class="hs-identifier hs-var">SWithoutGradient</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-67"></span><span>            </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SLayoutType 'Dense -&gt; SLayout ('Layout 'Dense)
-forall (layoutType :: LayoutType).
-SLayoutType layoutType -&gt; SLayout ('Layout layoutType)
-</span><a href="Torch.GraduallyTyped.Layout.html#SLayout"><span class="hs-identifier hs-var">SLayout</span></a></span><span> </span><span class="annot"><span class="annottext">SLayoutType 'Dense
-</span><a href="Torch.GraduallyTyped.Layout.html#SDense"><span class="hs-identifier hs-var">SDense</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-68"></span><span>            </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SDeviceType 'CPU -&gt; SDevice ('Device 'CPU)
-forall (deviceType :: DeviceType Nat).
-SDeviceType deviceType -&gt; SDevice ('Device deviceType)
-</span><a href="Torch.GraduallyTyped.Device.html#SDevice"><span class="hs-identifier hs-var">SDevice</span></a></span><span> </span><span class="annot"><span class="annottext">SDeviceType 'CPU
-</span><a href="Torch.GraduallyTyped.Device.html#SCPU"><span class="hs-identifier hs-var">SCPU</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-69"></span><span>            </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SDType 'Int64 -&gt; SDataType ('DataType 'Int64)
-forall (dType :: DType).
-SDType dType -&gt; SDataType ('DataType dType)
-</span><a href="Torch.GraduallyTyped.DType.html#SDataType"><span class="hs-identifier hs-var">SDataType</span></a></span><span> </span><span class="annot"><span class="annottext">SDType 'Int64
-</span><a href="Torch.GraduallyTyped.DType.html#SInt64"><span class="hs-identifier hs-var">SInt64</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-70"></span><span>            </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SDim TestBERTSeqDim -&gt; SSize ('Size 9)
-forall (name :: Name Symbol) (size :: Size Nat).
-SDim ('Dim name size) -&gt; SSize size
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#sDimSize"><span class="hs-identifier hs-var hs-var">sDimSize</span></a></span><span> </span><span class="annot"><span class="annottext">SDim TestBERTSeqDim
-</span><a href="Torch.GraduallyTyped.NN.Transformer.BERT.html#testBERTSeqDim"><span class="hs-identifier hs-var">testBERTSeqDim</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-71"></span><span>        </span><span id="local-6989586621679773592"><span class="annot"><span class="annottext">paddingMask :: Tensor
-  ('Gradient 'WithoutGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  ('DataType 'Bool)
-  ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim])
-</span><a href="#local-6989586621679773592"><span class="hs-identifier hs-var hs-var">paddingMask</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithoutGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  ('DataType 'Int64)
-  ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim])
--&gt; Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType 'Bool)
-     ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim])
-forall (gradient :: Gradient RequiresGradient)
-       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
-       (dataType :: DataType DType)
-       (shape :: Shape [Dim (Name Symbol) (Size Nat)]) output.
-MkTransformerPaddingMaskC layout device dataType shape output =&gt;
-Tensor gradient layout device dataType shape -&gt; output
-</span><a href="Torch.GraduallyTyped.NN.Transformer.BERT.Common.html#mkBERTPaddingMask"><span class="hs-identifier hs-var">mkBERTPaddingMask</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithoutGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  ('DataType 'Int64)
-  ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim])
-</span><a href="#local-6989586621679773596"><span class="hs-identifier hs-var">encoderInput</span></a></span><span>
-</span><span id="line-72"></span><span>    </span><span id="local-6989586621679773590"><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithoutGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  ('DataType BERTDType)
-  ('Shape
-     '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim, TestBERTSeqDim])
-</span><a href="#local-6989586621679773590"><span class="hs-identifier hs-var">attentionMask</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">SDataType ('DataType BERTDType)
--&gt; Double
--&gt; Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType 'Bool)
-     ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim])
--&gt; IO
-     (Tensor
-        ('Gradient 'WithoutGradient)
-        ('Layout 'Dense)
-        ('Device 'CPU)
-        ('DataType BERTDType)
-        ('Shape
-           '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim, TestBERTSeqDim]))
-forall (m :: * -&gt; *) (transformerDataType :: DataType DType)
-       (gradient :: Gradient RequiresGradient)
-       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
-       (dataType :: DataType DType)
-       (shape :: Shape [Dim (Name Symbol) (Size Nat)])
-       (seqDim :: Dim (Name Symbol) (Size Nat)) output.
-(MonadThrow m,
- MkTransformerAttentionMaskC
-   transformerDataType
-   gradient
-   layout
-   device
-   dataType
-   shape
-   seqDim
-   output) =&gt;
-SDataType transformerDataType
--&gt; Double
--&gt; Tensor gradient layout device dataType shape
--&gt; m output
-</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#mkTransformerAttentionMask"><span class="hs-identifier hs-var">mkTransformerAttentionMask</span></a></span><span> </span><span class="annot"><span class="annottext">SDataType ('DataType BERTDType)
-</span><a href="Torch.GraduallyTyped.NN.Transformer.BERT.Common.html#bertDataType"><span class="hs-identifier hs-var">bertDataType</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="Torch.GraduallyTyped.NN.Transformer.BERT.Common.html#bertAttentionMaskBias"><span class="hs-identifier hs-var">bertAttentionMaskBias</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithoutGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  ('DataType 'Bool)
-  ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim])
-</span><a href="#local-6989586621679773592"><span class="hs-identifier hs-var">paddingMask</span></a></span><span>
-</span><span id="line-73"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679773587"><span class="annot"><span class="annottext">input :: EncoderOnlyTransformerInput
-  (Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType 'Int64)
-     ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim]))
-  (Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType 'Int64)
-     ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim]))
-  (Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType 'Int64)
-     ('Shape '[TestBERTSeqDim]))
-  (Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType BERTDType)
-     ('Shape
-        '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim, TestBERTSeqDim]))
-</span><a href="#local-6989586621679773587"><span class="hs-identifier hs-var hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithoutGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  ('DataType 'Int64)
-  ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim])
--&gt; Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType 'Int64)
-     ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim])
--&gt; Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType 'Int64)
-     ('Shape '[TestBERTSeqDim])
--&gt; Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType BERTDType)
-     ('Shape
-        '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim, TestBERTSeqDim])
--&gt; EncoderOnlyTransformerInput
-     (Tensor
-        ('Gradient 'WithoutGradient)
-        ('Layout 'Dense)
-        ('Device 'CPU)
-        ('DataType 'Int64)
-        ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim]))
-     (Tensor
-        ('Gradient 'WithoutGradient)
-        ('Layout 'Dense)
-        ('Device 'CPU)
-        ('DataType 'Int64)
-        ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim]))
-     (Tensor
-        ('Gradient 'WithoutGradient)
-        ('Layout 'Dense)
-        ('Device 'CPU)
-        ('DataType 'Int64)
-        ('Shape '[TestBERTSeqDim]))
-     (Tensor
-        ('Gradient 'WithoutGradient)
-        ('Layout 'Dense)
-        ('Device 'CPU)
-        ('DataType BERTDType)
-        ('Shape
-           '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim, TestBERTSeqDim]))
-forall input inputType pos attentionMask.
-input
--&gt; inputType
--&gt; pos
--&gt; attentionMask
--&gt; EncoderOnlyTransformerInput input inputType pos attentionMask
-</span><a href="Torch.GraduallyTyped.NN.Transformer.EncoderOnly.html#EncoderOnlyTransformerInput"><span class="hs-identifier hs-var">EncoderOnlyTransformerInput</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithoutGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  ('DataType 'Int64)
-  ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim])
-</span><a href="#local-6989586621679773596"><span class="hs-identifier hs-var">encoderInput</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithoutGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  ('DataType 'Int64)
-  ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim])
-</span><a href="#local-6989586621679773595"><span class="hs-identifier hs-var">encoderInputType</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithoutGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  ('DataType 'Int64)
-  ('Shape '[TestBERTSeqDim])
-</span><a href="#local-6989586621679773594"><span class="hs-identifier hs-var">pos</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithoutGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  ('DataType BERTDType)
-  ('Shape
-     '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim, TestBERTSeqDim])
-</span><a href="#local-6989586621679773590"><span class="hs-identifier hs-var">attentionMask</span></a></span><span>
-</span><span id="line-74"></span><span>    </span><span id="local-6989586621679773585"><span class="annot"><span class="annottext">Generator ('Device 'CPU)
-</span><a href="#local-6989586621679773585"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; IO (Generator ('Device 'CPU))
-forall (device :: Device (DeviceType Nat)).
-SingI device =&gt;
-Word64 -&gt; IO (Generator device)
-</span><a href="Torch.GraduallyTyped.Random.html#mkGenerator"><span class="hs-identifier hs-var">mkGenerator</span></a></span><span> </span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#Device"><span class="hs-identifier hs-type">Device</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#CPU"><span class="hs-identifier hs-type">CPU</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Word64
-</span><span class="hs-number">0</span></span><span>
-</span><span id="line-75"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.EncoderOnly.html#EncoderOnlyTransformerOutput"><span class="hs-identifier hs-type">EncoderOnlyTransformerOutput</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679773583"><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithoutGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  ('DataType BERTDType)
-  ('Shape
-     '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim,
-        BERTBaseUncasedVocabDim])
-eoEncoderOutput :: forall encoderOutput.
-EncoderOnlyTransformerOutput encoderOutput -&gt; encoderOutput
-eoEncoderOutput :: Tensor
-  ('Gradient 'WithoutGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  ('DataType BERTDType)
-  ('Shape
-     '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim,
-        BERTBaseUncasedVocabDim])
-</span><a href="Torch.GraduallyTyped.NN.Transformer.EncoderOnly.html#eoEncoderOutput"><span class="hs-glyph hs-var hs-var">..</span></a></span></span><span class="hs-special">}</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Generator ('Device 'CPU)
-</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">EncoderOnlyTransformerWithLMHead
-  'BERT
-  BERTBaseUncasedNumLayers
-  ('Gradient 'WithoutGradient)
-  ('Device 'CPU)
-  ('DataType BERTDType)
-  BERTBaseUncasedHeadDim
-  BERTBaseUncasedHeadEmbedDim
-  BERTBaseUncasedEmbedDim
-  BERTBaseUncasedEmbedDim
-  BERTBaseUncasedFFNDim
-  BERTPosEncDim
-  BERTBaseUncasedVocabDim
-  BERTBaseUncasedTypeVocabDim
-  BERTDropoutP
--&gt; EncoderOnlyTransformerInput
-     (Tensor
-        ('Gradient 'WithoutGradient)
-        ('Layout 'Dense)
-        ('Device 'CPU)
-        ('DataType 'Int64)
-        ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim]))
-     (Tensor
-        ('Gradient 'WithoutGradient)
-        ('Layout 'Dense)
-        ('Device 'CPU)
-        ('DataType 'Int64)
-        ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim]))
-     (Tensor
-        ('Gradient 'WithoutGradient)
-        ('Layout 'Dense)
-        ('Device 'CPU)
-        ('DataType 'Int64)
-        ('Shape '[TestBERTSeqDim]))
-     (Tensor
-        ('Gradient 'WithoutGradient)
-        ('Layout 'Dense)
-        ('Device 'CPU)
-        ('DataType BERTDType)
-        ('Shape
-           '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim, TestBERTSeqDim]))
--&gt; Generator ('Device 'CPU)
--&gt; IO
-     (EncoderOnlyTransformerOutput
-        (Tensor
-           ('Gradient 'WithoutGradient)
-           ('Layout 'Dense)
-           ('Device 'CPU)
-           ('DataType BERTDType)
-           ('Shape
-              '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim,
-                 BERTBaseUncasedVocabDim])),
-      Generator ('Device 'CPU))
-forall model input generator output generatorOutput (m :: * -&gt; *).
-(HasForward model input generator output generatorOutput,
- MonadThrow m) =&gt;
-model -&gt; input -&gt; generator -&gt; m (output, generatorOutput)
-</span><a href="Torch.GraduallyTyped.NN.Class.html#forward"><span class="hs-identifier hs-var">forward</span></a></span><span> </span><span class="annot"><span class="annottext">EncoderOnlyTransformerWithLMHead
-  'BERT
-  BERTBaseUncasedNumLayers
-  ('Gradient 'WithoutGradient)
-  ('Device 'CPU)
-  ('DataType BERTDType)
-  BERTBaseUncasedHeadDim
-  BERTBaseUncasedHeadEmbedDim
-  BERTBaseUncasedEmbedDim
-  BERTBaseUncasedEmbedDim
-  BERTBaseUncasedFFNDim
-  BERTPosEncDim
-  BERTBaseUncasedVocabDim
-  BERTBaseUncasedTypeVocabDim
-  BERTDropoutP
-BERTModelF
-  'WithMLMHead
-  BERTBaseUncasedNumLayers
-  ('Gradient 'WithoutGradient)
-  ('Device 'CPU)
-  BERTBaseUncasedHeadDim
-  BERTBaseUncasedHeadEmbedDim
-  BERTBaseUncasedEmbedDim
-  BERTBaseUncasedEmbedDim
-  BERTBaseUncasedFFNDim
-  BERTBaseUncasedVocabDim
-  BERTBaseUncasedTypeVocabDim
-</span><a href="#local-6989586621679773600"><span class="hs-identifier hs-var">bertModel</span></a></span><span> </span><span class="annot"><span class="annottext">EncoderOnlyTransformerInput
-  (Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType 'Int64)
-     ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim]))
-  (Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType 'Int64)
-     ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim]))
-  (Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType 'Int64)
-     ('Shape '[TestBERTSeqDim]))
-  (Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType BERTDType)
-     ('Shape
-        '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim, TestBERTSeqDim]))
-</span><a href="#local-6989586621679773587"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="annot"><span class="annottext">Generator ('Device 'CPU)
-</span><a href="#local-6989586621679773585"><span class="hs-identifier hs-var">g</span></a></span><span>
-</span><span id="line-76"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679773580"><span class="annot"><span class="annottext">encoderOutput' :: [[[BERTDropoutP]]]
-</span><a href="#local-6989586621679773580"><span class="hs-identifier hs-var hs-var">encoderOutput'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithoutGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  ('DataType BERTDType)
-  ('Shape
-     '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestBERTSeqDim,
-        BERTBaseUncasedVocabDim])
-</span><a href="#local-6989586621679773583"><span class="hs-identifier hs-var">eoEncoderOutput</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-77"></span><span>          </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#UnsafeTensor"><span class="hs-identifier hs-type">UnsafeTensor</span></a></span><span> </span><span id="local-6989586621679773578"><span class="annot"><a href="#local-6989586621679773578"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; [[[BERTDropoutP]]]
-forall a. TensorLike a =&gt; Tensor -&gt; a
-</span><a href="../../../../hasktorch/html/src"><span class="hs-identifier hs-var">Tensor.asValue</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ATenTensor -&gt; Tensor
-</span><a href="../../../../hasktorch/html/src"><span class="hs-identifier hs-var">Tensor.Unsafe</span></a></span><span> </span><span class="annot"><span class="annottext">ATenTensor
-</span><a href="#local-6989586621679773578"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="hs-special">[</span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">]</span><span class="hs-special">]</span><span class="hs-special">]</span><span>
-</span><span id="line-78"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679773576"><span class="annot"><span class="annottext">firstLMHeadLogits :: [BERTDropoutP]
-</span><a href="#local-6989586621679773576"><span class="hs-identifier hs-var hs-var">firstLMHeadLogits</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-79"></span><span>          </span><span id="local-6989586621679773575"><span class="annot"><span class="annottext">[[BERTDropoutP]]
-</span><a href="#local-6989586621679773575"><span class="hs-identifier hs-var">firstBatch</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [[[BERTDropoutP]]] -&gt; [[[BERTDropoutP]]]
-forall a. Int -&gt; [a] -&gt; [a]
-</span><span class="hs-identifier hs-var">take</span></span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">[[[BERTDropoutP]]]
-</span><a href="#local-6989586621679773580"><span class="hs-identifier hs-var">encoderOutput'</span></a></span><span>
-</span><span id="line-80"></span><span>          </span><span id="local-6989586621679773573"><span class="annot"><span class="annottext">[BERTDropoutP]
-</span><a href="#local-6989586621679773573"><span class="hs-identifier hs-var">firstPositions</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [[BERTDropoutP]] -&gt; [[BERTDropoutP]]
-forall a. Int -&gt; [a] -&gt; [a]
-</span><span class="hs-identifier hs-var">take</span></span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">3</span></span><span> </span><span class="annot"><span class="annottext">[[BERTDropoutP]]
-</span><a href="#local-6989586621679773575"><span class="hs-identifier hs-var">firstBatch</span></a></span><span>
-</span><span id="line-81"></span><span>          </span><span class="annot"><span class="annottext">Int -&gt; [BERTDropoutP] -&gt; [BERTDropoutP]
-forall a. Int -&gt; [a] -&gt; [a]
-</span><span class="hs-identifier hs-var">take</span></span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">3</span></span><span> </span><span class="annot"><span class="annottext">[BERTDropoutP]
-</span><a href="#local-6989586621679773573"><span class="hs-identifier hs-var">firstPositions</span></a></span><span>
-</span><span id="line-82"></span><span>    </span><span class="annot"><span class="annottext">[BERTDropoutP] -&gt; IO ()
-forall a. Show a =&gt; a -&gt; IO ()
-</span><span class="hs-identifier hs-var">print</span></span><span> </span><span class="annot"><span class="annottext">[BERTDropoutP]
-</span><a href="#local-6989586621679773576"><span class="hs-identifier hs-var">firstLMHeadLogits</span></a></span><span>
-</span><span id="line-83"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679773572"><span class="annot"><span class="annottext">firstLMHeadLogits' :: [BERTDropoutP]
-</span><a href="#local-6989586621679773572"><span class="hs-identifier hs-var hs-var">firstLMHeadLogits'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">BERTDropoutP
-</span><span class="hs-number">6.4346</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">BERTDropoutP
-</span><span class="hs-number">6.4063</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">BERTDropoutP
-</span><span class="hs-number">6.4097</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">BERTDropoutP
-</span><span class="hs-number">14.0119</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">BERTDropoutP
-</span><span class="hs-number">14.7240</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">BERTDropoutP
-</span><span class="hs-number">14.2120</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">BERTDropoutP
-</span><span class="hs-number">9.6561</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">BERTDropoutP
-</span><span class="hs-number">10.3125</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">BERTDropoutP
-</span><span class="hs-number">9.7459</span></span><span class="hs-special">]</span><span>
-</span><span id="line-84"></span><span>    </span><span class="annot"><span class="annottext">((BERTDropoutP, BERTDropoutP) -&gt; IO ())
--&gt; [(BERTDropoutP, BERTDropoutP)] -&gt; IO ()
-forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
-(Foldable t, Monad m) =&gt;
-(a -&gt; m b) -&gt; t a -&gt; m ()
-</span><span class="hs-identifier hs-var">mapM_</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(BERTDropoutP -&gt; BERTDropoutP -&gt; IO ())
--&gt; (BERTDropoutP, BERTDropoutP) -&gt; IO ()
-forall a b c. (a -&gt; b -&gt; c) -&gt; (a, b) -&gt; c
-</span><span class="hs-identifier hs-var">uncurry</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">FilePath -&gt; BERTDropoutP -&gt; BERTDropoutP -&gt; BERTDropoutP -&gt; IO ()
-forall a.
-(HasCallStack, Ord a, Num a, Show a) =&gt;
-FilePath -&gt; a -&gt; a -&gt; a -&gt; IO ()
-</span><a href="../file:///nix/store/d9rc2h31drxy3swyhm4cw2wjq41c1s43-HUnit-approx-lib-HUnit-approx-1.1.1.1-haddock-doc/share/doc/HUnit-approx/html/src"><span class="hs-identifier hs-var">assertApproxEqual</span></a></span><span> </span><span class="annot"><span class="annottext">FilePath
-</span><span class="hs-string">&quot;failed approximate equality check&quot;</span></span><span> </span><span class="annot"><span class="annottext">BERTDropoutP
-</span><span class="hs-number">0.001</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">([(BERTDropoutP, BERTDropoutP)] -&gt; IO ())
--&gt; [(BERTDropoutP, BERTDropoutP)] -&gt; IO ()
-forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[BERTDropoutP] -&gt; [BERTDropoutP] -&gt; [(BERTDropoutP, BERTDropoutP)]
-forall a b. [a] -&gt; [b] -&gt; [(a, b)]
-</span><span class="hs-identifier hs-var">zip</span></span><span> </span><span class="annot"><span class="annottext">[BERTDropoutP]
-</span><a href="#local-6989586621679773576"><span class="hs-identifier hs-var">firstLMHeadLogits</span></a></span><span> </span><span class="annot"><span class="annottext">[BERTDropoutP]
-</span><a href="#local-6989586621679773572"><span class="hs-identifier hs-var">firstLMHeadLogits'</span></a></span><span>
-</span><span id="line-85"></span></pre></body></html>
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span class="hs-comment">-- testForwardBERTBaseUncased :: IO ()</span><span>
+</span><span id="line-57"></span><span class="hs-comment">-- testForwardBERTBaseUncased =</span><span>
+</span><span id="line-58"></span><span class="hs-comment">--   do</span><span>
+</span><span id="line-59"></span><span class="hs-comment">--     stateDict &lt;- stateDictFromPretrained &quot;/tmp/bert-base-uncased-state-dict.pt&quot;</span><span>
+</span><span id="line-60"></span><span class="hs-comment">--     BERTModel GBERTModel {..} &lt;-</span><span>
+</span><span id="line-61"></span><span class="hs-comment">--       flip evalStateT stateDict $</span><span>
+</span><span id="line-62"></span><span class="hs-comment">--         fromStateDict @(BERTBaseUncased 'WithMLMHead _ _) (SGradient SWithoutGradient, SDevice SCPU) &quot;&quot;</span><span>
+</span><span id="line-63"></span><span class="hs-comment">--     encoderInput &lt;- testBERTInput</span><span>
+</span><span id="line-64"></span><span class="hs-comment">--     let encoderInputType = testBERTInputType</span><span>
+</span><span id="line-65"></span><span class="hs-comment">--         pos =</span><span>
+</span><span id="line-66"></span><span class="hs-comment">--           sArangeNaturals</span><span>
+</span><span id="line-67"></span><span class="hs-comment">--             (SGradient SWithoutGradient)</span><span>
+</span><span id="line-68"></span><span class="hs-comment">--             (SLayout SDense)</span><span>
+</span><span id="line-69"></span><span class="hs-comment">--             (SDevice SCPU)</span><span>
+</span><span id="line-70"></span><span class="hs-comment">--             (SDataType SInt64)</span><span>
+</span><span id="line-71"></span><span class="hs-comment">--             (sDimSize testBERTSeqDim)</span><span>
+</span><span id="line-72"></span><span class="hs-comment">--         paddingMask = mkBERTPaddingMask encoderInput</span><span>
+</span><span id="line-73"></span><span class="hs-comment">--     attentionMask &lt;- mkTransformerAttentionMask bertDataType bertAttentionMaskBias paddingMask</span><span>
+</span><span id="line-74"></span><span class="hs-comment">--     let input = EncoderOnlyTransformerInput encoderInput encoderInputType pos attentionMask</span><span>
+</span><span id="line-75"></span><span class="hs-comment">--     g &lt;- mkGenerator @('Device 'CPU) 0</span><span>
+</span><span id="line-76"></span><span class="hs-comment">--     (EncoderOnlyTransformerOutput {..}, _) &lt;- forward bertModel input g</span><span>
+</span><span id="line-77"></span><span class="hs-comment">--     let encoderOutput' = case eoEncoderOutput of</span><span>
+</span><span id="line-78"></span><span class="hs-comment">--           UnsafeTensor t -&gt; Tensor.asValue (Tensor.Unsafe t) :: [[[Float]]]</span><span>
+</span><span id="line-79"></span><span class="hs-comment">--     let firstLMHeadLogits = do</span><span>
+</span><span id="line-80"></span><span class="hs-comment">--           firstBatch &lt;- take 1 encoderOutput'</span><span>
+</span><span id="line-81"></span><span class="hs-comment">--           firstPositions &lt;- take 3 firstBatch</span><span>
+</span><span id="line-82"></span><span class="hs-comment">--           take 3 firstPositions</span><span>
+</span><span id="line-83"></span><span class="hs-comment">--     print firstLMHeadLogits</span><span>
+</span><span id="line-84"></span><span class="hs-comment">--     let firstLMHeadLogits' = [-6.4346, -6.4063, -6.4097, -14.0119, -14.7240, -14.2120, -9.6561, -10.3125, -9.7459]</span><span>
+</span><span id="line-85"></span><span class="hs-comment">--     mapM_ (uncurry (assertApproxEqual &quot;failed approximate equality check&quot; 0.001)) $ zip firstLMHeadLogits firstLMHeadLogits'</span><span>
+</span><span id="line-86"></span></pre></body></html>
