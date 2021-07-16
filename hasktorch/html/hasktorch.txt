@@ -1046,10 +1046,14 @@ chain_matmul :: [Tensor] -> Tensor
 unsafe_chunk :: Tensor -> Int -> Int -> [Tensor]
 chunk :: Tensor -> Int -> Int -> [Tensor]
 tensor_split_ttl :: Tensor -> Tensor -> Int -> [Tensor]
-clamp :: Tensor -> Float -> Float -> Tensor
-clamp_max :: Tensor -> Float -> Tensor
-clamp_min :: Tensor -> Float -> Tensor
-clip :: Tensor -> Float -> Float -> Tensor
+clamp_tss :: Tensor -> Float -> Float -> Tensor
+clamp_ttt :: Tensor -> Tensor -> Tensor -> Tensor
+clamp_max_ts :: Tensor -> Float -> Tensor
+clamp_max_tt :: Tensor -> Tensor -> Tensor
+clamp_min_ts :: Tensor -> Float -> Tensor
+clamp_min_tt :: Tensor -> Tensor -> Tensor
+clip_tss :: Tensor -> Float -> Float -> Tensor
+clip_ttt :: Tensor -> Tensor -> Tensor -> Tensor
 cudnn_is_acceptable :: Tensor -> Bool
 complex :: Tensor -> Tensor -> Tensor
 polar :: Tensor -> Tensor -> Tensor
@@ -1057,9 +1061,12 @@ constant_pad_nd :: Tensor -> [Int] -> Float -> Tensor
 convolution :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Bool -> [Int] -> Int -> Tensor
 convolution_overrideable :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Bool -> [Int] -> Int -> Tensor
 convolution_backward_overrideable :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Bool -> [Int] -> Int -> (Bool, Bool, Bool) -> (Tensor, Tensor, Tensor)
-conv1d :: Tensor -> Tensor -> Tensor -> Int -> Int -> Int -> Int -> Tensor
+conv1d_tttllll :: Tensor -> Tensor -> Tensor -> Int -> Int -> Int -> Int -> Tensor
 conv2d :: Tensor -> Tensor -> Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Int -> Tensor
-conv3d :: Tensor -> Tensor -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Int -> Tensor
+conv3d_tttllll :: Tensor -> Tensor -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Int -> Tensor
+conv1d_tttlsll :: Tensor -> Tensor -> Tensor -> Int -> String -> Int -> Int -> Tensor
+conv2d_tttlsll :: Tensor -> Tensor -> Tensor -> (Int, Int) -> String -> (Int, Int) -> Int -> Tensor
+conv3d_tttlsll :: Tensor -> Tensor -> Tensor -> (Int, Int, Int) -> String -> (Int, Int, Int) -> Int -> Tensor
 conv_tbc :: Tensor -> Tensor -> Tensor -> Int -> Tensor
 conv_transpose1d :: Tensor -> Tensor -> Tensor -> Int -> Int -> Int -> Int -> Int -> Tensor
 conv_transpose2d :: Tensor -> Tensor -> Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Int -> (Int, Int) -> Tensor
@@ -1067,7 +1074,6 @@ conv_transpose3d :: Tensor -> Tensor -> Tensor -> (Int, Int, Int) -> (Int, Int, 
 cos :: Tensor -> Tensor
 cosh :: Tensor -> Tensor
 cosine_embedding_loss :: Tensor -> Tensor -> Tensor -> Double -> Int -> Tensor
-count_nonzero_tl :: Tensor -> [Int] -> Tensor
 cudnn_affine_grid_generator :: Tensor -> Int -> Int -> Int -> Int -> Tensor
 cudnn_batch_norm :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Bool -> Double -> Double -> (Tensor, Tensor, Tensor, Tensor)
 cudnn_convolution_tttllllbb :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> Tensor
@@ -1080,6 +1086,8 @@ cudnn_convolution_transpose_ttlllllbb :: Tensor -> Tensor -> [Int] -> [Int] -> [
 cudnn_convolution_transpose_ttlllllbbb :: Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> Bool -> Tensor
 cudnn_convolution_transpose_backward_input :: Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> Bool -> Tensor
 cudnn_convolution_transpose_backward_weight :: [Int] -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Bool -> Bool -> Bool -> Tensor
+cudnn_convolution_relu :: Tensor -> Tensor -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Tensor
+cudnn_convolution_add_relu :: Tensor -> Tensor -> Tensor -> Float -> Tensor -> [Int] -> [Int] -> [Int] -> Int -> Tensor
 cudnn_grid_sampler :: Tensor -> Tensor -> Tensor
 cummax_tl :: Tensor -> Int -> (Tensor, Tensor)
 cummax_tn :: Tensor -> Dimname -> (Tensor, Tensor)
@@ -1096,6 +1104,7 @@ diagflat :: Tensor -> Int -> Tensor
 diagonal_tlll :: Tensor -> Int -> Int -> Int -> Tensor
 diagonal_tnnnl :: Tensor -> Dimname -> Dimname -> Dimname -> Int -> Tensor
 diff :: Tensor -> Int -> Int -> Tensor -> Tensor -> Tensor
+gradient_tsll :: Tensor -> Float -> Int -> Int -> [Tensor]
 div :: Tensor -> Tensor -> Tensor
 div_tts :: Tensor -> Tensor -> String -> Tensor
 divScalar :: Tensor -> Float -> Tensor
@@ -1111,7 +1120,8 @@ vdot :: Tensor -> Tensor -> Tensor
 einsum :: String -> [Tensor] -> Tensor
 embedding :: Tensor -> Tensor -> Int -> Bool -> Bool -> Tensor
 row_stack :: [Tensor] -> Tensor
-embedding_bag :: Tensor -> Tensor -> Tensor -> Bool -> Int -> Bool -> Tensor -> Bool -> (Tensor, Tensor, Tensor, Tensor)
+embedding_bag_tttblbtb :: Tensor -> Tensor -> Tensor -> Bool -> Int -> Bool -> Tensor -> Bool -> (Tensor, Tensor, Tensor, Tensor)
+embedding_bag_tttblbtbl :: Tensor -> Tensor -> Tensor -> Bool -> Int -> Bool -> Tensor -> Bool -> Int -> (Tensor, Tensor, Tensor, Tensor)
 empty_quantized :: [Int] -> Tensor -> Tensor
 erf :: Tensor -> Tensor
 erfc :: Tensor -> Tensor
@@ -1134,8 +1144,10 @@ grid_sampler_3d :: Tensor -> Tensor -> Int -> Int -> Bool -> Tensor
 hinge_embedding_loss :: Tensor -> Tensor -> Double -> Int -> Tensor
 group_norm :: Tensor -> Int -> Tensor -> Tensor -> Double -> Bool -> Tensor
 native_group_norm :: Tensor -> Tensor -> Tensor -> Int -> Int -> Int -> Int -> Double -> (Tensor, Tensor, Tensor)
+index :: Tensor -> [Tensor] -> Tensor
 indexCopy :: Tensor -> Int -> Tensor -> Tensor -> Tensor
 indexCopyWithDimname :: Tensor -> Dimname -> Tensor -> Tensor -> Tensor
+index_put :: Tensor -> [Tensor] -> Tensor -> Bool -> Tensor
 instance_norm :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Bool -> Double -> Double -> Bool -> Tensor
 inverse :: Tensor -> Tensor
 isclose :: Tensor -> Tensor -> Double -> Double -> Bool -> Tensor
@@ -1245,14 +1257,14 @@ batch_norm_elemt :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Double -> 
 batch_norm_gather_stats :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Double -> Double -> Int -> (Tensor, Tensor)
 batch_norm_gather_stats_with_counts :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Double -> Double -> Tensor -> (Tensor, Tensor)
 batch_norm_backward_reduce :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Bool -> Bool -> Bool -> (Tensor, Tensor, Tensor, Tensor)
-batch_norm_backward_elemt :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor
+batch_norm_backward_elemt :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Tensor
 batch_norm_update_stats :: Tensor -> Tensor -> Tensor -> Double -> (Tensor, Tensor)
+is_vulkan_available :: Bool
 pairwise_distance :: Tensor -> Tensor -> Double -> Double -> Bool -> Tensor
 cdist :: Tensor -> Tensor -> Double -> Int -> Tensor
 pdist :: Tensor -> Double -> Tensor
 cosine_similarity :: Tensor -> Tensor -> Int -> Double -> Tensor
-movedim_tll :: Tensor -> [Int] -> [Int] -> Tensor
-moveaxis_tll :: Tensor -> [Int] -> [Int] -> Tensor
+permute :: Tensor -> [Int] -> Tensor
 pixel_shuffle :: Tensor -> Int -> Tensor
 pixel_unshuffle :: Tensor -> Int -> Tensor
 channel_shuffle :: Tensor -> Int -> Tensor
@@ -1270,6 +1282,7 @@ repeatInterleaveScalar :: Tensor -> Int -> Int -> Tensor
 reshape :: Tensor -> [Int] -> Tensor
 round :: Tensor -> Tensor
 relu :: Tensor -> Tensor
+relu6 :: Tensor -> Tensor
 prelu :: Tensor -> Tensor -> Tensor
 gelu :: Tensor -> Tensor
 hardshrink :: Tensor -> Float -> Tensor
@@ -1279,6 +1292,7 @@ select :: Tensor -> Int -> Int -> Tensor
 selu :: Tensor -> Tensor
 celu :: Tensor -> Float -> Tensor
 silu :: Tensor -> Tensor
+mish :: Tensor -> Tensor
 sigmoid :: Tensor -> Tensor
 logit :: Tensor -> Double -> Tensor
 sin :: Tensor -> Tensor
@@ -1316,10 +1330,14 @@ sqrt :: Tensor -> Tensor
 square :: Tensor -> Tensor
 stdAll :: Tensor -> Bool -> Tensor
 stdDim :: Tensor -> Int -> Bool -> Bool -> Tensor
+std_tllb :: Tensor -> Int -> Int -> Bool -> Tensor
 stdMeanAll :: Tensor -> Bool -> (Tensor, Tensor)
 stdMeanDim :: Tensor -> Int -> Bool -> Bool -> (Tensor, Tensor)
+std_mean_tllb :: Tensor -> Int -> Int -> Bool -> (Tensor, Tensor)
 stdMeanWithDimnames :: Tensor -> [Dimname] -> Bool -> Bool -> (Tensor, Tensor)
+std_mean_tNlb :: Tensor -> [Dimname] -> Int -> Bool -> (Tensor, Tensor)
 stdWithDimnames :: Tensor -> [Dimname] -> Bool -> Bool -> Tensor
+std_tNlb :: Tensor -> [Dimname] -> Int -> Bool -> Tensor
 prodAll :: Tensor -> DType -> Tensor
 prodDim :: Tensor -> Int -> Bool -> DType -> Tensor
 prodWithDimnames :: Tensor -> Dimname -> Bool -> DType -> Tensor
@@ -1349,10 +1367,14 @@ unsqueeze :: Tensor -> Int -> Tensor
 vander :: Tensor -> Int -> Bool -> Tensor
 var :: Tensor -> Bool -> Tensor
 varDim :: Tensor -> Int -> Bool -> Bool -> Tensor
+var_tllb :: Tensor -> Int -> Int -> Bool -> Tensor
 varWithDimnames :: Tensor -> [Dimname] -> Bool -> Bool -> Tensor
+var_tNlb :: Tensor -> [Dimname] -> Int -> Bool -> Tensor
 varMean :: Tensor -> Bool -> (Tensor, Tensor)
 varMeanDim :: Tensor -> Int -> Bool -> Bool -> (Tensor, Tensor)
+var_mean_tllb :: Tensor -> Int -> Int -> Bool -> (Tensor, Tensor)
 varMeanWithDimnames :: Tensor -> [Dimname] -> Bool -> Bool -> (Tensor, Tensor)
+var_mean_tNlb :: Tensor -> [Dimname] -> Int -> Bool -> (Tensor, Tensor)
 where' :: Tensor -> Tensor -> Tensor -> Tensor
 where_tst :: Tensor -> Float -> Tensor -> Tensor
 where_tts :: Tensor -> Tensor -> Float -> Tensor
@@ -1367,11 +1389,13 @@ normCastDim :: Tensor -> Float -> Int -> Bool -> DType -> Tensor
 normDim :: Tensor -> Float -> Int -> Bool -> Tensor
 norm_tsNbs :: Tensor -> Float -> [Dimname] -> Bool -> DType -> Tensor
 norm_tsNb :: Tensor -> Float -> [Dimname] -> Bool -> Tensor
+frexp :: Tensor -> (Tensor, Tensor)
 frobeniusNormAll :: Tensor -> Tensor
 frobeniusNormDim :: Tensor -> Int -> Bool -> Tensor
 nuclearNormAll :: Tensor -> Bool -> Tensor
 nuclearNormDim :: Tensor -> (Int, Int) -> Bool -> Tensor
 clone :: Tensor -> MemoryFormat -> Tensor
+positive :: Tensor -> Tensor
 sub :: Tensor -> Tensor -> Float -> Tensor
 subScalar :: Tensor -> Float -> Float -> Tensor
 subtract_tts :: Tensor -> Tensor -> Float -> Tensor
@@ -1429,8 +1453,10 @@ quantized_rnn_tanh_cell :: Tensor -> Tensor -> Tensor -> Tensor -> Tensor -> Ten
 maskedFillScalar :: Tensor -> Tensor -> Float -> Tensor
 maskedFill :: Tensor -> Tensor -> Tensor -> Tensor
 masked_scatter :: Tensor -> Tensor -> Tensor -> Tensor
+put :: Tensor -> Tensor -> Tensor -> Bool -> Tensor
 indexAdd :: Tensor -> Int -> Tensor -> Tensor -> Tensor
-indexAddWithDimname :: Tensor -> Dimname -> Tensor -> Tensor -> Tensor
+index_add_tltts :: Tensor -> Int -> Tensor -> Tensor -> Float -> Tensor
+index_add_tntts :: Tensor -> Dimname -> Tensor -> Tensor -> Float -> Tensor
 indexFillScalar :: Tensor -> Int -> Tensor -> Float -> Tensor
 indexFill :: Tensor -> Int -> Tensor -> Tensor -> Tensor
 indexFillScalarWithDimname :: Tensor -> Dimname -> Tensor -> Float -> Tensor
@@ -1476,6 +1502,7 @@ lt :: Tensor -> Tensor -> Tensor
 less_ts :: Tensor -> Float -> Tensor
 less_tt :: Tensor -> Tensor -> Tensor
 take :: Tensor -> Tensor -> Tensor
+take_along_dim :: Tensor -> Tensor -> Int -> Tensor
 indexSelect :: Tensor -> Int -> Tensor -> Tensor
 indexSelectWithDimname :: Tensor -> Dimname -> Tensor -> Tensor
 masked_select :: Tensor -> Tensor -> Tensor
@@ -1485,6 +1512,7 @@ gather :: Tensor -> Int -> Tensor -> Bool -> Tensor
 gatherWithDimname :: Tensor -> Dimname -> Tensor -> Bool -> Tensor
 addcmul :: Tensor -> Tensor -> Tensor -> Float -> Tensor
 addcdiv :: Tensor -> Tensor -> Tensor -> Float -> Tensor
+cross_entropy_loss :: Tensor -> Tensor -> Tensor -> Int -> Int -> Tensor
 lstsq :: Tensor -> Tensor -> (Tensor, Tensor)
 triangular_solve :: Tensor -> Tensor -> Bool -> Bool -> Bool -> (Tensor, Tensor)
 symeig :: Tensor -> Bool -> Bool -> (Tensor, Tensor)
@@ -1501,6 +1529,7 @@ geqrf :: Tensor -> (Tensor, Tensor)
 orgqr :: Tensor -> Tensor -> Tensor
 ormqr :: Tensor -> Tensor -> Tensor -> Bool -> Bool -> Tensor
 lu_solve :: Tensor -> Tensor -> Tensor -> Tensor
+lu_unpack :: Tensor -> Tensor -> Bool -> Bool -> (Tensor, Tensor, Tensor)
 lgamma :: Tensor -> Tensor
 digamma :: Tensor -> Tensor
 polygamma :: Int -> Tensor -> Tensor
@@ -1533,8 +1562,14 @@ quantile_tdlb :: Tensor -> Double -> Int -> Bool -> Tensor
 quantile_ttlb :: Tensor -> Tensor -> Int -> Bool -> Tensor
 nanquantile_tdlb :: Tensor -> Double -> Int -> Bool -> Tensor
 nanquantile_ttlb :: Tensor -> Tensor -> Int -> Bool -> Tensor
+quantile_tdlbs :: Tensor -> Double -> Int -> Bool -> String -> Tensor
+quantile_ttlbs :: Tensor -> Tensor -> Int -> Bool -> String -> Tensor
+nanquantile_tdlbs :: Tensor -> Double -> Int -> Bool -> String -> Tensor
+nanquantile_ttlbs :: Tensor -> Tensor -> Int -> Bool -> String -> Tensor
 sort :: Tensor -> Int -> Bool -> (Tensor, Tensor)
+sort_tblb :: Tensor -> Bool -> Int -> Bool -> (Tensor, Tensor)
 sortWithDimname :: Tensor -> Dimname -> Bool -> (Tensor, Tensor)
+sort_tbnb :: Tensor -> Bool -> Dimname -> Bool -> (Tensor, Tensor)
 msort :: Tensor -> Tensor
 argsort :: Tensor -> Int -> Bool -> Tensor
 argsortWithDimname :: Tensor -> Dimname -> Bool -> Tensor
@@ -1559,11 +1594,13 @@ l1_loss :: Tensor -> Tensor -> Int -> Tensor
 multi_margin_loss :: Tensor -> Tensor -> Float -> Float -> Tensor -> Int -> Tensor
 multilabel_margin_loss :: Tensor -> Tensor -> Int -> Tensor
 multilabel_margin_loss_forward :: Tensor -> Tensor -> Int -> (Tensor, Tensor)
+nll_loss_nd :: Tensor -> Tensor -> Tensor -> Int -> Int -> Tensor
 nll_loss :: Tensor -> Tensor -> Tensor -> Int -> Int -> Tensor
 nll_loss_forward :: Tensor -> Tensor -> Tensor -> Int -> Int -> (Tensor, Tensor)
 nll_loss2d :: Tensor -> Tensor -> Tensor -> Int -> Int -> Tensor
 nll_loss2d_forward :: Tensor -> Tensor -> Tensor -> Int -> Int -> (Tensor, Tensor)
 smooth_l1_loss :: Tensor -> Tensor -> Int -> Double -> Tensor
+huber_loss :: Tensor -> Tensor -> Int -> Double -> Tensor
 soft_margin_loss :: Tensor -> Tensor -> Int -> Tensor
 elu :: Tensor -> Float -> Float -> Float -> Tensor
 glu :: Tensor -> Int -> Tensor
@@ -1611,6 +1648,7 @@ thnn_conv2d :: Tensor -> Tensor -> (Int, Int) -> Tensor -> (Int, Int) -> (Int, I
 thnn_conv2d_forward :: Tensor -> Tensor -> (Int, Int) -> Tensor -> (Int, Int) -> (Int, Int) -> (Tensor, Tensor, Tensor)
 thnn_conv_depthwise2d :: Tensor -> Tensor -> (Int, Int) -> Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Tensor
 thnn_conv_depthwise2d_forward :: Tensor -> Tensor -> (Int, Int) -> Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Tensor
+conv_depthwise3d :: Tensor -> Tensor -> (Int, Int, Int) -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Tensor
 slow_conv3d :: Tensor -> Tensor -> (Int, Int, Int) -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> Tensor
 slow_conv3d_forward :: Tensor -> Tensor -> (Int, Int, Int) -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Tensor, Tensor, Tensor)
 slow_conv_dilated2d :: Tensor -> Tensor -> (Int, Int) -> Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Tensor
@@ -1622,6 +1660,19 @@ isfinite :: Tensor -> Tensor
 isinf :: Tensor -> Tensor
 isposinf :: Tensor -> Tensor
 isneginf :: Tensor -> Tensor
+special_entr :: Tensor -> Tensor
+special_expm1 :: Tensor -> Tensor
+special_exp2 :: Tensor -> Tensor
+special_gammaln :: Tensor -> Tensor
+special_erf :: Tensor -> Tensor
+special_erfc :: Tensor -> Tensor
+special_erfinv :: Tensor -> Tensor
+special_xlog1py_tt :: Tensor -> Tensor -> Tensor
+special_xlog1py_st :: Float -> Tensor -> Tensor
+special_xlog1py_ts :: Tensor -> Float -> Tensor
+special_i0e :: Tensor -> Tensor
+special_logit :: Tensor -> Double -> Tensor
+special_expit :: Tensor -> Tensor
 fft_fft :: Tensor -> Int -> Int -> String -> Tensor
 fft_ifft :: Tensor -> Int -> Int -> String -> Tensor
 fft_rfft :: Tensor -> Int -> Int -> String -> Tensor
@@ -1638,24 +1689,39 @@ fft_rfftn :: Tensor -> Int -> Int -> String -> Tensor
 fft_irfftn :: Tensor -> Int -> Int -> String -> Tensor
 fft_fftshift :: Tensor -> Int -> Tensor
 fft_ifftshift :: Tensor -> Int -> Tensor
+linalg_cholesky_ex :: Tensor -> Bool -> (Tensor, Tensor)
 linalg_cholesky :: Tensor -> Tensor
 linalg_det :: Tensor -> Tensor
 det :: Tensor -> Tensor
+linalg_lstsq :: Tensor -> Tensor -> Double -> String -> (Tensor, Tensor, Tensor, Tensor)
 linalg_slogdet :: Tensor -> (Tensor, Tensor)
+linalg_eig :: Tensor -> (Tensor, Tensor)
+linalg_eigvals :: Tensor -> Tensor
 linalg_eigh :: Tensor -> String -> (Tensor, Tensor)
 linalg_eigvalsh :: Tensor -> String -> Tensor
+linalg_householder_product :: Tensor -> Tensor -> Tensor
+linalg_inv_ex :: Tensor -> Bool -> (Tensor, Tensor)
 linalg_inv :: Tensor -> Tensor
 inner :: Tensor -> Tensor -> Tensor
 outer :: Tensor -> Tensor -> Tensor
 ger :: Tensor -> Tensor -> Tensor
-linalg_svd :: Tensor -> Bool -> Bool -> (Tensor, Tensor, Tensor)
+linalg_vector_norm :: Tensor -> Float -> Int -> Bool -> DType -> Tensor
+linalg_svd :: Tensor -> Bool -> (Tensor, Tensor, Tensor)
+linalg_svdvals :: Tensor -> Tensor
 linalg_pinv_tdb :: Tensor -> Double -> Bool -> Tensor
 linalg_pinv_ttb :: Tensor -> Tensor -> Bool -> Tensor
 linalg_solve :: Tensor -> Tensor -> Tensor
 linalg_tensorinv :: Tensor -> Int -> Tensor
 linalg_tensorsolve :: Tensor -> Tensor -> [Int] -> Tensor
 linalg_qr :: Tensor -> String -> (Tensor, Tensor)
-linalg_matrix_rank :: Tensor -> Double -> Bool -> Tensor
+linalg_matrix_power :: Tensor -> Int -> Tensor
+linalg_matrix_rank_tdb :: Tensor -> Double -> Bool -> Tensor
+linalg_matrix_rank_ttb :: Tensor -> Tensor -> Bool -> Tensor
+linalg_multi_dot :: [Tensor] -> Tensor
+segment_reduce :: Tensor -> String -> Tensor -> Tensor -> Int -> Bool -> Float -> Tensor
+pad_sequence :: [Tensor] -> Bool -> Double -> Tensor
+flatten_dense_tensors :: [Tensor] -> Tensor
+unflatten_dense_tensors :: Tensor -> [Tensor] -> [Tensor]
 
 module Torch.Functional
 newtype Diag
@@ -3046,7 +3112,7 @@ Eval :: RuntimeMode
 Train :: RuntimeMode
 setRuntimeMode :: RawModule -> RuntimeMode -> IO ()
 define :: RawModule -> String -> IO ()
-dumpToStr :: ScriptModule -> Bool -> Bool -> Bool -> Int -> IO String
+dumpToStr :: ScriptModule -> Bool -> Bool -> Bool -> IO String
 dumpToStr' :: ScriptModule -> IO String
 runMethod :: ScriptModule -> String -> [IValue] -> IValue
 runMethod1 :: ScriptModule -> String -> IValue -> IValue
@@ -4042,12 +4108,23 @@ type family InverseDTypeIsValid (device :: (DeviceType, Nat)) (dtype :: DType) :
 inverse :: forall shape shape' dtype device. (shape' ~ Square shape, InverseShapeIsValid device shape, InverseDTypeIsValid device dtype) => Tensor device dtype shape -> Tensor device dtype shape'
 type family SymeigDTypeIsValid (device :: (DeviceType, Nat)) (dtype :: DType) :: Constraint
 
--- | symeig
+-- | symeig Warning: torch.symeig is deprecated in favor of
+--   torch.linalg.eigh and will be removed in a future PyTorch release. The
+--   default behavior has changed from using the upper triangular portion
+--   of the matrix by default to using the lower triangular portion. L, _ =
+--   torch.symeig(A, upper=upper) should be replaced with L =
+--   torch.linalg.eigvalsh(A, UPLO=<tt>U</tt> if upper else <tt>L</tt>) and
+--   L, V = torch.symeig(A, eigenvectors=True) should be replaced with L, V
+--   = torch.linalg.eigh(A, UPLO=<tt>U</tt> if upper else <tt>L</tt>)
+--   (function operator())
 --   
 --   <pre>
 --   &gt;&gt;&gt; t &lt;- rand :: IO (CPUTensor 'D.Float '[3,2,2])
 --   
 --   &gt;&gt;&gt; (eigenVals,eigenVecs) = symeig Upper t
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ eigenVals -- Skip warning
+--   ...
 --   
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ eigenVals
 --   (Float,[3,2])
@@ -4093,17 +4170,45 @@ enableEigenVectors :: KnownEigenVectors a => Bool
 type family ConditionalEigenVectors (eigenvectors :: EigenVectors) (n :: Nat) :: [Nat]
 type family EigDTypeIsValid (device :: (DeviceType, Nat)) (dtype :: DType) :: Constraint
 
--- | eig &gt;&gt;&gt; t &lt;- rand :: IO (CPUTensor 'D.Float '[3,3])
---   &gt;&gt;&gt; (eigenVals,eigenVecs) = eig <tt>EnableEigenVectors t
---   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ eigenVals (Float,[3,2])
---   &gt;&gt;&gt; :t eigenVals eigenVals :: Tensor '( 'D.CPU, 0) 'D.Float
---   '[3, 2] &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ eigenVecs
---   (Float,[3,3]) &gt;&gt;&gt; :t eigenVecs eigenVecs :: Tensor '( 'D.CPU,
---   0) 'D.Float '[3, 3] &gt;&gt;&gt; (eigenVals,eigenVecs) = eig
---   </tt>DisableEigenVectors t &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $
---   eigenVals (Float,[3,2]) &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $
---   eigenVecs (Float,[0]) &gt;&gt;&gt; :t eigenVecs eigenVecs :: Tensor '(
---   'D.CPU, 0) 'D.Float '[0]
+-- | eig Warning: torch.eig is deprecated in favor of torch.linalg.eig and
+--   will be removed in a future PyTorch release. torch.linalg.eig returns
+--   complex tensors of dtype cfloat or cdouble rather than real tensors
+--   mimicking complex tensors. L, _ = torch.eig(A) should be replaced with
+--   L_complex = torch.linalg.eigvals(A) and L, V = torch.eig(A,
+--   eigenvectors=True) should be replaced with L_complex, V_complex =
+--   torch.linalg.eig(A) (function operator())
+--   
+--   <pre>
+--   &gt;&gt;&gt; t &lt;- rand :: IO (CPUTensor 'D.Float '[3,3])
+--   
+--   &gt;&gt;&gt; (eigenVals,eigenVecs) = eig @EnableEigenVectors t
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ eigenVals -- Skip warning
+--   ...
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ eigenVals
+--   (Float,[3,2])
+--   
+--   &gt;&gt;&gt; :t eigenVals
+--   eigenVals :: Tensor '( 'D.CPU, 0) 'D.Float '[3, 2]
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ eigenVecs
+--   (Float,[3,3])
+--   
+--   &gt;&gt;&gt; :t eigenVecs
+--   eigenVecs :: Tensor '( 'D.CPU, 0) 'D.Float '[3, 3]
+--   
+--   &gt;&gt;&gt; (eigenVals,eigenVecs) = eig @DisableEigenVectors t
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ eigenVals
+--   (Float,[3,2])
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ eigenVecs
+--   (Float,[0])
+--   
+--   &gt;&gt;&gt; :t eigenVecs
+--   eigenVecs :: Tensor '( 'D.CPU, 0) 'D.Float '[0]
+--   </pre>
 eig :: forall eigenvectors n shape dtype device. (KnownNat n, KnownEigenVectors eigenvectors, shape ~ ConditionalEigenVectors eigenvectors n, EigDTypeIsValid device dtype) => Tensor device dtype '[n, n] -> (Tensor device dtype '[n, 2], Tensor device dtype shape)
 type family SVDShapes (shape :: [Nat]) (reduced :: ReducedSVD) :: ([Nat], [Nat], [Nat])
 data ReducedSVD
@@ -4179,10 +4284,18 @@ type family CholeskyDTypeIsValid (device :: (DeviceType, Nat)) (dtype :: DType) 
 --   positive-definite. Computes the Cholesky decomposition of a symmetric
 --   positive-definite matrix. The operation supports batching.
 --   
+--   Warning: torch.cholesky is deprecated in favor of
+--   torch.linalg.cholesky and will be removed in a future PyTorch release.
+--   L = torch.cholesky(A) should be replaced with L =
+--   torch.linalg.cholesky(A) and U = torch.cholesky(A, upper=True) should
+--   be replaced with U = torch.linalg.cholesky(A.transpose(-2,
+--   -1).conj()).transpose(-2, -1).conj() (function operator())
+--   
 --   <pre>
 --   &gt;&gt;&gt; t &lt;- rand :: IO (CPUTensor 'D.Float '[2,2])
 --   
---   &gt;&gt;&gt; u = cholesky Upper (t `matmul` transpose2D t)
+--   &gt;&gt;&gt; u = cholesky Upper (t `matmul` transpose2D t) -- Skip warning
+--   ...
 --   
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ u
 --   (Float,[2,2])
@@ -4235,6 +4348,14 @@ type family SolveDTypeIsValid (device :: (DeviceType, Nat)) (dtype :: DType) :: 
 --   and also returns the LU decomposition of <tt>a</tt>. <tt>a</tt> has to
 --   be a positive semidefinite matrix. The operation supports batching.
 --   
+--   Warning: torch.solve is deprecated in favor of torch.linalg.solveand
+--   will be removed in a future PyTorch release. torch.linalg.solve has
+--   its arguments reversed and does not return the LU factorization. To
+--   get the LU factorization see torch.lu, which can be used with
+--   torch.lu_solve or torch.lu_unpack. X = torch.solve(B, A).solution
+--   should be replaced with X = torch.linalg.solve(A, B) (function
+--   operator())
+--   
 --   <pre>
 --   &gt;&gt;&gt; t &lt;- rand :: IO (CPUTensor 'D.Float '[10,10])
 --   
@@ -4243,6 +4364,9 @@ type family SolveDTypeIsValid (device :: (DeviceType, Nat)) (dtype :: DType) :: 
 --   &gt;&gt;&gt; b &lt;- rand :: IO (CPUTensor 'D.Float '[10,3])
 --   
 --   &gt;&gt;&gt; (c,lu) = solve b a
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ c -- Skip warning
+--   ...
 --   
 --   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape $ c
 --   (Float,[10,3])
@@ -5465,7 +5589,8 @@ maxPool1d :: forall kernelSize stride padding channelSize inputSize batchSize ou
 --   maybe numeric type is lifted?
 --   
 --   <pre>
---   &gt;&gt;&gt; t = maxPool2d @'(1,1) @'(1,1) @'(0,0) (ones :: CPUTensor 'D.Float '[1,3,4,5])
+--   &gt;&gt;&gt; t = maxPool2d @'(1,1) @'(1,1) @'(0,0) (ones :: CPUTensor 'D.Float '[1,3,4,5]) -- Skip warning
+--   ...
 --   
 --   &gt;&gt;&gt; shape t
 --   [1,3,4,5]
@@ -7609,19 +7734,19 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 readImageAsRGB8WithScaling :: FilePath -> Int -> Int -> Bool -> IO (Either String (Image PixelRGB8, Tensor))
 centerCrop :: Int -> Int -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679616911 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679630267 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawLine :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679616962 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679630318 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawRect :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawString :: String -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawChar :: Int -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679617041 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679630397 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 resizeRGB8 :: Int -> Int -> Bool -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679617091 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679630447 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679617133 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679617158 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679630489 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679630514 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()

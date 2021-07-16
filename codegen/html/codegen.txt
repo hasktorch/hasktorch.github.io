@@ -6,7 +6,7 @@
 --   
 --   parse torch yaml spec files, generate code
 @package codegen
-@version 1.8.0.0
+@version 1.9.0.0
 
 module ParseFunctionSig
 data DefaultValue
@@ -47,6 +47,7 @@ StorageType :: Parsable
 CType :: CType -> Parsable
 STLType :: STLType -> Parsable
 ArrayRef :: CType -> Parsable
+ArrayRefScalar :: Parsable
 CppString :: Parsable
 Tuple :: [Parsable] -> Parsable
 CppClass :: SignatureStr -> CppTypeStr -> HsTypeStr -> Parsable
@@ -436,9 +437,8 @@ THC :: Mode
 NN :: Mode
 Native :: Mode
 data Declaration
-Declaration :: String -> Bool -> String -> [Type] -> [String] -> Mode -> String -> [Type] -> Bool -> Maybe Bool -> Bool -> Maybe Bool -> Maybe Bool -> Maybe Bool -> Declaration
+Declaration :: String -> String -> [Type] -> [String] -> Mode -> String -> [Type] -> Bool -> Maybe Bool -> Bool -> Maybe Bool -> Maybe Bool -> Maybe Bool -> Declaration
 [name] :: Declaration -> String
-[matches_jit_signature] :: Declaration -> Bool
 [schema_string] :: Declaration -> String
 [arguments] :: Declaration -> [Type]
 [method_of] :: Declaration -> [String]
@@ -527,16 +527,6 @@ getSignatures :: Function -> String
 pureFunction :: String -> Function -> Text
 split' :: Int -> [a] -> [[a]]
 
-module RenderDeclarations
-dropGenerator :: [Parameter] -> [Parameter]
-addFunctionWithDefaultArguments :: Declaration -> [Declaration]
-toFunction :: Declaration -> Function
-uniqFilter :: Ord n => (a -> n) -> [a] -> [a]
-renderFunctions :: Bool -> Bool -> String -> [Declaration] -> Text
-decodeAndCodeGen :: String -> String -> IO ()
-renderImport :: Bool -> Bool -> Text -> Text
-template :: Bool -> Bool -> Text -> Text -> Text
-
 module RenderClass
 renderImport :: Bool -> CppClassSpec -> Text -> Text
 renderConstructors :: Bool -> CppClassSpec -> [Text]
@@ -548,6 +538,16 @@ renderMethodsForTensor :: Bool -> CppClassSpec -> [Declaration] -> [Text]
 decodeAndCodeGen :: String -> String -> Int -> IO ()
 decodeAndCodeGenForTensor :: String -> String -> String -> Int -> IO ()
 template :: Bool -> Text -> Text -> CppClassSpec -> [Text] -> Text
+
+module RenderDeclarations
+dropGenerator :: [Parameter] -> [Parameter]
+addFunctionWithDefaultArguments :: Declaration -> [Declaration]
+toFunction :: Declaration -> Function
+uniqFilter :: Ord n => (a -> n) -> [a] -> [a]
+renderFunctions :: Bool -> Bool -> String -> [Declaration] -> Text
+decodeAndCodeGen :: String -> String -> IO ()
+renderImport :: Bool -> Bool -> Text -> Text
+template :: Bool -> Bool -> Text -> Text -> Text
 
 module RenderPure
 data Binding
