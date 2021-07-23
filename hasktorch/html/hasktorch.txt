@@ -2318,6 +2318,26 @@ conv1d' :: Tensor -> Tensor -> Int -> Int -> Tensor -> Tensor
 conv2d :: Tensor -> Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Int -> Tensor -> Tensor
 conv2d' :: Tensor -> Tensor -> (Int, Int) -> (Int, Int) -> Tensor -> Tensor
 
+-- | Applies a 3D convolution over an input signal composed of several
+--   input planes.
+conv3d :: Tensor -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Int -> Tensor -> Tensor
+conv3d' :: Tensor -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> Tensor -> Tensor
+
+-- | Applies a 1D transposed convolution over an input signal composed of
+--   several input planes
+convTranspose1d :: Tensor -> Tensor -> Int -> Int -> Int -> Int -> Tensor -> Tensor
+convTranspose1d' :: Tensor -> Tensor -> Int -> Int -> Tensor -> Tensor
+
+-- | Applies a 2D transposed convolution over an input signal composed of
+--   several input planes
+convTranspose2d :: Tensor -> Tensor -> (Int, Int) -> (Int, Int) -> (Int, Int) -> Int -> Tensor -> Tensor
+convTranspose2d' :: Tensor -> Tensor -> (Int, Int) -> (Int, Int) -> Tensor -> Tensor
+
+-- | Applies a 3D transposed convolution over an input signal composed of
+--   several input planes
+convTranspose3d :: Tensor -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> (Int, Int, Int) -> Int -> Tensor -> Tensor
+convTranspose3d' :: Tensor -> Tensor -> (Int, Int, Int) -> (Int, Int, Int) -> Tensor -> Tensor
+
 -- | Returns a new tensor with the signs of the elements of <tt>input</tt>
 sign :: Tensor -> Tensor
 
@@ -2601,6 +2621,7 @@ view :: [Int] -> Tensor -> Tensor
 -- | Repeats this tensor along the specified dimensions.
 repeat :: [Int] -> Tensor -> Tensor
 batchNorm :: Tensor -> Tensor -> Tensor -> Tensor -> Bool -> Double -> Double -> Tensor -> Tensor
+instanceNorm :: Tensor -> Tensor -> Tensor -> Tensor -> Bool -> Double -> Double -> Tensor -> Tensor
 acos :: Tensor -> Tensor
 addmv :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor
 addr :: Tensor -> Tensor -> Tensor -> Float -> Float -> Tensor
@@ -2809,17 +2830,72 @@ Linear :: Parameter -> Parameter -> Linear
 [bias] :: Linear -> Parameter
 linear :: Linear -> Tensor -> Tensor
 linearForward :: Linear -> Tensor -> Tensor
+data Conv1dSpec
+Conv1dSpec :: Int -> Int -> Int -> Conv1dSpec
+[inputChannelSize1d] :: Conv1dSpec -> Int
+[outputChannelSize1d] :: Conv1dSpec -> Int
+[kernelSize] :: Conv1dSpec -> Int
+data Conv1d
+Conv1d :: Parameter -> Parameter -> Conv1d
+[conv1dWeight] :: Conv1d -> Parameter
+[conv1dBias] :: Conv1d -> Parameter
+conv1dForward :: Conv1d -> Int -> Int -> Tensor -> Tensor
 data Conv2dSpec
 Conv2dSpec :: Int -> Int -> Int -> Int -> Conv2dSpec
-[inputChannelSize] :: Conv2dSpec -> Int
-[outputChannelSize] :: Conv2dSpec -> Int
-[kernelHeight] :: Conv2dSpec -> Int
-[kernelWidth] :: Conv2dSpec -> Int
+[inputChannelSize2d] :: Conv2dSpec -> Int
+[outputChannelSize2d] :: Conv2dSpec -> Int
+[kernelHeight2d] :: Conv2dSpec -> Int
+[kernelWidth2d] :: Conv2dSpec -> Int
 data Conv2d
 Conv2d :: Parameter -> Parameter -> Conv2d
 [conv2dWeight] :: Conv2d -> Parameter
 [conv2dBias] :: Conv2d -> Parameter
 conv2dForward :: Conv2d -> (Int, Int) -> (Int, Int) -> Tensor -> Tensor
+data Conv3dSpec
+Conv3dSpec :: Int -> Int -> Int -> Int -> Int -> Conv3dSpec
+[inputChannelSize3d] :: Conv3dSpec -> Int
+[outputChannelSize3d] :: Conv3dSpec -> Int
+[kernelHeight3d] :: Conv3dSpec -> Int
+[kernelWidth3d] :: Conv3dSpec -> Int
+[kernelDepth3d] :: Conv3dSpec -> Int
+data Conv3d
+Conv3d :: Parameter -> Parameter -> Conv3d
+[conv3dWeight] :: Conv3d -> Parameter
+[conv3dBias] :: Conv3d -> Parameter
+conv3dForward :: Conv3d -> (Int, Int, Int) -> (Int, Int, Int) -> Tensor -> Tensor
+data ConvTranspose1dSpec
+ConvTranspose1dSpec :: Int -> Int -> Int -> ConvTranspose1dSpec
+[trInputChannelSize1d] :: ConvTranspose1dSpec -> Int
+[trOutputChannelSize1d] :: ConvTranspose1dSpec -> Int
+[trKernelSize] :: ConvTranspose1dSpec -> Int
+data ConvTranspose1d
+ConvTranspose1d :: Parameter -> Parameter -> ConvTranspose1d
+[convTranspose1dWeight] :: ConvTranspose1d -> Parameter
+[convTranspose1dBias] :: ConvTranspose1d -> Parameter
+convTranspose1dForward :: ConvTranspose1d -> Int -> Int -> Tensor -> Tensor
+data ConvTranspose2dSpec
+ConvTranspose2dSpec :: Int -> Int -> Int -> Int -> ConvTranspose2dSpec
+[trInputChannelSize2d] :: ConvTranspose2dSpec -> Int
+[trOutputChannelSize2d] :: ConvTranspose2dSpec -> Int
+[trKernelHeight2d] :: ConvTranspose2dSpec -> Int
+[trKernelWidth2d] :: ConvTranspose2dSpec -> Int
+data ConvTranspose2d
+ConvTranspose2d :: Parameter -> Parameter -> ConvTranspose2d
+[convTranspose2dWeight] :: ConvTranspose2d -> Parameter
+[convTranspose2dBias] :: ConvTranspose2d -> Parameter
+convTranspose2dForward :: ConvTranspose2d -> (Int, Int) -> (Int, Int) -> Tensor -> Tensor
+data ConvTranspose3dSpec
+ConvTranspose3dSpec :: Int -> Int -> Int -> Int -> Int -> ConvTranspose3dSpec
+[trInputChannelSize3d] :: ConvTranspose3dSpec -> Int
+[trOutputChannelSize3d] :: ConvTranspose3dSpec -> Int
+[trKernelHeight3d] :: ConvTranspose3dSpec -> Int
+[trKernelWidth3d] :: ConvTranspose3dSpec -> Int
+[trKernelDepth3d] :: ConvTranspose3dSpec -> Int
+data ConvTranspose3d
+ConvTranspose3d :: Parameter -> Parameter -> ConvTranspose3d
+[convTranspose3dWeight] :: ConvTranspose3d -> Parameter
+[convTranspose3dBias] :: ConvTranspose3d -> Parameter
+convTranspose3dForward :: ConvTranspose3d -> (Int, Int, Int) -> (Int, Int, Int) -> Tensor -> Tensor
 data BatchNormSpec
 BatchNormSpec :: Int -> BatchNormSpec
 [numFeatures] :: BatchNormSpec -> Int
@@ -2830,6 +2906,16 @@ BatchNorm :: Parameter -> Parameter -> Tensor -> Tensor -> BatchNorm
 [runningMean] :: BatchNorm -> Tensor
 [runningVar] :: BatchNorm -> Tensor
 batchNormForward :: BatchNorm -> Bool -> Double -> Double -> Tensor -> Tensor
+data InstanceNormSpec
+InstanceNormSpec :: Int -> InstanceNormSpec
+[iNumFeatures] :: InstanceNormSpec -> Int
+data InstanceNorm
+InstanceNorm :: Parameter -> Parameter -> Tensor -> Tensor -> InstanceNorm
+[instanceNormWeight] :: InstanceNorm -> Parameter
+[instanceNormBias] :: InstanceNorm -> Parameter
+[iRunningMean] :: InstanceNorm -> Tensor
+[iRunningVar] :: InstanceNorm -> Tensor
+instanceNormForward :: InstanceNorm -> Bool -> Double -> Double -> Tensor -> Tensor
 data UpSampleSpec
 UpSampleSpec :: Int -> Int -> UpSampleSpec
 [upsampleInputFilters] :: UpSampleSpec -> Int
@@ -2842,15 +2928,44 @@ instance GHC.Show.Show Torch.NN.LinearSpec
 instance Torch.NN.Parameterized Torch.NN.Linear
 instance GHC.Generics.Generic Torch.NN.Linear
 instance GHC.Show.Show Torch.NN.Linear
+instance GHC.Classes.Eq Torch.NN.Conv1dSpec
+instance GHC.Show.Show Torch.NN.Conv1dSpec
+instance Torch.NN.Parameterized Torch.NN.Conv1d
+instance GHC.Generics.Generic Torch.NN.Conv1d
+instance GHC.Show.Show Torch.NN.Conv1d
 instance GHC.Classes.Eq Torch.NN.Conv2dSpec
 instance GHC.Show.Show Torch.NN.Conv2dSpec
 instance Torch.NN.Parameterized Torch.NN.Conv2d
 instance GHC.Generics.Generic Torch.NN.Conv2d
 instance GHC.Show.Show Torch.NN.Conv2d
+instance GHC.Classes.Eq Torch.NN.Conv3dSpec
+instance GHC.Show.Show Torch.NN.Conv3dSpec
+instance Torch.NN.Parameterized Torch.NN.Conv3d
+instance GHC.Generics.Generic Torch.NN.Conv3d
+instance GHC.Show.Show Torch.NN.Conv3d
+instance GHC.Classes.Eq Torch.NN.ConvTranspose1dSpec
+instance GHC.Show.Show Torch.NN.ConvTranspose1dSpec
+instance Torch.NN.Parameterized Torch.NN.ConvTranspose1d
+instance GHC.Generics.Generic Torch.NN.ConvTranspose1d
+instance GHC.Show.Show Torch.NN.ConvTranspose1d
+instance GHC.Classes.Eq Torch.NN.ConvTranspose2dSpec
+instance GHC.Show.Show Torch.NN.ConvTranspose2dSpec
+instance Torch.NN.Parameterized Torch.NN.ConvTranspose2d
+instance GHC.Generics.Generic Torch.NN.ConvTranspose2d
+instance GHC.Show.Show Torch.NN.ConvTranspose2d
+instance GHC.Classes.Eq Torch.NN.ConvTranspose3dSpec
+instance GHC.Show.Show Torch.NN.ConvTranspose3dSpec
+instance Torch.NN.Parameterized Torch.NN.ConvTranspose3d
+instance GHC.Generics.Generic Torch.NN.ConvTranspose3d
+instance GHC.Show.Show Torch.NN.ConvTranspose3d
 instance GHC.Classes.Eq Torch.NN.BatchNormSpec
 instance GHC.Show.Show Torch.NN.BatchNormSpec
 instance GHC.Generics.Generic Torch.NN.BatchNorm
 instance GHC.Show.Show Torch.NN.BatchNorm
+instance GHC.Classes.Eq Torch.NN.InstanceNormSpec
+instance GHC.Show.Show Torch.NN.InstanceNormSpec
+instance GHC.Generics.Generic Torch.NN.InstanceNorm
+instance GHC.Show.Show Torch.NN.InstanceNorm
 instance GHC.Classes.Eq Torch.NN.UpSampleSpec
 instance GHC.Show.Show Torch.NN.UpSampleSpec
 instance Torch.NN.Parameterized Torch.NN.UpSample
@@ -2859,8 +2974,14 @@ instance GHC.Show.Show Torch.NN.UpSample
 instance Torch.NN.Randomizable Torch.NN.UpSampleSpec Torch.NN.UpSample
 instance Torch.NN.HasForward Torch.NN.UpSample Torch.Tensor.Tensor Torch.Tensor.Tensor
 instance Torch.NN.Parameterized Torch.NN.UpSampleSpec
+instance Torch.NN.Randomizable Torch.NN.InstanceNormSpec Torch.NN.InstanceNorm
 instance Torch.NN.Randomizable Torch.NN.BatchNormSpec Torch.NN.BatchNorm
+instance Torch.NN.Randomizable Torch.NN.ConvTranspose3dSpec Torch.NN.ConvTranspose3d
+instance Torch.NN.Randomizable Torch.NN.ConvTranspose2dSpec Torch.NN.ConvTranspose2d
+instance Torch.NN.Randomizable Torch.NN.ConvTranspose1dSpec Torch.NN.ConvTranspose1d
+instance Torch.NN.Randomizable Torch.NN.Conv3dSpec Torch.NN.Conv3d
 instance Torch.NN.Randomizable Torch.NN.Conv2dSpec Torch.NN.Conv2d
+instance Torch.NN.Randomizable Torch.NN.Conv1dSpec Torch.NN.Conv1d
 instance Torch.NN.HasForward Torch.NN.Linear Torch.Tensor.Tensor Torch.Tensor.Tensor
 instance Torch.NN.Randomizable Torch.NN.LinearSpec Torch.NN.Linear
 instance Torch.NN.Parameterized Torch.Tensor.Tensor
@@ -5132,6 +5253,48 @@ conv3d :: forall (stride :: (Nat, Nat, Nat)) (padding :: (Nat, Nat, Nat)) inputC
 --   `[timeSize, batchSize, inputChannels]`.
 convTBC :: forall padding timeSize batchSize kernelSize inputChannels outputChannels dtype device. KnownNat padding => Tensor device dtype '[kernelSize, inputChannels, outputChannels] -> Tensor device dtype '[outputChannels] -> Tensor device dtype '[timeSize, batchSize, inputChannels] -> Tensor device dtype '[((timeSize + (padding * 2)) + 1) - kernelSize, batchSize, outputChannels]
 
+-- | convTranspose1d TODO: probably only defined for floating point
+--   tensors, or maybe numeric type is lifted?
+--   
+--   <pre>
+--   &gt;&gt;&gt; t = convTranspose1d @1 @0 (ones :: CPUTensor 'D.Float '[3, 10, 1]) (ones :: CPUTensor 'D.Float '[10]) (ones :: CPUTensor 'D.Float '[1, 3, 4])
+--   
+--   &gt;&gt;&gt; :type t
+--   t :: Tensor '( 'D.CPU, 0) 'D.Float '[1, 10, 4]
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [[[Float]]]) $ t
+--   (Float,([1,10,4],[[[4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0]]]))
+--   </pre>
+convTranspose1d :: forall (stride :: Nat) (padding :: Nat) inputChannelSize outputChannelSize kernelSize inputSize batchSize outputSize dtype device. (All KnownNat '[stride, padding, inputChannelSize, outputChannelSize, kernelSize, inputSize, batchSize, outputSize], ConvSideCheck inputSize kernelSize stride padding outputSize) => Tensor device dtype '[inputChannelSize, outputChannelSize, kernelSize] -> Tensor device dtype '[outputChannelSize] -> Tensor device dtype '[batchSize, inputChannelSize, inputSize] -> Tensor device dtype '[batchSize, outputChannelSize, outputSize]
+
+-- | convTranspose2d TODO: probably only defined for floating point
+--   tensors, or maybe numeric type is lifted?
+--   
+--   <pre>
+--   &gt;&gt;&gt; t = convTranspose2d @'(1, 1) @'(0, 0) (ones :: CPUTensor 'D.Float '[3, 10, 1, 1]) (ones :: CPUTensor 'D.Float '[10]) (ones :: CPUTensor 'D.Float '[1, 3, 4, 5])
+--   
+--   &gt;&gt;&gt; :type t
+--   t :: Tensor '( 'D.CPU, 0) 'D.Float '[1, 10, 4, 5]
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [[[[Float]]]]) $ t
+--   (Float,([1,10,4,5],[[[[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0]]]]))
+--   </pre>
+convTranspose2d :: forall (stride :: (Nat, Nat)) (padding :: (Nat, Nat)) inputChannelSize outputChannelSize kernelSize0 kernelSize1 inputSize0 inputSize1 batchSize outputSize0 outputSize1 dtype device. (All KnownNat '[Fst stride, Snd stride, Fst padding, Snd padding, inputChannelSize, outputChannelSize, kernelSize0, kernelSize1, inputSize0, inputSize1, batchSize, outputSize0, outputSize1], ConvSideCheck inputSize0 kernelSize0 (Fst stride) (Fst padding) outputSize0, ConvSideCheck inputSize1 kernelSize1 (Snd stride) (Snd padding) outputSize1) => Tensor device dtype '[inputChannelSize, outputChannelSize, kernelSize0, kernelSize1] -> Tensor device dtype '[outputChannelSize] -> Tensor device dtype '[batchSize, inputChannelSize, inputSize0, inputSize1] -> Tensor device dtype '[batchSize, outputChannelSize, outputSize0, outputSize1]
+
+-- | convTranspose3d TODO: probably only defined for floating point
+--   tensors, or maybe numeric type is lifted?
+--   
+--   <pre>
+--   &gt;&gt;&gt; t = convTranspose3d @'(1, 1, 1) @'(0, 0, 0) (ones :: CPUTensor 'D.Float '[3, 10, 1, 1, 1]) (ones :: CPUTensor 'D.Float '[10]) (ones :: CPUTensor 'D.Float '[1, 3, 4, 5, 6])
+--   
+--   &gt;&gt;&gt; :type t
+--   t :: Tensor '( 'D.CPU, 0) 'D.Float '[1, 10, 4, 5, 6]
+--   
+--   &gt;&gt;&gt; dtype &amp;&amp;&amp; shape &amp;&amp;&amp; (\t' -&gt; D.asValue (toDynamic t') :: [[[[[Float]]]]]) $ t
+--   (Float,([1,10,4,5,6],[[[[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]]],[[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]]],[[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]]],[[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]]],[[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]]],[[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]]],[[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]]],[[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]]],[[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]]],[[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]],[[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0],[4.0,4.0,4.0,4.0,4.0,4.0]]]]]))
+--   </pre>
+convTranspose3d :: forall (stride :: (Nat, Nat, Nat)) (padding :: (Nat, Nat, Nat)) inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 inputSize0 inputSize1 inputSize2 batchSize outputSize0 outputSize1 outputSize2 dtype device. (All KnownNat '[Fst3 stride, Snd3 stride, Trd3 stride, Fst3 padding, Snd3 padding, Trd3 padding, inputChannelSize, outputChannelSize, kernelSize0, kernelSize1, kernelSize2, inputSize0, inputSize1, inputSize2, batchSize], ConvSideCheck inputSize0 kernelSize0 (Fst3 stride) (Fst3 padding) outputSize0, ConvSideCheck inputSize1 kernelSize1 (Snd3 stride) (Snd3 padding) outputSize1, ConvSideCheck inputSize2 kernelSize2 (Trd3 stride) (Trd3 padding) outputSize2) => Tensor device dtype '[inputChannelSize, outputChannelSize, kernelSize0, kernelSize1, kernelSize2] -> Tensor device dtype '[outputChannelSize] -> Tensor device dtype '[batchSize, inputChannelSize, inputSize0, inputSize1, inputSize2] -> Tensor device dtype '[batchSize, outputChannelSize, outputSize0, outputSize1, outputSize2]
+
 -- | cosh
 --   
 --   <pre>
@@ -7215,6 +7378,30 @@ data Conv3d (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 ::
 -- | conv3d The constraints on this one are _very_ involved, so the partial
 --   signatures make the code significantly cleaner.
 conv3dForward :: forall stride padding. _ => Conv3d _ _ _ _ _ _ _ -> Tensor _ _ _ -> Tensor _ _ _
+data ConvTranspose1dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+ConvTranspose1dSpec :: ConvTranspose1dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+data ConvTranspose1d (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+[ConvTranspose1d] :: forall inputChannelSize outputChannelSize kernelSize dtype device. {convTranspose1dWeight :: Parameter device dtype '[inputChannelSize, outputChannelSize, kernelSize], convTranspose1dBias :: Parameter device dtype '[outputChannelSize]} -> ConvTranspose1d inputChannelSize outputChannelSize kernelSize dtype device
+
+-- | convTranspose1d The constraints on this one are _very_ involved, so
+--   the partial signatures make the code significantly cleaner.
+convTranspose1dForward :: forall stride padding. _ => ConvTranspose1d _ _ _ _ _ -> Tensor _ _ _ -> Tensor _ _ _
+data ConvTranspose2dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+ConvTranspose2dSpec :: ConvTranspose2dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+data ConvTranspose2d (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+[ConvTranspose2d] :: forall inputChannelSize outputChannelSize kernelSize0 kernelSize1 dtype device. {convTranspose2dWeight :: Parameter device dtype '[inputChannelSize, outputChannelSize, kernelSize0, kernelSize1], convTranspose2dBias :: Parameter device dtype '[outputChannelSize]} -> ConvTranspose2d inputChannelSize outputChannelSize kernelSize0 kernelSize1 dtype device
+
+-- | convTranspose2d The constraints on this one are _very_ involved, so
+--   the partial signatures make the code significantly cleaner.
+convTranspose2dForward :: forall stride padding. _ => ConvTranspose2d _ _ _ _ _ _ -> Tensor _ _ _ -> Tensor _ _ _
+data ConvTranspose3dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+ConvTranspose3dSpec :: ConvTranspose3dSpec (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+data ConvTranspose3d (inputChannelSize :: Nat) (outputChannelSize :: Nat) (kernelSize0 :: Nat) (kernelSize1 :: Nat) (kernelSize2 :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
+[ConvTranspose3d] :: forall inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device. {convTranspose3dWeight :: Parameter device dtype '[inputChannelSize, outputChannelSize, kernelSize0, kernelSize1, kernelSize2], convTranspose3dBias :: Parameter device dtype '[outputChannelSize]} -> ConvTranspose3d inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device
+
+-- | convTranspose3d The constraints on this one are _very_ involved, so
+--   the partial signatures make the code significantly cleaner.
+convTranspose3dForward :: forall stride padding. _ => ConvTranspose3d _ _ _ _ _ _ _ -> Tensor _ _ _ -> Tensor _ _ _
 instance GHC.Classes.Eq (Torch.Typed.NN.Convolution.Conv1dSpec inputChannelSize outputChannelSize kernelSize dtype device)
 instance GHC.Show.Show (Torch.Typed.NN.Convolution.Conv1dSpec inputChannelSize outputChannelSize kernelSize dtype device)
 instance Torch.Typed.Parameter.Parameterized (Torch.Typed.NN.Convolution.Conv1d inputChannelSize outputChannelSize kernelSize dtype device)
@@ -7230,6 +7417,27 @@ instance GHC.Show.Show (Torch.Typed.NN.Convolution.Conv3dSpec inputChannelSize o
 instance Torch.Typed.Parameter.Parameterized (Torch.Typed.NN.Convolution.Conv3d inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device)
 instance GHC.Generics.Generic (Torch.Typed.NN.Convolution.Conv3d inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device)
 instance GHC.Show.Show (Torch.Typed.NN.Convolution.Conv3d inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device)
+instance GHC.Classes.Eq (Torch.Typed.NN.Convolution.ConvTranspose1dSpec inputChannelSize outputChannelSize kernelSize dtype device)
+instance GHC.Show.Show (Torch.Typed.NN.Convolution.ConvTranspose1dSpec inputChannelSize outputChannelSize kernelSize dtype device)
+instance Torch.Typed.Parameter.Parameterized (Torch.Typed.NN.Convolution.ConvTranspose1d inputChannelSize outputChannelSize kernelSize dtype device)
+instance GHC.Generics.Generic (Torch.Typed.NN.Convolution.ConvTranspose1d inputChannelSize outputChannelSize kernelSize dtype device)
+instance GHC.Show.Show (Torch.Typed.NN.Convolution.ConvTranspose1d inputChannelSize outputChannelSize kernelSize dtype device)
+instance GHC.Classes.Eq (Torch.Typed.NN.Convolution.ConvTranspose2dSpec inputChannelSize outputChannelSize kernelSize0 kernelSize1 dtype device)
+instance GHC.Show.Show (Torch.Typed.NN.Convolution.ConvTranspose2dSpec inputChannelSize outputChannelSize kernelSize0 kernelSize1 dtype device)
+instance Torch.Typed.Parameter.Parameterized (Torch.Typed.NN.Convolution.ConvTranspose2d inputChannelSize outputChannelSize kernelSize0 kernelSize1 dtype device)
+instance GHC.Generics.Generic (Torch.Typed.NN.Convolution.ConvTranspose2d inputChannelSize outputChannelSize kernelSize0 kernelSize1 dtype device)
+instance GHC.Show.Show (Torch.Typed.NN.Convolution.ConvTranspose2d inputChannelSize outputChannelSize kernelSize0 kernelSize1 dtype device)
+instance GHC.Classes.Eq (Torch.Typed.NN.Convolution.ConvTranspose3dSpec inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device)
+instance GHC.Show.Show (Torch.Typed.NN.Convolution.ConvTranspose3dSpec inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device)
+instance Torch.Typed.Parameter.Parameterized (Torch.Typed.NN.Convolution.ConvTranspose3d inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device)
+instance GHC.Generics.Generic (Torch.Typed.NN.Convolution.ConvTranspose3d inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device)
+instance GHC.Show.Show (Torch.Typed.NN.Convolution.ConvTranspose3d inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device)
+instance (Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[Torch.Typed.Aux.Fst3 stride, Torch.Typed.Aux.Snd3 stride, Torch.Typed.Aux.Trd3 stride, Torch.Typed.Aux.Fst3 padding, Torch.Typed.Aux.Snd3 padding, Torch.Typed.Aux.Trd3 padding, inputChannelSize, outputChannelSize, kernelSize0, kernelSize1, kernelSize2, inputSize0, inputSize1, inputSize2, batchSize], Torch.Typed.Functional.ConvSideCheck inputSize0 kernelSize0 (Torch.Typed.Aux.Fst3 stride) (Torch.Typed.Aux.Fst3 padding) outputSize0, Torch.Typed.Functional.ConvSideCheck inputSize1 kernelSize1 (Torch.Typed.Aux.Snd3 stride) (Torch.Typed.Aux.Snd3 padding) outputSize1, Torch.Typed.Functional.ConvSideCheck inputSize2 kernelSize2 (Torch.Typed.Aux.Trd3 stride) (Torch.Typed.Aux.Trd3 padding) outputSize2) => Torch.NN.HasForward (Torch.Typed.NN.Convolution.ConvTranspose3d inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, inputChannelSize, inputSize0, inputSize1, inputSize2], Data.Proxy.Proxy stride, Data.Proxy.Proxy padding) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, outputChannelSize, outputSize0, outputSize1, outputSize2])
+instance (GHC.TypeNats.KnownNat inputChannelSize, GHC.TypeNats.KnownNat outputChannelSize, GHC.TypeNats.KnownNat kernelSize0, GHC.TypeNats.KnownNat kernelSize1, GHC.TypeNats.KnownNat kernelSize2, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.Convolution.ConvTranspose3dSpec inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device) (Torch.Typed.NN.Convolution.ConvTranspose3d inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device)
+instance (Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[Torch.Typed.Aux.Fst stride, Torch.Typed.Aux.Snd stride, Torch.Typed.Aux.Fst padding, Torch.Typed.Aux.Snd padding, inputChannelSize, outputChannelSize, kernelSize0, kernelSize1, inputSize0, inputSize1, batchSize, outputSize0, outputSize1], Torch.Typed.Functional.ConvSideCheck inputSize0 kernelSize0 (Torch.Typed.Aux.Fst stride) (Torch.Typed.Aux.Fst padding) outputSize0, Torch.Typed.Functional.ConvSideCheck inputSize1 kernelSize1 (Torch.Typed.Aux.Snd stride) (Torch.Typed.Aux.Snd padding) outputSize1) => Torch.NN.HasForward (Torch.Typed.NN.Convolution.ConvTranspose2d inputChannelSize outputChannelSize kernelSize0 kernelSize1 dtype device) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, inputChannelSize, inputSize0, inputSize1], Data.Proxy.Proxy stride, Data.Proxy.Proxy padding) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, outputChannelSize, outputSize0, outputSize1])
+instance (GHC.TypeNats.KnownNat inputChannelSize, GHC.TypeNats.KnownNat outputChannelSize, GHC.TypeNats.KnownNat kernelSize0, GHC.TypeNats.KnownNat kernelSize1, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.Convolution.ConvTranspose2dSpec inputChannelSize outputChannelSize kernelSize0 kernelSize1 dtype device) (Torch.Typed.NN.Convolution.ConvTranspose2d inputChannelSize outputChannelSize kernelSize0 kernelSize1 dtype device)
+instance (Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[stride, padding, inputChannelSize, outputChannelSize, kernelSize, inputSize, batchSize, outputSize], Torch.Typed.Functional.ConvSideCheck inputSize kernelSize stride padding outputSize) => Torch.NN.HasForward (Torch.Typed.NN.Convolution.ConvTranspose1d inputChannelSize outputChannelSize kernelSize dtype device) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, inputChannelSize, inputSize], Data.Proxy.Proxy stride, Data.Proxy.Proxy padding) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, outputChannelSize, outputSize])
+instance (GHC.TypeNats.KnownNat inputChannelSize, GHC.TypeNats.KnownNat outputChannelSize, GHC.TypeNats.KnownNat kernelSize, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.Convolution.ConvTranspose1dSpec inputChannelSize outputChannelSize kernelSize dtype device) (Torch.Typed.NN.Convolution.ConvTranspose1d inputChannelSize outputChannelSize kernelSize dtype device)
 instance (Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[Torch.Typed.Aux.Fst3 stride, Torch.Typed.Aux.Snd3 stride, Torch.Typed.Aux.Trd3 stride, Torch.Typed.Aux.Fst3 padding, Torch.Typed.Aux.Snd3 padding, Torch.Typed.Aux.Trd3 padding, inputChannelSize, outputChannelSize, kernelSize0, kernelSize1, kernelSize2, inputSize0, inputSize1, inputSize2, batchSize], Torch.Typed.Functional.ConvSideCheck inputSize0 kernelSize0 (Torch.Typed.Aux.Fst3 stride) (Torch.Typed.Aux.Fst3 padding) outputSize0, Torch.Typed.Functional.ConvSideCheck inputSize1 kernelSize1 (Torch.Typed.Aux.Snd3 stride) (Torch.Typed.Aux.Snd3 padding) outputSize1, Torch.Typed.Functional.ConvSideCheck inputSize2 kernelSize2 (Torch.Typed.Aux.Trd3 stride) (Torch.Typed.Aux.Trd3 padding) outputSize2) => Torch.NN.HasForward (Torch.Typed.NN.Convolution.Conv3d inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, inputChannelSize, inputSize0, inputSize1, inputSize2], Data.Proxy.Proxy stride, Data.Proxy.Proxy padding) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, outputChannelSize, outputSize0, outputSize1, outputSize2])
 instance (GHC.TypeNats.KnownNat inputChannelSize, GHC.TypeNats.KnownNat outputChannelSize, GHC.TypeNats.KnownNat kernelSize0, GHC.TypeNats.KnownNat kernelSize1, GHC.TypeNats.KnownNat kernelSize2, Torch.Typed.Tensor.KnownDType dtype, Torch.Typed.Tensor.KnownDevice device, Torch.Typed.Factories.RandDTypeIsValid device dtype) => Torch.NN.Randomizable (Torch.Typed.NN.Convolution.Conv3dSpec inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device) (Torch.Typed.NN.Convolution.Conv3d inputChannelSize outputChannelSize kernelSize0 kernelSize1 kernelSize2 dtype device)
 instance (Torch.Typed.Tensor.All GHC.TypeNats.KnownNat '[Torch.Typed.Aux.Fst stride, Torch.Typed.Aux.Snd stride, Torch.Typed.Aux.Fst padding, Torch.Typed.Aux.Snd padding, inputChannelSize, outputChannelSize, kernelSize0, kernelSize1, inputSize0, inputSize1, batchSize, outputSize0, outputSize1], Torch.Typed.Functional.ConvSideCheck inputSize0 kernelSize0 (Torch.Typed.Aux.Fst stride) (Torch.Typed.Aux.Fst padding) outputSize0, Torch.Typed.Functional.ConvSideCheck inputSize1 kernelSize1 (Torch.Typed.Aux.Snd stride) (Torch.Typed.Aux.Snd padding) outputSize1) => Torch.NN.HasForward (Torch.Typed.NN.Convolution.Conv2d inputChannelSize outputChannelSize kernelSize0 kernelSize1 dtype device) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, inputChannelSize, inputSize0, inputSize1], Data.Proxy.Proxy stride, Data.Proxy.Proxy padding) (Torch.Typed.Tensor.Tensor device dtype '[batchSize, outputChannelSize, outputSize0, outputSize1])
@@ -7734,19 +7942,19 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 readImageAsRGB8WithScaling :: FilePath -> Int -> Int -> Bool -> IO (Either String (Image PixelRGB8, Tensor))
 centerCrop :: Int -> Int -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679630267 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679672906 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawLine :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679630318 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679672957 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawRect :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawString :: String -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawChar :: Int -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679630397 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679673036 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 resizeRGB8 :: Int -> Int -> Bool -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679630447 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679673086 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679630489 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679630514 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679673128 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679673153 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
