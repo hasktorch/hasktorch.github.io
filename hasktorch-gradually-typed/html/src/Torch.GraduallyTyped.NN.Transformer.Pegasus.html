@@ -9,589 +9,44 @@
 </span><span id="line-9"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.Common.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.Pegasus.Common</span></a></span><span class="hs-special">,</span><span>
 </span><span id="line-10"></span><span>    </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.XSum.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.Pegasus.XSum</span></a></span><span class="hs-special">,</span><span>
 </span><span id="line-11"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.html#testForwardPegasusXSum"><span class="hs-identifier">testForwardPegasusXSum</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-12"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.html#testPegasusInput"><span class="hs-identifier">testPegasusInput</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-13"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.html#testPegasusDecoderInput"><span class="hs-identifier">testPegasusDecoderInput</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-14"></span><span>  </span><span class="hs-special">)</span><span>
-</span><span id="line-15"></span><span class="hs-keyword">where</span><span>
-</span><span id="line-16"></span><span>
-</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.State</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">evalStateT</span></span><span class="hs-special">)</span><span>
-</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/d9rc2h31drxy3swyhm4cw2wjq41c1s43-HUnit-approx-lib-HUnit-approx-1.1.1.1-haddock-doc/share/doc/HUnit-approx/html/src"><span class="hs-identifier">Test.HUnit.Approx</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/d9rc2h31drxy3swyhm4cw2wjq41c1s43-HUnit-approx-lib-HUnit-approx-1.1.1.1-haddock-doc/share/doc/HUnit-approx/html/src"><span class="hs-identifier">assertApproxEqual</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Device.html"><span class="hs-identifier">Torch.GraduallyTyped.Device</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#Device"><span class="hs-identifier">Device</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#DeviceType"><span class="hs-identifier">DeviceType</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#SDevice"><span class="hs-identifier">SDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#SDeviceType"><span class="hs-identifier">SDeviceType</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Layout.html"><span class="hs-identifier">Torch.GraduallyTyped.Layout</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Layout.html#Layout"><span class="hs-identifier">Layout</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Layout.html#LayoutType"><span class="hs-identifier">LayoutType</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Class</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier">HasForward</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier">HasStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier">fromStateDict</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#stateDictFromPretrained"><span class="hs-identifier">stateDictFromPretrained</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.Common.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.Pegasus.Common</span></a></span><span>
-</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.XSum.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.Pegasus.XSum</span></a></span><span>
-</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#STransformerHead"><span class="hs-identifier">STransformerHead</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SWithLMHead"><span class="hs-identifier">SWithLMHead</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#TransformerHead"><span class="hs-identifier">TransformerHead</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#WithLMHead"><span class="hs-identifier">WithLMHead</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html"><span class="hs-identifier">Torch.GraduallyTyped.Random</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#sMkGenerator"><span class="hs-identifier">sMkGenerator</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html"><span class="hs-identifier">Torch.GraduallyTyped.RequiresGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier">Gradient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#RequiresGradient"><span class="hs-identifier">RequiresGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier">SGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#SRequiresGradient"><span class="hs-identifier">SRequiresGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Shape.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Dim"><span class="hs-identifier">Dim</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Name"><span class="hs-identifier">Name</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SName"><span class="hs-identifier">SName</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SSize"><span class="hs-identifier">SSize</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier">Shape</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Size"><span class="hs-identifier">Size</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-keyword">pattern</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%26%3A"><span class="hs-operator">(:&amp;:)</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Tensor.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier">Tensor</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../../../../hasktorch/html/src"><span class="hs-identifier">Torch.Tensor</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Tensor</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../../../../hasktorch/html/src"><span class="hs-identifier">Tensor</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../../../../hasktorch/html/src"><span class="hs-identifier">asValue</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-30"></span><span>
-</span><span id="line-31"></span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.html#testPegasusInput"><span class="hs-identifier hs-type">testPegasusInput</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span>
-</span><span id="line-32"></span><span id="testPegasusInput"><span class="annot"><span class="annottext">testPegasusInput :: IO
-  (Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType 'Int64)
-     ('Shape
-        '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158)]))
-</span><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.html#testPegasusInput"><span class="hs-identifier hs-var hs-var">testPegasusInput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-33"></span><span>  </span><span class="annot"><span class="annottext">SDim ('Dim ('Name &quot;*&quot;) ('Size 2))
--&gt; SDim ('Dim ('Name &quot;*&quot;) ('Size 158))
--&gt; [[Int]]
--&gt; IO
-     (Tensor
-        ('Gradient 'WithoutGradient)
-        ('Layout 'Dense)
-        ('Device 'CPU)
-        ('DataType 'Int64)
-        ('Shape
-           '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158)]))
-forall (batchDim :: Dim (Name Symbol) (Size Nat))
-       (seqDim :: Dim (Name Symbol) (Size Nat)) (m :: * -&gt; *) output.
-(MonadThrow m, SGetDim batchDim, SGetDim seqDim,
- 'Shape '[batchDim, seqDim]
- ~ Seq
-     ('Shape
-        '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize,
-           'Dim ('Name &quot;*&quot;) 'UncheckedSize]
-      &lt;+&gt; 'Shape '[batchDim, seqDim])
-     ('Shape '[batchDim, seqDim]),
- output
- ~ Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType 'Int64)
-     ('Shape '[batchDim, seqDim])) =&gt;
-SDim batchDim -&gt; SDim seqDim -&gt; [[Int]] -&gt; m output
-</span><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.Common.html#mkPegasusInput"><span class="hs-identifier hs-var">mkPegasusInput</span></a></span><span>
-</span><span id="line-34"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">KnownSymbol &quot;*&quot; =&gt; SName ('Name &quot;*&quot;)
-forall (name :: Symbol). KnownSymbol name =&gt; SName ('Name name)
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#SName"><span class="hs-identifier hs-var">SName</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-string">&quot;*&quot;</span></span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
--&gt; SSize ('Size 2) -&gt; SDim ('Dim ('Name &quot;*&quot;) ('Size 2))
-forall (name :: Name Symbol) (size :: Size Nat).
-SName name -&gt; SSize size -&gt; SDim ('Dim name size)
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%26%3A"><span class="hs-operator hs-var">:&amp;:</span></a></span><span> </span><span class="annot"><span class="annottext">KnownNat 2 =&gt; SSize ('Size 2)
-forall (size :: Nat). KnownNat size =&gt; SSize ('Size size)
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#SSize"><span class="hs-identifier hs-var">SSize</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">)</span><span>
-</span><span id="line-35"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">KnownSymbol &quot;*&quot; =&gt; SName ('Name &quot;*&quot;)
-forall (name :: Symbol). KnownSymbol name =&gt; SName ('Name name)
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#SName"><span class="hs-identifier hs-var">SName</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-string">&quot;*&quot;</span></span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
--&gt; SSize ('Size 158) -&gt; SDim ('Dim ('Name &quot;*&quot;) ('Size 158))
-forall (name :: Name Symbol) (size :: Size Nat).
-SName name -&gt; SSize size -&gt; SDim ('Dim name size)
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%26%3A"><span class="hs-operator hs-var">:&amp;:</span></a></span><span> </span><span class="annot"><span class="annottext">KnownNat 158 =&gt; SSize ('Size 158)
-forall (size :: Nat). KnownNat size =&gt; SSize ('Size size)
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#SSize"><span class="hs-identifier hs-var">SSize</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-number">158</span></span><span class="hs-special">)</span><span>
-</span><span id="line-36"></span><span>    </span><span class="hs-special">[</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">139</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">5998</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">117</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">56966</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">7641</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">4653</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">108</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">63292</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">4954</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">158</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">3930</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">108</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">160</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">109</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">310</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">3098</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">130</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">142</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">13042</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">121</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">23761</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">563</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">108</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">111</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">109</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">22246</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1557</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">115</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">3165</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">107</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">3096</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1217</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">117</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">2151</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">108</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">6542</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">10557</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">7641</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">143</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">27789</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">4954</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">158</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">124</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">276</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">477</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">107</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">2348</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">203</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1187</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">108</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">109</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">37695</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">6817</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">23861</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">109</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1741</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">20551</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">112</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">460</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">109</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">22246</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">729</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">121</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">4109</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1557</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">115</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">109</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">278</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">108</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">114</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1560</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">126</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">886</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">118</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">6820</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">231</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">430</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">109</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">15528</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">3671</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">115</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">351</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">859</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">672</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">140</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1554</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">115</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">9844</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">107</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">168</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">140</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">109</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">211</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1557</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">112</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1111</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">114</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">3098</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">113</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">3251</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">7641</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">107</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">5223</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">112</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">109</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">663</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">113</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">114</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">16071</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">11676</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">134</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">109</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">349</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">113</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">109</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">5998</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">115</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">20636</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">108</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">126</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">117</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">239</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">17916</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">197</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">109</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">15528</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">3671</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">141</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">27815</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">7641</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">23121</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">4954</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">250</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">110</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">64898</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">48453</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">108</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">109</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">37695</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">6817</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">117</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">109</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">453</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">22246</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">294</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">121</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">11570</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1557</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">115</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">2481</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">244</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">109</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">4315</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">4380</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">15258</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">22947</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">107</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1</span></span><span class="hs-special">]</span><span class="hs-special">,</span><span>
-</span><span id="line-37"></span><span>      </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">202</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1834</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">135</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">15083</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1431</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">4589</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">112</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1928</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">107</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">202</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1834</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">967</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">2512</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">13384</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">4589</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">206</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">276</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">662</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">137</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1834</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">112</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">134</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">205</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">156</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">564</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">107</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">202</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">29519</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">17113</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">493</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">220</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">8353</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">130</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">112</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">109</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">385</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">113</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">203</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1811</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">107</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1</span></span><span class="hs-special">]</span><span>
-</span><span id="line-38"></span><span>    </span><span class="hs-special">]</span><span>
-</span><span id="line-39"></span><span>
-</span><span id="line-40"></span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.html#testPegasusDecoderInput"><span class="hs-identifier hs-type">testPegasusDecoderInput</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span>
-</span><span id="line-41"></span><span id="testPegasusDecoderInput"><span class="annot"><span class="annottext">testPegasusDecoderInput :: IO
-  (Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType 'Int64)
-     ('Shape
-        '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 22)]))
-</span><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.html#testPegasusDecoderInput"><span class="hs-identifier hs-var hs-var">testPegasusDecoderInput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-42"></span><span>  </span><span class="annot"><span class="annottext">SDim ('Dim ('Name &quot;*&quot;) ('Size 2))
--&gt; SDim ('Dim ('Name &quot;*&quot;) ('Size 22))
--&gt; [[Int]]
--&gt; IO
-     (Tensor
-        ('Gradient 'WithoutGradient)
-        ('Layout 'Dense)
-        ('Device 'CPU)
-        ('DataType 'Int64)
-        ('Shape
-           '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 22)]))
-forall (batchDim :: Dim (Name Symbol) (Size Nat))
-       (seqDim :: Dim (Name Symbol) (Size Nat)) (m :: * -&gt; *) output.
-(MonadThrow m, SGetDim batchDim, SGetDim seqDim,
- 'Shape '[batchDim, seqDim]
- ~ Seq
-     ('Shape
-        '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize,
-           'Dim ('Name &quot;*&quot;) 'UncheckedSize]
-      &lt;+&gt; 'Shape '[batchDim, seqDim])
-     ('Shape '[batchDim, seqDim]),
- output
- ~ Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType 'Int64)
-     ('Shape '[batchDim, seqDim])) =&gt;
-SDim batchDim -&gt; SDim seqDim -&gt; [[Int]] -&gt; m output
-</span><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.Common.html#mkPegasusInput"><span class="hs-identifier hs-var">mkPegasusInput</span></a></span><span>
-</span><span id="line-43"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">KnownSymbol &quot;*&quot; =&gt; SName ('Name &quot;*&quot;)
-forall (name :: Symbol). KnownSymbol name =&gt; SName ('Name name)
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#SName"><span class="hs-identifier hs-var">SName</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-string">&quot;*&quot;</span></span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
--&gt; SSize ('Size 2) -&gt; SDim ('Dim ('Name &quot;*&quot;) ('Size 2))
-forall (name :: Name Symbol) (size :: Size Nat).
-SName name -&gt; SSize size -&gt; SDim ('Dim name size)
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%26%3A"><span class="hs-operator hs-var">:&amp;:</span></a></span><span> </span><span class="annot"><span class="annottext">KnownNat 2 =&gt; SSize ('Size 2)
-forall (size :: Nat). KnownNat size =&gt; SSize ('Size size)
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#SSize"><span class="hs-identifier hs-var">SSize</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">)</span><span>
-</span><span id="line-44"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">KnownSymbol &quot;*&quot; =&gt; SName ('Name &quot;*&quot;)
-forall (name :: Symbol). KnownSymbol name =&gt; SName ('Name name)
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#SName"><span class="hs-identifier hs-var">SName</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-string">&quot;*&quot;</span></span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
--&gt; SSize ('Size 22) -&gt; SDim ('Dim ('Name &quot;*&quot;) ('Size 22))
-forall (name :: Name Symbol) (size :: Size Nat).
-SName name -&gt; SSize size -&gt; SDim ('Dim name size)
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%26%3A"><span class="hs-operator hs-var">:&amp;:</span></a></span><span> </span><span class="annot"><span class="annottext">KnownNat 22 =&gt; SSize ('Size 22)
-forall (size :: Nat). KnownNat size =&gt; SSize ('Size size)
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#SSize"><span class="hs-identifier hs-var">SSize</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-number">22</span></span><span class="hs-special">)</span><span>
-</span><span id="line-45"></span><span>    </span><span class="hs-special">[</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">139</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">37695</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">6817</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">108</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">836</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">115</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">39290</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">108</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">117</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">156</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">113</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">109</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">205</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1808</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">17501</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">115</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">3165</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">107</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1</span></span><span class="hs-special">]</span><span class="hs-special">,</span><span>
-</span><span id="line-46"></span><span>      </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">202</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">29519</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">17113</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">117</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">114</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1834</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">113</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">114</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">323</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">113</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1928</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">120</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">137</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">129</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">20293</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">112</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">114</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">323</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">113</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">4589</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">107</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1</span></span><span class="hs-special">]</span><span>
-</span><span id="line-47"></span><span>    </span><span class="hs-special">]</span><span>
-</span><span id="line-48"></span><span>
-</span><span id="line-49"></span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.html#testForwardPegasusXSum"><span class="hs-identifier hs-type">testForwardPegasusXSum</span></a></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-50"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span>
-</span><span id="line-51"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span>
-</span><span id="line-52"></span><span>        </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier hs-type">Gradient</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#WithGradient"><span class="hs-identifier hs-type">WithGradient</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-53"></span><span>        </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Layout.html#Layout"><span class="hs-identifier hs-type">Layout</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Layout.html#Dense"><span class="hs-identifier hs-type">Dense</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-54"></span><span>        </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#Device"><span class="hs-identifier hs-type">Device</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#CPU"><span class="hs-identifier hs-type">CPU</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-55"></span><span>        </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.Common.html#PegasusDataType"><span class="hs-identifier hs-type">PegasusDataType</span></a></span><span>
-</span><span id="line-56"></span><span>        </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier hs-type">Shape</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Dim"><span class="hs-identifier hs-type">Dim</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Name"><span class="hs-identifier hs-type">Name</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;*&quot;</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Size"><span class="hs-identifier hs-type">Size</span></a></span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Dim"><span class="hs-identifier hs-type">Dim</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Name"><span class="hs-identifier hs-type">Name</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;*&quot;</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Size"><span class="hs-identifier hs-type">Size</span></a></span><span> </span><span class="annot"><span class="hs-number">158</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Dim"><span class="hs-identifier hs-type">Dim</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Name"><span class="hs-identifier hs-type">Name</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;*&quot;</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Size"><span class="hs-identifier hs-type">Size</span></a></span><span> </span><span class="annot"><span class="hs-number">1024</span></span><span class="hs-special">)</span><span class="hs-special">]</span><span class="hs-special">)</span><span>
-</span><span id="line-57"></span><span>    </span><span class="hs-special">)</span><span>
-</span><span id="line-58"></span><span id="testForwardPegasusXSum"><span class="annot"><span class="annottext">testForwardPegasusXSum :: IO
-  (Tensor
-     ('Gradient 'WithGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     PegasusDataType
-     ('Shape
-        '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158),
-           'Dim ('Name &quot;*&quot;) ('Size 1024)]))
+</span><span id="line-12"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.State</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">evalStateT</span></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/d9rc2h31drxy3swyhm4cw2wjq41c1s43-HUnit-approx-lib-HUnit-approx-1.1.1.1-haddock-doc/share/doc/HUnit-approx/html/src"><span class="hs-identifier">Test.HUnit.Approx</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/d9rc2h31drxy3swyhm4cw2wjq41c1s43-HUnit-approx-lib-HUnit-approx-1.1.1.1-haddock-doc/share/doc/HUnit-approx/html/src"><span class="hs-identifier">assertApproxEqual</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier">Tokenizers</span></a></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Device.html"><span class="hs-identifier">Torch.GraduallyTyped.Device</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#SDevice"><span class="hs-identifier">SDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#SDeviceType"><span class="hs-identifier">SDeviceType</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Class</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier">HasForward</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier">HasStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier">fromStateDict</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#stateDictFromPretrained"><span class="hs-identifier">stateDictFromPretrained</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.Common.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.Pegasus.Common</span></a></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.XSum.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.Pegasus.XSum</span></a></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#STransformerHead"><span class="hs-identifier">STransformerHead</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SWithLMHead"><span class="hs-identifier">SWithLMHead</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html"><span class="hs-identifier">Torch.GraduallyTyped.Random</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#sMkGenerator"><span class="hs-identifier">sMkGenerator</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html"><span class="hs-identifier">Torch.GraduallyTyped.RequiresGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier">SGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#SRequiresGradient"><span class="hs-identifier">SRequiresGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Shape.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SName"><span class="hs-identifier">SName</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SSize"><span class="hs-identifier">SSize</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-keyword">pattern</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%26%3A"><span class="hs-operator">(:&amp;:)</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Tensor.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier">Tensor</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../../../../hasktorch/html/src"><span class="hs-identifier">Torch.Tensor</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Tensor</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../../../../hasktorch/html/src"><span class="hs-identifier">Tensor</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../../../../hasktorch/html/src"><span class="hs-identifier">asValue</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span id="local-6989586621679817593"><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.html#withTokenizer"><span class="hs-identifier hs-type">withTokenizer</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier hs-type">Tokenizers.Tokenizer</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679817593"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679817593"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-30"></span><span id="withTokenizer"><span class="annot"><span class="annottext">withTokenizer :: (Tokenizer -&gt; IO a) -&gt; IO a
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.html#withTokenizer"><span class="hs-identifier hs-var hs-var">withTokenizer</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-31"></span><span>  </span><span class="annot"><span class="annottext">FilePath -&gt; (Tokenizer -&gt; IO a) -&gt; IO a
+forall a. FilePath -&gt; (Tokenizer -&gt; IO a) -&gt; IO a
+</span><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier hs-var">Tokenizers.withTokenizerFromConfigFile</span></a></span><span>
+</span><span id="line-32"></span><span>    </span><span class="annot"><span class="annottext">FilePath
+</span><span class="hs-string">&quot;/tmp/pegasus-xsum-tokenizer.json&quot;</span></span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.html#testForwardPegasusXSum"><span class="hs-identifier hs-type">testForwardPegasusXSum</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span id="testForwardPegasusXSum"><span class="annot"><span class="annottext">testForwardPegasusXSum :: IO ()
 </span><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.html#testForwardPegasusXSum"><span class="hs-identifier hs-var hs-var">testForwardPegasusXSum</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-59"></span><span>  </span><span class="hs-keyword">do</span><span>
-</span><span id="line-60"></span><span>    </span><span id="local-6989586621679816226"><span class="annot"><span class="annottext">PegasusInput
-  (Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType 'Int64)
-     ('Shape
-        '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158)]))
-  (Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType 'Int64)
-     ('Shape
-        '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 22)]))
-</span><a href="#local-6989586621679816226"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithoutGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  ('DataType 'Int64)
-  ('Shape
-     '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158)])
--&gt; Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType 'Int64)
-     ('Shape
-        '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 22)])
--&gt; PegasusInput
-     (Tensor
-        ('Gradient 'WithoutGradient)
-        ('Layout 'Dense)
-        ('Device 'CPU)
-        ('DataType 'Int64)
-        ('Shape
-           '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158)]))
-     (Tensor
-        ('Gradient 'WithoutGradient)
-        ('Layout 'Dense)
-        ('Device 'CPU)
-        ('DataType 'Int64)
-        ('Shape
-           '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 22)]))
-forall input decoderInput.
-input -&gt; decoderInput -&gt; PegasusInput input decoderInput
-</span><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.Common.html#PegasusInput"><span class="hs-identifier hs-var">PegasusInput</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor
-   ('Gradient 'WithoutGradient)
-   ('Layout 'Dense)
-   ('Device 'CPU)
-   ('DataType 'Int64)
-   ('Shape
-      '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158)])
- -&gt; Tensor
-      ('Gradient 'WithoutGradient)
-      ('Layout 'Dense)
-      ('Device 'CPU)
-      ('DataType 'Int64)
-      ('Shape
-         '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 22)])
- -&gt; PegasusInput
-      (Tensor
-         ('Gradient 'WithoutGradient)
-         ('Layout 'Dense)
-         ('Device 'CPU)
-         ('DataType 'Int64)
-         ('Shape
-            '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158)]))
-      (Tensor
-         ('Gradient 'WithoutGradient)
-         ('Layout 'Dense)
-         ('Device 'CPU)
-         ('DataType 'Int64)
-         ('Shape
-            '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 22)])))
--&gt; IO
-     (Tensor
-        ('Gradient 'WithoutGradient)
-        ('Layout 'Dense)
-        ('Device 'CPU)
-        ('DataType 'Int64)
-        ('Shape
-           '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158)]))
--&gt; IO
-     (Tensor
-        ('Gradient 'WithoutGradient)
-        ('Layout 'Dense)
-        ('Device 'CPU)
-        ('DataType 'Int64)
-        ('Shape
-           '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 22)])
-      -&gt; PegasusInput
-           (Tensor
-              ('Gradient 'WithoutGradient)
-              ('Layout 'Dense)
-              ('Device 'CPU)
-              ('DataType 'Int64)
-              ('Shape
-                 '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158)]))
-           (Tensor
-              ('Gradient 'WithoutGradient)
-              ('Layout 'Dense)
-              ('Device 'CPU)
-              ('DataType 'Int64)
-              ('Shape
-                 '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 22)])))
-forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
-</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">IO
-  (Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType 'Int64)
-     ('Shape
-        '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158)]))
-</span><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.html#testPegasusInput"><span class="hs-identifier hs-var">testPegasusInput</span></a></span><span> </span><span class="annot"><span class="annottext">IO
-  (Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType 'Int64)
-     ('Shape
-        '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 22)])
-   -&gt; PegasusInput
-        (Tensor
-           ('Gradient 'WithoutGradient)
-           ('Layout 'Dense)
-           ('Device 'CPU)
-           ('DataType 'Int64)
-           ('Shape
-              '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158)]))
-        (Tensor
-           ('Gradient 'WithoutGradient)
-           ('Layout 'Dense)
-           ('Device 'CPU)
-           ('DataType 'Int64)
-           ('Shape
-              '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 22)])))
--&gt; IO
-     (Tensor
-        ('Gradient 'WithoutGradient)
-        ('Layout 'Dense)
-        ('Device 'CPU)
-        ('DataType 'Int64)
-        ('Shape
-           '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 22)]))
--&gt; IO
-     (PegasusInput
-        (Tensor
-           ('Gradient 'WithoutGradient)
-           ('Layout 'Dense)
-           ('Device 'CPU)
-           ('DataType 'Int64)
-           ('Shape
-              '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158)]))
-        (Tensor
-           ('Gradient 'WithoutGradient)
-           ('Layout 'Dense)
-           ('Device 'CPU)
-           ('DataType 'Int64)
-           ('Shape
-              '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 22)])))
-forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
-</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">IO
-  (Tensor
-     ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
-     ('Device 'CPU)
-     ('DataType 'Int64)
-     ('Shape
-        '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 22)]))
-</span><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.html#testPegasusDecoderInput"><span class="hs-identifier hs-var">testPegasusDecoderInput</span></a></span><span>
-</span><span id="line-61"></span><span>    </span><span id="local-6989586621679816223"><span class="annot"><span class="annottext">StateDict
-</span><a href="#local-6989586621679816223"><span class="hs-identifier hs-var">stateDict</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">FilePath -&gt; IO StateDict
+</span><span id="line-36"></span><span>  </span><span class="hs-keyword">do</span><span>
+</span><span id="line-37"></span><span>    </span><span id="local-6989586621679817507"><span class="annot"><span class="annottext">StateDict
+</span><a href="#local-6989586621679817507"><span class="hs-identifier hs-var">stateDict</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">FilePath -&gt; IO StateDict
 </span><a href="Torch.GraduallyTyped.NN.Class.html#stateDictFromPretrained"><span class="hs-identifier hs-var">stateDictFromPretrained</span></a></span><span> </span><span class="annot"><span class="annottext">FilePath
 </span><span class="hs-string">&quot;/tmp/pegasus-xsum-state-dict.pt&quot;</span></span><span>
-</span><span id="line-62"></span><span>    </span><span id="local-6989586621679816222"><span class="annot"><span class="annottext">PegasusModel
+</span><span id="line-38"></span><span>    </span><span id="local-6989586621679817506"><span class="annot"><span class="annottext">PegasusModel
   'WithLMHead
   16
-  ('Gradient 'WithGradient)
+  ('Gradient 'WithoutGradient)
   ('Device 'CPU)
   ('Dim ('Name &quot;*&quot;) ('Size 16))
   ('Dim ('Name &quot;*&quot;) ('Size 64))
@@ -599,14 +54,14 @@ forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f
   ('Dim ('Name &quot;*&quot;) ('Size 1024))
   ('Dim ('Name &quot;*&quot;) ('Size 4096))
   ('Dim ('Name &quot;*&quot;) ('Size 96103))
-</span><a href="#local-6989586621679816222"><span class="hs-identifier hs-var">model</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span>
-</span><span id="line-63"></span><span>      </span><span class="annot"><span class="annottext">(StateT
+</span><a href="#local-6989586621679817506"><span class="hs-identifier hs-var">model</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span>
+</span><span id="line-39"></span><span>      </span><span class="annot"><span class="annottext">(StateT
    StateDict
    IO
    (PegasusModel
       'WithLMHead
       16
-      ('Gradient 'WithGradient)
+      ('Gradient 'WithoutGradient)
       ('Device 'CPU)
       ('Dim ('Name &quot;*&quot;) ('Size 16))
       ('Dim ('Name &quot;*&quot;) ('Size 64))
@@ -619,7 +74,7 @@ forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f
       (PegasusModel
          'WithLMHead
          16
-         ('Gradient 'WithGradient)
+         ('Gradient 'WithoutGradient)
          ('Device 'CPU)
          ('Dim ('Name &quot;*&quot;) ('Size 16))
          ('Dim ('Name &quot;*&quot;) ('Size 64))
@@ -634,7 +89,7 @@ forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f
      (PegasusModel
         'WithLMHead
         16
-        ('Gradient 'WithGradient)
+        ('Gradient 'WithoutGradient)
         ('Device 'CPU)
         ('Dim ('Name &quot;*&quot;) ('Size 16))
         ('Dim ('Name &quot;*&quot;) ('Size 64))
@@ -646,7 +101,7 @@ forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f
      (PegasusModel
         'WithLMHead
         16
-        ('Gradient 'WithGradient)
+        ('Gradient 'WithoutGradient)
         ('Device 'CPU)
         ('Dim ('Name &quot;*&quot;) ('Size 16))
         ('Dim ('Name &quot;*&quot;) ('Size 64))
@@ -661,7 +116,7 @@ forall a b c. (a -&gt; b -&gt; c) -&gt; b -&gt; a -&gt; c
   (PegasusModel
      'WithLMHead
      16
-     ('Gradient 'WithGradient)
+     ('Gradient 'WithoutGradient)
      ('Device 'CPU)
      ('Dim ('Name &quot;*&quot;) ('Size 16))
      ('Dim ('Name &quot;*&quot;) ('Size 64))
@@ -674,7 +129,7 @@ forall a b c. (a -&gt; b -&gt; c) -&gt; b -&gt; a -&gt; c
      (PegasusModel
         'WithLMHead
         16
-        ('Gradient 'WithGradient)
+        ('Gradient 'WithoutGradient)
         ('Device 'CPU)
         ('Dim ('Name &quot;*&quot;) ('Size 16))
         ('Dim ('Name &quot;*&quot;) ('Size 64))
@@ -684,13 +139,13 @@ forall a b c. (a -&gt; b -&gt; c) -&gt; b -&gt; a -&gt; c
         ('Dim ('Name &quot;*&quot;) ('Size 96103)))
 forall (m :: * -&gt; *) s a. Monad m =&gt; StateT s m a -&gt; s -&gt; m a
 </span><span class="hs-identifier hs-var">evalStateT</span></span><span> </span><span class="annot"><span class="annottext">StateDict
-</span><a href="#local-6989586621679816223"><span class="hs-identifier hs-var">stateDict</span></a></span><span> </span><span class="annot"><span class="annottext">(StateT
+</span><a href="#local-6989586621679817507"><span class="hs-identifier hs-var">stateDict</span></a></span><span> </span><span class="annot"><span class="annottext">(StateT
    StateDict
    IO
    (PegasusModel
       'WithLMHead
       16
-      ('Gradient 'WithGradient)
+      ('Gradient 'WithoutGradient)
       ('Device 'CPU)
       ('Dim ('Name &quot;*&quot;) ('Size 16))
       ('Dim ('Name &quot;*&quot;) ('Size 64))
@@ -702,7 +157,7 @@ forall (m :: * -&gt; *) s a. Monad m =&gt; StateT s m a -&gt; s -&gt; m a
       (PegasusModel
          'WithLMHead
          16
-         ('Gradient 'WithGradient)
+         ('Gradient 'WithoutGradient)
          ('Device 'CPU)
          ('Dim ('Name &quot;*&quot;) ('Size 16))
          ('Dim ('Name &quot;*&quot;) ('Size 64))
@@ -716,7 +171,7 @@ forall (m :: * -&gt; *) s a. Monad m =&gt; StateT s m a -&gt; s -&gt; m a
      (PegasusModel
         'WithLMHead
         16
-        ('Gradient 'WithGradient)
+        ('Gradient 'WithoutGradient)
         ('Device 'CPU)
         ('Dim ('Name &quot;*&quot;) ('Size 16))
         ('Dim ('Name &quot;*&quot;) ('Size 64))
@@ -728,7 +183,7 @@ forall (m :: * -&gt; *) s a. Monad m =&gt; StateT s m a -&gt; s -&gt; m a
      (PegasusModel
         'WithLMHead
         16
-        ('Gradient 'WithGradient)
+        ('Gradient 'WithoutGradient)
         ('Device 'CPU)
         ('Dim ('Name &quot;*&quot;) ('Size 16))
         ('Dim ('Name &quot;*&quot;) ('Size 64))
@@ -738,11 +193,11 @@ forall (m :: * -&gt; *) s a. Monad m =&gt; StateT s m a -&gt; s -&gt; m a
         ('Dim ('Name &quot;*&quot;) ('Size 96103)))
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span>
-</span><span id="line-64"></span><span>        </span><span class="annot"><span class="annottext">ModelSpec
+</span><span id="line-40"></span><span>        </span><span class="annot"><span class="annottext">ModelSpec
   (PegasusModel
      'WithLMHead
      16
-     ('Gradient 'WithGradient)
+     ('Gradient 'WithoutGradient)
      ('Device 'CPU)
      ('Dim ('Name &quot;*&quot;) ('Size 16))
      ('Dim ('Name &quot;*&quot;) ('Size 64))
@@ -757,7 +212,7 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
      (PegasusModel
         'WithLMHead
         16
-        ('Gradient 'WithGradient)
+        ('Gradient 'WithoutGradient)
         ('Device 'CPU)
         ('Dim ('Name &quot;*&quot;) ('Size 16))
         ('Dim ('Name &quot;*&quot;) ('Size 64))
@@ -769,12 +224,12 @@ forall model (m :: * -&gt; *).
 (HasStateDict model, MonadThrow m, MonadState StateDict m) =&gt;
 ModelSpec model -&gt; FilePath -&gt; m model
 </span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var">fromStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">STransformerHead 'WithLMHead
--&gt; SGradient ('Gradient 'WithGradient)
+-&gt; SGradient ('Gradient 'WithoutGradient)
 -&gt; SDevice ('Device 'CPU)
 -&gt; PegasusModelSpec
      'WithLMHead
      16
-     ('Gradient 'WithGradient)
+     ('Gradient 'WithoutGradient)
      ('Device 'CPU)
      ('Dim ('Name &quot;*&quot;) ('Size 16))
      ('Dim ('Name &quot;*&quot;) ('Size 64))
@@ -800,20 +255,20 @@ STransformerHead transformerHead
      ('Dim ('Name &quot;*&quot;) ('Size 4096))
      ('Dim ('Name &quot;*&quot;) ('Size 96103))
 </span><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.XSum.html#pegasusXSumSpec"><span class="hs-identifier hs-var">pegasusXSumSpec</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerHead 'WithLMHead
-</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SWithLMHead"><span class="hs-identifier hs-var">SWithLMHead</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SRequiresGradient 'WithGradient
--&gt; SGradient ('Gradient 'WithGradient)
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SWithLMHead"><span class="hs-identifier hs-var">SWithLMHead</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
+-&gt; SGradient ('Gradient 'WithoutGradient)
 forall (requiresGradient :: RequiresGradient).
 SRequiresGradient requiresGradient
 -&gt; SGradient ('Gradient requiresGradient)
-</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-var">SGradient</span></a></span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithGradient
-</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SWithGradient"><span class="hs-identifier hs-var">SWithGradient</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SDeviceType 'CPU -&gt; SDevice ('Device 'CPU)
+</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-var">SGradient</span></a></span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
+</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SWithoutGradient"><span class="hs-identifier hs-var">SWithoutGradient</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SDeviceType 'CPU -&gt; SDevice ('Device 'CPU)
 forall (deviceType :: DeviceType Nat).
 SDeviceType deviceType -&gt; SDevice ('Device deviceType)
 </span><a href="Torch.GraduallyTyped.Device.html#SDevice"><span class="hs-identifier hs-var">SDevice</span></a></span><span> </span><span class="annot"><span class="annottext">SDeviceType 'CPU
 </span><a href="Torch.GraduallyTyped.Device.html#SCPU"><span class="hs-identifier hs-var">SCPU</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">FilePath
 </span><span class="hs-string">&quot;&quot;</span></span><span>
-</span><span id="line-65"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679816215"><span class="annot"><span class="annottext">g :: Generator ('Device 'CPU)
-</span><a href="#local-6989586621679816215"><span class="hs-identifier hs-var hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SDevice ('Device 'CPU) -&gt; Word64 -&gt; Generator ('Device 'CPU)
+</span><span id="line-41"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679817499"><span class="annot"><span class="annottext">g :: Generator ('Device 'CPU)
+</span><a href="#local-6989586621679817499"><span class="hs-identifier hs-var hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SDevice ('Device 'CPU) -&gt; Word64 -&gt; Generator ('Device 'CPU)
 forall (device :: Device (DeviceType Nat)).
 SDevice device -&gt; Word64 -&gt; Generator device
 </span><a href="Torch.GraduallyTyped.Random.html#sMkGenerator"><span class="hs-identifier hs-var">sMkGenerator</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SDeviceType 'CPU -&gt; SDevice ('Device 'CPU)
@@ -822,29 +277,332 @@ SDeviceType deviceType -&gt; SDevice ('Device deviceType)
 </span><a href="Torch.GraduallyTyped.Device.html#SDevice"><span class="hs-identifier hs-var">SDevice</span></a></span><span> </span><span class="annot"><span class="annottext">SDeviceType 'CPU
 </span><a href="Torch.GraduallyTyped.Device.html#SCPU"><span class="hs-identifier hs-var">SCPU</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Word64
 </span><span class="hs-number">0</span></span><span>
-</span><span id="line-66"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.Common.html#PegasusOutput"><span class="hs-identifier hs-type">PegasusOutput</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679816211"><span id="local-6989586621679816212"><span id="local-6989586621679816213"><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithGradient)
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679817498"><span class="annot"><span class="annottext">[Int]
+</span><a href="#local-6989586621679817498"><span class="hs-identifier hs-var">encoderIds</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679817497"><span class="annot"><span class="annottext">[Int]
+</span><a href="#local-6989586621679817497"><span class="hs-identifier hs-var">decoderIds</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Tokenizer -&gt; IO ([Int], [Int])) -&gt; IO ([Int], [Int])
+forall a. (Tokenizer -&gt; IO a) -&gt; IO a
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.html#withTokenizer"><span class="hs-identifier hs-var">withTokenizer</span></a></span><span> </span><span class="annot"><span class="annottext">((Tokenizer -&gt; IO ([Int], [Int])) -&gt; IO ([Int], [Int]))
+-&gt; (Tokenizer -&gt; IO ([Int], [Int])) -&gt; IO ([Int], [Int])
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679817496"><span class="annot"><span class="annottext">Tokenizer
+</span><a href="#local-6989586621679817496"><span class="hs-identifier hs-var">tokenizer</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-44"></span><span>      </span><span id="local-6989586621679817495"><span class="annot"><span class="annottext">Encoding
+</span><a href="#local-6989586621679817495"><span class="hs-identifier hs-var">encoderEncoding</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Tokenizer -&gt; FilePath -&gt; IO Encoding
+</span><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier hs-var">Tokenizers.encode</span></a></span><span> </span><span class="annot"><span class="annottext">Tokenizer
+</span><a href="#local-6989586621679817496"><span class="hs-identifier hs-var">tokenizer</span></a></span><span> </span><span class="annot"><span class="annottext">FilePath
+</span><span class="hs-string">&quot;The tower is 324 metres (1,063 ft) tall, about the same height as an 81-storey building, and the tallest structure in Paris. Its base is square, measuring 125 metres (410 ft) on each side. During its construction, the Eiffel Tower surpassed the Washington Monument to become the tallest man-made structure in the world, a title it held for 41 years until the Chrysler Building in New York City was finished in 1930. It was the first structure to reach a height of 300 metres. Due to the addition of a broadcasting aerial at the top of the tower in 1957, it is now taller than the Chrysler Building by 5.2 metres (17 ft). Excluding transmitters, the Eiffel Tower is the second tallest free-standing structure in France after the Millau Viaduct.&lt;/s&gt;&quot;</span></span><span>
+</span><span id="line-45"></span><span>      </span><span id="local-6989586621679817493"><span class="annot"><span class="annottext">Encoding
+</span><a href="#local-6989586621679817493"><span class="hs-identifier hs-var">decoderEncoding</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Tokenizer -&gt; FilePath -&gt; IO Encoding
+</span><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier hs-var">Tokenizers.encode</span></a></span><span> </span><span class="annot"><span class="annottext">Tokenizer
+</span><a href="#local-6989586621679817496"><span class="hs-identifier hs-var">tokenizer</span></a></span><span> </span><span class="annot"><span class="annottext">FilePath
+</span><span class="hs-string">&quot;The Eiffel Tower, built in 1889, is one of the most famous landmarks in Paris.&lt;/s&gt;&quot;</span></span><span>
+</span><span id="line-46"></span><span>      </span><span class="hs-special">(</span><span class="hs-special">,</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">([Int] -&gt; [Int] -&gt; ([Int], [Int]))
+-&gt; IO [Int] -&gt; IO ([Int] -&gt; ([Int], [Int]))
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Encoding -&gt; IO [Int]
+</span><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier hs-var">Tokenizers.getIDs</span></a></span><span> </span><span class="annot"><span class="annottext">Encoding
+</span><a href="#local-6989586621679817495"><span class="hs-identifier hs-var">encoderEncoding</span></a></span><span> </span><span class="annot"><span class="annottext">IO ([Int] -&gt; ([Int], [Int])) -&gt; IO [Int] -&gt; IO ([Int], [Int])
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Encoding -&gt; IO [Int]
+</span><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier hs-var">Tokenizers.getIDs</span></a></span><span> </span><span class="annot"><span class="annottext">Encoding
+</span><a href="#local-6989586621679817493"><span class="hs-identifier hs-var">decoderEncoding</span></a></span><span>
+</span><span id="line-47"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679817490"><span class="annot"><span class="annottext">encoderSeqSize :: SSize 'UncheckedSize
+</span><a href="#local-6989586621679817490"><span class="hs-identifier hs-var hs-var">encoderSeqSize</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Integer -&gt; SSize 'UncheckedSize
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#SUncheckedSize"><span class="hs-identifier hs-var">SUncheckedSize</span></a></span><span> </span><span class="annot"><span class="annottext">(Integer -&gt; SSize 'UncheckedSize)
+-&gt; (Int -&gt; Integer) -&gt; Int -&gt; SSize 'UncheckedSize
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Integer
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; SSize 'UncheckedSize) -&gt; Int -&gt; SSize 'UncheckedSize
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">[Int]
+</span><a href="#local-6989586621679817498"><span class="hs-identifier hs-var">encoderIds</span></a></span><span>
+</span><span id="line-48"></span><span>        </span><span id="local-6989586621679817486"><span class="annot"><span class="annottext">decoderSeqSize :: SSize 'UncheckedSize
+</span><a href="#local-6989586621679817486"><span class="hs-identifier hs-var hs-var">decoderSeqSize</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Integer -&gt; SSize 'UncheckedSize
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#SUncheckedSize"><span class="hs-identifier hs-var">SUncheckedSize</span></a></span><span> </span><span class="annot"><span class="annottext">(Integer -&gt; SSize 'UncheckedSize)
+-&gt; (Int -&gt; Integer) -&gt; Int -&gt; SSize 'UncheckedSize
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Integer
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; SSize 'UncheckedSize) -&gt; Int -&gt; SSize 'UncheckedSize
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">[Int]
+</span><a href="#local-6989586621679817497"><span class="hs-identifier hs-var">decoderIds</span></a></span><span>
+</span><span id="line-49"></span><span>
+</span><span id="line-50"></span><span>    </span><span id="local-6989586621679817485"><span class="annot"><span class="annottext">PegasusInput
+  (Tensor
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape
+        '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+  (Tensor
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape
+        '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+</span><a href="#local-6989586621679817485"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span>
+</span><span id="line-51"></span><span>      </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
   ('Layout 'Dense)
   ('Device 'CPU)
-  PegasusDataType
+  ('DataType 'Int64)
   ('Shape
-     '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 23),
-        'Dim ('Name &quot;*&quot;) ('Size 96103)])
-Tensor
-  ('Gradient 'WithGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  PegasusDataType
-  ('Shape
-     '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158),
-        'Dim ('Name &quot;*&quot;) ('Size 1024)])
-Tensor
+     '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape
+        '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+-&gt; PegasusInput
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        ('Layout 'Dense)
+        ('Device 'CPU)
+        ('DataType 'Int64)
+        ('Shape
+           '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        ('Layout 'Dense)
+        ('Device 'CPU)
+        ('DataType 'Int64)
+        ('Shape
+           '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+forall input decoderInput.
+input -&gt; decoderInput -&gt; PegasusInput input decoderInput
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.Common.html#PegasusInput"><span class="hs-identifier hs-var">PegasusInput</span></a></span><span>
+</span><span id="line-52"></span><span>        </span><span class="annot"><span class="annottext">(Tensor
+   ('Gradient 'WithoutGradient)
+   ('Layout 'Dense)
+   ('Device 'CPU)
+   ('DataType 'Int64)
+   ('Shape
+      '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+ -&gt; Tensor
+      ('Gradient 'WithoutGradient)
+      ('Layout 'Dense)
+      ('Device 'CPU)
+      ('DataType 'Int64)
+      ('Shape
+         '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+ -&gt; PegasusInput
+      (Tensor
+         ('Gradient 'WithoutGradient)
+         ('Layout 'Dense)
+         ('Device 'CPU)
+         ('DataType 'Int64)
+         ('Shape
+            '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+      (Tensor
+         ('Gradient 'WithoutGradient)
+         ('Layout 'Dense)
+         ('Device 'CPU)
+         ('DataType 'Int64)
+         ('Shape
+            '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize])))
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        ('Layout 'Dense)
+        ('Device 'CPU)
+        ('DataType 'Int64)
+        ('Shape
+           '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        ('Layout 'Dense)
+        ('Device 'CPU)
+        ('DataType 'Int64)
+        ('Shape
+           '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+      -&gt; PegasusInput
+           (Tensor
+              ('Gradient 'WithoutGradient)
+              ('Layout 'Dense)
+              ('Device 'CPU)
+              ('DataType 'Int64)
+              ('Shape
+                 '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+           (Tensor
+              ('Gradient 'WithoutGradient)
+              ('Layout 'Dense)
+              ('Device 'CPU)
+              ('DataType 'Int64)
+              ('Shape
+                 '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize])))
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">SDim ('Dim ('Name &quot;*&quot;) ('Size 1))
+-&gt; SDim ('Dim ('Name &quot;*&quot;) 'UncheckedSize)
+-&gt; [[Int]]
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        ('Layout 'Dense)
+        ('Device 'CPU)
+        ('DataType 'Int64)
+        ('Shape
+           '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+forall (batchDim :: Dim (Name Symbol) (Size Nat))
+       (seqDim :: Dim (Name Symbol) (Size Nat)) (m :: * -&gt; *) output.
+(MonadThrow m, SGetDim batchDim, SGetDim seqDim,
+ 'Shape '[batchDim, seqDim]
+ ~ Seq
+     ('Shape
+        '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize,
+           'Dim ('Name &quot;*&quot;) 'UncheckedSize]
+      &lt;+&gt; 'Shape '[batchDim, seqDim])
+     ('Shape '[batchDim, seqDim]),
+ output
+ ~ Tensor
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape '[batchDim, seqDim])) =&gt;
+SDim batchDim -&gt; SDim seqDim -&gt; [[Int]] -&gt; m output
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.Common.html#mkPegasusInput"><span class="hs-identifier hs-var">mkPegasusInput</span></a></span><span>
+</span><span id="line-53"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">KnownSymbol &quot;*&quot; =&gt; SName ('Name &quot;*&quot;)
+forall (name :: Symbol). KnownSymbol name =&gt; SName ('Name name)
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#SName"><span class="hs-identifier hs-var">SName</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-string">&quot;*&quot;</span></span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
+-&gt; SSize ('Size 1) -&gt; SDim ('Dim ('Name &quot;*&quot;) ('Size 1))
+forall (name :: Name Symbol) (size :: Size Nat).
+SName name -&gt; SSize size -&gt; SDim ('Dim name size)
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%26%3A"><span class="hs-operator hs-var">:&amp;:</span></a></span><span> </span><span class="annot"><span class="annottext">KnownNat 1 =&gt; SSize ('Size 1)
+forall (size :: Nat). KnownNat size =&gt; SSize ('Size size)
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#SSize"><span class="hs-identifier hs-var">SSize</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">KnownSymbol &quot;*&quot; =&gt; SName ('Name &quot;*&quot;)
+forall (name :: Symbol). KnownSymbol name =&gt; SName ('Name name)
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#SName"><span class="hs-identifier hs-var">SName</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-string">&quot;*&quot;</span></span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
+-&gt; SSize 'UncheckedSize -&gt; SDim ('Dim ('Name &quot;*&quot;) 'UncheckedSize)
+forall (name :: Name Symbol) (size :: Size Nat).
+SName name -&gt; SSize size -&gt; SDim ('Dim name size)
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%26%3A"><span class="hs-operator hs-var">:&amp;:</span></a></span><span> </span><span class="annot"><span class="annottext">SSize 'UncheckedSize
+</span><a href="#local-6989586621679817490"><span class="hs-identifier hs-var">encoderSeqSize</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span>          </span><span class="hs-special">[</span><span class="annot"><span class="annottext">[Int]
+</span><a href="#local-6989586621679817498"><span class="hs-identifier hs-var">encoderIds</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-56"></span><span>        </span><span class="annot"><span class="annottext">IO
+  (Tensor
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape
+        '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+   -&gt; PegasusInput
+        (Tensor
+           ('Gradient 'WithoutGradient)
+           ('Layout 'Dense)
+           ('Device 'CPU)
+           ('DataType 'Int64)
+           ('Shape
+              '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+        (Tensor
+           ('Gradient 'WithoutGradient)
+           ('Layout 'Dense)
+           ('Device 'CPU)
+           ('DataType 'Int64)
+           ('Shape
+              '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize])))
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        ('Layout 'Dense)
+        ('Device 'CPU)
+        ('DataType 'Int64)
+        ('Shape
+           '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+-&gt; IO
+     (PegasusInput
+        (Tensor
+           ('Gradient 'WithoutGradient)
+           ('Layout 'Dense)
+           ('Device 'CPU)
+           ('DataType 'Int64)
+           ('Shape
+              '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+        (Tensor
+           ('Gradient 'WithoutGradient)
+           ('Layout 'Dense)
+           ('Device 'CPU)
+           ('DataType 'Int64)
+           ('Shape
+              '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize])))
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">SDim ('Dim ('Name &quot;*&quot;) ('Size 1))
+-&gt; SDim ('Dim ('Name &quot;*&quot;) 'UncheckedSize)
+-&gt; [[Int]]
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        ('Layout 'Dense)
+        ('Device 'CPU)
+        ('DataType 'Int64)
+        ('Shape
+           '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+forall (batchDim :: Dim (Name Symbol) (Size Nat))
+       (seqDim :: Dim (Name Symbol) (Size Nat)) (m :: * -&gt; *) output.
+(MonadThrow m, SGetDim batchDim, SGetDim seqDim,
+ 'Shape '[batchDim, seqDim]
+ ~ Seq
+     ('Shape
+        '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize,
+           'Dim ('Name &quot;*&quot;) 'UncheckedSize]
+      &lt;+&gt; 'Shape '[batchDim, seqDim])
+     ('Shape '[batchDim, seqDim]),
+ output
+ ~ Tensor
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape '[batchDim, seqDim])) =&gt;
+SDim batchDim -&gt; SDim seqDim -&gt; [[Int]] -&gt; m output
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.Common.html#mkPegasusInput"><span class="hs-identifier hs-var">mkPegasusInput</span></a></span><span>
+</span><span id="line-57"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">KnownSymbol &quot;*&quot; =&gt; SName ('Name &quot;*&quot;)
+forall (name :: Symbol). KnownSymbol name =&gt; SName ('Name name)
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#SName"><span class="hs-identifier hs-var">SName</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-string">&quot;*&quot;</span></span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
+-&gt; SSize ('Size 1) -&gt; SDim ('Dim ('Name &quot;*&quot;) ('Size 1))
+forall (name :: Name Symbol) (size :: Size Nat).
+SName name -&gt; SSize size -&gt; SDim ('Dim name size)
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%26%3A"><span class="hs-operator hs-var">:&amp;:</span></a></span><span> </span><span class="annot"><span class="annottext">KnownNat 1 =&gt; SSize ('Size 1)
+forall (size :: Nat). KnownNat size =&gt; SSize ('Size size)
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#SSize"><span class="hs-identifier hs-var">SSize</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">)</span><span>
+</span><span id="line-58"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">KnownSymbol &quot;*&quot; =&gt; SName ('Name &quot;*&quot;)
+forall (name :: Symbol). KnownSymbol name =&gt; SName ('Name name)
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#SName"><span class="hs-identifier hs-var">SName</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-string">&quot;*&quot;</span></span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
+-&gt; SSize 'UncheckedSize -&gt; SDim ('Dim ('Name &quot;*&quot;) 'UncheckedSize)
+forall (name :: Name Symbol) (size :: Size Nat).
+SName name -&gt; SSize size -&gt; SDim ('Dim name size)
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%26%3A"><span class="hs-operator hs-var">:&amp;:</span></a></span><span> </span><span class="annot"><span class="annottext">SSize 'UncheckedSize
+</span><a href="#local-6989586621679817486"><span class="hs-identifier hs-var">decoderSeqSize</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-59"></span><span>          </span><span class="hs-special">[</span><span class="annot"><span class="annottext">[Int]
+</span><a href="#local-6989586621679817497"><span class="hs-identifier hs-var">decoderIds</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-60"></span><span>
+</span><span id="line-61"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.Common.html#PegasusOutput"><span class="hs-identifier hs-type">PegasusOutput</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679817477"><span id="local-6989586621679817478"><span id="local-6989586621679817479"><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithoutGradient)
   ('Layout 'Dense)
   ('Device 'CPU)
   ('DataType 'Bool)
   ('Shape
-     '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158)])
+     '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+Tensor
+  ('Gradient 'WithoutGradient)
+  ('Layout 'Dense)
+  ('Device 'CPU)
+  ('DataType PegasusDType)
+  'UncheckedShape
 pegasusInputPaddingMask :: forall decoderOutput encoderOutput inputPaddingMask.
 PegasusOutput decoderOutput encoderOutput inputPaddingMask
 -&gt; inputPaddingMask
@@ -860,28 +618,24 @@ pegasusInputPaddingMask :: Tensor
   ('Device 'CPU)
   ('DataType 'Bool)
   ('Shape
-     '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158)])
+     '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
 pegasusEncoderOutput :: Tensor
-  ('Gradient 'WithGradient)
+  ('Gradient 'WithoutGradient)
   ('Layout 'Dense)
   ('Device 'CPU)
-  PegasusDataType
-  ('Shape
-     '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158),
-        'Dim ('Name &quot;*&quot;) ('Size 1024)])
+  ('DataType PegasusDType)
+  'UncheckedShape
 pegasusDecoderOutput :: Tensor
-  ('Gradient 'WithGradient)
+  ('Gradient 'WithoutGradient)
   ('Layout 'Dense)
   ('Device 'CPU)
-  PegasusDataType
-  ('Shape
-     '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 23),
-        'Dim ('Name &quot;*&quot;) ('Size 96103)])
+  ('DataType PegasusDType)
+  'UncheckedShape
 </span><a href="Torch.GraduallyTyped.NN.Transformer.Pegasus.Common.html#pegasusInputPaddingMask"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span><span class="hs-special">}</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Generator ('Device 'CPU)
 </span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">PegasusModel
   'WithLMHead
   16
-  ('Gradient 'WithGradient)
+  ('Gradient 'WithoutGradient)
   ('Device 'CPU)
   ('Dim ('Name &quot;*&quot;) ('Size 16))
   ('Dim ('Name &quot;*&quot;) ('Size 64))
@@ -896,40 +650,36 @@ pegasusDecoderOutput :: Tensor
         ('Device 'CPU)
         ('DataType 'Int64)
         ('Shape
-           '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158)]))
+           '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
      (Tensor
         ('Gradient 'WithoutGradient)
         ('Layout 'Dense)
         ('Device 'CPU)
         ('DataType 'Int64)
         ('Shape
-           '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 22)]))
+           '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
 -&gt; Generator ('Device 'CPU)
 -&gt; IO
      (PegasusOutput
         (Tensor
-           ('Gradient 'WithGradient)
+           ('Gradient 'WithoutGradient)
            ('Layout 'Dense)
            ('Device 'CPU)
-           PegasusDataType
-           ('Shape
-              '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 23),
-                 'Dim ('Name &quot;*&quot;) ('Size 96103)]))
+           ('DataType PegasusDType)
+           'UncheckedShape)
         (Tensor
-           ('Gradient 'WithGradient)
+           ('Gradient 'WithoutGradient)
            ('Layout 'Dense)
            ('Device 'CPU)
-           PegasusDataType
-           ('Shape
-              '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158),
-                 'Dim ('Name &quot;*&quot;) ('Size 1024)]))
+           ('DataType PegasusDType)
+           'UncheckedShape)
         (Tensor
            ('Gradient 'WithoutGradient)
            ('Layout 'Dense)
            ('Device 'CPU)
            ('DataType 'Bool)
            ('Shape
-              '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158)])),
+              '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize])),
       Generator ('Device 'CPU))
 forall model input (generatorDevice :: Device (DeviceType Nat))
        output (generatorOutputDevice :: Device (DeviceType Nat))
@@ -944,7 +694,7 @@ model
 </span><a href="Torch.GraduallyTyped.NN.Class.html#forward"><span class="hs-identifier hs-var">forward</span></a></span><span> </span><span class="annot"><span class="annottext">PegasusModel
   'WithLMHead
   16
-  ('Gradient 'WithGradient)
+  ('Gradient 'WithoutGradient)
   ('Device 'CPU)
   ('Dim ('Name &quot;*&quot;) ('Size 16))
   ('Dim ('Name &quot;*&quot;) ('Size 64))
@@ -952,63 +702,58 @@ model
   ('Dim ('Name &quot;*&quot;) ('Size 1024))
   ('Dim ('Name &quot;*&quot;) ('Size 4096))
   ('Dim ('Name &quot;*&quot;) ('Size 96103))
-</span><a href="#local-6989586621679816222"><span class="hs-identifier hs-var">model</span></a></span><span> </span><span class="annot"><span class="annottext">PegasusInput
+</span><a href="#local-6989586621679817506"><span class="hs-identifier hs-var">model</span></a></span><span> </span><span class="annot"><span class="annottext">PegasusInput
   (Tensor
      ('Gradient 'WithoutGradient)
      ('Layout 'Dense)
      ('Device 'CPU)
      ('DataType 'Int64)
      ('Shape
-        '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158)]))
+        '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
   (Tensor
      ('Gradient 'WithoutGradient)
      ('Layout 'Dense)
      ('Device 'CPU)
      ('DataType 'Int64)
      ('Shape
-        '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 22)]))
-</span><a href="#local-6989586621679816226"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="annot"><span class="annottext">Generator ('Device 'CPU)
-</span><a href="#local-6989586621679816215"><span class="hs-identifier hs-var">g</span></a></span><span>
-</span><span id="line-67"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679816206"><span class="annot"><span class="annottext">encoderOutput :: [[[Float]]]
-</span><a href="#local-6989586621679816206"><span class="hs-identifier hs-var hs-var">encoderOutput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithGradient)
+        '[ 'Dim ('Name &quot;*&quot;) ('Size 1), 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+</span><a href="#local-6989586621679817485"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="annot"><span class="annottext">Generator ('Device 'CPU)
+</span><a href="#local-6989586621679817499"><span class="hs-identifier hs-var">g</span></a></span><span>
+</span><span id="line-62"></span><span>
+</span><span id="line-63"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679817472"><span class="annot"><span class="annottext">encoderOutput :: [[[Float]]]
+</span><a href="#local-6989586621679817472"><span class="hs-identifier hs-var hs-var">encoderOutput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
   ('Layout 'Dense)
   ('Device 'CPU)
-  PegasusDataType
-  ('Shape
-     '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158),
-        'Dim ('Name &quot;*&quot;) ('Size 1024)])
-</span><a href="#local-6989586621679816212"><span class="hs-identifier hs-var">pegasusEncoderOutput</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-68"></span><span>          </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#UnsafeTensor"><span class="hs-identifier hs-type">UnsafeTensor</span></a></span><span> </span><span id="local-6989586621679816204"><span class="annot"><a href="#local-6989586621679816204"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; [[[Float]]]
+  ('DataType PegasusDType)
+  'UncheckedShape
+</span><a href="#local-6989586621679817478"><span class="hs-identifier hs-var">pegasusEncoderOutput</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-64"></span><span>          </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#UnsafeTensor"><span class="hs-identifier hs-type">UnsafeTensor</span></a></span><span> </span><span id="local-6989586621679817470"><span class="annot"><a href="#local-6989586621679817470"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; [[[Float]]]
 forall a. TensorLike a =&gt; Tensor -&gt; a
 </span><a href="../../../../hasktorch/html/src"><span class="hs-identifier hs-var">Tensor.asValue</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ATenTensor -&gt; Tensor
 </span><a href="../../../../hasktorch/html/src"><span class="hs-identifier hs-var">Tensor.Unsafe</span></a></span><span> </span><span class="annot"><span class="annottext">ATenTensor
-</span><a href="#local-6989586621679816204"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="hs-special">[</span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">]</span><span class="hs-special">]</span><span class="hs-special">]</span><span>
-</span><span id="line-69"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679816202"><span class="annot"><span class="annottext">firstEncoderHiddenStates :: [Float]
-</span><a href="#local-6989586621679816202"><span class="hs-identifier hs-var hs-var">firstEncoderHiddenStates</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-70"></span><span>          </span><span id="local-6989586621679816201"><span class="annot"><span class="annottext">[[Float]]
-</span><a href="#local-6989586621679816201"><span class="hs-identifier hs-var">firstBatch</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [[[Float]]] -&gt; [[[Float]]]
+</span><a href="#local-6989586621679817470"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="hs-special">[</span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">]</span><span class="hs-special">]</span><span class="hs-special">]</span><span>
+</span><span id="line-65"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679817468"><span class="annot"><span class="annottext">firstEncoderHiddenStates :: [Float]
+</span><a href="#local-6989586621679817468"><span class="hs-identifier hs-var hs-var">firstEncoderHiddenStates</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-66"></span><span>          </span><span id="local-6989586621679817467"><span class="annot"><span class="annottext">[[Float]]
+</span><a href="#local-6989586621679817467"><span class="hs-identifier hs-var">firstBatch</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [[[Float]]] -&gt; [[[Float]]]
 forall a. Int -&gt; [a] -&gt; [a]
 </span><span class="hs-identifier hs-var">take</span></span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">2</span></span><span> </span><span class="annot"><span class="annottext">[[[Float]]]
-</span><a href="#local-6989586621679816206"><span class="hs-identifier hs-var">encoderOutput</span></a></span><span>
-</span><span id="line-71"></span><span>          </span><span id="local-6989586621679816199"><span class="annot"><span class="annottext">[Float]
-</span><a href="#local-6989586621679816199"><span class="hs-identifier hs-var">firstPositions</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [[Float]] -&gt; [[Float]]
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">[[[Float]]]
+</span><a href="#local-6989586621679817472"><span class="hs-identifier hs-var">encoderOutput</span></a></span><span>
+</span><span id="line-67"></span><span>          </span><span id="local-6989586621679817465"><span class="annot"><span class="annottext">[Float]
+</span><a href="#local-6989586621679817465"><span class="hs-identifier hs-var">firstPositions</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [[Float]] -&gt; [[Float]]
 forall a. Int -&gt; [a] -&gt; [a]
 </span><span class="hs-identifier hs-var">take</span></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">3</span></span><span> </span><span class="annot"><span class="annottext">[[Float]]
-</span><a href="#local-6989586621679816201"><span class="hs-identifier hs-var">firstBatch</span></a></span><span>
-</span><span id="line-72"></span><span>          </span><span class="annot"><span class="annottext">Int -&gt; [Float] -&gt; [Float]
+</span><a href="#local-6989586621679817467"><span class="hs-identifier hs-var">firstBatch</span></a></span><span>
+</span><span id="line-68"></span><span>          </span><span class="annot"><span class="annottext">Int -&gt; [Float] -&gt; [Float]
 forall a. Int -&gt; [a] -&gt; [a]
 </span><span class="hs-identifier hs-var">take</span></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">3</span></span><span> </span><span class="annot"><span class="annottext">[Float]
-</span><a href="#local-6989586621679816199"><span class="hs-identifier hs-var">firstPositions</span></a></span><span>
-</span><span id="line-73"></span><span>    </span><span class="annot"><span class="annottext">[Float] -&gt; IO ()
-forall a. Show a =&gt; a -&gt; IO ()
-</span><span class="hs-identifier hs-var">print</span></span><span> </span><span class="annot"><span class="annottext">[Float]
-</span><a href="#local-6989586621679816202"><span class="hs-identifier hs-var">firstEncoderHiddenStates</span></a></span><span>
-</span><span id="line-74"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679816198"><span class="annot"><span class="annottext">firstEncoderHiddenStates' :: [Float]
-</span><a href="#local-6989586621679816198"><span class="hs-identifier hs-var hs-var">firstEncoderHiddenStates'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679817465"><span class="hs-identifier hs-var">firstPositions</span></a></span><span>
+</span><span id="line-69"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679817464"><span class="annot"><span class="annottext">firstEncoderHiddenStates' :: [Float]
+</span><a href="#local-6989586621679817464"><span class="hs-identifier hs-var hs-var">firstEncoderHiddenStates'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Float
 </span><span class="hs-number">0.0965</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Float
 </span><span class="hs-number">0.0048</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Float
 </span><span class="hs-number">0.1945</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Float
@@ -1017,17 +762,8 @@ forall a. Show a =&gt; a -&gt; IO ()
 </span><span class="hs-number">0.1589</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Float
 </span><span class="hs-number">0.0297</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Float
 </span><span class="hs-number">0.0171</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Float
-</span><span class="hs-number">0.1210</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Float
-</span><span class="hs-number">0.1453</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Float
-</span><span class="hs-number">0.1224</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
-</span><span class="hs-number">0.0941</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Float
-</span><span class="hs-number">0.1849</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Float
-</span><span class="hs-number">0.0484</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
-</span><span class="hs-number">0.0711</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
-</span><span class="hs-number">0.0219</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Float
-</span><span class="hs-number">0.0233</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
-</span><span class="hs-number">0.1485</span></span><span class="hs-special">]</span><span>
-</span><span id="line-75"></span><span>    </span><span class="annot"><span class="annottext">((Float, Float) -&gt; IO ()) -&gt; [(Float, Float)] -&gt; IO ()
+</span><span class="hs-number">0.1210</span></span><span class="hs-special">]</span><span>
+</span><span id="line-70"></span><span>    </span><span class="annot"><span class="annottext">((Float, Float) -&gt; IO ()) -&gt; [(Float, Float)] -&gt; IO ()
 forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
 (Foldable t, Monad m) =&gt;
 (a -&gt; m b) -&gt; t a -&gt; m ()
@@ -1044,48 +780,43 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Float] -&gt; [Float] -&gt; [(Float, Float)]
 forall a b. [a] -&gt; [b] -&gt; [(a, b)]
 </span><span class="hs-identifier hs-var">zip</span></span><span> </span><span class="annot"><span class="annottext">[Float]
-</span><a href="#local-6989586621679816202"><span class="hs-identifier hs-var">firstEncoderHiddenStates</span></a></span><span> </span><span class="annot"><span class="annottext">[Float]
-</span><a href="#local-6989586621679816198"><span class="hs-identifier hs-var">firstEncoderHiddenStates'</span></a></span><span>
-</span><span id="line-76"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679816195"><span class="annot"><span class="annottext">decoderOutput :: [[[Float]]]
-</span><a href="#local-6989586621679816195"><span class="hs-identifier hs-var hs-var">decoderOutput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithGradient)
+</span><a href="#local-6989586621679817468"><span class="hs-identifier hs-var">firstEncoderHiddenStates</span></a></span><span> </span><span class="annot"><span class="annottext">[Float]
+</span><a href="#local-6989586621679817464"><span class="hs-identifier hs-var">firstEncoderHiddenStates'</span></a></span><span>
+</span><span id="line-71"></span><span>
+</span><span id="line-72"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679817461"><span class="annot"><span class="annottext">decoderOutput :: [[[Float]]]
+</span><a href="#local-6989586621679817461"><span class="hs-identifier hs-var hs-var">decoderOutput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
   ('Layout 'Dense)
   ('Device 'CPU)
-  PegasusDataType
-  ('Shape
-     '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 23),
-        'Dim ('Name &quot;*&quot;) ('Size 96103)])
-</span><a href="#local-6989586621679816213"><span class="hs-identifier hs-var">pegasusDecoderOutput</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-77"></span><span>          </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#UnsafeTensor"><span class="hs-identifier hs-type">UnsafeTensor</span></a></span><span> </span><span id="local-6989586621679816194"><span class="annot"><a href="#local-6989586621679816194"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; [[[Float]]]
+  ('DataType PegasusDType)
+  'UncheckedShape
+</span><a href="#local-6989586621679817479"><span class="hs-identifier hs-var">pegasusDecoderOutput</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-73"></span><span>          </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#UnsafeTensor"><span class="hs-identifier hs-type">UnsafeTensor</span></a></span><span> </span><span id="local-6989586621679817460"><span class="annot"><a href="#local-6989586621679817460"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; [[[Float]]]
 forall a. TensorLike a =&gt; Tensor -&gt; a
 </span><a href="../../../../hasktorch/html/src"><span class="hs-identifier hs-var">Tensor.asValue</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ATenTensor -&gt; Tensor
 </span><a href="../../../../hasktorch/html/src"><span class="hs-identifier hs-var">Tensor.Unsafe</span></a></span><span> </span><span class="annot"><span class="annottext">ATenTensor
-</span><a href="#local-6989586621679816194"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="hs-special">[</span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">]</span><span class="hs-special">]</span><span class="hs-special">]</span><span>
-</span><span id="line-78"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679816193"><span class="annot"><span class="annottext">firstLogits :: [Float]
-</span><a href="#local-6989586621679816193"><span class="hs-identifier hs-var hs-var">firstLogits</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-79"></span><span>          </span><span id="local-6989586621679816192"><span class="annot"><span class="annottext">[[Float]]
-</span><a href="#local-6989586621679816192"><span class="hs-identifier hs-var">firstBatch</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [[[Float]]] -&gt; [[[Float]]]
+</span><a href="#local-6989586621679817460"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="hs-special">[</span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">]</span><span class="hs-special">]</span><span class="hs-special">]</span><span>
+</span><span id="line-74"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679817459"><span class="annot"><span class="annottext">firstLogits :: [Float]
+</span><a href="#local-6989586621679817459"><span class="hs-identifier hs-var hs-var">firstLogits</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-75"></span><span>          </span><span id="local-6989586621679817458"><span class="annot"><span class="annottext">[[Float]]
+</span><a href="#local-6989586621679817458"><span class="hs-identifier hs-var">firstBatch</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [[[Float]]] -&gt; [[[Float]]]
 forall a. Int -&gt; [a] -&gt; [a]
 </span><span class="hs-identifier hs-var">take</span></span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">2</span></span><span> </span><span class="annot"><span class="annottext">[[[Float]]]
-</span><a href="#local-6989586621679816195"><span class="hs-identifier hs-var">decoderOutput</span></a></span><span>
-</span><span id="line-80"></span><span>          </span><span id="local-6989586621679816191"><span class="annot"><span class="annottext">[Float]
-</span><a href="#local-6989586621679816191"><span class="hs-identifier hs-var">firstPositions</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [[Float]] -&gt; [[Float]]
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">[[[Float]]]
+</span><a href="#local-6989586621679817461"><span class="hs-identifier hs-var">decoderOutput</span></a></span><span>
+</span><span id="line-76"></span><span>          </span><span id="local-6989586621679817457"><span class="annot"><span class="annottext">[Float]
+</span><a href="#local-6989586621679817457"><span class="hs-identifier hs-var">firstPositions</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [[Float]] -&gt; [[Float]]
 forall a. Int -&gt; [a] -&gt; [a]
 </span><span class="hs-identifier hs-var">take</span></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">3</span></span><span> </span><span class="annot"><span class="annottext">[[Float]]
-</span><a href="#local-6989586621679816192"><span class="hs-identifier hs-var">firstBatch</span></a></span><span>
-</span><span id="line-81"></span><span>          </span><span class="annot"><span class="annottext">Int -&gt; [Float] -&gt; [Float]
+</span><a href="#local-6989586621679817458"><span class="hs-identifier hs-var">firstBatch</span></a></span><span>
+</span><span id="line-77"></span><span>          </span><span class="annot"><span class="annottext">Int -&gt; [Float] -&gt; [Float]
 forall a. Int -&gt; [a] -&gt; [a]
 </span><span class="hs-identifier hs-var">take</span></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">3</span></span><span> </span><span class="annot"><span class="annottext">[Float]
-</span><a href="#local-6989586621679816191"><span class="hs-identifier hs-var">firstPositions</span></a></span><span>
-</span><span id="line-82"></span><span>    </span><span class="annot"><span class="annottext">[Float] -&gt; IO ()
-forall a. Show a =&gt; a -&gt; IO ()
-</span><span class="hs-identifier hs-var">print</span></span><span> </span><span class="annot"><span class="annottext">[Float]
-</span><a href="#local-6989586621679816193"><span class="hs-identifier hs-var">firstLogits</span></a></span><span>
-</span><span id="line-83"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679816190"><span class="annot"><span class="annottext">firstLogits' :: [Float]
-</span><a href="#local-6989586621679816190"><span class="hs-identifier hs-var hs-var">firstLogits'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679817457"><span class="hs-identifier hs-var">firstPositions</span></a></span><span>
+</span><span id="line-78"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679817456"><span class="annot"><span class="annottext">firstLogits' :: [Float]
+</span><a href="#local-6989586621679817456"><span class="hs-identifier hs-var hs-var">firstLogits'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Float
 </span><span class="hs-number">0.0000</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
 </span><span class="hs-number">4.9619</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
 </span><span class="hs-number">0.4453</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
@@ -1094,17 +825,8 @@ forall a. Show a =&gt; a -&gt; IO ()
 </span><span class="hs-number">0.5208</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
 </span><span class="hs-number">0.0000</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
 </span><span class="hs-number">4.0774</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
-</span><span class="hs-number">0.1976</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
-</span><span class="hs-number">0.0000</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
-</span><span class="hs-number">5.1009</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
-</span><span class="hs-number">0.1397</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
-</span><span class="hs-number">0.0000</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
-</span><span class="hs-number">3.2329</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
-</span><span class="hs-number">0.4058</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
-</span><span class="hs-number">0.0000</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
-</span><span class="hs-number">4.4593</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
-</span><span class="hs-number">0.6729</span></span><span class="hs-special">]</span><span>
-</span><span id="line-84"></span><span>    </span><span class="annot"><span class="annottext">((Float, Float) -&gt; IO ()) -&gt; [(Float, Float)] -&gt; IO ()
+</span><span class="hs-number">0.1976</span></span><span class="hs-special">]</span><span>
+</span><span id="line-79"></span><span>    </span><span class="annot"><span class="annottext">((Float, Float) -&gt; IO ()) -&gt; [(Float, Float)] -&gt; IO ()
 forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
 (Foldable t, Monad m) =&gt;
 (a -&gt; m b) -&gt; t a -&gt; m ()
@@ -1121,32 +843,6 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Float] -&gt; [Float] -&gt; [(Float, Float)]
 forall a b. [a] -&gt; [b] -&gt; [(a, b)]
 </span><span class="hs-identifier hs-var">zip</span></span><span> </span><span class="annot"><span class="annottext">[Float]
-</span><a href="#local-6989586621679816193"><span class="hs-identifier hs-var">firstLogits</span></a></span><span> </span><span class="annot"><span class="annottext">[Float]
-</span><a href="#local-6989586621679816190"><span class="hs-identifier hs-var">firstLogits'</span></a></span><span>
-</span><span id="line-85"></span><span>    </span><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  PegasusDataType
-  ('Shape
-     '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158),
-        'Dim ('Name &quot;*&quot;) ('Size 1024)])
--&gt; IO
-     (Tensor
-        ('Gradient 'WithGradient)
-        ('Layout 'Dense)
-        ('Device 'CPU)
-        PegasusDataType
-        ('Shape
-           '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158),
-              'Dim ('Name &quot;*&quot;) ('Size 1024)]))
-forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
-</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  PegasusDataType
-  ('Shape
-     '[ 'Dim ('Name &quot;*&quot;) ('Size 2), 'Dim ('Name &quot;*&quot;) ('Size 158),
-        'Dim ('Name &quot;*&quot;) ('Size 1024)])
-</span><a href="#local-6989586621679816212"><span class="hs-identifier hs-var">pegasusEncoderOutput</span></a></span></pre></body></html>
+</span><a href="#local-6989586621679817459"><span class="hs-identifier hs-var">firstLogits</span></a></span><span> </span><span class="annot"><span class="annottext">[Float]
+</span><a href="#local-6989586621679817456"><span class="hs-identifier hs-var">firstLogits'</span></a></span><span>
+</span><span id="line-80"></span></pre></body></html>

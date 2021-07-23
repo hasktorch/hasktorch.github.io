@@ -8,96 +8,356 @@
 </span><span id="line-8"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.RoBERTa</span><span>
 </span><span id="line-9"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.Common.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.RoBERTa.Common</span></a></span><span class="hs-special">,</span><span>
 </span><span id="line-10"></span><span>    </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.Base.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.RoBERTa.Base</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-11"></span><span>    </span><span class="hs-comment">-- testForwardRoBERTaBase,</span><span>
-</span><span id="line-12"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.html#testRoBERTaInput"><span class="hs-identifier">testRoBERTaInput</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-13"></span><span>  </span><span class="hs-special">)</span><span>
-</span><span id="line-14"></span><span class="hs-keyword">where</span><span>
-</span><span id="line-15"></span><span>
-</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.State</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">evalStateT</span></span><span class="hs-special">)</span><span>
-</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier">Data.Singletons.Prelude.List</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier">SList</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier">SNil</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/d9rc2h31drxy3swyhm4cw2wjq41c1s43-HUnit-approx-lib-HUnit-approx-1.1.1.1-haddock-doc/share/doc/HUnit-approx/html/src"><span class="hs-identifier">Test.HUnit.Approx</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/d9rc2h31drxy3swyhm4cw2wjq41c1s43-HUnit-approx-lib-HUnit-approx-1.1.1.1-haddock-doc/share/doc/HUnit-approx/html/src"><span class="hs-identifier">assertApproxEqual</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier">Tokenizers</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier">Tokenizer</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier">addSpecialToken</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier">encode</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier">getIDs</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier">getTokens</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier">mkRobertaTokenizer</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.DType.html"><span class="hs-identifier">Torch.GraduallyTyped.DType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.DType.html#SDType"><span class="hs-identifier">SDType</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.DType.html#SDataType"><span class="hs-identifier">SDataType</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Device.html"><span class="hs-identifier">Torch.GraduallyTyped.Device</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#SDevice"><span class="hs-identifier">SDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#SDeviceType"><span class="hs-identifier">SDeviceType</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Layout.html"><span class="hs-identifier">Torch.GraduallyTyped.Layout</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Layout.html#SLayout"><span class="hs-identifier">SLayout</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Layout.html#SLayoutType"><span class="hs-identifier">SLayoutType</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Class</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier">HasForward</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier">HasStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#stateDictFromPretrained"><span class="hs-identifier">stateDictFromPretrained</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.EncoderOnly.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.EncoderOnly</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.EncoderOnly.html#EncoderOnlyTransformerInput"><span class="hs-identifier">EncoderOnlyTransformerInput</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.EncoderOnly.html#EncoderOnlyTransformerOutput"><span class="hs-identifier">EncoderOnlyTransformerOutput</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.Base.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.RoBERTa.Base</span></a></span><span>
-</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.Common.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.RoBERTa.Common</span></a></span><span>
-</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#TransformerHead"><span class="hs-identifier">TransformerHead</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#mkTransformerAttentionMask"><span class="hs-identifier">mkTransformerAttentionMask</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html"><span class="hs-identifier">Torch.GraduallyTyped.Random</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#sMkGenerator"><span class="hs-identifier">sMkGenerator</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html"><span class="hs-identifier">Torch.GraduallyTyped.RequiresGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier">SGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#SRequiresGradient"><span class="hs-identifier">SRequiresGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Shape.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Dim"><span class="hs-identifier">Dim</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Name"><span class="hs-identifier">Name</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SDim"><span class="hs-identifier">SDim</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#sDimSize"><span class="hs-identifier">sDimSize</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SName"><span class="hs-identifier">SName</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SShape"><span class="hs-identifier">SShape</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SSize"><span class="hs-identifier">SSize</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Size"><span class="hs-identifier">Size</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-keyword">pattern</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%26%3A"><span class="hs-operator">(:&amp;:)</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-keyword">pattern</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%7C%3A"><span class="hs-operator">(:|:)</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-31"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Creation.html"><span class="hs-identifier">Torch.GraduallyTyped.Tensor.Creation</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Creation.html#sArangeNaturals"><span class="hs-identifier">sArangeNaturals</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Creation.html#sZeros"><span class="hs-identifier">sZeros</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-32"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Pointwise.html"><span class="hs-identifier">Torch.GraduallyTyped.Tensor.MathOperations.Pointwise</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Pointwise.html#addScalar"><span class="hs-identifier">addScalar</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-33"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Tensor.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier">Tensor</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#TensorSpec"><span class="hs-identifier">TensorSpec</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-34"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../../../../hasktorch/html/src"><span class="hs-identifier">Torch.Tensor</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Tensor</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../../../../hasktorch/html/src"><span class="hs-identifier">Tensor</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../../../../hasktorch/html/src"><span class="hs-identifier">asValue</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-35"></span><span>
-</span><span id="line-36"></span><span class="hs-keyword">type</span><span> </span><span id="TestRoBERTaSeqDim"><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.html#TestRoBERTaSeqDim"><span class="hs-identifier hs-var">TestRoBERTaSeqDim</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Dim"><span class="hs-identifier hs-type">Dim</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Name"><span class="hs-identifier hs-type">Name</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;*&quot;</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Size"><span class="hs-identifier hs-type">Size</span></a></span><span> </span><span class="annot"><span class="hs-number">11</span></span><span class="hs-special">)</span><span>
-</span><span id="line-37"></span><span>
-</span><span id="line-38"></span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.html#testRobertaSeqDim"><span class="hs-identifier hs-type">testRobertaSeqDim</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SDim"><span class="hs-identifier hs-type">SDim</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.html#TestRoBERTaSeqDim"><span class="hs-identifier hs-type">TestRoBERTaSeqDim</span></a></span><span>
-</span><span id="line-39"></span><span id="testRobertaSeqDim"><span class="annot"><span class="annottext">testRobertaSeqDim :: SDim TestRoBERTaSeqDim
-</span><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.html#testRobertaSeqDim"><span class="hs-identifier hs-var hs-var">testRobertaSeqDim</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">KnownSymbol &quot;*&quot; =&gt; SName ('Name &quot;*&quot;)
-forall (name :: Symbol). KnownSymbol name =&gt; SName ('Name name)
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#SName"><span class="hs-identifier hs-var">SName</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-string">&quot;*&quot;</span></span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;) -&gt; SSize ('Size 11) -&gt; SDim TestRoBERTaSeqDim
-forall (name :: Name Symbol) (size :: Size Nat).
-SName name -&gt; SSize size -&gt; SDim ('Dim name size)
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%26%3A"><span class="hs-operator hs-var">:&amp;:</span></a></span><span> </span><span class="annot"><span class="annottext">KnownNat 11 =&gt; SSize ('Size 11)
-forall (size :: Nat). KnownNat size =&gt; SSize ('Size size)
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#SSize"><span class="hs-identifier hs-var">SSize</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-number">11</span></span><span>
-</span><span id="line-40"></span><span>
-</span><span id="line-41"></span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.html#testTokenizer"><span class="hs-identifier hs-type">testTokenizer</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier hs-type">Tokenizer</span></a></span><span>
-</span><span id="line-42"></span><span id="testTokenizer"><span class="annot"><span class="annottext">testTokenizer :: IO Tokenizer
-</span><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.html#testTokenizer"><span class="hs-identifier hs-var hs-var">testTokenizer</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-43"></span><span>  </span><span class="annot"><span class="annottext">FilePath -&gt; FilePath -&gt; IO Tokenizer
-</span><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier hs-var">mkRobertaTokenizer</span></a></span><span>
-</span><span id="line-44"></span><span>    </span><span class="annot"><span class="annottext">FilePath
-</span><span class="hs-string">&quot;/Users/tscholak/Projects/thirdParty/tokenizers/bindings/haskell/tokenizers-haskell/roberta-base-vocab.json&quot;</span></span><span>
-</span><span id="line-45"></span><span>    </span><span class="annot"><span class="annottext">FilePath
-</span><span class="hs-string">&quot;/Users/tscholak/Projects/thirdParty/tokenizers/bindings/haskell/tokenizers-haskell/roberta-base-merges.txt&quot;</span></span><span>
-</span><span id="line-46"></span><span>
-</span><span id="line-47"></span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.html#testRoBERTaInput"><span class="hs-identifier hs-type">testRoBERTaInput</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span>
-</span><span id="line-48"></span><span id="testRoBERTaInput"><span class="annot"><span class="annottext">testRoBERTaInput :: IO
-  (Tensor
+</span><span id="line-11"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.html#testForwardRoBERTaBase"><span class="hs-identifier">testForwardRoBERTaBase</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.State</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">evalStateT</span></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier">Data.Singletons.Prelude.List</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier">SList</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier">SNil</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/d9rc2h31drxy3swyhm4cw2wjq41c1s43-HUnit-approx-lib-HUnit-approx-1.1.1.1-haddock-doc/share/doc/HUnit-approx/html/src"><span class="hs-identifier">Test.HUnit.Approx</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/d9rc2h31drxy3swyhm4cw2wjq41c1s43-HUnit-approx-lib-HUnit-approx-1.1.1.1-haddock-doc/share/doc/HUnit-approx/html/src"><span class="hs-identifier">assertApproxEqual</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier">Tokenizers</span></a></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.DType.html"><span class="hs-identifier">Torch.GraduallyTyped.DType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.DType.html#SDType"><span class="hs-identifier">SDType</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.DType.html#SDataType"><span class="hs-identifier">SDataType</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Device.html"><span class="hs-identifier">Torch.GraduallyTyped.Device</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#SDevice"><span class="hs-identifier">SDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Device.html#SDeviceType"><span class="hs-identifier">SDeviceType</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Layout.html"><span class="hs-identifier">Torch.GraduallyTyped.Layout</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Layout.html#SLayout"><span class="hs-identifier">SLayout</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Layout.html#SLayoutType"><span class="hs-identifier">SLayoutType</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Class</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier">HasForward</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier">HasStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#stateDictFromPretrained"><span class="hs-identifier">stateDictFromPretrained</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.EncoderOnly.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.EncoderOnly</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.EncoderOnly.html#EncoderOnlyTransformerInput"><span class="hs-identifier">EncoderOnlyTransformerInput</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.EncoderOnly.html#EncoderOnlyTransformerOutput"><span class="hs-identifier">EncoderOnlyTransformerOutput</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.Base.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.RoBERTa.Base</span></a></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.Common.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.RoBERTa.Common</span></a></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Transformer.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#STransformerHead"><span class="hs-identifier">STransformerHead</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SWithLMHead"><span class="hs-identifier">SWithLMHead</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#mkTransformerAttentionMask"><span class="hs-identifier">mkTransformerAttentionMask</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html"><span class="hs-identifier">Torch.GraduallyTyped.Random</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#sMkGenerator"><span class="hs-identifier">sMkGenerator</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html"><span class="hs-identifier">Torch.GraduallyTyped.RequiresGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier">SGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#SRequiresGradient"><span class="hs-identifier">SRequiresGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Shape.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SName"><span class="hs-identifier">SName</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SShape"><span class="hs-identifier">SShape</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SSize"><span class="hs-identifier">SSize</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-keyword">pattern</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%26%3A"><span class="hs-operator">(:&amp;:)</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-keyword">pattern</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%7C%3A"><span class="hs-operator">(:|:)</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Creation.html"><span class="hs-identifier">Torch.GraduallyTyped.Tensor.Creation</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Creation.html#sArangeNaturals"><span class="hs-identifier">sArangeNaturals</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Creation.html#sZeros"><span class="hs-identifier">sZeros</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Pointwise.html"><span class="hs-identifier">Torch.GraduallyTyped.Tensor.MathOperations.Pointwise</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Pointwise.html#addScalar"><span class="hs-identifier">addScalar</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Tensor.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier">Tensor</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#TensorSpec"><span class="hs-identifier">TensorSpec</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../../../../hasktorch/html/src"><span class="hs-identifier">Torch.Tensor</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Tensor</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../../../../hasktorch/html/src"><span class="hs-identifier">Tensor</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../../../../hasktorch/html/src"><span class="hs-identifier">asValue</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span id="local-6989586621679810751"><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.html#withTokenizer"><span class="hs-identifier hs-type">withTokenizer</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier hs-type">Tokenizers.Tokenizer</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679810751"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679810751"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-36"></span><span id="withTokenizer"><span class="annot"><span class="annottext">withTokenizer :: (Tokenizer -&gt; IO a) -&gt; IO a
+</span><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.html#withTokenizer"><span class="hs-identifier hs-var hs-var">withTokenizer</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-37"></span><span>  </span><span class="annot"><span class="annottext">FilePath -&gt; (Tokenizer -&gt; IO a) -&gt; IO a
+forall a. FilePath -&gt; (Tokenizer -&gt; IO a) -&gt; IO a
+</span><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier hs-var">Tokenizers.withTokenizerFromConfigFile</span></a></span><span>
+</span><span id="line-38"></span><span>    </span><span class="annot"><span class="annottext">FilePath
+</span><span class="hs-string">&quot;/tmp/roberta-base-tokenizer.json&quot;</span></span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.html#testForwardRoBERTaBase"><span class="hs-identifier hs-type">testForwardRoBERTaBase</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span id="testForwardRoBERTaBase"><span class="annot"><span class="annottext">testForwardRoBERTaBase :: IO ()
+</span><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.html#testForwardRoBERTaBase"><span class="hs-identifier hs-var hs-var">testForwardRoBERTaBase</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-keyword">do</span><span>
+</span><span id="line-43"></span><span>    </span><span id="local-6989586621679810602"><span class="annot"><span class="annottext">StateDict
+</span><a href="#local-6989586621679810602"><span class="hs-identifier hs-var">stateDict</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">FilePath -&gt; IO StateDict
+</span><a href="Torch.GraduallyTyped.NN.Class.html#stateDictFromPretrained"><span class="hs-identifier hs-var">stateDictFromPretrained</span></a></span><span> </span><span class="annot"><span class="annottext">FilePath
+</span><span class="hs-string">&quot;/tmp/roberta-base-state-dict.pt&quot;</span></span><span>
+</span><span id="line-44"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.Common.html#RoBERTaModel"><span class="hs-identifier hs-type">RoBERTaModel</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.Common.html#GRoBERTaModel"><span class="hs-identifier hs-type">GRoBERTaModel</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679810599"><span class="annot"><span class="annottext">EncoderOnlyTransformer
+  'RoBERTa
+  'WithLMHead
+  RoBERTaBaseNumLayers
+  ('Gradient 'WithoutGradient)
+  ('Device 'CPU)
+  RoBERTaDataType
+  RoBERTaBaseHeadDim
+  RoBERTaBaseHeadEmbedDim
+  RoBERTaBaseEmbedDim
+  RoBERTaBaseEmbedDim
+  RoBERTaBaseFFNDim
+  RoBERTaPosEncDim
+  RoBERTaBaseVocabDim
+  RoBERTaBaseTypeVocabDim
+robertaModel :: forall robertaModel. GRoBERTaModel robertaModel -&gt; robertaModel
+robertaModel :: EncoderOnlyTransformer
+  'RoBERTa
+  'WithLMHead
+  RoBERTaBaseNumLayers
+  ('Gradient 'WithoutGradient)
+  ('Device 'CPU)
+  RoBERTaDataType
+  RoBERTaBaseHeadDim
+  RoBERTaBaseHeadEmbedDim
+  RoBERTaBaseEmbedDim
+  RoBERTaBaseEmbedDim
+  RoBERTaBaseFFNDim
+  RoBERTaPosEncDim
+  RoBERTaBaseVocabDim
+  RoBERTaBaseTypeVocabDim
+</span><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.Common.html#robertaModel"><span class="hs-glyph hs-var hs-var">..</span></a></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">&lt;-</span><span>
+</span><span id="line-45"></span><span>      </span><span class="annot"><span class="annottext">(StateT
+   StateDict
+   IO
+   (RoBERTaModel
+      'WithLMHead
+      RoBERTaBaseNumLayers
+      ('Gradient 'WithoutGradient)
+      ('Device 'CPU)
+      RoBERTaBaseHeadDim
+      RoBERTaBaseHeadEmbedDim
+      RoBERTaBaseEmbedDim
+      RoBERTaBaseEmbedDim
+      RoBERTaBaseFFNDim
+      RoBERTaBaseVocabDim
+      RoBERTaBaseTypeVocabDim)
+ -&gt; StateDict
+ -&gt; IO
+      (RoBERTaModel
+         'WithLMHead
+         RoBERTaBaseNumLayers
+         ('Gradient 'WithoutGradient)
+         ('Device 'CPU)
+         RoBERTaBaseHeadDim
+         RoBERTaBaseHeadEmbedDim
+         RoBERTaBaseEmbedDim
+         RoBERTaBaseEmbedDim
+         RoBERTaBaseFFNDim
+         RoBERTaBaseVocabDim
+         RoBERTaBaseTypeVocabDim))
+-&gt; StateDict
+-&gt; StateT
+     StateDict
+     IO
+     (RoBERTaModel
+        'WithLMHead
+        RoBERTaBaseNumLayers
+        ('Gradient 'WithoutGradient)
+        ('Device 'CPU)
+        RoBERTaBaseHeadDim
+        RoBERTaBaseHeadEmbedDim
+        RoBERTaBaseEmbedDim
+        RoBERTaBaseEmbedDim
+        RoBERTaBaseFFNDim
+        RoBERTaBaseVocabDim
+        RoBERTaBaseTypeVocabDim)
+-&gt; IO
+     (RoBERTaModel
+        'WithLMHead
+        RoBERTaBaseNumLayers
+        ('Gradient 'WithoutGradient)
+        ('Device 'CPU)
+        RoBERTaBaseHeadDim
+        RoBERTaBaseHeadEmbedDim
+        RoBERTaBaseEmbedDim
+        RoBERTaBaseEmbedDim
+        RoBERTaBaseFFNDim
+        RoBERTaBaseVocabDim
+        RoBERTaBaseTypeVocabDim)
+forall a b c. (a -&gt; b -&gt; c) -&gt; b -&gt; a -&gt; c
+</span><span class="hs-identifier hs-var">flip</span></span><span> </span><span class="annot"><span class="annottext">StateT
+  StateDict
+  IO
+  (RoBERTaModel
+     'WithLMHead
+     RoBERTaBaseNumLayers
      ('Gradient 'WithoutGradient)
-     ('Layout 'Dense)
      ('Device 'CPU)
-     ('DataType 'Int64)
-     ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestRoBERTaSeqDim]))
-</span><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.html#testRoBERTaInput"><span class="hs-identifier hs-var hs-var">testRoBERTaInput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-49"></span><span>  </span><span id="local-6989586621679818572"><span class="annot"><span class="annottext">Tokenizer
-</span><a href="#local-6989586621679818572"><span class="hs-identifier hs-var">tokenizer</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO Tokenizer
-</span><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.html#testTokenizer"><span class="hs-identifier hs-var">testTokenizer</span></a></span><span>
-</span><span id="line-50"></span><span>  </span><span class="annot"><span class="annottext">(FilePath -&gt; IO ()) -&gt; [FilePath] -&gt; IO ()
-forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
-(Foldable t, Monad m) =&gt;
-(a -&gt; m b) -&gt; t a -&gt; m ()
-</span><span class="hs-identifier hs-var">mapM_</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tokenizer -&gt; FilePath -&gt; IO ()
-</span><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier hs-var">addSpecialToken</span></a></span><span> </span><span class="annot"><span class="annottext">Tokenizer
-</span><a href="#local-6989586621679818572"><span class="hs-identifier hs-var">tokenizer</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">FilePath
-</span><span class="hs-string">&quot;&lt;s&gt;&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">FilePath
-</span><span class="hs-string">&quot;&lt;/s&gt;&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">FilePath
-</span><span class="hs-string">&quot;&lt;unk&gt;&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">FilePath
-</span><span class="hs-string">&quot;&lt;pad&gt;&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">FilePath
-</span><span class="hs-string">&quot;&lt;mask&gt;&quot;</span></span><span class="hs-special">]</span><span>
-</span><span id="line-51"></span><span>  </span><span id="local-6989586621679818570"><span class="annot"><span class="annottext">Encoding
-</span><a href="#local-6989586621679818570"><span class="hs-identifier hs-var">encoded</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Tokenizer -&gt; FilePath -&gt; IO Encoding
-</span><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier hs-var">encode</span></a></span><span> </span><span class="annot"><span class="annottext">Tokenizer
-</span><a href="#local-6989586621679818572"><span class="hs-identifier hs-var">tokenizer</span></a></span><span> </span><span class="annot"><span class="annottext">FilePath
-</span><span class="hs-string">&quot;&lt;s&gt;Hello my name is&lt;mask&gt;&lt;/s&gt;&quot;</span></span><span>
-</span><span id="line-52"></span><span>  </span><span id="local-6989586621679818569"><span class="annot"><span class="annottext">[Int]
-</span><a href="#local-6989586621679818569"><span class="hs-identifier hs-var">ids</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Encoding -&gt; IO [Int]
-</span><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier hs-var">getIDs</span></a></span><span> </span><span class="annot"><span class="annottext">Encoding
-</span><a href="#local-6989586621679818570"><span class="hs-identifier hs-var">encoded</span></a></span><span>
-</span><span id="line-53"></span><span>  </span><span class="annot"><span class="annottext">[FilePath] -&gt; IO ()
-forall a. Show a =&gt; a -&gt; IO ()
-</span><span class="hs-identifier hs-var">print</span></span><span> </span><span class="annot"><span class="annottext">([FilePath] -&gt; IO ()) -&gt; IO [FilePath] -&gt; IO ()
-forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
-</span><span class="hs-operator hs-var">=&lt;&lt;</span></span><span> </span><span class="annot"><span class="annottext">Encoding -&gt; IO [FilePath]
-</span><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier hs-var">getTokens</span></a></span><span> </span><span class="annot"><span class="annottext">Encoding
-</span><a href="#local-6989586621679818570"><span class="hs-identifier hs-var">encoded</span></a></span><span>
-</span><span id="line-54"></span><span>  </span><span class="annot"><span class="annottext">SDim ('Dim ('Name &quot;*&quot;) ('Size 1))
--&gt; SDim TestRoBERTaSeqDim
+     RoBERTaBaseHeadDim
+     RoBERTaBaseHeadEmbedDim
+     RoBERTaBaseEmbedDim
+     RoBERTaBaseEmbedDim
+     RoBERTaBaseFFNDim
+     RoBERTaBaseVocabDim
+     RoBERTaBaseTypeVocabDim)
+-&gt; StateDict
+-&gt; IO
+     (RoBERTaModel
+        'WithLMHead
+        RoBERTaBaseNumLayers
+        ('Gradient 'WithoutGradient)
+        ('Device 'CPU)
+        RoBERTaBaseHeadDim
+        RoBERTaBaseHeadEmbedDim
+        RoBERTaBaseEmbedDim
+        RoBERTaBaseEmbedDim
+        RoBERTaBaseFFNDim
+        RoBERTaBaseVocabDim
+        RoBERTaBaseTypeVocabDim)
+forall (m :: * -&gt; *) s a. Monad m =&gt; StateT s m a -&gt; s -&gt; m a
+</span><span class="hs-identifier hs-var">evalStateT</span></span><span> </span><span class="annot"><span class="annottext">StateDict
+</span><a href="#local-6989586621679810602"><span class="hs-identifier hs-var">stateDict</span></a></span><span> </span><span class="annot"><span class="annottext">(StateT
+   StateDict
+   IO
+   (RoBERTaModel
+      'WithLMHead
+      RoBERTaBaseNumLayers
+      ('Gradient 'WithoutGradient)
+      ('Device 'CPU)
+      RoBERTaBaseHeadDim
+      RoBERTaBaseHeadEmbedDim
+      RoBERTaBaseEmbedDim
+      RoBERTaBaseEmbedDim
+      RoBERTaBaseFFNDim
+      RoBERTaBaseVocabDim
+      RoBERTaBaseTypeVocabDim)
+ -&gt; IO
+      (RoBERTaModel
+         'WithLMHead
+         RoBERTaBaseNumLayers
+         ('Gradient 'WithoutGradient)
+         ('Device 'CPU)
+         RoBERTaBaseHeadDim
+         RoBERTaBaseHeadEmbedDim
+         RoBERTaBaseEmbedDim
+         RoBERTaBaseEmbedDim
+         RoBERTaBaseFFNDim
+         RoBERTaBaseVocabDim
+         RoBERTaBaseTypeVocabDim))
+-&gt; StateT
+     StateDict
+     IO
+     (RoBERTaModel
+        'WithLMHead
+        RoBERTaBaseNumLayers
+        ('Gradient 'WithoutGradient)
+        ('Device 'CPU)
+        RoBERTaBaseHeadDim
+        RoBERTaBaseHeadEmbedDim
+        RoBERTaBaseEmbedDim
+        RoBERTaBaseEmbedDim
+        RoBERTaBaseFFNDim
+        RoBERTaBaseVocabDim
+        RoBERTaBaseTypeVocabDim)
+-&gt; IO
+     (RoBERTaModel
+        'WithLMHead
+        RoBERTaBaseNumLayers
+        ('Gradient 'WithoutGradient)
+        ('Device 'CPU)
+        RoBERTaBaseHeadDim
+        RoBERTaBaseHeadEmbedDim
+        RoBERTaBaseEmbedDim
+        RoBERTaBaseEmbedDim
+        RoBERTaBaseFFNDim
+        RoBERTaBaseVocabDim
+        RoBERTaBaseTypeVocabDim)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-46"></span><span>        </span><span class="annot"><span class="annottext">ModelSpec
+  (RoBERTaModel
+     'WithLMHead
+     RoBERTaBaseNumLayers
+     ('Gradient 'WithoutGradient)
+     ('Device 'CPU)
+     RoBERTaBaseHeadDim
+     RoBERTaBaseHeadEmbedDim
+     RoBERTaBaseEmbedDim
+     RoBERTaBaseEmbedDim
+     RoBERTaBaseFFNDim
+     RoBERTaBaseVocabDim
+     RoBERTaBaseTypeVocabDim)
+-&gt; FilePath
+-&gt; StateT
+     StateDict
+     IO
+     (RoBERTaModel
+        'WithLMHead
+        RoBERTaBaseNumLayers
+        ('Gradient 'WithoutGradient)
+        ('Device 'CPU)
+        RoBERTaBaseHeadDim
+        RoBERTaBaseHeadEmbedDim
+        RoBERTaBaseEmbedDim
+        RoBERTaBaseEmbedDim
+        RoBERTaBaseFFNDim
+        RoBERTaBaseVocabDim
+        RoBERTaBaseTypeVocabDim)
+forall model (m :: * -&gt; *).
+(HasStateDict model, MonadThrow m, MonadState StateDict m) =&gt;
+ModelSpec model -&gt; FilePath -&gt; m model
+</span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var">fromStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">STransformerHead 'WithLMHead
+-&gt; SGradient ('Gradient 'WithoutGradient)
+-&gt; SDevice ('Device 'CPU)
+-&gt; RoBERTaModelSpec
+     'WithLMHead
+     RoBERTaBaseNumLayers
+     ('Gradient 'WithoutGradient)
+     ('Device 'CPU)
+     RoBERTaBaseHeadDim
+     RoBERTaBaseHeadEmbedDim
+     RoBERTaBaseEmbedDim
+     RoBERTaBaseEmbedDim
+     RoBERTaBaseFFNDim
+     RoBERTaBaseVocabDim
+     RoBERTaBaseTypeVocabDim
+forall (transformerHead :: TransformerHead)
+       (gradient :: Gradient RequiresGradient)
+       (device :: Device (DeviceType Nat)).
+STransformerHead transformerHead
+-&gt; SGradient gradient
+-&gt; SDevice device
+-&gt; RoBERTaModelSpec
+     transformerHead
+     RoBERTaBaseNumLayers
+     gradient
+     device
+     RoBERTaBaseHeadDim
+     RoBERTaBaseHeadEmbedDim
+     RoBERTaBaseEmbedDim
+     RoBERTaBaseEmbedDim
+     RoBERTaBaseFFNDim
+     RoBERTaBaseVocabDim
+     RoBERTaBaseTypeVocabDim
+</span><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.Base.html#robertaBaseSpec"><span class="hs-identifier hs-var">robertaBaseSpec</span></a></span><span> </span><span class="annot"><span class="annottext">STransformerHead 'WithLMHead
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#SWithLMHead"><span class="hs-identifier hs-var">SWithLMHead</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
+-&gt; SGradient ('Gradient 'WithoutGradient)
+forall (requiresGradient :: RequiresGradient).
+SRequiresGradient requiresGradient
+-&gt; SGradient ('Gradient requiresGradient)
+</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-var">SGradient</span></a></span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
+</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SWithoutGradient"><span class="hs-identifier hs-var">SWithoutGradient</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SDeviceType 'CPU -&gt; SDevice ('Device 'CPU)
+forall (deviceType :: DeviceType Nat).
+SDeviceType deviceType -&gt; SDevice ('Device deviceType)
+</span><a href="Torch.GraduallyTyped.Device.html#SDevice"><span class="hs-identifier hs-var">SDevice</span></a></span><span> </span><span class="annot"><span class="annottext">SDeviceType 'CPU
+</span><a href="Torch.GraduallyTyped.Device.html#SCPU"><span class="hs-identifier hs-var">SCPU</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">FilePath
+</span><span class="hs-string">&quot;&quot;</span></span><span>
+</span><span id="line-47"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679810590"><span class="annot"><span class="annottext">g :: Generator ('Device 'CPU)
+</span><a href="#local-6989586621679810590"><span class="hs-identifier hs-var hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SDevice ('Device 'CPU) -&gt; Word64 -&gt; Generator ('Device 'CPU)
+forall (device :: Device (DeviceType Nat)).
+SDevice device -&gt; Word64 -&gt; Generator device
+</span><a href="Torch.GraduallyTyped.Random.html#sMkGenerator"><span class="hs-identifier hs-var">sMkGenerator</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SDeviceType 'CPU -&gt; SDevice ('Device 'CPU)
+forall (deviceType :: DeviceType Nat).
+SDeviceType deviceType -&gt; SDevice ('Device deviceType)
+</span><a href="Torch.GraduallyTyped.Device.html#SDevice"><span class="hs-identifier hs-var">SDevice</span></a></span><span> </span><span class="annot"><span class="annottext">SDeviceType 'CPU
+</span><a href="Torch.GraduallyTyped.Device.html#SCPU"><span class="hs-identifier hs-var">SCPU</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Word64
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span>    </span><span id="local-6989586621679810589"><span class="annot"><span class="annottext">[Int]
+</span><a href="#local-6989586621679810589"><span class="hs-identifier hs-var">ids</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Tokenizer -&gt; IO [Int]) -&gt; IO [Int]
+forall a. (Tokenizer -&gt; IO a) -&gt; IO a
+</span><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.html#withTokenizer"><span class="hs-identifier hs-var">withTokenizer</span></a></span><span> </span><span class="annot"><span class="annottext">((Tokenizer -&gt; IO [Int]) -&gt; IO [Int])
+-&gt; (Tokenizer -&gt; IO [Int]) -&gt; IO [Int]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679810588"><span class="annot"><span class="annottext">Tokenizer
+</span><a href="#local-6989586621679810588"><span class="hs-identifier hs-var">tokenizer</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-50"></span><span>      </span><span id="local-6989586621679810587"><span class="annot"><span class="annottext">Encoding
+</span><a href="#local-6989586621679810587"><span class="hs-identifier hs-var">encoding</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Tokenizer -&gt; FilePath -&gt; IO Encoding
+</span><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier hs-var">Tokenizers.encode</span></a></span><span> </span><span class="annot"><span class="annottext">Tokenizer
+</span><a href="#local-6989586621679810588"><span class="hs-identifier hs-var">tokenizer</span></a></span><span> </span><span class="annot"><span class="annottext">FilePath
+</span><span class="hs-string">&quot;&lt;s&gt;The capital of France is [MASK].&lt;/s&gt;&quot;</span></span><span>
+</span><span id="line-51"></span><span>      </span><span class="annot"><span class="annottext">Encoding -&gt; IO [Int]
+</span><a href="../file:///nix/store/dlcs5qms427bs47cbn98gjkr7lmzcmdh-tokenizers-lib-tokenizers-0.1.0.0-haddock-doc/share/doc/tokenizers/html/src"><span class="hs-identifier hs-var">Tokenizers.getIDs</span></a></span><span> </span><span class="annot"><span class="annottext">Encoding
+</span><a href="#local-6989586621679810587"><span class="hs-identifier hs-var">encoding</span></a></span><span>
+</span><span id="line-52"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679810584"><span class="annot"><span class="annottext">seqSize :: SSize 'UncheckedSize
+</span><a href="#local-6989586621679810584"><span class="hs-identifier hs-var hs-var">seqSize</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Integer -&gt; SSize 'UncheckedSize
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#SUncheckedSize"><span class="hs-identifier hs-var">SUncheckedSize</span></a></span><span> </span><span class="annot"><span class="annottext">(Integer -&gt; SSize 'UncheckedSize)
+-&gt; (Int -&gt; Integer) -&gt; Int -&gt; SSize 'UncheckedSize
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Integer
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; SSize 'UncheckedSize) -&gt; Int -&gt; SSize 'UncheckedSize
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">[Int]
+</span><a href="#local-6989586621679810589"><span class="hs-identifier hs-var">ids</span></a></span><span>
+</span><span id="line-53"></span><span>
+</span><span id="line-54"></span><span>    </span><span id="local-6989586621679810580"><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  ('Layout 'Dense)
+  ('Device 'CPU)
+  ('DataType 'Int64)
+  ('Shape
+     '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+</span><a href="#local-6989586621679810580"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span>
+</span><span id="line-55"></span><span>      </span><span class="annot"><span class="annottext">SDim RoBERTaBaseTypeVocabDim
+-&gt; SDim ('Dim ('Name &quot;*&quot;) 'UncheckedSize)
 -&gt; [[Int]]
 -&gt; IO
      (Tensor
@@ -105,7 +365,8 @@ forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
         ('Layout 'Dense)
         ('Device 'CPU)
         ('DataType 'Int64)
-        ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestRoBERTaSeqDim]))
+        ('Shape
+           '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
 forall (batchDim :: Dim (Name Symbol) (Size Nat))
        (seqDim :: Dim (Name Symbol) (Size Nat)) (m :: * -&gt; *) output.
 (MonadThrow m, SGetDim batchDim, SGetDim seqDim,
@@ -125,42 +386,47 @@ forall (batchDim :: Dim (Name Symbol) (Size Nat))
      ('Shape '[batchDim, seqDim])) =&gt;
 SDim batchDim -&gt; SDim seqDim -&gt; [[Int]] -&gt; m output
 </span><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.Common.html#mkRoBERTaInput"><span class="hs-identifier hs-var">mkRoBERTaInput</span></a></span><span>
-</span><span id="line-55"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">KnownSymbol &quot;*&quot; =&gt; SName ('Name &quot;*&quot;)
+</span><span id="line-56"></span><span>        </span><span class="hs-special">(</span><span class="annot"><span class="annottext">KnownSymbol &quot;*&quot; =&gt; SName ('Name &quot;*&quot;)
 forall (name :: Symbol). KnownSymbol name =&gt; SName ('Name name)
 </span><a href="Torch.GraduallyTyped.Shape.Type.html#SName"><span class="hs-identifier hs-var">SName</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-string">&quot;*&quot;</span></span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
--&gt; SSize ('Size 1) -&gt; SDim ('Dim ('Name &quot;*&quot;) ('Size 1))
+-&gt; SSize ('Size 1) -&gt; SDim RoBERTaBaseTypeVocabDim
 forall (name :: Name Symbol) (size :: Size Nat).
 SName name -&gt; SSize size -&gt; SDim ('Dim name size)
 </span><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%26%3A"><span class="hs-operator hs-var">:&amp;:</span></a></span><span> </span><span class="annot"><span class="annottext">KnownNat 1 =&gt; SSize ('Size 1)
 forall (size :: Nat). KnownNat size =&gt; SSize ('Size size)
 </span><a href="Torch.GraduallyTyped.Shape.Type.html#SSize"><span class="hs-identifier hs-var">SSize</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">)</span><span>
-</span><span id="line-56"></span><span>    </span><span class="annot"><span class="annottext">SDim TestRoBERTaSeqDim
-</span><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.html#testRobertaSeqDim"><span class="hs-identifier hs-var">testRobertaSeqDim</span></a></span><span>
-</span><span id="line-57"></span><span>    </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">[Int]
-</span><a href="#local-6989586621679818569"><span class="hs-identifier hs-var">ids</span></a></span><span>
-</span><span id="line-58"></span><span>    </span><span class="hs-comment">-- [0, 133, 812, 9, 1470, 16, 646, 32804, 530, 8174, 2]</span><span>
-</span><span id="line-59"></span><span>    </span><span class="hs-special">]</span><span>
-</span><span id="line-60"></span><span>
-</span><span id="line-61"></span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.html#testRoBERTaInputType"><span class="hs-identifier hs-type">testRoBERTaInputType</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span>
-</span><span id="line-62"></span><span id="testRoBERTaInputType"><span class="annot"><span class="annottext">testRoBERTaInputType :: Tensor
+</span><span id="line-57"></span><span>        </span><span class="hs-special">(</span><span class="annot"><span class="annottext">KnownSymbol &quot;*&quot; =&gt; SName ('Name &quot;*&quot;)
+forall (name :: Symbol). KnownSymbol name =&gt; SName ('Name name)
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#SName"><span class="hs-identifier hs-var">SName</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-string">&quot;*&quot;</span></span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
+-&gt; SSize 'UncheckedSize -&gt; SDim ('Dim ('Name &quot;*&quot;) 'UncheckedSize)
+forall (name :: Name Symbol) (size :: Size Nat).
+SName name -&gt; SSize size -&gt; SDim ('Dim name size)
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%26%3A"><span class="hs-operator hs-var">:&amp;:</span></a></span><span> </span><span class="annot"><span class="annottext">SSize 'UncheckedSize
+</span><a href="#local-6989586621679810584"><span class="hs-identifier hs-var">seqSize</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-58"></span><span>        </span><span class="hs-special">[</span><span class="annot"><span class="annottext">[Int]
+</span><a href="#local-6989586621679810589"><span class="hs-identifier hs-var">ids</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-59"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679810576"><span class="annot"><span class="annottext">inputType :: Tensor
   ('Gradient 'WithoutGradient)
   ('Layout 'Dense)
   ('Device 'CPU)
   ('DataType 'Int64)
-  ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestRoBERTaSeqDim])
-</span><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.html#testRoBERTaInputType"><span class="hs-identifier hs-var hs-var">testRoBERTaInputType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-63"></span><span>  </span><span class="annot"><span class="annottext">TensorSpec
+  ('Shape
+     '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+</span><a href="#local-6989586621679810576"><span class="hs-identifier hs-var hs-var">inputType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-60"></span><span>          </span><span class="annot"><span class="annottext">TensorSpec
   ('Gradient 'WithoutGradient)
   ('Layout 'Dense)
   ('Device 'CPU)
   ('DataType 'Int64)
-  ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestRoBERTaSeqDim])
+  ('Shape
+     '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
 -&gt; Tensor
      ('Gradient 'WithoutGradient)
      ('Layout 'Dense)
      ('Device 'CPU)
      ('DataType 'Int64)
-     ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestRoBERTaSeqDim])
+     ('Shape
+        '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
 forall (gradient :: Gradient RequiresGradient)
        (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
        (dataType :: DataType DType)
@@ -172,39 +438,45 @@ TensorSpec gradient layout device dataType shape
    ('Layout 'Dense)
    ('Device 'CPU)
    ('DataType 'Int64)
-   ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestRoBERTaSeqDim])
+   ('Shape
+      '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
  -&gt; Tensor
       ('Gradient 'WithoutGradient)
       ('Layout 'Dense)
       ('Device 'CPU)
       ('DataType 'Int64)
-      ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestRoBERTaSeqDim]))
+      ('Shape
+         '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
 -&gt; TensorSpec
      ('Gradient 'WithoutGradient)
      ('Layout 'Dense)
      ('Device 'CPU)
      ('DataType 'Int64)
-     ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestRoBERTaSeqDim])
+     ('Shape
+        '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
 -&gt; Tensor
      ('Gradient 'WithoutGradient)
      ('Layout 'Dense)
      ('Device 'CPU)
      ('DataType 'Int64)
-     ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestRoBERTaSeqDim])
+     ('Shape
+        '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span>
-</span><span id="line-64"></span><span>    </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithoutGradient)
+</span><span id="line-61"></span><span>            </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithoutGradient)
 -&gt; SLayout ('Layout 'Dense)
 -&gt; SDevice ('Device 'CPU)
 -&gt; SDataType ('DataType 'Int64)
 -&gt; SShape
-     ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestRoBERTaSeqDim])
+     ('Shape
+        '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
 -&gt; TensorSpec
      ('Gradient 'WithoutGradient)
      ('Layout 'Dense)
      ('Device 'CPU)
      ('DataType 'Int64)
-     ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestRoBERTaSeqDim])
+     ('Shape
+        '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
 forall (gradient :: Gradient RequiresGradient)
        (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
        (dataType :: DataType DType)
@@ -216,92 +488,1081 @@ SGradient gradient
 -&gt; SShape shape
 -&gt; TensorSpec gradient layout device dataType shape
 </span><a href="Torch.GraduallyTyped.Tensor.Type.html#TensorSpec"><span class="hs-identifier hs-var">TensorSpec</span></a></span><span>
-</span><span id="line-65"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
+</span><span id="line-62"></span><span>              </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
 -&gt; SGradient ('Gradient 'WithoutGradient)
 forall (requiresGradient :: RequiresGradient).
 SRequiresGradient requiresGradient
 -&gt; SGradient ('Gradient requiresGradient)
 </span><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-var">SGradient</span></a></span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
 </span><a href="Torch.GraduallyTyped.RequiresGradient.html#SWithoutGradient"><span class="hs-identifier hs-var">SWithoutGradient</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-66"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SLayoutType 'Dense -&gt; SLayout ('Layout 'Dense)
+</span><span id="line-63"></span><span>              </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SLayoutType 'Dense -&gt; SLayout ('Layout 'Dense)
 forall (layoutType :: LayoutType).
 SLayoutType layoutType -&gt; SLayout ('Layout layoutType)
 </span><a href="Torch.GraduallyTyped.Layout.html#SLayout"><span class="hs-identifier hs-var">SLayout</span></a></span><span> </span><span class="annot"><span class="annottext">SLayoutType 'Dense
 </span><a href="Torch.GraduallyTyped.Layout.html#SDense"><span class="hs-identifier hs-var">SDense</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-67"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SDeviceType 'CPU -&gt; SDevice ('Device 'CPU)
+</span><span id="line-64"></span><span>              </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SDeviceType 'CPU -&gt; SDevice ('Device 'CPU)
 forall (deviceType :: DeviceType Nat).
 SDeviceType deviceType -&gt; SDevice ('Device deviceType)
 </span><a href="Torch.GraduallyTyped.Device.html#SDevice"><span class="hs-identifier hs-var">SDevice</span></a></span><span> </span><span class="annot"><span class="annottext">SDeviceType 'CPU
 </span><a href="Torch.GraduallyTyped.Device.html#SCPU"><span class="hs-identifier hs-var">SCPU</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-68"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SDType 'Int64 -&gt; SDataType ('DataType 'Int64)
+</span><span id="line-65"></span><span>              </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SDType 'Int64 -&gt; SDataType ('DataType 'Int64)
 forall (dType :: DType).
 SDType dType -&gt; SDataType ('DataType dType)
 </span><a href="Torch.GraduallyTyped.DType.html#SDataType"><span class="hs-identifier hs-var">SDataType</span></a></span><span> </span><span class="annot"><span class="annottext">SDType 'Int64
 </span><a href="Torch.GraduallyTyped.DType.html#SInt64"><span class="hs-identifier hs-var">SInt64</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-69"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SList '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestRoBERTaSeqDim]
+</span><span id="line-66"></span><span>              </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SList '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize]
 -&gt; SShape
-     ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestRoBERTaSeqDim])
+     ('Shape
+        '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
 forall (dims :: [Dim (Name Symbol) (Size Nat)]).
 SList dims -&gt; SShape ('Shape dims)
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#SShape"><span class="hs-identifier hs-var">SShape</span></a></span><span> </span><span class="annot"><span class="annottext">(SList '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestRoBERTaSeqDim]
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#SShape"><span class="hs-identifier hs-var">SShape</span></a></span><span> </span><span class="annot"><span class="annottext">(SList '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize]
  -&gt; SShape
-      ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestRoBERTaSeqDim]))
--&gt; SList '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestRoBERTaSeqDim]
+      ('Shape
+         '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+-&gt; SList
+     '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize]
 -&gt; SShape
-     ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestRoBERTaSeqDim])
+     ('Shape
+        '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">KnownSymbol &quot;*&quot; =&gt; SName ('Name &quot;*&quot;)
 forall (name :: Symbol). KnownSymbol name =&gt; SName ('Name name)
 </span><a href="Torch.GraduallyTyped.Shape.Type.html#SName"><span class="hs-identifier hs-var">SName</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-string">&quot;*&quot;</span></span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
--&gt; SSize ('Size 1) -&gt; SDim ('Dim ('Name &quot;*&quot;) ('Size 1))
+-&gt; SSize ('Size 1) -&gt; SDim RoBERTaBaseTypeVocabDim
 forall (name :: Name Symbol) (size :: Size Nat).
 SName name -&gt; SSize size -&gt; SDim ('Dim name size)
 </span><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%26%3A"><span class="hs-operator hs-var">:&amp;:</span></a></span><span> </span><span class="annot"><span class="annottext">KnownNat 1 =&gt; SSize ('Size 1)
 forall (size :: Nat). KnownNat size =&gt; SSize ('Size size)
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#SSize"><span class="hs-identifier hs-var">SSize</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">SDim ('Dim ('Name &quot;*&quot;) ('Size 1))
--&gt; SList '[TestRoBERTaSeqDim]
--&gt; SList '[ 'Dim ('Name &quot;*&quot;) ('Size 1), TestRoBERTaSeqDim]
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#SSize"><span class="hs-identifier hs-var">SSize</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">SDim RoBERTaBaseTypeVocabDim
+-&gt; SList '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]
+-&gt; SList
+     '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize]
 forall (dim :: Dim (Name Symbol) (Size Nat))
        (dims :: [Dim (Name Symbol) (Size Nat)]).
 SDim dim -&gt; SList dims -&gt; SList (dim : dims)
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%7C%3A"><span class="hs-operator hs-var">:|:</span></a></span><span> </span><span class="annot"><span class="annottext">SDim TestRoBERTaSeqDim
-</span><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.html#testRobertaSeqDim"><span class="hs-identifier hs-var">testRobertaSeqDim</span></a></span><span> </span><span class="annot"><span class="annottext">SDim TestRoBERTaSeqDim -&gt; SList '[] -&gt; SList '[TestRoBERTaSeqDim]
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%7C%3A"><span class="hs-operator hs-var">:|:</span></a></span><span> </span><span class="annot"><span class="annottext">KnownSymbol &quot;*&quot; =&gt; SName ('Name &quot;*&quot;)
+forall (name :: Symbol). KnownSymbol name =&gt; SName ('Name name)
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#SName"><span class="hs-identifier hs-var">SName</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-string">&quot;*&quot;</span></span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
+-&gt; SSize 'UncheckedSize -&gt; SDim ('Dim ('Name &quot;*&quot;) 'UncheckedSize)
+forall (name :: Name Symbol) (size :: Size Nat).
+SName name -&gt; SSize size -&gt; SDim ('Dim name size)
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%26%3A"><span class="hs-operator hs-var">:&amp;:</span></a></span><span> </span><span class="annot"><span class="annottext">SSize 'UncheckedSize
+</span><a href="#local-6989586621679810584"><span class="hs-identifier hs-var">seqSize</span></a></span><span> </span><span class="annot"><span class="annottext">SDim ('Dim ('Name &quot;*&quot;) 'UncheckedSize)
+-&gt; SList '[] -&gt; SList '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]
 forall (dim :: Dim (Name Symbol) (Size Nat))
        (dims :: [Dim (Name Symbol) (Size Nat)]).
 SDim dim -&gt; SList dims -&gt; SList (dim : dims)
 </span><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%7C%3A"><span class="hs-operator hs-var">:|:</span></a></span><span> </span><span class="annot"><span class="annottext">SList '[]
 forall a. SList '[]
 </span><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier hs-var">SNil</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-70"></span><span>
-</span><span id="line-71"></span><span class="hs-comment">-- testForwardRoBERTaBase :: IO ()</span><span>
-</span><span id="line-72"></span><span class="hs-comment">-- testForwardRoBERTaBase =</span><span>
-</span><span id="line-73"></span><span class="hs-comment">--   do</span><span>
-</span><span id="line-74"></span><span class="hs-comment">--     stateDict &lt;- stateDictFromPretrained &quot;/Users/tscholak/Projects/thirdParty/hasktorch/hasktorch/src/Torch/GraduallyTyped/NN/Transformer/bert-base-uncased.pt&quot;</span><span>
-</span><span id="line-75"></span><span class="hs-comment">--     RoBERTaModel GRoBERTaModel {..} &lt;-</span><span>
-</span><span id="line-76"></span><span class="hs-comment">--       flip evalStateT stateDict $</span><span>
-</span><span id="line-77"></span><span class="hs-comment">--         fromStateDict @(RoBERTaBase 'WithMLMHead _ _) (SGradient SWithGradient, SDevice SCPU) &quot;&quot;</span><span>
-</span><span id="line-78"></span><span class="hs-comment">--     encoderInput &lt;- testRoBERTaInput</span><span>
-</span><span id="line-79"></span><span class="hs-comment">--     let encoderInputType = testRoBERTaInputType</span><span>
-</span><span id="line-80"></span><span class="hs-comment">--         pos =</span><span>
-</span><span id="line-81"></span><span class="hs-comment">--           flip addScalar (2 :: Int) $</span><span>
-</span><span id="line-82"></span><span class="hs-comment">--             sArangeNaturals</span><span>
-</span><span id="line-83"></span><span class="hs-comment">--               (SGradient SWithoutGradient)</span><span>
-</span><span id="line-84"></span><span class="hs-comment">--               (SLayout SDense)</span><span>
-</span><span id="line-85"></span><span class="hs-comment">--               (SDevice SCPU)</span><span>
-</span><span id="line-86"></span><span class="hs-comment">--               (SDataType SInt64)</span><span>
-</span><span id="line-87"></span><span class="hs-comment">--               (sDimSize testRobertaSeqDim)</span><span>
-</span><span id="line-88"></span><span class="hs-comment">--         paddingMask = mkRoBERTaPaddingMask encoderInput</span><span>
-</span><span id="line-89"></span><span class="hs-comment">--     attentionMask &lt;- mkTransformerAttentionMask robertaDataType robertaAttentionMaskBias paddingMask</span><span>
-</span><span id="line-90"></span><span class="hs-comment">--     let input = EncoderOnlyTransformerInput encoderInput encoderInputType pos attentionMask</span><span>
-</span><span id="line-91"></span><span class="hs-comment">--     g &lt;- sMkGenerator (SDevice SCPU) 0</span><span>
-</span><span id="line-92"></span><span class="hs-comment">--     (EncoderOnlyTransformerOutput {..}, _) &lt;- forward robertaModel input g</span><span>
-</span><span id="line-93"></span><span class="hs-comment">--     let encoderOutput' = case eoEncoderOutput of</span><span>
-</span><span id="line-94"></span><span class="hs-comment">--           UnsafeTensor t -&gt; Tensor.asValue (Tensor.Unsafe t) :: [[[Float]]]</span><span>
-</span><span id="line-95"></span><span class="hs-comment">--     let firstLMHeadLogits = do</span><span>
-</span><span id="line-96"></span><span class="hs-comment">--           firstBatch &lt;- take 1 encoderOutput'</span><span>
-</span><span id="line-97"></span><span class="hs-comment">--           firstPositions &lt;- take 3 firstBatch</span><span>
-</span><span id="line-98"></span><span class="hs-comment">--           take 3 firstPositions</span><span>
-</span><span id="line-99"></span><span class="hs-comment">--     print firstLMHeadLogits</span><span>
-</span><span id="line-100"></span><span class="hs-comment">--     let firstLMHeadLogits' = [32.5267, -4.5318, 21.4297, 7.9570, -2.7508, 21.1128, -2.8331, -4.1595, 10.6294]</span><span>
-</span><span id="line-101"></span><span class="hs-comment">--     mapM_ (uncurry (assertApproxEqual &quot;failed approximate equality check&quot; 0.001)) $ zip firstLMHeadLogits firstLMHeadLogits'</span><span>
-</span><span id="line-102"></span></pre></body></html>
+</span><span id="line-67"></span><span>        </span><span id="local-6989586621679810569"><span class="annot"><span class="annottext">pos :: Tensor
+  ('Gradient 'WithoutGradient)
+  ('Layout 'Dense)
+  ('Device 'CPU)
+  ('DataType 'Int64)
+  ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+</span><a href="#local-6989586621679810569"><span class="hs-identifier hs-var hs-var">pos</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-68"></span><span>          </span><span class="annot"><span class="annottext">(Tensor
+   ('Gradient 'WithoutGradient)
+   ('Layout 'Dense)
+   ('Device 'CPU)
+   ('DataType 'Int64)
+   ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+ -&gt; Int
+ -&gt; Tensor
+      ('Gradient 'WithoutGradient)
+      ('Layout 'Dense)
+      ('Device 'CPU)
+      ('DataType 'Int64)
+      ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+-&gt; Int
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+forall a b c. (a -&gt; b -&gt; c) -&gt; b -&gt; a -&gt; c
+</span><span class="hs-identifier hs-var">flip</span></span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  ('Layout 'Dense)
+  ('Device 'CPU)
+  ('DataType 'Int64)
+  ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+-&gt; Int
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+forall other (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)]).
+Scalar other =&gt;
+Tensor gradient layout device dataType shape
+-&gt; other -&gt; Tensor gradient layout device dataType shape
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Pointwise.html#addScalar"><span class="hs-identifier hs-var">addScalar</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">2</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Tensor
+   ('Gradient 'WithoutGradient)
+   ('Layout 'Dense)
+   ('Device 'CPU)
+   ('DataType 'Int64)
+   ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+ -&gt; Tensor
+      ('Gradient 'WithoutGradient)
+      ('Layout 'Dense)
+      ('Device 'CPU)
+      ('DataType 'Int64)
+      ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-69"></span><span>            </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithoutGradient)
+-&gt; SLayout ('Layout 'Dense)
+-&gt; SDevice ('Device 'CPU)
+-&gt; SDataType ('DataType 'Int64)
+-&gt; SSize 'UncheckedSize
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+forall (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType) (size :: Size Nat)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)]).
+(shape ~ 'Shape '[ 'Dim ('Name &quot;*&quot;) size]) =&gt;
+SGradient gradient
+-&gt; SLayout layout
+-&gt; SDevice device
+-&gt; SDataType dataType
+-&gt; SSize size
+-&gt; Tensor gradient layout device dataType shape
+</span><a href="Torch.GraduallyTyped.Tensor.Creation.html#sArangeNaturals"><span class="hs-identifier hs-var">sArangeNaturals</span></a></span><span>
+</span><span id="line-70"></span><span>              </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
+-&gt; SGradient ('Gradient 'WithoutGradient)
+forall (requiresGradient :: RequiresGradient).
+SRequiresGradient requiresGradient
+-&gt; SGradient ('Gradient requiresGradient)
+</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-var">SGradient</span></a></span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
+</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SWithoutGradient"><span class="hs-identifier hs-var">SWithoutGradient</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-71"></span><span>              </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SLayoutType 'Dense -&gt; SLayout ('Layout 'Dense)
+forall (layoutType :: LayoutType).
+SLayoutType layoutType -&gt; SLayout ('Layout layoutType)
+</span><a href="Torch.GraduallyTyped.Layout.html#SLayout"><span class="hs-identifier hs-var">SLayout</span></a></span><span> </span><span class="annot"><span class="annottext">SLayoutType 'Dense
+</span><a href="Torch.GraduallyTyped.Layout.html#SDense"><span class="hs-identifier hs-var">SDense</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-72"></span><span>              </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SDeviceType 'CPU -&gt; SDevice ('Device 'CPU)
+forall (deviceType :: DeviceType Nat).
+SDeviceType deviceType -&gt; SDevice ('Device deviceType)
+</span><a href="Torch.GraduallyTyped.Device.html#SDevice"><span class="hs-identifier hs-var">SDevice</span></a></span><span> </span><span class="annot"><span class="annottext">SDeviceType 'CPU
+</span><a href="Torch.GraduallyTyped.Device.html#SCPU"><span class="hs-identifier hs-var">SCPU</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-73"></span><span>              </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SDType 'Int64 -&gt; SDataType ('DataType 'Int64)
+forall (dType :: DType).
+SDType dType -&gt; SDataType ('DataType dType)
+</span><a href="Torch.GraduallyTyped.DType.html#SDataType"><span class="hs-identifier hs-var">SDataType</span></a></span><span> </span><span class="annot"><span class="annottext">SDType 'Int64
+</span><a href="Torch.GraduallyTyped.DType.html#SInt64"><span class="hs-identifier hs-var">SInt64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-74"></span><span>              </span><span class="annot"><span class="annottext">SSize 'UncheckedSize
+</span><a href="#local-6989586621679810584"><span class="hs-identifier hs-var">seqSize</span></a></span><span>
+</span><span id="line-75"></span><span>        </span><span id="local-6989586621679810568"><span class="annot"><span class="annottext">paddingMask :: Tensor
+  ('Gradient 'WithoutGradient)
+  (Unify (Layout LayoutType) ('Layout 'Dense) ('Layout 'Dense))
+  (Unify (Device (DeviceType Nat)) ('Device 'CPU) ('Device 'CPU))
+  (Seq
+     (Unify (DataType DType) ('DataType 'Int64) ('DataType 'Int64))
+     ('DataType 'Bool))
+  (BroadcastShapesF
+     ('Shape
+        '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+     ('Shape '[RoBERTaBaseTypeVocabDim]))
+</span><a href="#local-6989586621679810568"><span class="hs-identifier hs-var hs-var">paddingMask</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  ('Layout 'Dense)
+  ('Device 'CPU)
+  ('DataType 'Int64)
+  ('Shape
+     '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify (Layout LayoutType) ('Layout 'Dense) ('Layout 'Dense))
+     (Unify (Device (DeviceType Nat)) ('Device 'CPU) ('Device 'CPU))
+     (Seq
+        (Unify (DataType DType) ('DataType 'Int64) ('DataType 'Int64))
+        ('DataType 'Bool))
+     (BroadcastShapesF
+        ('Shape
+           '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+        ('Shape '[RoBERTaBaseTypeVocabDim]))
+forall (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)]) output.
+MkTransformerPaddingMaskC layout device dataType shape output =&gt;
+Tensor gradient layout device dataType shape -&gt; output
+</span><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.Common.html#mkRoBERTaPaddingMask"><span class="hs-identifier hs-var">mkRoBERTaPaddingMask</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  ('Layout 'Dense)
+  ('Device 'CPU)
+  ('DataType 'Int64)
+  ('Shape
+     '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+</span><a href="#local-6989586621679810580"><span class="hs-identifier hs-var">input</span></a></span><span>
+</span><span id="line-76"></span><span>    </span><span id="local-6989586621679810566"><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  (Unify
+     (Layout LayoutType)
+     (Unify (Layout LayoutType) ('Layout 'Dense) ('Layout 'Dense))
+     ('Layout 'Dense))
+  (Unify (Device (DeviceType Nat)) ('Device 'CPU) ('Device 'CPU))
+  (Seq
+     (Unify
+        (DataType DType)
+        (Seq
+           (Unify (DataType DType) ('DataType 'Int64) ('DataType 'Int64))
+           ('DataType 'Bool))
+        ('DataType 'Bool))
+     RoBERTaDataType)
+  (BroadcastShapesF
+     (UnsqueezeF
+        ('SelectDim ('ByIndex 1))
+        (BroadcastShapesF
+           ('Shape
+              '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+           ('Shape '[RoBERTaBaseTypeVocabDim])))
+     ('Shape
+        '[RoBERTaBaseTypeVocabDim,
+          GetDimF
+            ('SelectDim ('ByIndex 1))
+            (BroadcastShapesF
+               ('Shape
+                  '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+               ('Shape '[RoBERTaBaseTypeVocabDim])),
+          GetDimF
+            ('SelectDim ('ByIndex 1))
+            (BroadcastShapesF
+               ('Shape
+                  '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+               ('Shape '[RoBERTaBaseTypeVocabDim]))]))
+</span><a href="#local-6989586621679810566"><span class="hs-identifier hs-var">attentionMask</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">SDataType RoBERTaDataType
+-&gt; Double
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify (Layout LayoutType) ('Layout 'Dense) ('Layout 'Dense))
+     (Unify (Device (DeviceType Nat)) ('Device 'CPU) ('Device 'CPU))
+     (Seq
+        (Unify (DataType DType) ('DataType 'Int64) ('DataType 'Int64))
+        ('DataType 'Bool))
+     (BroadcastShapesF
+        ('Shape
+           '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+        ('Shape '[RoBERTaBaseTypeVocabDim]))
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        (Unify
+           (Layout LayoutType)
+           (Unify (Layout LayoutType) ('Layout 'Dense) ('Layout 'Dense))
+           ('Layout 'Dense))
+        (Unify (Device (DeviceType Nat)) ('Device 'CPU) ('Device 'CPU))
+        (Seq
+           (Unify
+              (DataType DType)
+              (Seq
+                 (Unify (DataType DType) ('DataType 'Int64) ('DataType 'Int64))
+                 ('DataType 'Bool))
+              ('DataType 'Bool))
+           RoBERTaDataType)
+        (BroadcastShapesF
+           (UnsqueezeF
+              ('SelectDim ('ByIndex 1))
+              (BroadcastShapesF
+                 ('Shape
+                    '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+                 ('Shape '[RoBERTaBaseTypeVocabDim])))
+           ('Shape
+              '[RoBERTaBaseTypeVocabDim,
+                GetDimF
+                  ('SelectDim ('ByIndex 1))
+                  (BroadcastShapesF
+                     ('Shape
+                        '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+                     ('Shape '[RoBERTaBaseTypeVocabDim])),
+                GetDimF
+                  ('SelectDim ('ByIndex 1))
+                  (BroadcastShapesF
+                     ('Shape
+                        '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+                     ('Shape '[RoBERTaBaseTypeVocabDim]))])))
+forall (m :: * -&gt; *) (transformerDataType :: DataType DType)
+       (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)])
+       (seqDim :: Dim (Name Symbol) (Size Nat)) output.
+(MonadThrow m,
+ MkTransformerAttentionMaskC
+   transformerDataType
+   gradient
+   layout
+   device
+   dataType
+   shape
+   seqDim
+   output) =&gt;
+SDataType transformerDataType
+-&gt; Double
+-&gt; Tensor gradient layout device dataType shape
+-&gt; m output
+</span><a href="Torch.GraduallyTyped.NN.Transformer.Type.html#mkTransformerAttentionMask"><span class="hs-identifier hs-var">mkTransformerAttentionMask</span></a></span><span> </span><span class="annot"><span class="annottext">SDataType RoBERTaDataType
+</span><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.Common.html#robertaDataType"><span class="hs-identifier hs-var">robertaDataType</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="Torch.GraduallyTyped.NN.Transformer.RoBERTa.Common.html#robertaAttentionMaskBias"><span class="hs-identifier hs-var">robertaAttentionMaskBias</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  (Unify (Layout LayoutType) ('Layout 'Dense) ('Layout 'Dense))
+  (Unify (Device (DeviceType Nat)) ('Device 'CPU) ('Device 'CPU))
+  (Seq
+     (Unify (DataType DType) ('DataType 'Int64) ('DataType 'Int64))
+     ('DataType 'Bool))
+  (BroadcastShapesF
+     ('Shape
+        '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+     ('Shape '[RoBERTaBaseTypeVocabDim]))
+</span><a href="#local-6989586621679810568"><span class="hs-identifier hs-var">paddingMask</span></a></span><span>
+</span><span id="line-77"></span><span>
+</span><span id="line-78"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679810563"><span class="annot"><span class="annottext">eotInput :: EncoderOnlyTransformerInput
+  (Tensor
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape
+        '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+  (Tensor
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape
+        '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+  (Tensor
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+  (Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify
+        (Layout LayoutType)
+        (Unify (Layout LayoutType) ('Layout 'Dense) ('Layout 'Dense))
+        ('Layout 'Dense))
+     (Unify (Device (DeviceType Nat)) ('Device 'CPU) ('Device 'CPU))
+     (Seq
+        (Unify
+           (DataType DType)
+           (Seq
+              (Unify (DataType DType) ('DataType 'Int64) ('DataType 'Int64))
+              ('DataType 'Bool))
+           ('DataType 'Bool))
+        RoBERTaDataType)
+     (BroadcastShapesF
+        (UnsqueezeF
+           ('SelectDim ('ByIndex 1))
+           (BroadcastShapesF
+              ('Shape
+                 '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+              ('Shape '[RoBERTaBaseTypeVocabDim])))
+        ('Shape
+           '[RoBERTaBaseTypeVocabDim,
+             GetDimF
+               ('SelectDim ('ByIndex 1))
+               (BroadcastShapesF
+                  ('Shape
+                     '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+                  ('Shape '[RoBERTaBaseTypeVocabDim])),
+             GetDimF
+               ('SelectDim ('ByIndex 1))
+               (BroadcastShapesF
+                  ('Shape
+                     '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+                  ('Shape '[RoBERTaBaseTypeVocabDim]))])))
+</span><a href="#local-6989586621679810563"><span class="hs-identifier hs-var hs-var">eotInput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  ('Layout 'Dense)
+  ('Device 'CPU)
+  ('DataType 'Int64)
+  ('Shape
+     '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape
+        '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify
+        (Layout LayoutType)
+        (Unify (Layout LayoutType) ('Layout 'Dense) ('Layout 'Dense))
+        ('Layout 'Dense))
+     (Unify (Device (DeviceType Nat)) ('Device 'CPU) ('Device 'CPU))
+     (Seq
+        (Unify
+           (DataType DType)
+           (Seq
+              (Unify (DataType DType) ('DataType 'Int64) ('DataType 'Int64))
+              ('DataType 'Bool))
+           ('DataType 'Bool))
+        RoBERTaDataType)
+     (BroadcastShapesF
+        (UnsqueezeF
+           ('SelectDim ('ByIndex 1))
+           (BroadcastShapesF
+              ('Shape
+                 '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+              ('Shape '[RoBERTaBaseTypeVocabDim])))
+        ('Shape
+           '[RoBERTaBaseTypeVocabDim,
+             GetDimF
+               ('SelectDim ('ByIndex 1))
+               (BroadcastShapesF
+                  ('Shape
+                     '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+                  ('Shape '[RoBERTaBaseTypeVocabDim])),
+             GetDimF
+               ('SelectDim ('ByIndex 1))
+               (BroadcastShapesF
+                  ('Shape
+                     '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+                  ('Shape '[RoBERTaBaseTypeVocabDim]))]))
+-&gt; EncoderOnlyTransformerInput
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        ('Layout 'Dense)
+        ('Device 'CPU)
+        ('DataType 'Int64)
+        ('Shape
+           '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        ('Layout 'Dense)
+        ('Device 'CPU)
+        ('DataType 'Int64)
+        ('Shape
+           '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        ('Layout 'Dense)
+        ('Device 'CPU)
+        ('DataType 'Int64)
+        ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        (Unify
+           (Layout LayoutType)
+           (Unify (Layout LayoutType) ('Layout 'Dense) ('Layout 'Dense))
+           ('Layout 'Dense))
+        (Unify (Device (DeviceType Nat)) ('Device 'CPU) ('Device 'CPU))
+        (Seq
+           (Unify
+              (DataType DType)
+              (Seq
+                 (Unify (DataType DType) ('DataType 'Int64) ('DataType 'Int64))
+                 ('DataType 'Bool))
+              ('DataType 'Bool))
+           RoBERTaDataType)
+        (BroadcastShapesF
+           (UnsqueezeF
+              ('SelectDim ('ByIndex 1))
+              (BroadcastShapesF
+                 ('Shape
+                    '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+                 ('Shape '[RoBERTaBaseTypeVocabDim])))
+           ('Shape
+              '[RoBERTaBaseTypeVocabDim,
+                GetDimF
+                  ('SelectDim ('ByIndex 1))
+                  (BroadcastShapesF
+                     ('Shape
+                        '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+                     ('Shape '[RoBERTaBaseTypeVocabDim])),
+                GetDimF
+                  ('SelectDim ('ByIndex 1))
+                  (BroadcastShapesF
+                     ('Shape
+                        '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+                     ('Shape '[RoBERTaBaseTypeVocabDim]))])))
+forall input inputType pos attentionMask.
+input
+-&gt; inputType
+-&gt; pos
+-&gt; attentionMask
+-&gt; EncoderOnlyTransformerInput input inputType pos attentionMask
+</span><a href="Torch.GraduallyTyped.NN.Transformer.EncoderOnly.html#EncoderOnlyTransformerInput"><span class="hs-identifier hs-var">EncoderOnlyTransformerInput</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  ('Layout 'Dense)
+  ('Device 'CPU)
+  ('DataType 'Int64)
+  ('Shape
+     '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+</span><a href="#local-6989586621679810580"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  ('Layout 'Dense)
+  ('Device 'CPU)
+  ('DataType 'Int64)
+  ('Shape
+     '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+</span><a href="#local-6989586621679810576"><span class="hs-identifier hs-var">inputType</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  ('Layout 'Dense)
+  ('Device 'CPU)
+  ('DataType 'Int64)
+  ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+</span><a href="#local-6989586621679810569"><span class="hs-identifier hs-var">pos</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  (Unify
+     (Layout LayoutType)
+     (Unify (Layout LayoutType) ('Layout 'Dense) ('Layout 'Dense))
+     ('Layout 'Dense))
+  (Unify (Device (DeviceType Nat)) ('Device 'CPU) ('Device 'CPU))
+  (Seq
+     (Unify
+        (DataType DType)
+        (Seq
+           (Unify (DataType DType) ('DataType 'Int64) ('DataType 'Int64))
+           ('DataType 'Bool))
+        ('DataType 'Bool))
+     RoBERTaDataType)
+  (BroadcastShapesF
+     (UnsqueezeF
+        ('SelectDim ('ByIndex 1))
+        (BroadcastShapesF
+           ('Shape
+              '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+           ('Shape '[RoBERTaBaseTypeVocabDim])))
+     ('Shape
+        '[RoBERTaBaseTypeVocabDim,
+          GetDimF
+            ('SelectDim ('ByIndex 1))
+            (BroadcastShapesF
+               ('Shape
+                  '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+               ('Shape '[RoBERTaBaseTypeVocabDim])),
+          GetDimF
+            ('SelectDim ('ByIndex 1))
+            (BroadcastShapesF
+               ('Shape
+                  '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+               ('Shape '[RoBERTaBaseTypeVocabDim]))]))
+</span><a href="#local-6989586621679810566"><span class="hs-identifier hs-var">attentionMask</span></a></span><span>
+</span><span id="line-79"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Transformer.EncoderOnly.html#EncoderOnlyTransformerOutput"><span class="hs-identifier hs-type">EncoderOnlyTransformerOutput</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679810560"><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  (Unify
+     (Layout LayoutType)
+     ('Layout 'Dense)
+     (Unify
+        (Layout LayoutType)
+        ('Layout 'Dense)
+        (Unify
+           (Layout LayoutType)
+           ('Layout 'Dense)
+           (Unify
+              (Layout LayoutType)
+              ('Layout 'Dense)
+              (Unify
+                 (Layout LayoutType)
+                 ('Layout 'Dense)
+                 (Unify
+                    (Layout LayoutType)
+                    ('Layout 'Dense)
+                    (Unify
+                       (Layout LayoutType)
+                       (Unify (Layout LayoutType) ('Layout 'Dense) ('Layout 'Dense))
+                       ('Layout 'Dense))))))))
+  (Unify
+     (Device (DeviceType Nat))
+     (Unify
+        (Device (DeviceType Nat))
+        ('Device 'CPU)
+        (Unify
+           (Device (DeviceType Nat))
+           ('Device 'CPU)
+           (Unify (Device (DeviceType Nat)) ('Device 'CPU) ('Device 'CPU))))
+     ('Device 'CPU))
+  (Unify
+     (DataType DType)
+     RoBERTaDataType
+     (Unify
+        (DataType DType)
+        RoBERTaDataType
+        (Unify
+           (DataType DType)
+           RoBERTaDataType
+           (Unify
+              (DataType DType)
+              RoBERTaDataType
+              (Unify
+                 (DataType DType)
+                 RoBERTaDataType
+                 (Unify
+                    (DataType DType)
+                    RoBERTaDataType
+                    (Seq
+                       (Unify
+                          (DataType DType)
+                          (Seq
+                             (Unify (DataType DType) ('DataType 'Int64) ('DataType 'Int64))
+                             ('DataType 'Bool))
+                          ('DataType 'Bool))
+                       RoBERTaDataType)))))))
+  'UncheckedShape
+eoEncoderOutput :: forall encoderOutput.
+EncoderOnlyTransformerOutput encoderOutput -&gt; encoderOutput
+eoEncoderOutput :: Tensor
+  ('Gradient 'WithoutGradient)
+  (Unify
+     (Layout LayoutType)
+     ('Layout 'Dense)
+     (Unify
+        (Layout LayoutType)
+        ('Layout 'Dense)
+        (Unify
+           (Layout LayoutType)
+           ('Layout 'Dense)
+           (Unify
+              (Layout LayoutType)
+              ('Layout 'Dense)
+              (Unify
+                 (Layout LayoutType)
+                 ('Layout 'Dense)
+                 (Unify
+                    (Layout LayoutType)
+                    ('Layout 'Dense)
+                    (Unify
+                       (Layout LayoutType)
+                       (Unify (Layout LayoutType) ('Layout 'Dense) ('Layout 'Dense))
+                       ('Layout 'Dense))))))))
+  (Unify
+     (Device (DeviceType Nat))
+     (Unify
+        (Device (DeviceType Nat))
+        ('Device 'CPU)
+        (Unify
+           (Device (DeviceType Nat))
+           ('Device 'CPU)
+           (Unify (Device (DeviceType Nat)) ('Device 'CPU) ('Device 'CPU))))
+     ('Device 'CPU))
+  (Unify
+     (DataType DType)
+     RoBERTaDataType
+     (Unify
+        (DataType DType)
+        RoBERTaDataType
+        (Unify
+           (DataType DType)
+           RoBERTaDataType
+           (Unify
+              (DataType DType)
+              RoBERTaDataType
+              (Unify
+                 (DataType DType)
+                 RoBERTaDataType
+                 (Unify
+                    (DataType DType)
+                    RoBERTaDataType
+                    (Seq
+                       (Unify
+                          (DataType DType)
+                          (Seq
+                             (Unify (DataType DType) ('DataType 'Int64) ('DataType 'Int64))
+                             ('DataType 'Bool))
+                          ('DataType 'Bool))
+                       RoBERTaDataType)))))))
+  'UncheckedShape
+</span><a href="Torch.GraduallyTyped.NN.Transformer.EncoderOnly.html#eoEncoderOutput"><span class="hs-glyph hs-var hs-var">..</span></a></span></span><span class="hs-special">}</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Generator
+  (Unify
+     (Device (DeviceType Nat))
+     (Unify
+        (Device (DeviceType Nat))
+        ('Device 'CPU)
+        (Unify
+           (Device (DeviceType Nat))
+           ('Device 'CPU)
+           (Unify (Device (DeviceType Nat)) ('Device 'CPU) ('Device 'CPU))))
+     ('Device 'CPU))
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">EncoderOnlyTransformer
+  'RoBERTa
+  'WithLMHead
+  RoBERTaBaseNumLayers
+  ('Gradient 'WithoutGradient)
+  ('Device 'CPU)
+  RoBERTaDataType
+  RoBERTaBaseHeadDim
+  RoBERTaBaseHeadEmbedDim
+  RoBERTaBaseEmbedDim
+  RoBERTaBaseEmbedDim
+  RoBERTaBaseFFNDim
+  RoBERTaPosEncDim
+  RoBERTaBaseVocabDim
+  RoBERTaBaseTypeVocabDim
+-&gt; EncoderOnlyTransformerInput
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        ('Layout 'Dense)
+        ('Device 'CPU)
+        ('DataType 'Int64)
+        ('Shape
+           '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        ('Layout 'Dense)
+        ('Device 'CPU)
+        ('DataType 'Int64)
+        ('Shape
+           '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        ('Layout 'Dense)
+        ('Device 'CPU)
+        ('DataType 'Int64)
+        ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        (Unify
+           (Layout LayoutType)
+           (Unify (Layout LayoutType) ('Layout 'Dense) ('Layout 'Dense))
+           ('Layout 'Dense))
+        (Unify (Device (DeviceType Nat)) ('Device 'CPU) ('Device 'CPU))
+        (Seq
+           (Unify
+              (DataType DType)
+              (Seq
+                 (Unify (DataType DType) ('DataType 'Int64) ('DataType 'Int64))
+                 ('DataType 'Bool))
+              ('DataType 'Bool))
+           RoBERTaDataType)
+        (BroadcastShapesF
+           (UnsqueezeF
+              ('SelectDim ('ByIndex 1))
+              (BroadcastShapesF
+                 ('Shape
+                    '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+                 ('Shape '[RoBERTaBaseTypeVocabDim])))
+           ('Shape
+              '[RoBERTaBaseTypeVocabDim,
+                GetDimF
+                  ('SelectDim ('ByIndex 1))
+                  (BroadcastShapesF
+                     ('Shape
+                        '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+                     ('Shape '[RoBERTaBaseTypeVocabDim])),
+                GetDimF
+                  ('SelectDim ('ByIndex 1))
+                  (BroadcastShapesF
+                     ('Shape
+                        '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+                     ('Shape '[RoBERTaBaseTypeVocabDim]))])))
+-&gt; Generator ('Device 'CPU)
+-&gt; IO
+     (EncoderOnlyTransformerOutput
+        (Tensor
+           ('Gradient 'WithoutGradient)
+           (Unify
+              (Layout LayoutType)
+              ('Layout 'Dense)
+              (Unify
+                 (Layout LayoutType)
+                 ('Layout 'Dense)
+                 (Unify
+                    (Layout LayoutType)
+                    ('Layout 'Dense)
+                    (Unify
+                       (Layout LayoutType)
+                       ('Layout 'Dense)
+                       (Unify
+                          (Layout LayoutType)
+                          ('Layout 'Dense)
+                          (Unify
+                             (Layout LayoutType)
+                             ('Layout 'Dense)
+                             (Unify
+                                (Layout LayoutType)
+                                (Unify (Layout LayoutType) ('Layout 'Dense) ('Layout 'Dense))
+                                ('Layout 'Dense))))))))
+           (Unify
+              (Device (DeviceType Nat))
+              (Unify
+                 (Device (DeviceType Nat))
+                 ('Device 'CPU)
+                 (Unify
+                    (Device (DeviceType Nat))
+                    ('Device 'CPU)
+                    (Unify (Device (DeviceType Nat)) ('Device 'CPU) ('Device 'CPU))))
+              ('Device 'CPU))
+           (Unify
+              (DataType DType)
+              RoBERTaDataType
+              (Unify
+                 (DataType DType)
+                 RoBERTaDataType
+                 (Unify
+                    (DataType DType)
+                    RoBERTaDataType
+                    (Unify
+                       (DataType DType)
+                       RoBERTaDataType
+                       (Unify
+                          (DataType DType)
+                          RoBERTaDataType
+                          (Unify
+                             (DataType DType)
+                             RoBERTaDataType
+                             (Seq
+                                (Unify
+                                   (DataType DType)
+                                   (Seq
+                                      (Unify (DataType DType) ('DataType 'Int64) ('DataType 'Int64))
+                                      ('DataType 'Bool))
+                                   ('DataType 'Bool))
+                                RoBERTaDataType)))))))
+           'UncheckedShape),
+      Generator
+        (Unify
+           (Device (DeviceType Nat))
+           (Unify
+              (Device (DeviceType Nat))
+              ('Device 'CPU)
+              (Unify
+                 (Device (DeviceType Nat))
+                 ('Device 'CPU)
+                 (Unify (Device (DeviceType Nat)) ('Device 'CPU) ('Device 'CPU))))
+           ('Device 'CPU)))
+forall model input (generatorDevice :: Device (DeviceType Nat))
+       output (generatorOutputDevice :: Device (DeviceType Nat))
+       (m :: * -&gt; *).
+(HasForward
+   model input generatorDevice output generatorOutputDevice,
+ MonadThrow m) =&gt;
+model
+-&gt; input
+-&gt; Generator generatorDevice
+-&gt; m (output, Generator generatorOutputDevice)
+</span><a href="Torch.GraduallyTyped.NN.Class.html#forward"><span class="hs-identifier hs-var">forward</span></a></span><span> </span><span class="annot"><span class="annottext">EncoderOnlyTransformer
+  'RoBERTa
+  'WithLMHead
+  RoBERTaBaseNumLayers
+  ('Gradient 'WithoutGradient)
+  ('Device 'CPU)
+  RoBERTaDataType
+  RoBERTaBaseHeadDim
+  RoBERTaBaseHeadEmbedDim
+  RoBERTaBaseEmbedDim
+  RoBERTaBaseEmbedDim
+  RoBERTaBaseFFNDim
+  RoBERTaPosEncDim
+  RoBERTaBaseVocabDim
+  RoBERTaBaseTypeVocabDim
+</span><a href="#local-6989586621679810599"><span class="hs-identifier hs-var">robertaModel</span></a></span><span> </span><span class="annot"><span class="annottext">EncoderOnlyTransformerInput
+  (Tensor
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape
+        '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+  (Tensor
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape
+        '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+  (Tensor
+     ('Gradient 'WithoutGradient)
+     ('Layout 'Dense)
+     ('Device 'CPU)
+     ('DataType 'Int64)
+     ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+  (Tensor
+     ('Gradient 'WithoutGradient)
+     (Unify
+        (Layout LayoutType)
+        (Unify (Layout LayoutType) ('Layout 'Dense) ('Layout 'Dense))
+        ('Layout 'Dense))
+     (Unify (Device (DeviceType Nat)) ('Device 'CPU) ('Device 'CPU))
+     (Seq
+        (Unify
+           (DataType DType)
+           (Seq
+              (Unify (DataType DType) ('DataType 'Int64) ('DataType 'Int64))
+              ('DataType 'Bool))
+           ('DataType 'Bool))
+        RoBERTaDataType)
+     (BroadcastShapesF
+        (UnsqueezeF
+           ('SelectDim ('ByIndex 1))
+           (BroadcastShapesF
+              ('Shape
+                 '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+              ('Shape '[RoBERTaBaseTypeVocabDim])))
+        ('Shape
+           '[RoBERTaBaseTypeVocabDim,
+             GetDimF
+               ('SelectDim ('ByIndex 1))
+               (BroadcastShapesF
+                  ('Shape
+                     '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+                  ('Shape '[RoBERTaBaseTypeVocabDim])),
+             GetDimF
+               ('SelectDim ('ByIndex 1))
+               (BroadcastShapesF
+                  ('Shape
+                     '[RoBERTaBaseTypeVocabDim, 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+                  ('Shape '[RoBERTaBaseTypeVocabDim]))])))
+</span><a href="#local-6989586621679810563"><span class="hs-identifier hs-var">eotInput</span></a></span><span> </span><span class="annot"><span class="annottext">Generator ('Device 'CPU)
+</span><a href="#local-6989586621679810590"><span class="hs-identifier hs-var">g</span></a></span><span>
+</span><span id="line-80"></span><span>
+</span><span id="line-81"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679810557"><span class="annot"><span class="annottext">encoderOutput' :: [[[Float]]]
+</span><a href="#local-6989586621679810557"><span class="hs-identifier hs-var hs-var">encoderOutput'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  (Unify
+     (Layout LayoutType)
+     ('Layout 'Dense)
+     (Unify
+        (Layout LayoutType)
+        ('Layout 'Dense)
+        (Unify
+           (Layout LayoutType)
+           ('Layout 'Dense)
+           (Unify
+              (Layout LayoutType)
+              ('Layout 'Dense)
+              (Unify
+                 (Layout LayoutType)
+                 ('Layout 'Dense)
+                 (Unify
+                    (Layout LayoutType)
+                    ('Layout 'Dense)
+                    (Unify
+                       (Layout LayoutType)
+                       (Unify (Layout LayoutType) ('Layout 'Dense) ('Layout 'Dense))
+                       ('Layout 'Dense))))))))
+  (Unify
+     (Device (DeviceType Nat))
+     (Unify
+        (Device (DeviceType Nat))
+        ('Device 'CPU)
+        (Unify
+           (Device (DeviceType Nat))
+           ('Device 'CPU)
+           (Unify (Device (DeviceType Nat)) ('Device 'CPU) ('Device 'CPU))))
+     ('Device 'CPU))
+  (Unify
+     (DataType DType)
+     RoBERTaDataType
+     (Unify
+        (DataType DType)
+        RoBERTaDataType
+        (Unify
+           (DataType DType)
+           RoBERTaDataType
+           (Unify
+              (DataType DType)
+              RoBERTaDataType
+              (Unify
+                 (DataType DType)
+                 RoBERTaDataType
+                 (Unify
+                    (DataType DType)
+                    RoBERTaDataType
+                    (Seq
+                       (Unify
+                          (DataType DType)
+                          (Seq
+                             (Unify (DataType DType) ('DataType 'Int64) ('DataType 'Int64))
+                             ('DataType 'Bool))
+                          ('DataType 'Bool))
+                       RoBERTaDataType)))))))
+  'UncheckedShape
+</span><a href="#local-6989586621679810560"><span class="hs-identifier hs-var">eoEncoderOutput</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-82"></span><span>          </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#UnsafeTensor"><span class="hs-identifier hs-type">UnsafeTensor</span></a></span><span> </span><span id="local-6989586621679810555"><span class="annot"><a href="#local-6989586621679810555"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Tensor -&gt; [[[Float]]]
+forall a. TensorLike a =&gt; Tensor -&gt; a
+</span><a href="../../../../hasktorch/html/src"><span class="hs-identifier hs-var">Tensor.asValue</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ATenTensor -&gt; Tensor
+</span><a href="../../../../hasktorch/html/src"><span class="hs-identifier hs-var">Tensor.Unsafe</span></a></span><span> </span><span class="annot"><span class="annottext">ATenTensor
+</span><a href="#local-6989586621679810555"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="hs-special">[</span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">]</span><span class="hs-special">]</span><span class="hs-special">]</span><span>
+</span><span id="line-83"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679810553"><span class="annot"><span class="annottext">firstLMHeadLogits :: [Float]
+</span><a href="#local-6989586621679810553"><span class="hs-identifier hs-var hs-var">firstLMHeadLogits</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-84"></span><span>          </span><span id="local-6989586621679810552"><span class="annot"><span class="annottext">[[Float]]
+</span><a href="#local-6989586621679810552"><span class="hs-identifier hs-var">firstBatch</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [[[Float]]] -&gt; [[[Float]]]
+forall a. Int -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">take</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">[[[Float]]]
+</span><a href="#local-6989586621679810557"><span class="hs-identifier hs-var">encoderOutput'</span></a></span><span>
+</span><span id="line-85"></span><span>          </span><span id="local-6989586621679810550"><span class="annot"><span class="annottext">[Float]
+</span><a href="#local-6989586621679810550"><span class="hs-identifier hs-var">firstPositions</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [[Float]] -&gt; [[Float]]
+forall a. Int -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">take</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">3</span></span><span> </span><span class="annot"><span class="annottext">[[Float]]
+</span><a href="#local-6989586621679810552"><span class="hs-identifier hs-var">firstBatch</span></a></span><span>
+</span><span id="line-86"></span><span>          </span><span class="annot"><span class="annottext">Int -&gt; [Float] -&gt; [Float]
+forall a. Int -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">take</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">3</span></span><span> </span><span class="annot"><span class="annottext">[Float]
+</span><a href="#local-6989586621679810550"><span class="hs-identifier hs-var">firstPositions</span></a></span><span>
+</span><span id="line-87"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679810549"><span class="annot"><span class="annottext">firstLMHeadLogits' :: [Float]
+</span><a href="#local-6989586621679810549"><span class="hs-identifier hs-var hs-var">firstLMHeadLogits'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">32.5267</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">4.5318</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">21.4297</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">7.9570</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">2.7508</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">21.1128</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">2.8331</span></span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">4.1595</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">10.6294</span></span><span class="hs-special">]</span><span>
+</span><span id="line-88"></span><span>    </span><span class="annot"><span class="annottext">((Float, Float) -&gt; IO ()) -&gt; [(Float, Float)] -&gt; IO ()
+forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
+(Foldable t, Monad m) =&gt;
+(a -&gt; m b) -&gt; t a -&gt; m ()
+</span><span class="hs-identifier hs-var">mapM_</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Float -&gt; Float -&gt; IO ()) -&gt; (Float, Float) -&gt; IO ()
+forall a b c. (a -&gt; b -&gt; c) -&gt; (a, b) -&gt; c
+</span><span class="hs-identifier hs-var">uncurry</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">FilePath -&gt; Float -&gt; Float -&gt; Float -&gt; IO ()
+forall a.
+(HasCallStack, Ord a, Num a, Show a) =&gt;
+FilePath -&gt; a -&gt; a -&gt; a -&gt; IO ()
+</span><a href="../file:///nix/store/d9rc2h31drxy3swyhm4cw2wjq41c1s43-HUnit-approx-lib-HUnit-approx-1.1.1.1-haddock-doc/share/doc/HUnit-approx/html/src"><span class="hs-identifier hs-var">assertApproxEqual</span></a></span><span> </span><span class="annot"><span class="annottext">FilePath
+</span><span class="hs-string">&quot;failed approximate equality check&quot;</span></span><span> </span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">0.001</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">([(Float, Float)] -&gt; IO ()) -&gt; [(Float, Float)] -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Float] -&gt; [Float] -&gt; [(Float, Float)]
+forall a b. [a] -&gt; [b] -&gt; [(a, b)]
+</span><span class="hs-identifier hs-var">zip</span></span><span> </span><span class="annot"><span class="annottext">[Float]
+</span><a href="#local-6989586621679810553"><span class="hs-identifier hs-var">firstLMHeadLogits</span></a></span><span> </span><span class="annot"><span class="annottext">[Float]
+</span><a href="#local-6989586621679810549"><span class="hs-identifier hs-var">firstLMHeadLogits'</span></a></span><span>
+</span><span id="line-89"></span></pre></body></html>
