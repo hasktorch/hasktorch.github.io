@@ -1095,8 +1095,9 @@ withoutGradient :: forall gradient layout device dataType shape. Tensor gradient
 -- | Takes a tensor that does not requires gradient computations and
 --   returns a copy that requires them.
 withGradient :: forall gradient layout device dataType shape. Tensor gradient layout device dataType shape -> IO (Tensor ('Gradient 'WithGradient) layout device dataType shape)
-class SSetGradient (gradient :: Gradient RequiresGradient)
-sSetGradient :: forall gradient' layout device dataType shape. SSetGradient gradient => SGradient gradient -> Tensor gradient' layout device dataType shape -> IO (Tensor gradient layout device dataType shape)
+
+-- | Turn gradient computations off or on for a tensor.
+sSetGradient :: forall gradient gradient' layout device dataType shape. SGradient gradient -> Tensor gradient' layout device dataType shape -> IO (Tensor gradient layout device dataType shape)
 class SGetGradient (gradient :: Gradient RequiresGradient)
 
 -- | Returns the gradually typed information for whether or not gradient
@@ -1186,8 +1187,9 @@ toDense :: forall m gradient layout device dataType shape. MonadThrow m => Tenso
 
 -- | Returns a sparse copy of the tensor.
 toSparse :: forall m gradient layout device dataType shape. MonadThrow m => Tensor gradient layout device dataType shape -> m (Tensor gradient ('Layout 'Sparse) device dataType shape)
-class SSetLayout (layout :: Layout LayoutType)
-sSetLayout :: forall m gradient layout' device dataType shape. (SSetLayout layout, MonadThrow m) => SLayout layout -> Tensor gradient layout' device dataType shape -> m (Tensor gradient layout device dataType shape)
+
+-- | Set the memory layout of a tensor to a given layout.
+sSetLayout :: forall m gradient layout layout' device dataType shape. MonadThrow m => SLayout layout -> Tensor gradient layout' device dataType shape -> m (Tensor gradient layout device dataType shape)
 class SGetLayout (layout :: Layout LayoutType)
 
 -- | Returns the gradually typed memory layout of the input tensor.
@@ -1276,8 +1278,9 @@ cpu :: forall m gradient layout device dataType shape. MonadThrow m => Tensor gr
 
 -- | Returns a copy of the tensor in CUDA memory.
 cuda :: forall m gradient layout device dataType shape. MonadThrow m => Tensor gradient layout device dataType shape -> m (Tensor gradient layout ('Device ('CUDA 0)) dataType shape)
-class SSetDevice (device :: Device (DeviceType Nat))
-sSetDevice :: forall m gradient layout device' dataType shape. (SSetDevice device, MonadThrow m) => SDevice device -> Tensor gradient layout device' dataType shape -> m (Tensor gradient layout device dataType shape)
+
+-- | Reallocates a tensor on the specified device.
+sSetDevice :: forall m gradient layout device device' dataType shape. MonadThrow m => SDevice device -> Tensor gradient layout device' dataType shape -> m (Tensor gradient layout device dataType shape)
 class SGetDevice (device :: Device (DeviceType Nat))
 
 -- | Returns the gradually typed compute device of the input tensor.
@@ -1389,6 +1392,9 @@ float :: forall m gradient layout device dataType shape. MonadThrow m => Tensor 
 -- | Returns a copy of the tensor converted to the 32-bit floating point
 --   format <a>Double</a>.
 double :: forall m gradient layout device dataType shape. MonadThrow m => Tensor gradient layout device dataType shape -> m (Tensor gradient layout device ('DataType 'Double) shape)
+
+-- | Set the data type of a tensor to the specified data type.
+sSetDataType :: forall m gradient layout device dataType dataType' shape. MonadThrow m => SDataType dataType -> Tensor gradient layout device dataType' shape -> m (Tensor gradient layout device dataType shape)
 class SGetDataType (dataType :: DataType DType)
 
 -- | Returns the gradually typed compute data type of the input tensor.
@@ -1692,8 +1698,8 @@ DimMismatchError :: [Int] -> [Int] -> DimMismatchError
 [dmeFirst] :: DimMismatchError -> [Int]
 [dmeOther] :: DimMismatchError -> [Int]
 checkDims :: MonadThrow m => [Int] -> [Int] -> m ()
-sChangeTensorOptions :: forall gradient layout device dataType gradientFrom layoutFrom deviceFrom dataTypeFrom shape. SGradient gradient -> SLayout layout -> SDevice device -> SDataType dataType -> Tensor gradientFrom layoutFrom deviceFrom dataTypeFrom shape -> Tensor gradient layout device dataType shape
-changeTensorOptions :: forall gradient layout device dataType gradientFrom layoutFrom deviceFrom dataTypeFrom shape. (SingI gradient, SingI layout, SingI device, SingI dataType) => Tensor gradientFrom layoutFrom deviceFrom dataTypeFrom shape -> Tensor gradient layout device dataType shape
+sSetTensorOptions :: forall gradient layout device dataType gradientFrom layoutFrom deviceFrom dataTypeFrom shape. SGradient gradient -> SLayout layout -> SDevice device -> SDataType dataType -> Tensor gradientFrom layoutFrom deviceFrom dataTypeFrom shape -> IO (Tensor gradient layout device dataType shape)
+setTensorOptions :: forall gradient layout device dataType gradientFrom layoutFrom deviceFrom dataTypeFrom shape. (SingI gradient, SingI layout, SingI device, SingI dataType) => Tensor gradientFrom layoutFrom deviceFrom dataTypeFrom shape -> IO (Tensor gradient layout device dataType shape)
 instance GHC.Show.Show Torch.GraduallyTyped.Tensor.Type.GradientError
 instance GHC.Show.Show Torch.GraduallyTyped.Tensor.Type.LayoutError
 instance GHC.Show.Show Torch.GraduallyTyped.Tensor.Type.DeviceError
@@ -1710,7 +1716,6 @@ instance (Torch.GraduallyTyped.Tensor.Type.TensorLike a dType dims, Torch.Gradua
 instance (Torch.GraduallyTyped.Tensor.Type.TensorLike a dType dims, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a, Data.Singletons.Internal.SingI dType, Torch.GraduallyTyped.Tensor.Type.SGetDims dimsOut, 'Torch.GraduallyTyped.Shape.Type.Shape dimsOut GHC.Types.~ Torch.GraduallyTyped.Shape.Class.InsertDimF ('Torch.GraduallyTyped.Shape.Type.SelectDim ('Torch.GraduallyTyped.Shape.Type.ByIndex 0)) ('Torch.GraduallyTyped.Shape.Type.Shape dims) ('Torch.GraduallyTyped.Shape.Type.Dim ('Torch.GraduallyTyped.Shape.Type.Name "*") 'Torch.GraduallyTyped.Shape.Type.UncheckedSize)) => Torch.GraduallyTyped.Tensor.Type.TensorLike [a] dType dimsOut
 instance (Torch.GraduallyTyped.Tensor.Type.TensorLike a dType dims, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a, Data.Singletons.Internal.SingI dType, Torch.GraduallyTyped.Tensor.Type.SGetDims dimsOut, 'Torch.GraduallyTyped.Shape.Type.Shape dimsOut GHC.Types.~ Torch.GraduallyTyped.Shape.Class.InsertDimF ('Torch.GraduallyTyped.Shape.Type.SelectDim ('Torch.GraduallyTyped.Shape.Type.ByIndex 0)) ('Torch.GraduallyTyped.Shape.Type.Shape dims) ('Torch.GraduallyTyped.Shape.Type.Dim ('Torch.GraduallyTyped.Shape.Type.Name "*") 'Torch.GraduallyTyped.Shape.Type.UncheckedSize)) => Torch.GraduallyTyped.Tensor.Type.TensorLike (Data.Vector.Vector a) dType dimsOut
 instance (GHC.TypeNats.KnownNat n, Torch.GraduallyTyped.Tensor.Type.TensorLike a dType dims, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a, Data.Singletons.Internal.SingI dType, Torch.GraduallyTyped.Tensor.Type.SGetDims dimsOut, 'Torch.GraduallyTyped.Shape.Type.Shape dimsOut GHC.Types.~ Torch.GraduallyTyped.Shape.Class.InsertDimF ('Torch.GraduallyTyped.Shape.Type.SelectDim ('Torch.GraduallyTyped.Shape.Type.ByIndex 0)) ('Torch.GraduallyTyped.Shape.Type.Shape dims) ('Torch.GraduallyTyped.Shape.Type.Dim ('Torch.GraduallyTyped.Shape.Type.Name "*") ('Torch.GraduallyTyped.Shape.Type.Size n))) => Torch.GraduallyTyped.Tensor.Type.TensorLike (Data.Vector.Sized.Vector n a) dType dimsOut
-instance (Data.Singletons.Internal.SingI gradient, Data.Singletons.Internal.SingI layout, Data.Singletons.Internal.SingI device, Data.Singletons.Internal.SingI dType) => Torch.GraduallyTyped.Tensor.Type.TensorLike (Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout device ('Torch.GraduallyTyped.DType.DataType dType) ('Torch.GraduallyTyped.Shape.Type.Shape dims)) dType dims
 instance Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw GHC.Types.Bool
 instance Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw GHC.Types.Int
 instance Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw GHC.Types.Float
@@ -1735,23 +1740,14 @@ instance GHC.Exception.Type.Exception Torch.GraduallyTyped.Tensor.Type.DeviceErr
 instance Torch.GraduallyTyped.Tensor.Type.SGetDevice 'Torch.GraduallyTyped.Device.UncheckedDevice
 instance Torch.GraduallyTyped.Tensor.Type.SGetDevice ('Torch.GraduallyTyped.Device.Device 'Torch.GraduallyTyped.Device.CPU)
 instance GHC.TypeNats.KnownNat deviceIndex => Torch.GraduallyTyped.Tensor.Type.SGetDevice ('Torch.GraduallyTyped.Device.Device ('Torch.GraduallyTyped.Device.CUDA deviceIndex))
-instance Torch.GraduallyTyped.Tensor.Type.SSetDevice 'Torch.GraduallyTyped.Device.UncheckedDevice
-instance Torch.GraduallyTyped.Tensor.Type.SSetDevice ('Torch.GraduallyTyped.Device.Device 'Torch.GraduallyTyped.Device.CPU)
-instance Torch.GraduallyTyped.Tensor.Type.SSetDevice ('Torch.GraduallyTyped.Device.Device ('Torch.GraduallyTyped.Device.CUDA idx))
 instance GHC.Exception.Type.Exception Torch.GraduallyTyped.Tensor.Type.LayoutError
 instance Torch.GraduallyTyped.Tensor.Type.SGetLayout 'Torch.GraduallyTyped.Layout.UncheckedLayout
 instance Torch.GraduallyTyped.Tensor.Type.SGetLayout ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Sparse)
 instance Torch.GraduallyTyped.Tensor.Type.SGetLayout ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense)
-instance Torch.GraduallyTyped.Tensor.Type.SSetLayout 'Torch.GraduallyTyped.Layout.UncheckedLayout
-instance Torch.GraduallyTyped.Tensor.Type.SSetLayout ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense)
-instance Torch.GraduallyTyped.Tensor.Type.SSetLayout ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Sparse)
 instance GHC.Exception.Type.Exception Torch.GraduallyTyped.Tensor.Type.GradientError
 instance Torch.GraduallyTyped.Tensor.Type.SGetGradient 'Torch.GraduallyTyped.RequiresGradient.UncheckedGradient
 instance Torch.GraduallyTyped.Tensor.Type.SGetGradient ('Torch.GraduallyTyped.RequiresGradient.Gradient 'Torch.GraduallyTyped.RequiresGradient.WithGradient)
 instance Torch.GraduallyTyped.Tensor.Type.SGetGradient ('Torch.GraduallyTyped.RequiresGradient.Gradient 'Torch.GraduallyTyped.RequiresGradient.WithoutGradient)
-instance Torch.GraduallyTyped.Tensor.Type.SSetGradient 'Torch.GraduallyTyped.RequiresGradient.UncheckedGradient
-instance Torch.GraduallyTyped.Tensor.Type.SSetGradient ('Torch.GraduallyTyped.RequiresGradient.Gradient 'Torch.GraduallyTyped.RequiresGradient.WithGradient)
-instance Torch.GraduallyTyped.Tensor.Type.SSetGradient ('Torch.GraduallyTyped.RequiresGradient.Gradient 'Torch.GraduallyTyped.RequiresGradient.WithoutGradient)
 instance GHC.Show.Show (Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout device dataType shape)
 instance GHC.Num.Num (Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout device dataType shape)
 instance Torch.Internal.Class.Castable (Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout device dataType shape) (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Tensor)
@@ -1920,7 +1916,7 @@ instance GHC.Show.Show Torch.GraduallyTyped.NN.Class.ToStateDictError
 instance Torch.GraduallyTyped.NN.Class.HasStateDict ()
 instance Torch.GraduallyTyped.NN.Class.HasStateDict model => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Class.NamedModel model)
 instance (Torch.GraduallyTyped.NN.Class.HasStateDict a, Torch.GraduallyTyped.NN.Class.HasStateDict b) => Torch.GraduallyTyped.NN.Class.HasStateDict (a, b)
-instance (Torch.GraduallyTyped.Tensor.Type.SSetGradient gradient, Torch.GraduallyTyped.Tensor.Type.SSetDevice device) => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout device dataType shape)
+instance Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout device dataType shape)
 instance Torch.GraduallyTyped.NN.Class.HasStateDict a => Torch.GraduallyTyped.NN.Class.HasStateDict (Data.Vector.Sized.Vector n a)
 instance GHC.Exception.Type.Exception Torch.GraduallyTyped.NN.Class.ToStateDictError
 instance GHC.Exception.Type.Exception Torch.GraduallyTyped.NN.Class.FromStateDictError
@@ -3324,7 +3320,7 @@ type PegasusSym0 = 'Pegasus :: TransformerStyle
 type BERTSym0 = 'BERT :: TransformerStyle
 type RoBERTaSym0 = 'RoBERTa :: TransformerStyle
 type GPT2Sym0 = 'GPT2 :: TransformerStyle
-data STransformerStyle z_a1pPw
+data STransformerStyle z_a1p3r
 [ST5] :: STransformerStyle ('T5 :: TransformerStyle)
 [SByT5] :: STransformerStyle ('ByT5 :: TransformerStyle)
 [SBART] :: STransformerStyle ('BART :: TransformerStyle)
@@ -3338,7 +3334,7 @@ WithoutHead :: TransformerHead
 WithLMHead :: TransformerHead
 type WithoutHeadSym0 = 'WithoutHead :: TransformerHead
 type WithLMHeadSym0 = 'WithLMHead :: TransformerHead
-data STransformerHead z_a1pW2
+data STransformerHead z_a1p9X
 [SWithoutHead] :: STransformerHead ('WithoutHead :: TransformerHead)
 [SWithLMHead] :: STransformerHead ('WithLMHead :: TransformerHead)
 padded :: Integral n => n -> a -> [a] -> [a]
@@ -3499,7 +3495,7 @@ data Embedding (gradient :: Gradient RequiresGradient) (layout :: Layout LayoutT
 data EmbeddingSpec (gradient :: Gradient RequiresGradient) (layout :: Layout LayoutType) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (embedNumDim :: Dim (Name Symbol) (Size Nat)) (embedDim :: Dim (Name Symbol) (Size Nat)) (paddingIdx :: Maybe Nat)
 [EmbeddingSpec] :: forall gradient layout device dataType embedNumDim embedDim paddingIdx. SGradient gradient -> SLayout layout -> SDevice device -> SDataType dataType -> SDim embedNumDim -> SDim embedDim -> SMaybe paddingIdx -> EmbeddingSpec gradient layout device dataType embedNumDim embedDim paddingIdx
 instance (output GHC.Types.~ Torch.GraduallyTyped.NN.Sparse.Embedding gradient layout (device Torch.GraduallyTyped.Unify.<+> generatorDevice) dataType embedNumDim embedDim paddingIdx, generatorOutputDevice GHC.Types.~ (device Torch.GraduallyTyped.Unify.<+> generatorDevice)) => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Sparse.Embedding gradient layout device dataType embedNumDim embedDim paddingIdx) generatorDevice output generatorOutputDevice
-instance (Torch.GraduallyTyped.Tensor.Type.SSetGradient gradient, Torch.GraduallyTyped.Tensor.Type.SSetDevice device) => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Sparse.Embedding gradient layout device dataType embedNumDim embedDim paddingIdx)
+instance Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Sparse.Embedding gradient layout device dataType embedNumDim embedDim paddingIdx)
 instance (Torch.GraduallyTyped.Tensor.Type.SGetLayout layout, output GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor (gradient Torch.GraduallyTyped.Unify.<|> gradient') (layout Torch.GraduallyTyped.Unify.<+> layout') (device Torch.GraduallyTyped.Unify.<+> device') (Torch.GraduallyTyped.Prelude.Seq (dataType' Torch.GraduallyTyped.Unify.<+> 'Torch.GraduallyTyped.DType.DataType 'Torch.GraduallyTyped.DType.Int64) dataType) (Torch.GraduallyTyped.NN.Functional.Sparse.EmbeddingF ('Torch.GraduallyTyped.Shape.Type.Shape '[embedNumDim, embedDim]) shape')) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Sparse.Embedding gradient layout device dataType embedNumDim embedDim 'GHC.Maybe.Nothing) (Torch.GraduallyTyped.Tensor.Type.Tensor gradient' layout' device' dataType' shape') generatorDevice output generatorDevice
 instance (Torch.GraduallyTyped.Tensor.Type.SGetLayout layout, GHC.TypeNats.KnownNat paddingIdx, output GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor (gradient Torch.GraduallyTyped.Unify.<|> gradient') (layout Torch.GraduallyTyped.Unify.<+> layout') (device Torch.GraduallyTyped.Unify.<+> device') (Torch.GraduallyTyped.Prelude.Seq (dataType' Torch.GraduallyTyped.Unify.<+> 'Torch.GraduallyTyped.DType.DataType 'Torch.GraduallyTyped.DType.Int64) dataType) (Torch.GraduallyTyped.NN.Functional.Sparse.EmbeddingF ('Torch.GraduallyTyped.Shape.Type.Shape '[embedNumDim, embedDim]) shape')) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Sparse.Embedding gradient layout device dataType embedNumDim embedDim ('GHC.Maybe.Just paddingIdx)) (Torch.GraduallyTyped.Tensor.Type.Tensor gradient' layout' device' dataType' shape') generatorDevice output generatorDevice
 
@@ -3522,7 +3518,7 @@ data LayerNorm (hasBias :: HasBias) (gradient :: Gradient RequiresGradient) (dev
 data LayerNormSpec (hasBias :: HasBias) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (normalizedShape :: Shape [Dim (Name Symbol) (Size Nat)])
 [LayerNormSpec] :: forall hasBias gradient device dataType normalizedShape. SHasBias hasBias -> SGradient gradient -> SDevice device -> SDataType dataType -> SShape normalizedShape -> Double -> LayerNormSpec hasBias gradient device dataType normalizedShape
 instance Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Normalization.LayerNorm hasBias gradient device dataType normalizedShape) generatorDevice (Torch.GraduallyTyped.NN.Normalization.LayerNorm hasBias gradient device dataType normalizedShape) generatorDevice
-instance (Torch.GraduallyTyped.Tensor.Type.SSetGradient gradient, Torch.GraduallyTyped.Tensor.Type.SSetDevice device) => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Normalization.LayerNorm hasBias gradient device dataType normalizedShape)
+instance Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Normalization.LayerNorm hasBias gradient device dataType normalizedShape)
 instance (Torch.GraduallyTyped.Tensor.Type.SGetShape normalizedShape, output GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor (gradient Torch.GraduallyTyped.Unify.<|> gradient') ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense Torch.GraduallyTyped.Unify.<+> layout') (device Torch.GraduallyTyped.Unify.<+> device') (dataType Torch.GraduallyTyped.Unify.<+> dataType') (Torch.GraduallyTyped.NN.Functional.Normalization.LayerNormWithBiasF normalizedShape normalizedShape shape')) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Normalization.LayerNorm 'Torch.GraduallyTyped.NN.Type.WithBias gradient device dataType normalizedShape) (Torch.GraduallyTyped.Tensor.Type.Tensor gradient' layout' device' dataType' shape') generatorDevice output generatorDevice
 instance (Torch.GraduallyTyped.Tensor.Type.SGetShape normalizedShape, Torch.GraduallyTyped.Tensor.Type.SGetShape shape', output GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor (gradient Torch.GraduallyTyped.Unify.<|> gradient') ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense Torch.GraduallyTyped.Unify.<+> layout') (device Torch.GraduallyTyped.Unify.<+> device') (dataType Torch.GraduallyTyped.Unify.<+> dataType') (Torch.GraduallyTyped.NN.Functional.Normalization.LayerNormWithoutBiasF normalizedShape shape')) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Normalization.LayerNorm 'Torch.GraduallyTyped.NN.Type.WithoutBias gradient device dataType normalizedShape) (Torch.GraduallyTyped.Tensor.Type.Tensor gradient' layout' device' dataType' shape') generatorDevice output generatorDevice
 
