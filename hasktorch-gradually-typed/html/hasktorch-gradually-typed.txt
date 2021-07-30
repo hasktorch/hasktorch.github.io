@@ -169,6 +169,7 @@ type family If (cond :: Bool) (tru :: k) (fls :: k) :: k
 data Nat
 type family (a :: Nat) + (b :: Nat) :: Nat
 type family (a :: Nat) * (b :: Nat) :: Nat
+type family CmpNat (a :: Nat) (b :: Nat) :: Ordering
 type family TypeError (a :: ErrorMessage) :: b
 data ErrorMessage
 Text :: Symbol -> ErrorMessage
@@ -186,6 +187,8 @@ pattern IsChecked :: a -> IsChecked a
 pattern Demoted :: SingKind k => Demote k -> Sing (a :: k)
 pattern Demoted' :: (SingKind k, Demote k ~ IsChecked t) => t -> Sing (a :: k)
 forgetIsChecked :: IsChecked a -> a
+pattern (:|:) :: forall a as. Sing a -> SList as -> SList (a : as)
+infixr 8 :|:
 type family All (c :: k -> Constraint) (xs :: [k]) :: Constraint
 class KnownElem k x where {
     type family ElemValF k :: Type;
@@ -308,6 +311,8 @@ type family LiftTimesMaybe (a :: Maybe Nat) (b :: Maybe Nat) :: Maybe Nat
 type family LiftTypeEqMaybe (a :: Maybe k) (b :: Maybe k') :: Constraint
 type family Concat (xs :: [k]) (ys :: [k]) :: [k]
 type Reverse xs = ReverseImplF xs '[]
+type family (<?) (a :: Nat) (b :: Nat)
+type family When (cond :: Bool) (constraint :: Constraint) :: Constraint
 whenM :: Monad m => m Bool -> m () -> m ()
 unlessM :: Monad m => m Bool -> m () -> m ()
 ifM :: Monad m => m Bool -> m a -> m a -> m a
@@ -333,6 +338,7 @@ infixr 3 <&&>
 --   <b>not</b> short-circuiting.
 (<||>) :: Applicative a => a Bool -> a Bool -> a Bool
 infixr 2 <||>
+instance GHC.Base.Functor Torch.GraduallyTyped.Prelude.IsChecked
 instance GHC.Generics.Generic (Torch.GraduallyTyped.Prelude.IsChecked a)
 instance GHC.Show.Show a => GHC.Show.Show (Torch.GraduallyTyped.Prelude.IsChecked a)
 instance GHC.Classes.Ord a => GHC.Classes.Ord (Torch.GraduallyTyped.Prelude.IsChecked a)
@@ -352,7 +358,7 @@ Dense :: LayoutType
 Sparse :: LayoutType
 type DenseSym0 = 'Dense :: LayoutType
 type SparseSym0 = 'Sparse :: LayoutType
-data SLayoutType z_azTk
+data SLayoutType z_aAk3
 [SDense] :: SLayoutType ('Dense :: LayoutType)
 [SSparse] :: SLayoutType ('Sparse :: LayoutType)
 class KnownLayoutType (layoutType :: LayoutType)
@@ -393,18 +399,19 @@ module Torch.GraduallyTyped.Index.Type
 data Index (index :: Type)
 [UncheckedIndex] :: forall index. Index index
 [Index] :: forall index. index -> Index index
+[NegativeIndex] :: forall index. index -> Index index
 data SIndex (index :: Index Nat)
-[SUncheckedIndex] :: Natural -> SIndex 'UncheckedIndex
+[SUncheckedIndex] :: Integer -> SIndex 'UncheckedIndex
 [SIndex] :: forall index. KnownNat index => SIndex ('Index index)
+[SNegativeIndex] :: forall index. KnownNat index => SIndex ('NegativeIndex index)
 type family IndexF (index :: Index Nat) :: Nat
-class KnownIndex (index :: Index Nat)
-indexVal :: KnownIndex index => Index Natural
+newtype DemotedIndex
+DemotedIndex :: Integer -> DemotedIndex
 instance GHC.Show.Show index => GHC.Show.Show (Torch.GraduallyTyped.Index.Type.Index index)
 instance GHC.Show.Show (Torch.GraduallyTyped.Index.Type.SIndex index)
-instance Torch.GraduallyTyped.Index.Type.KnownIndex 'Torch.GraduallyTyped.Index.Type.UncheckedIndex
-instance GHC.TypeNats.KnownNat index => Torch.GraduallyTyped.Index.Type.KnownIndex ('Torch.GraduallyTyped.Index.Type.Index index)
 instance Data.Singletons.Internal.SingKind (Torch.GraduallyTyped.Index.Type.Index GHC.Types.Nat)
 instance GHC.TypeNats.KnownNat index => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Index.Type.Index index)
+instance GHC.TypeNats.KnownNat index => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Index.Type.NegativeIndex index)
 
 module Torch.GraduallyTyped.Device
 
@@ -520,7 +527,7 @@ type QInt8Sym0 = 'QInt8 :: DType
 type QUInt8Sym0 = 'QUInt8 :: DType
 type QInt32Sym0 = 'QInt32 :: DType
 type BFloat16Sym0 = 'BFloat16 :: DType
-data SDType z_aDnC
+data SDType z_aE8C
 [SBool] :: SDType ('Bool :: DType)
 [SUInt8] :: SDType ('UInt8 :: DType)
 [SInt8] :: SDType ('Int8 :: DType)
@@ -615,7 +622,7 @@ WithGradient :: RequiresGradient
 WithoutGradient :: RequiresGradient
 type WithGradientSym0 = 'WithGradient :: RequiresGradient
 type WithoutGradientSym0 = 'WithoutGradient :: RequiresGradient
-data SRequiresGradient z_aGHc
+data SRequiresGradient z_aHsc
 [SWithGradient] :: SRequiresGradient ('WithGradient :: RequiresGradient)
 [SWithoutGradient] :: SRequiresGradient ('WithoutGradient :: RequiresGradient)
 class KnownRequiresGradient (requiresGradient :: RequiresGradient)
@@ -744,8 +751,6 @@ data Shape (dims :: Type)
 data SShape (shape :: Shape [Dim (Name Symbol) (Size Nat)])
 [SUncheckedShape] :: [Dim String Integer] -> SShape 'UncheckedShape
 [SShape] :: forall dims. SList dims -> SShape ('Shape dims)
-pattern (:|:) :: forall (dim :: Dim (Name Symbol) (Size Nat)) (dims :: [Dim (Name Symbol) (Size Nat)]). SDim dim -> SList dims -> SList (dim : dims)
-infixr 8 :|:
 class KnownShape (shape :: Shape [Dim (Name Symbol) (Size Nat)])
 shapeVal :: KnownShape shape => Shape [Dim (Name String) (Size Integer)]
 type family GetShapes f
@@ -942,7 +947,7 @@ type family (!) (shape :: Shape [Dim (Name Symbol) (Size Nat)]) (_k :: k) :: Dim
 --   
 --   <pre>
 --   &gt;&gt;&gt; :type sGetDimFromShape (SSelectDim $ SByIndex @2) shape
---   sGetDim (SSelectDim $ SByIndex @2) shape
+--   sGetDimFromShape (SSelectDim $ SByIndex @2) shape
 --     :: MonadThrow m =&gt; m (SDim (TypeError ...))
 --   </pre>
 sGetDimFromShape :: forall selectDim shape dim m. (dim ~ GetDimF selectDim shape, MonadThrow m) => SSelectDim selectDim -> SShape shape -> m (SDim dim)
@@ -966,6 +971,7 @@ type family InsertDimImplF (by :: By Symbol Nat) (dims :: [Dim (Name Symbol) (Si
 type InsertDimErrorMessage (by :: By Symbol Nat) (dims :: [Dim (Name Symbol) (Size Nat)]) (dim :: Dim (Name Symbol) (Size Nat)) = "Cannot insert the dimension" % "" % "    '" <> dim <> "'" % "" % "before the first dimension matching" % "" % "    '" <> by <> "'" % "" % "in the shape" % "" % "    '" <> dims <> "'." % ""
 type family InsertDimCheckF (by :: By Symbol Nat) (dims :: [Dim (Name Symbol) (Size Nat)]) (dim :: Dim (Name Symbol) (Size Nat)) (result :: Maybe [Dim (Name Symbol) (Size Nat)]) :: [Dim (Name Symbol) (Size Nat)]
 type family InsertDimF (selectDim :: SelectDim (By Symbol Nat)) (shape :: Shape [Dim (Name Symbol) (Size Nat)]) (dim :: Dim (Name Symbol) (Size Nat)) :: Shape [Dim (Name Symbol) (Size Nat)]
+type family PrependDimF (dim :: Dim (Name Symbol) (Size Nat)) (shape :: Shape [Dim (Name Symbol) (Size Nat)]) :: Shape [Dim (Name Symbol) (Size Nat)]
 type family RemoveDimByIndexF (index :: Maybe Nat) (dims :: [Dim (Name Symbol) (Size Nat)]) :: Maybe [Dim (Name Symbol) (Size Nat)]
 type family RemoveDimImplF (by :: By Symbol Nat) (dims :: [Dim (Name Symbol) (Size Nat)]) :: Maybe [Dim (Name Symbol) (Size Nat)]
 type RemoveDimErrorMessage (by :: By Symbol Nat) (dims :: [Dim (Name Symbol) (Size Nat)]) = "Cannot remove the dimension by" % "" % "    '" <> by <> "'" % "" % "in the shape" % "" % "    '" <> dims <> "'." % ""
@@ -1425,12 +1431,12 @@ sGetDataType :: forall gradient layout device shape. SGetDataType dataType => Te
 --   
 --   &gt;&gt;&gt; t = sOnes' $ SDataType SFloat
 --   
---   &gt;&gt;&gt; dType t
+--   &gt;&gt;&gt; getDType t
 --   Float
 --   
 --   &gt;&gt;&gt; t = sOnes' $ SUncheckedDataType Float
 --   
---   &gt;&gt;&gt; dType t
+--   &gt;&gt;&gt; getDType t
 --   Float
 --   </pre>
 getDType :: forall gradient layout device shape. SGetDataType dataType => Tensor gradient layout device dataType shape -> DType
@@ -1702,6 +1708,7 @@ DimMismatchError :: [Int] -> [Int] -> DimMismatchError
 [dmeFirst] :: DimMismatchError -> [Int]
 [dmeOther] :: DimMismatchError -> [Int]
 checkDims :: MonadThrow m => [Int] -> [Int] -> m ()
+unzip3 :: Functor f => f (a, b, c) -> (f a, f b, f c)
 sSetTensorOptions :: forall gradient layout device dataType gradientFrom layoutFrom deviceFrom dataTypeFrom shape. SGradient gradient -> SLayout layout -> SDevice device -> SDataType dataType -> Tensor gradientFrom layoutFrom deviceFrom dataTypeFrom shape -> IO (Tensor gradient layout device dataType shape)
 setTensorOptions :: forall gradient layout device dataType gradientFrom layoutFrom deviceFrom dataTypeFrom shape. (SingI gradient, SingI layout, SingI device, SingI dataType) => Tensor gradientFrom layoutFrom deviceFrom dataTypeFrom shape -> IO (Tensor gradient layout device dataType shape)
 instance GHC.Show.Show Torch.GraduallyTyped.Tensor.Type.GradientError
@@ -1717,6 +1724,7 @@ instance Torch.GraduallyTyped.Tensor.Type.TensorLike GHC.Types.Int 'Torch.Gradua
 instance Torch.GraduallyTyped.Tensor.Type.TensorLike GHC.Types.Float 'Torch.GraduallyTyped.DType.Float '[]
 instance Torch.GraduallyTyped.Tensor.Type.TensorLike GHC.Types.Double 'Torch.GraduallyTyped.DType.Double '[]
 instance (Torch.GraduallyTyped.Tensor.Type.TensorLike a dType dims, Torch.GraduallyTyped.Tensor.Type.TensorLike b dType dims', Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw b, Data.Singletons.Internal.SingI dType, Torch.GraduallyTyped.Tensor.Type.SGetDims dimsOut, 'Torch.GraduallyTyped.Shape.Type.Shape dimsOut GHC.Types.~ Torch.GraduallyTyped.Shape.Class.InsertDimF ('Torch.GraduallyTyped.Shape.Type.SelectDim ('Torch.GraduallyTyped.Shape.Type.ByIndex 0)) ('Torch.GraduallyTyped.Shape.Type.Shape (dims Torch.GraduallyTyped.Unify.<+> dims')) ('Torch.GraduallyTyped.Shape.Type.Dim ('Torch.GraduallyTyped.Shape.Type.Name "*") ('Torch.GraduallyTyped.Shape.Type.Size 2))) => Torch.GraduallyTyped.Tensor.Type.TensorLike (a, b) dType dimsOut
+instance (Torch.GraduallyTyped.Tensor.Type.TensorLike a dType dims, Torch.GraduallyTyped.Tensor.Type.TensorLike b dType dims', Torch.GraduallyTyped.Tensor.Type.TensorLike c dType dims', Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw b, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw c, Data.Singletons.Internal.SingI dType, Torch.GraduallyTyped.Tensor.Type.SGetDims dimsOut, 'Torch.GraduallyTyped.Shape.Type.Shape dimsOut GHC.Types.~ Torch.GraduallyTyped.Shape.Class.InsertDimF ('Torch.GraduallyTyped.Shape.Type.SelectDim ('Torch.GraduallyTyped.Shape.Type.ByIndex 0)) ('Torch.GraduallyTyped.Shape.Type.Shape (dims Torch.GraduallyTyped.Unify.<+> dims')) ('Torch.GraduallyTyped.Shape.Type.Dim ('Torch.GraduallyTyped.Shape.Type.Name "*") ('Torch.GraduallyTyped.Shape.Type.Size 3))) => Torch.GraduallyTyped.Tensor.Type.TensorLike (a, b, c) dType dimsOut
 instance (Torch.GraduallyTyped.Tensor.Type.TensorLike a dType dims, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a, Data.Singletons.Internal.SingI dType, Torch.GraduallyTyped.Tensor.Type.SGetDims dimsOut, 'Torch.GraduallyTyped.Shape.Type.Shape dimsOut GHC.Types.~ Torch.GraduallyTyped.Shape.Class.InsertDimF ('Torch.GraduallyTyped.Shape.Type.SelectDim ('Torch.GraduallyTyped.Shape.Type.ByIndex 0)) ('Torch.GraduallyTyped.Shape.Type.Shape dims) ('Torch.GraduallyTyped.Shape.Type.Dim ('Torch.GraduallyTyped.Shape.Type.Name "*") 'Torch.GraduallyTyped.Shape.Type.UncheckedSize)) => Torch.GraduallyTyped.Tensor.Type.TensorLike [a] dType dimsOut
 instance (Torch.GraduallyTyped.Tensor.Type.TensorLike a dType dims, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a, Data.Singletons.Internal.SingI dType, Torch.GraduallyTyped.Tensor.Type.SGetDims dimsOut, 'Torch.GraduallyTyped.Shape.Type.Shape dimsOut GHC.Types.~ Torch.GraduallyTyped.Shape.Class.InsertDimF ('Torch.GraduallyTyped.Shape.Type.SelectDim ('Torch.GraduallyTyped.Shape.Type.ByIndex 0)) ('Torch.GraduallyTyped.Shape.Type.Shape dims) ('Torch.GraduallyTyped.Shape.Type.Dim ('Torch.GraduallyTyped.Shape.Type.Name "*") 'Torch.GraduallyTyped.Shape.Type.UncheckedSize)) => Torch.GraduallyTyped.Tensor.Type.TensorLike (Data.Vector.Vector a) dType dimsOut
 instance (GHC.TypeNats.KnownNat n, Torch.GraduallyTyped.Tensor.Type.TensorLike a dType dims, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a, Data.Singletons.Internal.SingI dType, Torch.GraduallyTyped.Tensor.Type.SGetDims dimsOut, 'Torch.GraduallyTyped.Shape.Type.Shape dimsOut GHC.Types.~ Torch.GraduallyTyped.Shape.Class.InsertDimF ('Torch.GraduallyTyped.Shape.Type.SelectDim ('Torch.GraduallyTyped.Shape.Type.ByIndex 0)) ('Torch.GraduallyTyped.Shape.Type.Shape dims) ('Torch.GraduallyTyped.Shape.Type.Dim ('Torch.GraduallyTyped.Shape.Type.Name "*") ('Torch.GraduallyTyped.Shape.Type.Size n))) => Torch.GraduallyTyped.Tensor.Type.TensorLike (Data.Vector.Sized.Vector n a) dType dimsOut
@@ -1725,6 +1733,7 @@ instance Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw GHC.Types.Int
 instance Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw GHC.Types.Float
 instance Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw GHC.Types.Double
 instance (Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw b) => Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw (a, b)
+instance (Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw b, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw c) => Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw (a, b, c)
 instance Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a => Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw [a]
 instance Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a => Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw (Data.Vector.Vector a)
 instance (GHC.TypeNats.KnownNat n, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a) => Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw (Data.Vector.Sized.Vector n a)
@@ -1863,7 +1872,7 @@ sArangeNaturals :: forall gradient layout device dataType size shape. shape ~ 'S
 
 -- | Create a typed one-dimensional tensor of the numbers <tt>0</tt> to
 --   <tt>size -1</tt>.
-arangeNaturals :: forall gradient layout device dataType size shape. (shape ~ 'Shape '[ 'Dim ('Name "*") size], SingI gradient, SingI layout, SingI device, SingI dataType, SingI size) => Tensor gradient layout device dataType shape
+arangeNaturals :: forall size gradient layout device dataType shape. (shape ~ 'Shape '[ 'Dim ('Name "*") size], SingI gradient, SingI layout, SingI device, SingI dataType, SingI size) => Tensor gradient layout device dataType shape
 
 -- | Create a gradually typed rectangular tensor with ones on the diagonal
 --   and zeros elsewhere.
@@ -1871,7 +1880,7 @@ sEye :: forall gradient layout device dataType rows cols shape. shape ~ 'Shape '
 
 -- | Create a typed rectangular tensor with ones on the diagonal and zeros
 --   elsewhere.
-eye :: forall gradient layout device dataType rows cols shape. (shape ~ 'Shape '[ 'Dim ('Name "*") rows, 'Dim ('Name "*") cols], SingI gradient, SingI layout, SingI device, SingI dataType, SingI rows, SingI cols) => Tensor gradient layout device dataType shape
+eye :: forall rows cols gradient layout device dataType shape. (shape ~ 'Shape '[ 'Dim ('Name "*") rows, 'Dim ('Name "*") cols], SingI gradient, SingI layout, SingI device, SingI dataType, SingI rows, SingI cols) => Tensor gradient layout device dataType shape
 
 -- | Create a gradually typed square tensor with ones on the diagonal and
 --   zeros elsewhere.
@@ -1879,7 +1888,7 @@ sEyeSquare :: forall gradient layout device dataType size shape. shape ~ 'Shape 
 
 -- | Create a typed square tensor with ones on the diagonal and zeros
 --   elsewhere.
-eyeSquare :: forall gradient layout device dataType size shape. (shape ~ 'Shape '[ 'Dim ('Name "*") size, 'Dim ('Name "*") size], SingI gradient, SingI layout, SingI device, SingI dataType, SingI size) => Tensor gradient layout device dataType shape
+eyeSquare :: forall size gradient layout device dataType shape. (shape ~ 'Shape '[ 'Dim ('Name "*") size, 'Dim ('Name "*") size], SingI gradient, SingI layout, SingI device, SingI dataType, SingI size) => Tensor gradient layout device dataType shape
 
 module Torch.GraduallyTyped.NN.Class
 data NamedModel model
@@ -1960,7 +1969,7 @@ type family BoolReductionF (reduction :: Symbol) (selectDim :: SelectDim (By Sym
 --   
 --   &gt;&gt;&gt; (t, _) &lt;- sRandn (TensorSpec (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat) shape) g
 --   
---   &gt;&gt;&gt; t' &lt;- all $ bool t
+--   &gt;&gt;&gt; t' &lt;- all =&lt;&lt; bool t
 --   
 --   &gt;&gt;&gt; :type t'
 --   t'
@@ -1984,7 +1993,7 @@ all :: forall requiresGradient layout device dataType shape m. MonadThrow m => T
 --   
 --   &gt;&gt;&gt; (t, _) &lt;- sRandn (TensorSpec (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat) shape) g
 --   
---   &gt;&gt;&gt; t' &lt;- sAllDim (SSelectDim (SByIndex @1)) $ bool t
+--   &gt;&gt;&gt; t' &lt;- sAllDim (SSelectDim (SByIndex @1)) =&lt;&lt; bool t
 --   
 --   &gt;&gt;&gt; :type t'
 --   t'
@@ -2013,7 +2022,7 @@ sAllDim :: forall selectDim gradient layout device dataType shape shape' m. (Mon
 --   
 --   &gt;&gt;&gt; (t, _) &lt;- randn @('Gradient 'WithoutGradient) @('Layout 'Dense) @('Device 'CPU) @('DataType 'Float) @Shape' g
 --   
---   &gt;&gt;&gt; t' &lt;- allDim @('SelectDim ('ByIndex 1)) $ bool t
+--   &gt;&gt;&gt; t' &lt;- allDim @('SelectDim ('ByIndex 1)) =&lt;&lt; bool t
 --   
 --   &gt;&gt;&gt; :type t'
 --   t'
@@ -2035,7 +2044,7 @@ allDim :: forall selectDim gradient layout device dataType shape shape' m. (Sing
 --   
 --   &gt;&gt;&gt; (t, _) &lt;- sRandn (TensorSpec (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat) shape) g
 --   
---   &gt;&gt;&gt; t' &lt;- any $ bool t
+--   &gt;&gt;&gt; t' &lt;- any =&lt;&lt; bool t
 --   
 --   &gt;&gt;&gt; :type t'
 --   t'
@@ -2059,7 +2068,7 @@ any :: forall requiresGradient layout device dataType shape m. MonadThrow m => T
 --   
 --   &gt;&gt;&gt; (t, _) &lt;- sRandn (TensorSpec (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat) shape) g
 --   
---   &gt;&gt;&gt; t' &lt;- sAnyDim (SSelectDim (SByIndex @1)) $ bool t
+--   &gt;&gt;&gt; t' &lt;- sAnyDim (SSelectDim (SByIndex @1)) =&lt;&lt; bool t
 --   
 --   &gt;&gt;&gt; :type t'
 --   t'
@@ -2088,7 +2097,7 @@ sAnyDim :: forall selectDim gradient layout device shape dataType m. MonadThrow 
 --   
 --   &gt;&gt;&gt; (t, _) &lt;- randn @('Gradient 'WithoutGradient) @('Layout 'Dense) @('Device 'CPU) @('DataType 'Float) @Shape' g
 --   
---   &gt;&gt;&gt; t' &lt;- anyDim @('SelectDim ('ByIndex 1)) $ bool t
+--   &gt;&gt;&gt; t' &lt;- anyDim @('SelectDim ('ByIndex 1)) =&lt;&lt; bool t
 --   
 --   &gt;&gt;&gt; :type t'
 --   t'
@@ -2114,7 +2123,7 @@ type family MeanF (selectDims :: SelectDims [By Symbol Nat]) (shape :: Shape [Di
 --   
 --   &gt;&gt;&gt; (t, _) &lt;- sRandn (TensorSpec (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat) shape) g
 --   
---   &gt;&gt;&gt; t' &lt;- sMeanDims (SSelectDims $ SCons (SByName @"width") $ SCons (SByName @"height") SNil) t
+--   &gt;&gt;&gt; t' &lt;- sMeanDims (SSelectDims $ SByName @"width" :|: SByName @"height" :|: SNil) t
 --   
 --   &gt;&gt;&gt; :type t'
 --   t'
@@ -2324,7 +2333,8 @@ sReshape :: forall m shape' gradient layout device dataType shape shape''. Monad
 --   [Dim {dimName = "*", dimSize = 4}]
 --   </pre>
 sSetShape :: forall m shape' gradient layout device dataType shape shape''. MonadThrow m => shape'' ~ ReshapeF shape shape' => SShape shape' -> Tensor gradient layout device dataType shape -> m (Tensor gradient layout device dataType shape'')
-reshape :: forall m shape' gradient layout device dataType shape shape''. (shape'' ~ ReshapeF shape shape', SingI shape', MonadThrow m) => Tensor gradient layout device dataType shape -> m (Tensor gradient layout device dataType shape'')
+type family AllDimSizesChecked (shape :: Shape [Dim (Name Symbol) (Size Nat)]) :: Bool
+reshape :: forall m shape' gradient layout device dataType shape shape''. (shape'' ~ ReshapeF shape shape', When (AllDimSizesChecked shape) (shape' ~ shape''), SingI shape', MonadThrow m) => Tensor gradient layout device dataType shape -> m (Tensor gradient layout device dataType shape'')
 type TransposeBy0Message (by0 :: By Symbol Nat) (dims :: [Dim (Name Symbol) (Size Nat)]) = "Cannot transpose the tensor with the dimensions" % "" % "    '" <> dims <> "'" % "" % "because the specified source dimension" % "" % "    '" <> by0 <> "'" % "" % "could not be found."
 type TransposeBy1Message (by1 :: By Symbol Nat) (dims :: [Dim (Name Symbol) (Size Nat)]) = "Cannot transpose the tensor with the dimensions" % "" % "    '" <> dims <> "'" % "" % "because the specified target dimension" % "" % "    '" <> by1 <> "'" % "" % "could not be found."
 
@@ -2444,8 +2454,8 @@ expand :: forall shape' gradient layout device dataType shape input output. (Sin
 --   Dim {dimName = "*", dimSize = 4}}
 sSelect :: forall selectDim index gradient layout device dataType shapeIn shapeOut m. (index `InRangeF` GetDimF selectDim shapeIn, shapeOut ~ RemoveDimF selectDim shapeIn, SGetShape shapeIn, MonadThrow m) => SSelectDim selectDim -> SIndex index -> Tensor gradient layout device dataType shapeIn -> m (Tensor gradient layout device dataType shapeOut)
 data IndexOutOfBoundError
-IndexOutOfBoundError :: Natural -> Dim String Integer -> IndexOutOfBoundError
-[ioobeIndex] :: IndexOutOfBoundError -> Natural
+IndexOutOfBoundError :: Integer -> Dim String Integer -> IndexOutOfBoundError
+[ioobeIndex] :: IndexOutOfBoundError -> Integer
 [ioobeDim] :: IndexOutOfBoundError -> Dim String Integer
 select :: forall selectDim index gradient layout device dataType shapeIn shapeOut m. (SingI selectDim, SingI index, index `InRangeF` GetDimF selectDim shapeIn, shapeOut ~ RemoveDimF selectDim shapeIn, SGetShape shapeIn, MonadThrow m) => Tensor gradient layout device dataType shapeIn -> m (Tensor gradient layout device dataType shapeOut)
 instance GHC.Show.Show Torch.GraduallyTyped.Tensor.IndexingSlicingJoining.TransposeError
@@ -2454,6 +2464,145 @@ instance GHC.Exception.Type.Exception Torch.GraduallyTyped.Tensor.IndexingSlicin
 instance GHC.Exception.Type.Exception Torch.GraduallyTyped.Tensor.IndexingSlicingJoining.TransposeError
 instance (Torch.Internal.Class.Castable (Torch.GraduallyTyped.Tensor.IndexingSlicingJoining.CatHListF selectDim tensors) (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Tensor), Torch.Internal.Class.Castable (Torch.HList.HList tensors) (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.TensorList)) => Torch.GraduallyTyped.Tensor.IndexingSlicingJoining.HasCat selectDim [*] Torch.HList.HList tensors
 instance Torch.Internal.Class.Castable (Torch.GraduallyTyped.Tensor.IndexingSlicingJoining.CatListF selectDim (Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout device dataType shape)) (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Tensor) => Torch.GraduallyTyped.Tensor.IndexingSlicingJoining.HasCat selectDim * [] (Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout device dataType shape)
+
+module Torch.GraduallyTyped.Tensor.Indexing
+data IndexType a
+None :: IndexType a
+Ellipsis :: IndexType a
+SliceAll :: IndexType a
+SliceAt :: a -> IndexType a
+SliceBool :: Bool -> IndexType a
+SliceFrom :: a -> IndexType a
+SliceUpTo :: a -> IndexType a
+SliceFromUpTo :: a -> a -> IndexType a
+SliceFromWithStride :: a -> a -> IndexType a
+SliceUpToWithStride :: a -> a -> IndexType a
+SliceFromUpToWithStride :: a -> a -> a -> IndexType a
+type NoneSym0 = 'None :: IndexType (a_a1m8a :: Type)
+type EllipsisSym0 = 'Ellipsis :: IndexType (a_a1m8a :: Type)
+type SliceAllSym0 = 'SliceAll :: IndexType (a_a1m8a :: Type)
+type SliceAtSym1 (a6989586621679333796 :: a_a1m8a) = 'SliceAt a6989586621679333796 :: IndexType (a_a1m8a :: Type)
+data SliceAtSym0 a6989586621679333796
+[SliceAtSym0KindInference] :: SameKind (Apply SliceAtSym0 arg_a1mhR) (SliceAtSym1 arg_a1mhR) => SliceAtSym0 a6989586621679333796
+type SliceBoolSym1 (a6989586621679333798 :: Bool) = 'SliceBool a6989586621679333798 :: IndexType (a_a1m8a :: Type)
+data SliceBoolSym0 a6989586621679333798
+[SliceBoolSym0KindInference] :: SameKind (Apply SliceBoolSym0 arg_a1mhT) (SliceBoolSym1 arg_a1mhT) => SliceBoolSym0 a6989586621679333798
+type SliceFromSym1 (a6989586621679333800 :: a_a1m8a) = 'SliceFrom a6989586621679333800 :: IndexType (a_a1m8a :: Type)
+data SliceFromSym0 a6989586621679333800
+[SliceFromSym0KindInference] :: SameKind (Apply SliceFromSym0 arg_a1mhV) (SliceFromSym1 arg_a1mhV) => SliceFromSym0 a6989586621679333800
+type SliceUpToSym1 (a6989586621679333802 :: a_a1m8a) = 'SliceUpTo a6989586621679333802 :: IndexType (a_a1m8a :: Type)
+data SliceUpToSym0 a6989586621679333802
+[SliceUpToSym0KindInference] :: SameKind (Apply SliceUpToSym0 arg_a1mhX) (SliceUpToSym1 arg_a1mhX) => SliceUpToSym0 a6989586621679333802
+type SliceFromUpToSym2 (a6989586621679333804 :: a_a1m8a) (a6989586621679333805 :: a_a1m8a) = 'SliceFromUpTo a6989586621679333804 a6989586621679333805 :: IndexType (a_a1m8a :: Type)
+data SliceFromUpToSym1 a6989586621679333804 a6989586621679333805
+[SliceFromUpToSym1KindInference] :: SameKind (Apply (SliceFromUpToSym1 a6989586621679333804) arg_a1mhZ) (SliceFromUpToSym2 a6989586621679333804 arg_a1mhZ) => SliceFromUpToSym1 a6989586621679333804 a6989586621679333805
+data SliceFromUpToSym0 a6989586621679333804
+[SliceFromUpToSym0KindInference] :: SameKind (Apply SliceFromUpToSym0 arg_a1mhZ) (SliceFromUpToSym1 arg_a1mhZ) => SliceFromUpToSym0 a6989586621679333804
+type SliceFromWithStrideSym2 (a6989586621679333807 :: a_a1m8a) (a6989586621679333808 :: a_a1m8a) = 'SliceFromWithStride a6989586621679333807 a6989586621679333808 :: IndexType (a_a1m8a :: Type)
+data SliceFromWithStrideSym1 a6989586621679333807 a6989586621679333808
+[SliceFromWithStrideSym1KindInference] :: SameKind (Apply (SliceFromWithStrideSym1 a6989586621679333807) arg_a1mi2) (SliceFromWithStrideSym2 a6989586621679333807 arg_a1mi2) => SliceFromWithStrideSym1 a6989586621679333807 a6989586621679333808
+data SliceFromWithStrideSym0 a6989586621679333807
+[SliceFromWithStrideSym0KindInference] :: SameKind (Apply SliceFromWithStrideSym0 arg_a1mi2) (SliceFromWithStrideSym1 arg_a1mi2) => SliceFromWithStrideSym0 a6989586621679333807
+type SliceUpToWithStrideSym2 (a6989586621679333810 :: a_a1m8a) (a6989586621679333811 :: a_a1m8a) = 'SliceUpToWithStride a6989586621679333810 a6989586621679333811 :: IndexType (a_a1m8a :: Type)
+data SliceUpToWithStrideSym1 a6989586621679333810 a6989586621679333811
+[SliceUpToWithStrideSym1KindInference] :: SameKind (Apply (SliceUpToWithStrideSym1 a6989586621679333810) arg_a1mi5) (SliceUpToWithStrideSym2 a6989586621679333810 arg_a1mi5) => SliceUpToWithStrideSym1 a6989586621679333810 a6989586621679333811
+data SliceUpToWithStrideSym0 a6989586621679333810
+[SliceUpToWithStrideSym0KindInference] :: SameKind (Apply SliceUpToWithStrideSym0 arg_a1mi5) (SliceUpToWithStrideSym1 arg_a1mi5) => SliceUpToWithStrideSym0 a6989586621679333810
+type SliceFromUpToWithStrideSym3 (a6989586621679333813 :: a_a1m8a) (a6989586621679333814 :: a_a1m8a) (a6989586621679333815 :: a_a1m8a) = 'SliceFromUpToWithStride a6989586621679333813 a6989586621679333814 a6989586621679333815 :: IndexType (a_a1m8a :: Type)
+data SliceFromUpToWithStrideSym2 a6989586621679333813 a6989586621679333814 a6989586621679333815
+[SliceFromUpToWithStrideSym2KindInference] :: SameKind (Apply (SliceFromUpToWithStrideSym2 a6989586621679333813 a6989586621679333814) arg_a1mi8) (SliceFromUpToWithStrideSym3 a6989586621679333813 a6989586621679333814 arg_a1mi8) => SliceFromUpToWithStrideSym2 a6989586621679333813 a6989586621679333814 a6989586621679333815
+data SliceFromUpToWithStrideSym1 a6989586621679333813 a6989586621679333814
+[SliceFromUpToWithStrideSym1KindInference] :: SameKind (Apply (SliceFromUpToWithStrideSym1 a6989586621679333813) arg_a1mi8) (SliceFromUpToWithStrideSym2 a6989586621679333813 arg_a1mi8) => SliceFromUpToWithStrideSym1 a6989586621679333813 a6989586621679333814
+data SliceFromUpToWithStrideSym0 a6989586621679333813
+[SliceFromUpToWithStrideSym0KindInference] :: SameKind (Apply SliceFromUpToWithStrideSym0 arg_a1mi8) (SliceFromUpToWithStrideSym1 arg_a1mi8) => SliceFromUpToWithStrideSym0 a6989586621679333813
+data SIndexType z_a1mjh
+[SNone] :: forall (a_a1m8a :: Type). () => SIndexType ('None :: IndexType (a_a1m8a :: Type))
+[SEllipsis] :: forall (a_a1m8a :: Type). () => SIndexType ('Ellipsis :: IndexType (a_a1m8a :: Type))
+[SSliceAll] :: forall (a_a1m8a :: Type). () => SIndexType ('SliceAll :: IndexType (a_a1m8a :: Type))
+[SSliceAt] :: forall (a_a1m8a :: Type) (n_a1mic :: a_a1m8a). () => Sing n_a1mic -> SIndexType ('SliceAt n_a1mic :: IndexType (a_a1m8a :: Type))
+[SSliceBool] :: forall (a_a1m8a :: Type) (n_a1mie :: Bool). () => Sing n_a1mie -> SIndexType ('SliceBool n_a1mie :: IndexType (a_a1m8a :: Type))
+[SSliceFrom] :: forall (a_a1m8a :: Type) (n_a1mig :: a_a1m8a). () => Sing n_a1mig -> SIndexType ('SliceFrom n_a1mig :: IndexType (a_a1m8a :: Type))
+[SSliceUpTo] :: forall (a_a1m8a :: Type) (n_a1mii :: a_a1m8a). () => Sing n_a1mii -> SIndexType ('SliceUpTo n_a1mii :: IndexType (a_a1m8a :: Type))
+[SSliceFromUpTo] :: forall (a_a1m8a :: Type) (n_a1mik :: a_a1m8a) (n_a1mil :: a_a1m8a). () => Sing n_a1mik -> Sing n_a1mil -> SIndexType ('SliceFromUpTo n_a1mik n_a1mil :: IndexType (a_a1m8a :: Type))
+[SSliceFromWithStride] :: forall (a_a1m8a :: Type) (n_a1mio :: a_a1m8a) (n_a1mip :: a_a1m8a). () => Sing n_a1mio -> Sing n_a1mip -> SIndexType ('SliceFromWithStride n_a1mio n_a1mip :: IndexType (a_a1m8a :: Type))
+[SSliceUpToWithStride] :: forall (a_a1m8a :: Type) (n_a1mis :: a_a1m8a) (n_a1mit :: a_a1m8a). () => Sing n_a1mis -> Sing n_a1mit -> SIndexType ('SliceUpToWithStride n_a1mis n_a1mit :: IndexType (a_a1m8a :: Type))
+[SSliceFromUpToWithStride] :: forall (a_a1m8a :: Type) (n_a1miw :: a_a1m8a) (n_a1mix :: a_a1m8a) (n_a1miy :: a_a1m8a). () => Sing n_a1miw -> Sing n_a1mix -> Sing n_a1miy -> SIndexType ('SliceFromUpToWithStride n_a1miw n_a1mix n_a1miy :: IndexType (a_a1m8a :: Type))
+type family ReverseShape shape
+type family ErrorOnEllipsis indices
+type StrideZeroErrorMessage = 'Text "Slice stride cannot be zero"
+
+-- | Calculate the size of the dimension from stride.
+--   
+--   <pre>
+--   &gt;&gt;&gt; :kind! Strided 8 1
+--   Strided 8 1 :: Nat
+--   = 8
+--   
+--   &gt;&gt;&gt; :kind! Strided 5 2
+--   Strided 5 2 :: Nat
+--   = 3
+--   
+--   &gt;&gt;&gt; :kind! Strided 6 3
+--   Strided 6 3 :: Nat
+--   = 2
+--   </pre>
+type family Strided length stride
+type family CheckUpTo (upTo :: Nat) ok
+type family CheckFromSize (from :: Nat) (size :: Nat) ok
+type family CheckUpToSize (upTo :: Nat) (size :: Size Nat) ok
+type family CheckFromUpTo (from :: Nat) (upTo :: Nat) ok
+type family CheckFromUpToSize (from :: Nat) (upTo :: Nat) (size :: Size Nat) ok
+type family CheckSliceAt (at :: Nat) (size :: Nat) ok
+type family IndexDimsImpl indices dims
+type family IndexDims indices shape
+data Indices (dimIndices :: Type)
+[UncheckedIndices] :: forall dimIndices. Indices dimIndices
+[Indices] :: forall dimIndices. dimIndices -> Indices dimIndices
+data SIndices (indices :: Indices [IndexType (Index Nat)])
+[SUncheckedIndices] :: [IndexType Integer] -> SIndices 'UncheckedIndices
+[SIndices] :: forall dimIndices. SList dimIndices -> SIndices ('Indices dimIndices)
+(!) :: forall indices requiresGradient layout device dataType shape m. MonadThrow m => Tensor requiresGradient layout device dataType shape -> SIndices indices -> m (Tensor requiresGradient layout device dataType (IndexDims indices shape))
+instance Data.Singletons.Internal.SingI dimIndices => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Tensor.Indexing.Indices dimIndices)
+instance Data.Singletons.Internal.SingKind (Torch.GraduallyTyped.Tensor.Indexing.Indices [Torch.GraduallyTyped.Tensor.Indexing.IndexType (Torch.GraduallyTyped.Index.Type.Index GHC.Types.Nat)])
+instance Data.Singletons.Internal.SingKind a => Data.Singletons.Internal.SingKind (Torch.GraduallyTyped.Tensor.Indexing.IndexType a)
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.Tensor.Indexing.None
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.Tensor.Indexing.Ellipsis
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.Tensor.Indexing.SliceAll
+instance forall a (n :: a). Data.Singletons.Internal.SingI n => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceAt n)
+instance Data.Singletons.Internal.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceAtSym0
+instance Data.Singletons.Internal.SingI n => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceBool n)
+instance Data.Singletons.Internal.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceBoolSym0
+instance forall a (n :: a). Data.Singletons.Internal.SingI n => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceFrom n)
+instance Data.Singletons.Internal.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceFromSym0
+instance forall a (n :: a). Data.Singletons.Internal.SingI n => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceUpTo n)
+instance Data.Singletons.Internal.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceUpToSym0
+instance forall a (n1 :: a) (n2 :: a). (Data.Singletons.Internal.SingI n1, Data.Singletons.Internal.SingI n2) => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpTo n1 n2)
+instance Data.Singletons.Internal.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym0
+instance forall a (d :: a). Data.Singletons.Internal.SingI d => Data.Singletons.Internal.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym1 d)
+instance forall a (n1 :: a) (n2 :: a). (Data.Singletons.Internal.SingI n1, Data.Singletons.Internal.SingI n2) => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStride n1 n2)
+instance Data.Singletons.Internal.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStrideSym0
+instance forall a (d :: a). Data.Singletons.Internal.SingI d => Data.Singletons.Internal.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStrideSym1 d)
+instance forall a (n1 :: a) (n2 :: a). (Data.Singletons.Internal.SingI n1, Data.Singletons.Internal.SingI n2) => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStride n1 n2)
+instance Data.Singletons.Internal.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStrideSym0
+instance forall a (d :: a). Data.Singletons.Internal.SingI d => Data.Singletons.Internal.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStrideSym1 d)
+instance forall a (n1 :: a) (n2 :: a) (n3 :: a). (Data.Singletons.Internal.SingI n1, Data.Singletons.Internal.SingI n2, Data.Singletons.Internal.SingI n3) => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStride n1 n2 n3)
+instance Data.Singletons.Internal.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStrideSym0
+instance forall a (d :: a). Data.Singletons.Internal.SingI d => Data.Singletons.Internal.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStrideSym1 d)
+instance forall a (d1 :: a) (d2 :: a). (Data.Singletons.Internal.SingI d1, Data.Singletons.Internal.SingI d2) => Data.Singletons.Internal.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStrideSym2 d1 d2)
+instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStrideSym0
+instance forall a (a6989586621679333813 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStrideSym1 a6989586621679333813)
+instance forall a (a6989586621679333813 :: a) (a6989586621679333814 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStrideSym2 a6989586621679333813 a6989586621679333814)
+instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStrideSym0
+instance forall a (a6989586621679333810 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStrideSym1 a6989586621679333810)
+instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStrideSym0
+instance forall a (a6989586621679333807 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStrideSym1 a6989586621679333807)
+instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym0
+instance forall a (a6989586621679333804 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym1 a6989586621679333804)
+instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceUpToSym0
+instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromSym0
+instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceBoolSym0
+instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceAtSym0
+instance GHC.Base.Functor Torch.GraduallyTyped.Tensor.Indexing.IndexType
 
 module Torch.GraduallyTyped.Shape
 
@@ -3324,7 +3473,7 @@ type PegasusSym0 = 'Pegasus :: TransformerStyle
 type BERTSym0 = 'BERT :: TransformerStyle
 type RoBERTaSym0 = 'RoBERTa :: TransformerStyle
 type GPT2Sym0 = 'GPT2 :: TransformerStyle
-data STransformerStyle z_a1osh
+data STransformerStyle z_a1u7N
 [ST5] :: STransformerStyle ('T5 :: TransformerStyle)
 [SByT5] :: STransformerStyle ('ByT5 :: TransformerStyle)
 [SBART] :: STransformerStyle ('BART :: TransformerStyle)
@@ -3338,7 +3487,7 @@ WithoutHead :: TransformerHead
 WithLMHead :: TransformerHead
 type WithoutHeadSym0 = 'WithoutHead :: TransformerHead
 type WithLMHeadSym0 = 'WithLMHead :: TransformerHead
-data STransformerHead z_a1ozC
+data STransformerHead z_a1uf8
 [SWithoutHead] :: STransformerHead ('WithoutHead :: TransformerHead)
 [SWithLMHead] :: STransformerHead ('WithLMHead :: TransformerHead)
 padded :: Integral n => n -> a -> [a] -> [a]
@@ -3589,7 +3738,7 @@ type LinearWeightDimsErrorMessage (weightDims :: [Dim (Name Symbol) (Size Nat)])
 --   &gt;&gt;&gt; sRandn' = sRandn . TensorSpec (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat)
 --   
 --   &gt;&gt;&gt; (weight, g') &lt;- sRandn' weightShape g
---   [W TensorImpl.h:934] Warning: Named tensors and all their associated APIs are an experimental feature and subject to change. Please do not use them for anything important until they are released as stable. (function operator())
+--   [W TensorImpl.h:1156] Warning: Named tensors and all their associated APIs are an experimental feature and subject to change. Please do not use them for anything important until they are released as stable. (function operator())
 --   
 --   &gt;&gt;&gt; (bias, g'') &lt;- sRandn' biasShape g'
 --   
