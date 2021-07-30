@@ -3456,14 +3456,41 @@ instance Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Act
 instance (output GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor requiresGradient layout device dataType (Torch.GraduallyTyped.NN.Functional.NonLinearActivation.SoftmaxF selectDim shape)) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Activation.Softmax selectDim) (Torch.GraduallyTyped.Tensor.Type.Tensor requiresGradient layout device dataType shape) generator output generator
 
 module Torch.GraduallyTyped.NN.Transformer.Type
+
+-- | A data type representing the style of a transformer. Every supported
+--   transformer has a constructor of this type.
 data TransformerStyle
+
+-- | <tt>T5</tt> transformer style, see
+--   <a>https://ai.googleblog.com/2020/02/exploring-transfer-learning-with-t5.html</a>
 T5 :: TransformerStyle
+
+-- | <tt>ByT5</tt> transformer style, see
+--   <a>https://arxiv.org/abs/2105.13626</a>
 ByT5 :: TransformerStyle
+
+-- | <tt>BART</tt> transformer style, see
+--   <a>https://arxiv.org/abs/1910.13461</a>
 BART :: TransformerStyle
+
+-- | <tt>MBART</tt> transformer style, see
+--   <a>https://arxiv.org/abs/2001.08210</a>
 MBART :: TransformerStyle
+
+-- | <tt>Pegasus</tt> transformer style, see
+--   <a>https://ai.googleblog.com/2020/06/pegasus-state-of-art-model-for.html</a>
 Pegasus :: TransformerStyle
+
+-- | <tt>BERT</tt> transformer style, see
+--   <a>https://arxiv.org/abs/1810.04805</a>
 BERT :: TransformerStyle
+
+-- | <tt>RoBERTa</tt> transformer style, see
+--   <a>https://arxiv.org/abs/1907.11692</a>
 RoBERTa :: TransformerStyle
+
+-- | <tt>GPT2</tt> transformer style, see
+--   <a>https://openai.com/blog/better-language-models/</a>
 GPT2 :: TransformerStyle
 type T5Sym0 = 'T5 :: TransformerStyle
 type ByT5Sym0 = 'ByT5 :: TransformerStyle
@@ -3482,6 +3509,8 @@ data STransformerStyle z_a1u7N
 [SBERT] :: STransformerStyle ('BERT :: TransformerStyle)
 [SRoBERTa] :: STransformerStyle ('RoBERTa :: TransformerStyle)
 [SGPT2] :: STransformerStyle ('GPT2 :: TransformerStyle)
+
+-- | A data type representing the type of head used in a transformer.
 data TransformerHead
 WithoutHead :: TransformerHead
 WithLMHead :: TransformerHead
@@ -3491,6 +3520,13 @@ data STransformerHead z_a1uf8
 [SWithoutHead] :: STransformerHead ('WithoutHead :: TransformerHead)
 [SWithLMHead] :: STransformerHead ('WithLMHead :: TransformerHead)
 padded :: Integral n => n -> a -> [a] -> [a]
+
+-- | Converts a doubly-nested list of input ids to a batched input tensor.
+--   The outer list is over batches, the inner list over sequences. The
+--   batch size is inferred from the length of the outer list. The sequence
+--   length is inferred from the length of the inner list. The input ids
+--   are padded to the maximum sequence length. The output tensor is
+--   truncated to the maximum sequence length.
 mkTransformerInput :: forall batchDim seqDim device m output. (MonadThrow m, SGetDim batchDim, SGetDim seqDim, 'Shape '[batchDim, seqDim] ~ Seq ('Shape '[ 'Dim ('Name "*") 'UncheckedSize, 'Dim ('Name "*") 'UncheckedSize] <+> 'Shape '[batchDim, seqDim]) ('Shape '[batchDim, seqDim]), output ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Int64) ('Shape '[batchDim, seqDim])) => Int -> SDim batchDim -> SDim seqDim -> SDevice device -> [[Int]] -> m output
 type MkPosC device shape seqDim seqName seqSize output = (SGetDevice device, SGetShape shape, seqDim ~ (shape ! 1), seqDim ~ 'Dim seqName seqSize, output ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Int64) ('Shape '[ 'Dim ('Name "*") seqSize]))
 
@@ -3544,14 +3580,28 @@ newtype MkTransformerPaddingMask
 MkTransformerPaddingMask :: Int -> MkTransformerPaddingMask
 [padTokenId] :: MkTransformerPaddingMask -> Int
 type MkTransformerAttentionMaskC transformerDataType gradient layout device dataType shape seqDim output = (SGetLayout layout, SGetDevice device, SGetShape shape, seqDim ~ (shape ! 1), output ~ Tensor (Seq (gradient <+> 'Gradient 'WithoutGradient) ('Gradient 'WithoutGradient)) (layout <+> 'Layout 'Dense) device (Seq (dataType <+> 'DataType 'Bool) transformerDataType) (BroadcastShapesF (UnsqueezeF ('SelectDim ('ByIndex 1)) shape) ('Shape '[ 'Dim ('Name "*") ('Size 1), seqDim, seqDim])))
+
+-- | Creates a bidirectional attention mask for a transformer. Given a
+--   padding mask of shape <tt>[batchDim, seqDim]</tt>, returns a tensor of
+--   shape <tt>[batchDim, seqDim, seqDim]</tt>.
 mkTransformerAttentionMask :: forall m transformerDataType gradient layout device dataType shape seqDim output. (MonadThrow m, MkTransformerAttentionMaskC transformerDataType gradient layout device dataType shape seqDim output) => SDataType transformerDataType -> Double -> Tensor gradient layout device dataType shape -> m output
 data MkTransformerAttentionMask (dataType :: DataType DType)
 [MkTransformerAttentionMask] :: forall dataType. {attentionMaskDataType :: SDataType dataType, attentionMaskBias :: Double} -> MkTransformerAttentionMask dataType
 type MkTransformerDecoderAttentionMaskC transformerDataType layout device shape seqDim output = (SGetLayout layout, SGetDevice device, SGetShape shape, seqDim ~ (shape ! 1), output ~ Tensor ('Gradient 'WithoutGradient) (layout <+> 'Layout 'Dense) device transformerDataType (BroadcastShapesF (BroadcastShapesF ('Shape '[ 'Dim ('Name "*") ('Size 1), seqDim, seqDim]) (UnsqueezeF ('SelectDim ('ByIndex 1)) shape)) ('Shape '[ 'Dim ('Name "*") ('Size 1), seqDim, seqDim])))
+
+-- | Creates a causal attention mask for a transformer decoder. Given a
+--   padding mask of shape <tt>[batchDim, seqDim]</tt>, returns a tensor of
+--   shape <tt>[batchDim, seqDim, seqDim]</tt>.
 mkTransformerDecoderAttentionMask :: forall m transformerDataType gradient layout device dataType shape seqDim output. (MonadThrow m, MkTransformerDecoderAttentionMaskC transformerDataType layout device shape seqDim output) => SDataType transformerDataType -> Double -> Tensor gradient layout device dataType shape -> m output
 data MkTransformerDecoderAttentionMask (dataType :: DataType DType)
 [MkTransformerDecoderAttentionMask] :: forall dataType. {decoderAttentionMaskDataType :: SDataType dataType, decoderAttentionMaskBias :: Double} -> MkTransformerDecoderAttentionMask dataType
 type MkTransformerCrossAttentionMaskC transformerDataType decoderInputShape decoderInputSeqDim gradient layout device dataType shape seqDim output = (SGetLayout layout, SGetDevice device, SGetShape shape, seqDim ~ (shape ! 1), SGetShape decoderInputShape, decoderInputSeqDim ~ (decoderInputShape ! 1), output ~ Tensor (Seq (gradient <+> 'Gradient 'WithoutGradient) ('Gradient 'WithoutGradient)) (layout <+> 'Layout 'Dense) device (Seq (dataType <+> 'DataType 'Bool) transformerDataType) (BroadcastShapesF (UnsqueezeF ('SelectDim ('ByIndex 1)) shape) ('Shape '[ 'Dim ('Name "*") ('Size 1), decoderInputSeqDim, seqDim])))
+
+-- | Creates a cross-attention mask for an encoder-decoder transformer.
+--   Given an encoder padding mask of shape <tt>[batchDim, seqDim]</tt>,
+--   and the shape <tt>[batchDim, decoderSeqDim]</tt> of the decoder's
+--   input, returns a tensor of shape <tt>[batchDim, decoderSeqDim,
+--   seqDim]</tt>.
 mkTransformerCrossAttentionMask :: forall m transformerDataType decoderInputShape decoderInputSeqDim gradient layout device dataType shape seqDim output. (MonadThrow m, MkTransformerCrossAttentionMaskC transformerDataType decoderInputShape decoderInputSeqDim gradient layout device dataType shape seqDim output) => SDataType transformerDataType -> SShape decoderInputShape -> Double -> Tensor gradient layout device dataType shape -> m output
 data MkTransformerCrossAttentionMask (dataType :: DataType DType)
 [MkTransformerCrossAttentionMask] :: forall dataType. {crossAttentionMaskDataType :: SDataType dataType, crossAttentionMaskBias :: Double} -> MkTransformerCrossAttentionMask dataType
@@ -4428,17 +4478,26 @@ type family EOTHeadF (style :: TransformerStyle) (transformerHead :: Transformer
 --   layer normalization.</li>
 --   </ul>
 encoderOnlyTransformerSpec :: forall style transformerHead numLayers gradient device dataType headDim headEmbedDim embedDim inputEmbedDim ffnDim posEncDim vocabDim typeVocabDim. STransformerStyle style -> STransformerHead transformerHead -> SNat numLayers -> SGradient gradient -> SDevice device -> SDataType dataType -> SDim headDim -> SDim headEmbedDim -> SDim embedDim -> SDim inputEmbedDim -> SDim ffnDim -> SDim posEncDim -> SDim vocabDim -> SDim typeVocabDim -> Double -> Double -> ModelSpec (GEncoderOnlyTransformer inputEmbedDim (EOTEncoderF style numLayers gradient device dataType headDim headEmbedDim embedDim inputEmbedDim ffnDim posEncDim) (EOTEmbeddingF style gradient device dataType inputEmbedDim vocabDim) (EOTTypeEmbeddingF style gradient device dataType inputEmbedDim typeVocabDim) (EOTHeadF style transformerHead gradient device dataType inputEmbedDim vocabDim))
+data GSimplifiedEncoderOnlyTransformer (model :: Type) (mkPos :: Type) (mkPaddingMask :: Type) (mkAttentionMask :: Type)
+[GSimplifiedEncoderOnlyTransformer] :: forall model mkPos mkPaddingMask mkAttentionMask. {seotModel :: model " encoder-only model", seotMkPos :: mkPos " make input positions", seotMkPaddingMask :: mkPaddingMask " make padding mask", seotMkAttentionMask :: mkAttentionMask " make attention mask"} -> GSimplifiedEncoderOnlyTransformer model mkPos mkPaddingMask mkAttentionMask
 
 -- | Input data type for use with an encoder-only transformer.
 data EncoderOnlyTransformerInput input inputType pos attentionMask
 [EncoderOnlyTransformerInput] :: forall input inputType pos attentionMask. {eotInput :: input, eotInputType :: inputType, eotPos :: pos, eotAttentionMask :: attentionMask} -> EncoderOnlyTransformerInput input inputType pos attentionMask
+data SimplifiedEncoderOnlyTransformerInput input inputType
+[SimplifiedEncoderOnlyTransformerInput] :: forall input inputType. {seotInput :: input, seotInputType :: inputType} -> SimplifiedEncoderOnlyTransformerInput input inputType
 
 -- | Output data type for use with an encoder-only transformer.
-data EncoderOnlyTransformerOutput encoderOutput
-[EncoderOnlyTransformerOutput] :: forall encoderOutput. {eoEncoderOutput :: encoderOutput} -> EncoderOnlyTransformerOutput encoderOutput
+data EncoderOnlyTransformerOutput output
+[EncoderOnlyTransformerOutput] :: forall output. {eotOutput :: output} -> EncoderOnlyTransformerOutput output
+data SimplifiedEncoderOnlyTransformerOutput output paddingMask
+[SimplifiedEncoderOnlyTransformerOutput] :: forall output paddingMask. {seotOutput :: output, sedtPaddingMask :: paddingMask} -> SimplifiedEncoderOnlyTransformerOutput output paddingMask
 instance (GHC.Show.Show input, GHC.Show.Show inputType, GHC.Show.Show pos, GHC.Show.Show attentionMask) => GHC.Show.Show (Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.EncoderOnlyTransformerInput input inputType pos attentionMask)
-instance GHC.Show.Show encoderOutput => GHC.Show.Show (Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.EncoderOnlyTransformerOutput encoderOutput)
-instance (Torch.GraduallyTyped.NN.Class.HasForward encoderEmbedding input generatorDevice embeddingOutput embeddingGeneratorOutputDevice, embeddingOutput GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor gradient' layout' device' dataType' shape', Torch.GraduallyTyped.NN.Class.HasForward encoderTypeEmbedding inputType embeddingGeneratorOutputDevice typeEmbeddingOutput typeEmbeddingGeneratorOutputDevice, typeEmbeddingOutput GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor gradient'' layout'' device'' dataType'' shape'', Torch.GraduallyTyped.NN.Class.HasForward encoder (Torch.GraduallyTyped.Tensor.Type.Tensor (gradient' Torch.GraduallyTyped.Unify.<|> gradient'') (layout' Torch.GraduallyTyped.Unify.<+> layout'') (device' Torch.GraduallyTyped.Unify.<+> device'') (dataType' Torch.GraduallyTyped.Unify.<+> dataType'') (Torch.GraduallyTyped.Shape.Class.BroadcastShapesF shape' shape''), pos, attentionMask) typeEmbeddingGeneratorOutputDevice encoderOutput eoGeneratorOutputDevice, Torch.GraduallyTyped.NN.Class.HasForward head encoderOutput eoGeneratorOutputDevice headOutput generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.GEncoderOnlyTransformer inputEmbedDim encoder encoderEmbedding encoderTypeEmbedding head) (Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.EncoderOnlyTransformerInput input inputType pos attentionMask) generatorDevice (Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.EncoderOnlyTransformerOutput headOutput) generatorOutputDevice
+instance GHC.Show.Show output => GHC.Show.Show (Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.EncoderOnlyTransformerOutput output)
+instance (Torch.GraduallyTyped.NN.Class.HasForward mkPaddingMask input generatorDevice paddingMask generatorDevice, Torch.GraduallyTyped.NN.Class.HasForward mkAttentionMask paddingMask generatorDevice attentionMask generatorDevice, Torch.GraduallyTyped.NN.Class.HasForward mkPos input generatorDevice pos generatorDevice, Torch.GraduallyTyped.NN.Class.HasForward model (Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.EncoderOnlyTransformerInput input inputType pos attentionMask) generatorDevice (Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.EncoderOnlyTransformerOutput output) generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.GSimplifiedEncoderOnlyTransformer model mkPos mkPaddingMask mkAttentionMask) (Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.SimplifiedEncoderOnlyTransformerInput input inputType) generatorDevice (Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.SimplifiedEncoderOnlyTransformerOutput output paddingMask) generatorOutputDevice
+instance (Torch.GraduallyTyped.NN.Class.HasForward encoderEmbedding input generatorDevice embeddingOutput embeddingGeneratorOutputDevice, embeddingOutput GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor gradient' layout' device' dataType' shape', Torch.GraduallyTyped.NN.Class.HasForward encoderTypeEmbedding inputType embeddingGeneratorOutputDevice typeEmbeddingOutput typeEmbeddingGeneratorOutputDevice, typeEmbeddingOutput GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor gradient'' layout'' device'' dataType'' shape'', Torch.GraduallyTyped.NN.Class.HasForward encoder (Torch.GraduallyTyped.Tensor.Type.Tensor (gradient' Torch.GraduallyTyped.Unify.<|> gradient'') (layout' Torch.GraduallyTyped.Unify.<+> layout'') (device' Torch.GraduallyTyped.Unify.<+> device'') (dataType' Torch.GraduallyTyped.Unify.<+> dataType'') (Torch.GraduallyTyped.Shape.Class.BroadcastShapesF shape' shape''), pos, attentionMask) typeEmbeddingGeneratorOutputDevice encoderOutput encoderGeneratorOutputDevice, Torch.GraduallyTyped.NN.Class.HasForward head encoderOutput encoderGeneratorOutputDevice headOutput generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.GEncoderOnlyTransformer inputEmbedDim encoder encoderEmbedding encoderTypeEmbedding head) (Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.EncoderOnlyTransformerInput input inputType pos attentionMask) generatorDevice (Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.EncoderOnlyTransformerOutput headOutput) generatorOutputDevice
+instance (Torch.GraduallyTyped.NN.Class.HasInitialize model generatorDevice model generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize mkPos generatorDevice mkPos generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize mkPaddingMask generatorDevice mkPaddingMask generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize mkAttentionMask generatorDevice mkAttentionMask generatorDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.GSimplifiedEncoderOnlyTransformer model mkPos mkPaddingMask mkAttentionMask) generatorDevice (Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.GSimplifiedEncoderOnlyTransformer model mkPos mkPaddingMask mkAttentionMask) generatorDevice
+instance (Torch.GraduallyTyped.NN.Class.HasStateDict model, Torch.GraduallyTyped.NN.Class.HasStateDict mkPos, Torch.GraduallyTyped.NN.Class.HasStateDict mkPaddingMask, Torch.GraduallyTyped.NN.Class.HasStateDict mkAttentionMask) => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.GSimplifiedEncoderOnlyTransformer model mkPos mkPaddingMask mkAttentionMask)
 instance (Torch.GraduallyTyped.NN.Class.HasInitialize encoder generatorDevice encoder generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize encoderEmbedding generatorDevice encoderEmbedding generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize encoderTypeEmbedding generatorDevice encoderTypeEmbedding generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize head generatorDevice head generatorDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.GEncoderOnlyTransformer inputEmbedDim encoder encoderEmbedding encoderTypeEmbedding head) generatorDevice (Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.GEncoderOnlyTransformer inputEmbedDim encoder encoderEmbedding encoderTypeEmbedding head) generatorDevice
 instance (Torch.GraduallyTyped.NN.Class.HasStateDict encoder, Torch.GraduallyTyped.NN.Class.HasStateDict encoderEmbedding, Torch.GraduallyTyped.NN.Class.HasStateDict encoderTypeEmbedding, Torch.GraduallyTyped.NN.Class.HasStateDict head) => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.GEncoderOnlyTransformer inputEmbedDim encoder encoderEmbedding encoderTypeEmbedding head)
 
@@ -4486,9 +4545,7 @@ robertaEOSTokenId :: Int
 -- | RoBERTa attention mask bias
 robertaAttentionMaskBias :: Double
 
--- | Generic RoBERTa model data type.
-data GRoBERTaModel (robertaModel :: Type)
-[GRoBERTaModel] :: forall robertaModel. {robertaModel :: robertaModel} -> GRoBERTaModel robertaModel
+-- | Specifies the RoBERTa model.
 type family RoBERTaModelF (transformerHead :: TransformerHead) (numLayers :: Nat) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (headDim :: Dim (Name Symbol) (Size Nat)) (headEmbedDim :: Dim (Name Symbol) (Size Nat)) (embedDim :: Dim (Name Symbol) (Size Nat)) (inputEmbedDim :: Dim (Name Symbol) (Size Nat)) (ffnDim :: Dim (Name Symbol) (Size Nat)) (vocabDim :: Dim (Name Symbol) (Size Nat)) (typeVocabDim :: Dim (Name Symbol) (Size Nat)) :: Type
 
 -- | Specifies the parameters of a RoBERTa model.
@@ -4504,11 +4561,6 @@ type family RoBERTaModelF (transformerHead :: TransformerHead) (numLayers :: Nat
 --   </ul>
 robertaModelSpec :: forall transformerHead numLayers gradient device headDim headEmbedDim embedDim inputEmbedDim ffnDim vocabDim typeVocabDim. (SingI headDim, SingI headEmbedDim, SingI embedDim, SingI inputEmbedDim, SingI ffnDim, SingI vocabDim, SingI typeVocabDim) => STransformerHead transformerHead -> SNat numLayers -> SGradient gradient -> SDevice device -> ModelSpec (RoBERTaModelF transformerHead numLayers gradient device headDim headEmbedDim embedDim inputEmbedDim ffnDim vocabDim typeVocabDim)
 mkRoBERTaInput :: forall batchDim seqDim device m output. (MonadThrow m, SGetDim batchDim, SGetDim seqDim, 'Shape '[batchDim, seqDim] ~ Seq ('Shape '[ 'Dim ('Name "*") 'UncheckedSize, 'Dim ('Name "*") 'UncheckedSize] <+> 'Shape '[batchDim, seqDim]) ('Shape '[batchDim, seqDim]), output ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Int64) ('Shape '[batchDim, seqDim])) => SDim batchDim -> SDim seqDim -> SDevice device -> [[Int]] -> m output
-mkRoBERTaPaddingMask :: forall gradient layout device dataType shape output. MkTransformerPaddingMaskC layout device dataType shape output => Tensor gradient layout device dataType shape -> output
-data RoBERTaInput input
-[RoBERTaInput] :: forall input. {robertaInput :: input} -> RoBERTaInput input
-instance GHC.Show.Show input => GHC.Show.Show (Torch.GraduallyTyped.NN.Transformer.RoBERTa.Common.RoBERTaInput input)
-instance Torch.GraduallyTyped.NN.Class.HasStateDict spec => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Transformer.RoBERTa.Common.GRoBERTaModel spec)
 
 module Torch.GraduallyTyped.NN.Transformer.RoBERTa.Base
 
@@ -4587,10 +4639,6 @@ bertPadTokenId :: Int
 -- | BERT attention mask bias
 bertAttentionMaskBias :: Double
 
--- | Generic BERT model data type.
-data GBERTModel (bertModel :: Type)
-[GBERTModel] :: forall bertModel. {bertModel :: bertModel} -> GBERTModel bertModel
-
 -- | Specifies the BERT model.
 type family BERTModelF (transformerHead :: TransformerHead) (numLayers :: Nat) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (headDim :: Dim (Name Symbol) (Size Nat)) (headEmbedDim :: Dim (Name Symbol) (Size Nat)) (embedDim :: Dim (Name Symbol) (Size Nat)) (inputEmbedDim :: Dim (Name Symbol) (Size Nat)) (ffnDim :: Dim (Name Symbol) (Size Nat)) (vocabDim :: Dim (Name Symbol) (Size Nat)) (typeVocabDim :: Dim (Name Symbol) (Size Nat)) :: Type
 
@@ -4606,11 +4654,6 @@ type family BERTModelF (transformerHead :: TransformerHead) (numLayers :: Nat) (
 --   </ul>
 bertModelSpec :: forall transformerHead numLayers gradient device headDim headEmbedDim embedDim inputEmbedDim ffnDim vocabDim typeVocabDim. (SingI headDim, SingI headEmbedDim, SingI embedDim, SingI inputEmbedDim, SingI ffnDim, SingI vocabDim, SingI typeVocabDim) => STransformerHead transformerHead -> SNat numLayers -> SGradient gradient -> SDevice device -> ModelSpec (BERTModelF transformerHead numLayers gradient device headDim headEmbedDim embedDim inputEmbedDim ffnDim vocabDim typeVocabDim)
 mkBERTInput :: forall batchDim seqDim device m output. (MonadThrow m, SGetDim batchDim, SGetDim seqDim, 'Shape '[batchDim, seqDim] ~ Seq ('Shape '[ 'Dim ('Name "*") 'UncheckedSize, 'Dim ('Name "*") 'UncheckedSize] <+> 'Shape '[batchDim, seqDim]) ('Shape '[batchDim, seqDim]), output ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Int64) ('Shape '[batchDim, seqDim])) => SDim batchDim -> SDim seqDim -> SDevice device -> [[Int]] -> m output
-mkBERTPaddingMask :: forall gradient layout device dataType shape output. MkTransformerPaddingMaskC layout device dataType shape output => Tensor gradient layout device dataType shape -> output
-data BERTInput input
-[BERTInput] :: forall input. {bertInput :: input} -> BERTInput input
-instance GHC.Show.Show input => GHC.Show.Show (Torch.GraduallyTyped.NN.Transformer.BERT.Common.BERTInput input)
-instance Torch.GraduallyTyped.NN.Class.HasStateDict spec => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Transformer.BERT.Common.GBERTModel spec)
 
 module Torch.GraduallyTyped.NN.Transformer.BERT.BaseUncased
 
