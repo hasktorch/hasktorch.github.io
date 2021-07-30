@@ -148,7 +148,7 @@ WithBias :: HasBias
 WithoutBias :: HasBias
 type WithBiasSym0 = 'WithBias :: HasBias
 type WithoutBiasSym0 = 'WithoutBias :: HasBias
-data SHasBias z_awWh
+data SHasBias z_awUn
 [SWithBias] :: SHasBias ('WithBias :: HasBias)
 [SWithoutBias] :: SHasBias ('WithoutBias :: HasBias)
 instance Data.Singletons.Internal.SingKind Torch.GraduallyTyped.NN.Type.HasBias
@@ -175,6 +175,10 @@ Text :: Symbol -> ErrorMessage
 ShowType :: t -> ErrorMessage
 (:<>:) :: ErrorMessage -> ErrorMessage -> ErrorMessage
 (:$$:) :: ErrorMessage -> ErrorMessage -> ErrorMessage
+data SList (z :: [a])
+[SNil] :: forall a. SList ('[] :: [a])
+[SCons] :: forall a (n1 :: a) (n2 :: [a]). Sing n1 -> Sing n2 -> SList (n1 : n2)
+infixr 5 `SCons`
 data IsChecked a
 Checked :: a -> IsChecked a
 Unchecked :: a -> IsChecked a
@@ -348,7 +352,7 @@ Dense :: LayoutType
 Sparse :: LayoutType
 type DenseSym0 = 'Dense :: LayoutType
 type SparseSym0 = 'Sparse :: LayoutType
-data SLayoutType z_azVq
+data SLayoutType z_azTk
 [SDense] :: SLayoutType ('Dense :: LayoutType)
 [SSparse] :: SLayoutType ('Sparse :: LayoutType)
 class KnownLayoutType (layoutType :: LayoutType)
@@ -516,7 +520,7 @@ type QInt8Sym0 = 'QInt8 :: DType
 type QUInt8Sym0 = 'QUInt8 :: DType
 type QInt32Sym0 = 'QInt32 :: DType
 type BFloat16Sym0 = 'BFloat16 :: DType
-data SDType z_aDpI
+data SDType z_aDnC
 [SBool] :: SDType ('Bool :: DType)
 [SUInt8] :: SDType ('UInt8 :: DType)
 [SInt8] :: SDType ('Int8 :: DType)
@@ -611,7 +615,7 @@ WithGradient :: RequiresGradient
 WithoutGradient :: RequiresGradient
 type WithGradientSym0 = 'WithGradient :: RequiresGradient
 type WithoutGradientSym0 = 'WithoutGradient :: RequiresGradient
-data SRequiresGradient z_aGJi
+data SRequiresGradient z_aGHc
 [SWithGradient] :: SRequiresGradient ('WithGradient :: RequiresGradient)
 [SWithoutGradient] :: SRequiresGradient ('WithoutGradient :: RequiresGradient)
 class KnownRequiresGradient (requiresGradient :: RequiresGradient)
@@ -3320,7 +3324,7 @@ type PegasusSym0 = 'Pegasus :: TransformerStyle
 type BERTSym0 = 'BERT :: TransformerStyle
 type RoBERTaSym0 = 'RoBERTa :: TransformerStyle
 type GPT2Sym0 = 'GPT2 :: TransformerStyle
-data STransformerStyle z_a1p3r
+data STransformerStyle z_a1osh
 [ST5] :: STransformerStyle ('T5 :: TransformerStyle)
 [SByT5] :: STransformerStyle ('ByT5 :: TransformerStyle)
 [SBART] :: STransformerStyle ('BART :: TransformerStyle)
@@ -3334,7 +3338,7 @@ WithoutHead :: TransformerHead
 WithLMHead :: TransformerHead
 type WithoutHeadSym0 = 'WithoutHead :: TransformerHead
 type WithLMHeadSym0 = 'WithLMHead :: TransformerHead
-data STransformerHead z_a1p9X
+data STransformerHead z_a1ozC
 [SWithoutHead] :: STransformerHead ('WithoutHead :: TransformerHead)
 [SWithLMHead] :: STransformerHead ('WithLMHead :: TransformerHead)
 padded :: Integral n => n -> a -> [a] -> [a]
@@ -3677,7 +3681,6 @@ type family LMHeadBiasF (style :: TransformerStyle) (gradient :: Gradient Requir
 
 lmHeadSpec :: forall style gradient device dataType inputEmbedDim vocabDim. STransformerStyle style -> SGradient gradient -> SDevice device -> SDataType dataType -> SDim inputEmbedDim -> SDim vocabDim -> Double -> ModelSpec (GLMHead inputEmbedDim (LMHeadDenseF style gradient device dataType inputEmbedDim) (LMHeadActivationF style) (LMHeadLayerNormF style gradient device dataType inputEmbedDim) (LMHeadDecoderF style gradient device dataType inputEmbedDim vocabDim) (LMHeadBiasF style gradient device dataType vocabDim))
 type family LMHeadOutputF (style :: TransformerStyle) (decoderOutput :: Type) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (vocabDim :: Dim (Name Symbol) (Size Nat)) :: Type
-testLMHead :: IO _
 instance Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Transformer.GLMHead.GBias ()) generatorDevice (Torch.GraduallyTyped.NN.Transformer.GLMHead.GBias ()) generatorDevice
 instance Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Transformer.GLMHead.GBias (Torch.GraduallyTyped.Tensor.Type.Tensor biasGradient biasLayout biasDevice biasDataType biasShape)) generatorDevice (Torch.GraduallyTyped.NN.Transformer.GLMHead.GBias (Torch.GraduallyTyped.Tensor.Type.Tensor biasGradient biasLayout biasDevice biasDataType biasShape)) generatorDevice
 instance Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Transformer.GLMHead.GBias (Torch.GraduallyTyped.NN.Class.NamedModel (Torch.GraduallyTyped.Tensor.Type.Tensor biasGradient biasLayout biasDevice biasDataType biasShape))) generatorDevice (Torch.GraduallyTyped.NN.Transformer.GLMHead.GBias (Torch.GraduallyTyped.NN.Class.NamedModel (Torch.GraduallyTyped.Tensor.Type.Tensor biasGradient biasLayout biasDevice biasDataType biasShape))) generatorDevice
@@ -3785,7 +3788,6 @@ type QuerySeqDim queryShape = queryShape ! 1
 getQuerySeqDim :: forall m queryShape querySeqDim. (MonadThrow m, querySeqDim ~ QuerySeqDim queryShape) => SShape queryShape -> m (SDim querySeqDim)
 type KeySeqDim keyShape valueShape = (keyShape ! 1) <+> (valueShape ! 1)
 getKeySeqDim :: forall m keyShape valueShape keySeqDim. (MonadThrow m, keySeqDim ~ KeySeqDim keyShape valueShape) => SShape keyShape -> SShape valueShape -> m (SDim keySeqDim)
-testMHA :: IO _
 instance GHC.Generics.Generic Torch.GraduallyTyped.NN.Transformer.GMultiHeadAttention.MultiHeadAttentionHasScaling
 instance GHC.Show.Show Torch.GraduallyTyped.NN.Transformer.GMultiHeadAttention.MultiHeadAttentionHasScaling
 instance GHC.Classes.Ord Torch.GraduallyTyped.NN.Transformer.GMultiHeadAttention.MultiHeadAttentionHasScaling
@@ -3844,7 +3846,6 @@ type family SAFinalLayerNormF (style :: TransformerStyle) (gradient :: Gradient 
 --   layer normalization.</li>
 --   </ul>
 selfAttentionSpec :: forall style gradient device dataType headDim headEmbedDim embedDim queryEmbedDim. STransformerStyle style -> SGradient gradient -> SDevice device -> SDataType dataType -> SDim headDim -> SDim headEmbedDim -> SDim embedDim -> SDim queryEmbedDim -> Double -> Double -> ModelSpec (GSelfAttention (SAInitialLayerNormF style gradient device dataType queryEmbedDim) (SAMultiheadAttentionF style gradient device dataType headDim headEmbedDim embedDim queryEmbedDim) (SADropoutF style) (SAFinalLayerNormF style gradient device dataType queryEmbedDim))
-testSA :: IO _
 instance (Torch.GraduallyTyped.NN.Class.HasInitialize initialLayerNorm generatorDevice initialLayerNorm generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize multiHeadAttention generatorDevice multiHeadAttention generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize dropout generatorDevice dropout generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize finalLayerNorm generatorDevice finalLayerNorm generatorDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Transformer.GSelfAttention.GSelfAttention initialLayerNorm multiHeadAttention dropout finalLayerNorm) generatorDevice (Torch.GraduallyTyped.NN.Transformer.GSelfAttention.GSelfAttention initialLayerNorm multiHeadAttention dropout finalLayerNorm) generatorDevice
 instance (Torch.GraduallyTyped.NN.Class.HasStateDict initialLayerNorm, Torch.GraduallyTyped.NN.Class.HasStateDict multiHeadAttention, Torch.GraduallyTyped.NN.Class.HasStateDict dropout, Torch.GraduallyTyped.NN.Class.HasStateDict finalLayerNorm) => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Transformer.GSelfAttention.GSelfAttention initialLayerNorm multiHeadAttention dropout finalLayerNorm)
 instance (Torch.GraduallyTyped.NN.Class.HasForward initialLayerNorm (Torch.GraduallyTyped.Tensor.Type.Tensor queryGradient queryLayout queryDevice queryDataType queryShape) generatorDevice tensor0 generatorDevice0, Torch.GraduallyTyped.NN.Class.HasForward multiHeadAttention (tensor0, tensor0, tensor0, Torch.GraduallyTyped.Tensor.Type.Tensor attentionBiasGradient attentionBiasLayout attentionBiasDevice attentionBiasDataType attentionBiasShape) generatorDevice0 tensor1 generatorDevice1, Torch.GraduallyTyped.NN.Class.HasForward dropout tensor1 generatorDevice1 (Torch.GraduallyTyped.Tensor.Type.Tensor gradient2 layout2 device2 dataType2 shape2) generatorDevice2, Torch.GraduallyTyped.NN.Class.HasForward finalLayerNorm (Torch.GraduallyTyped.Tensor.Type.Tensor (queryGradient Torch.GraduallyTyped.Unify.<|> gradient2) (queryLayout Torch.GraduallyTyped.Unify.<+> layout2) (queryDevice Torch.GraduallyTyped.Unify.<+> device2) (queryDataType Torch.GraduallyTyped.Unify.<+> dataType2) (Torch.GraduallyTyped.Shape.Class.BroadcastShapesF queryShape shape2)) generatorDevice2 output generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Transformer.GSelfAttention.GSelfAttention initialLayerNorm multiHeadAttention dropout finalLayerNorm) (Torch.GraduallyTyped.Tensor.Type.Tensor queryGradient queryLayout queryDevice queryDataType queryShape, Torch.GraduallyTyped.Tensor.Type.Tensor attentionBiasGradient attentionBiasLayout attentionBiasDevice attentionBiasDataType attentionBiasShape) generatorDevice output generatorOutputDevice
@@ -3916,7 +3917,6 @@ type family FFNOutputLayerNormF (style :: TransformerStyle) (gradient :: Gradien
 --   layer normalization.</li>
 --   </ul>
 transformerFeedForwardNetworkSpec :: forall style gradient device dataType queryEmbedDim ffnDim. STransformerStyle style -> SGradient gradient -> SDevice device -> SDataType dataType -> SDim queryEmbedDim -> SDim ffnDim -> Double -> Double -> ModelSpec (GTransformerFeedForwardNetwork (FFNInputLayerNormF style gradient device dataType queryEmbedDim) (FFNInputTransformationF style gradient device dataType queryEmbedDim ffnDim) (FFNActivationF style) (FFNActivationDropoutF style) (FFNOutputProjectionF style gradient device dataType queryEmbedDim ffnDim) (FFNOutputDropoutF style) (FFNOutputLayerNormF style gradient device dataType queryEmbedDim))
-testFFN :: IO _
 instance (Torch.GraduallyTyped.NN.Class.HasInitialize inputLayerNorm generatorDevice inputLayerNorm generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize inputTransformation generatorDevice inputTransformation generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize activation generatorDevice activation generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize activationDropout generatorDevice activationDropout generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize outputProjection generatorDevice outputProjection generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize outputDropout generatorDevice outputDropout generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize outputLayerNorm generatorDevice outputLayerNorm generatorDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Transformer.GFeedForwardNetwork.GTransformerFeedForwardNetwork inputLayerNorm inputTransformation activation activationDropout outputProjection outputDropout outputLayerNorm) generatorDevice (Torch.GraduallyTyped.NN.Transformer.GFeedForwardNetwork.GTransformerFeedForwardNetwork inputLayerNorm inputTransformation activation activationDropout outputProjection outputDropout outputLayerNorm) generatorDevice
 instance (Torch.GraduallyTyped.NN.Class.HasStateDict inputLayerNorm, Torch.GraduallyTyped.NN.Class.HasStateDict inputTransformation, Torch.GraduallyTyped.NN.Class.HasStateDict activation, Torch.GraduallyTyped.NN.Class.HasStateDict activationDropout, Torch.GraduallyTyped.NN.Class.HasStateDict outputProjection, Torch.GraduallyTyped.NN.Class.HasStateDict outputDropout, Torch.GraduallyTyped.NN.Class.HasStateDict outputLayerNorm) => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Transformer.GFeedForwardNetwork.GTransformerFeedForwardNetwork inputLayerNorm inputTransformation activation activationDropout outputProjection outputDropout outputLayerNorm)
 instance (Torch.GraduallyTyped.NN.Class.HasForward inputLayerNorm (Torch.GraduallyTyped.Tensor.Type.Tensor queryGradient queryLayout queryDevice queryDataType queryShape) generatorDevice tensor0 generatorDevice0, Torch.GraduallyTyped.NN.Class.HasForward inputTransformation tensor0 generatorDevice0 tensor1 generatorDevice1, Torch.GraduallyTyped.NN.Class.HasForward activation tensor1 generatorDevice1 tensor2 generatorDevice2, Torch.GraduallyTyped.NN.Class.HasForward activationDropout tensor2 generatorDevice2 tensor3 generatorDevice3, Torch.GraduallyTyped.NN.Class.HasForward outputProjection tensor3 generatorDevice3 tensor4 generatorDevice4, Torch.GraduallyTyped.NN.Class.HasForward outputDropout tensor4 generatorDevice4 (Torch.GraduallyTyped.Tensor.Type.Tensor queryGradient5 queryLayout5 queryDevice5 queryDataType5 queryShape5) generatorDevice5, Torch.GraduallyTyped.NN.Class.HasForward outputLayerNorm (Torch.GraduallyTyped.Tensor.Type.Tensor (queryGradient Torch.GraduallyTyped.Unify.<|> queryGradient5) (queryLayout Torch.GraduallyTyped.Unify.<+> queryLayout5) (queryDevice Torch.GraduallyTyped.Unify.<+> queryDevice5) (queryDataType Torch.GraduallyTyped.Unify.<+> queryDataType5) (Torch.GraduallyTyped.Shape.Class.BroadcastShapesF queryShape queryShape5)) generatorDevice5 output generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Transformer.GFeedForwardNetwork.GTransformerFeedForwardNetwork inputLayerNorm inputTransformation activation activationDropout outputProjection outputDropout outputLayerNorm) (Torch.GraduallyTyped.Tensor.Type.Tensor queryGradient queryLayout queryDevice queryDataType queryShape) generatorDevice output generatorOutputDevice
@@ -3976,7 +3976,6 @@ type family CAFinalLayerNormF (style :: TransformerStyle) (gradient :: Gradient 
 --   layer normalization.</li>
 --   </ul>
 crossAttentionSpec :: forall style gradient device dataType headDim headEmbedDim embedDim queryEmbedDim keyEmbedDim. STransformerStyle style -> SGradient gradient -> SDevice device -> SDataType dataType -> SDim headDim -> SDim headEmbedDim -> SDim embedDim -> SDim queryEmbedDim -> SDim keyEmbedDim -> Double -> Double -> ModelSpec (GCrossAttention (CAInitialLayerNormF style gradient device dataType queryEmbedDim) (CAMultiheadAttentionF style gradient device dataType headDim headEmbedDim embedDim queryEmbedDim keyEmbedDim) (CADropoutF style) (CAFinalLayerNormF style gradient device dataType queryEmbedDim))
-testCA :: IO _
 instance (Torch.GraduallyTyped.NN.Class.HasInitialize initialLayerNorm generatorDevice initialLayerNorm generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize multiHeadAttention generatorDevice multiHeadAttention generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize dropout generatorDevice dropout generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize finalLayerNorm generatorDevice finalLayerNorm generatorDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Transformer.GCrossAttention.GCrossAttention initialLayerNorm multiHeadAttention dropout finalLayerNorm) generatorDevice (Torch.GraduallyTyped.NN.Transformer.GCrossAttention.GCrossAttention initialLayerNorm multiHeadAttention dropout finalLayerNorm) generatorDevice
 instance (Torch.GraduallyTyped.NN.Class.HasStateDict initialLayerNorm, Torch.GraduallyTyped.NN.Class.HasStateDict multiHeadAttention, Torch.GraduallyTyped.NN.Class.HasStateDict dropout, Torch.GraduallyTyped.NN.Class.HasStateDict finalLayerNorm) => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Transformer.GCrossAttention.GCrossAttention initialLayerNorm multiHeadAttention dropout finalLayerNorm)
 instance (Torch.GraduallyTyped.NN.Class.HasForward initialLayerNorm (Torch.GraduallyTyped.Tensor.Type.Tensor queryGradient queryLayout queryDevice queryDataType queryShape) generatorDevice tensor0 generatorDevice0, Torch.GraduallyTyped.NN.Class.HasForward multiHeadAttention (tensor0, Torch.GraduallyTyped.Tensor.Type.Tensor keyGradient keyLayout keyDevice keyDataType keyShape, Torch.GraduallyTyped.Tensor.Type.Tensor keyGradient keyLayout keyDevice keyDataType keyShape, Torch.GraduallyTyped.Tensor.Type.Tensor attentionBiasGradient attentionBiasLayout attentionBiasDevice attentionBiasDataType attentionBiasShape) generatorDevice0 tensor1 generatorDevice1, Torch.GraduallyTyped.NN.Class.HasForward dropout tensor1 generatorDevice1 (Torch.GraduallyTyped.Tensor.Type.Tensor gradient2 layout2 device2 dataType2 shape2) generatorDevice2, Torch.GraduallyTyped.NN.Class.HasForward finalLayerNorm (Torch.GraduallyTyped.Tensor.Type.Tensor (queryGradient Torch.GraduallyTyped.Unify.<|> gradient2) (queryLayout Torch.GraduallyTyped.Unify.<+> layout2) (queryDevice Torch.GraduallyTyped.Unify.<+> device2) (queryDataType Torch.GraduallyTyped.Unify.<+> dataType2) (Torch.GraduallyTyped.Shape.Class.BroadcastShapesF queryShape shape2)) generatorDevice2 output generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Transformer.GCrossAttention.GCrossAttention initialLayerNorm multiHeadAttention dropout finalLayerNorm) (Torch.GraduallyTyped.Tensor.Type.Tensor queryGradient queryLayout queryDevice queryDataType queryShape, Torch.GraduallyTyped.Tensor.Type.Tensor keyGradient keyLayout keyDevice keyDataType keyShape, Torch.GraduallyTyped.Tensor.Type.Tensor attentionBiasGradient attentionBiasLayout attentionBiasDevice attentionBiasDataType attentionBiasShape) generatorDevice output generatorOutputDevice
@@ -4007,8 +4006,6 @@ type family DecoderBlockSelfAttentionF (style :: TransformerStyle) (gradient :: 
 type family DecoderBlockCrossAttentionF (style :: TransformerStyle) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (headDim :: Dim (Name Symbol) (Size Nat)) (headEmbedDim :: Dim (Name Symbol) (Size Nat)) (embedDim :: Dim (Name Symbol) (Size Nat)) (queryEmbedDim :: Dim (Name Symbol) (Size Nat)) (keyEmbedDim :: Dim (Name Symbol) (Size Nat)) :: Type
 type family DecoderBlockFeedForwardNetworkF (style :: TransformerStyle) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (queryEmbedDim :: Dim (Name Symbol) (Size Nat)) (ffnDim :: Dim (Name Symbol) (Size Nat)) :: Type
 decoderBlockSpec :: forall style gradient device dataType headDim headEmbedDim embedDim queryEmbedDim keyEmbedDim ffnDim. STransformerStyle style -> SGradient gradient -> SDevice device -> SDataType dataType -> SDim headDim -> SDim headEmbedDim -> SDim embedDim -> SDim queryEmbedDim -> SDim keyEmbedDim -> SDim ffnDim -> Double -> Double -> ModelSpec (GTransformerBlock (DecoderBlockSelfAttentionF style gradient device dataType headDim headEmbedDim embedDim queryEmbedDim) (DecoderBlockCrossAttentionF style gradient device dataType headDim headEmbedDim embedDim queryEmbedDim keyEmbedDim) (DecoderBlockFeedForwardNetworkF style gradient device dataType queryEmbedDim ffnDim))
-testEncoderBlock :: IO _
-testDecoderBlock :: IO _
 instance (Torch.GraduallyTyped.NN.Class.HasInitialize selfAttention generatorDevice selfAttention generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize crossAttention generatorDevice crossAttention generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize feedForwardNetwork generatorDevice feedForwardNetwork generatorDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Transformer.GBlock.GTransformerBlock selfAttention crossAttention feedForwardNetwork) generatorDevice (Torch.GraduallyTyped.NN.Transformer.GBlock.GTransformerBlock selfAttention crossAttention feedForwardNetwork) generatorDevice
 instance (Torch.GraduallyTyped.NN.Class.HasStateDict selfAttention, Torch.GraduallyTyped.NN.Class.HasStateDict crossAttention, Torch.GraduallyTyped.NN.Class.HasStateDict feedForwardNetwork) => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Transformer.GBlock.GTransformerBlock selfAttention crossAttention feedForwardNetwork)
 instance (Torch.GraduallyTyped.NN.Class.HasForward selfAttention (query, attentionBias) generatorDevice tensor0 generatorDevice0, Torch.GraduallyTyped.NN.Class.HasForward feedForwardNetwork tensor0 generatorDevice0 output generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Transformer.GBlock.GTransformerBlock selfAttention () feedForwardNetwork) (query, attentionBias) generatorDevice output generatorOutputDevice
@@ -4029,7 +4026,7 @@ newtype GTransformerStack (stack :: Type)
 --   
 --   <ul>
 --   <li><tt>style</tt>: the style of the transformer stack, e.g.
---   <a>ST5</a>, <tt>SByT5</tt>, etc.</li>
+--   <tt>ST5</tt>, <tt>SByT5</tt>, etc.</li>
 --   <li><tt>gradient</tt>: whether to compute the gradient of the stack's
 --   parameters.</li>
 --   <li><tt>device</tt>: the computational device on which the stack is
@@ -4055,7 +4052,7 @@ encoderStackSpec :: forall style numLayers gradient device dataType headDim head
 --   
 --   <ul>
 --   <li><tt>style</tt>: the style of the transformer stack, e.g.
---   <a>ST5</a>, <tt>SByT5</tt>, etc.</li>
+--   <tt>ST5</tt>, <tt>SByT5</tt>, etc.</li>
 --   <li><tt>gradient</tt>: whether to compute the gradient of the stack's
 --   parameters.</li>
 --   <li><tt>device</tt>: the computational device on which the stack is
@@ -4077,8 +4074,6 @@ encoderStackSpec :: forall style numLayers gradient device dataType headDim head
 --   layer normalization.</li>
 --   </ul>
 decoderStackSpec :: forall style numLayers gradient device dataType headDim headEmbedDim embedDim queryEmbedDim keyEmbedDim ffnDim. STransformerStyle style -> SNat numLayers -> SGradient gradient -> SDevice device -> SDataType dataType -> SDim headDim -> SDim headEmbedDim -> SDim embedDim -> SDim queryEmbedDim -> SDim keyEmbedDim -> SDim ffnDim -> Double -> Double -> ModelSpec (GTransformerStack (Vector numLayers (GTransformerBlock (DecoderBlockSelfAttentionF style gradient device dataType headDim headEmbedDim embedDim queryEmbedDim) (DecoderBlockCrossAttentionF style gradient device dataType headDim headEmbedDim embedDim queryEmbedDim keyEmbedDim) (DecoderBlockFeedForwardNetworkF style gradient device dataType queryEmbedDim ffnDim))))
-testEncoderStack :: IO _
-testDecoderStack :: IO _
 instance (Torch.GraduallyTyped.NN.Class.HasInitialize block generatorDevice block generatorDevice, numLayers' GHC.Types.~ (numLayers GHC.TypeNats.+ 1)) => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Transformer.GStack.GTransformerStack (Data.Vector.Sized.Vector numLayers' block)) generatorDevice (Torch.GraduallyTyped.NN.Transformer.GStack.GTransformerStack (Data.Vector.Sized.Vector numLayers' block)) generatorDevice
 instance Torch.GraduallyTyped.NN.Class.HasStateDict block => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Transformer.GStack.GTransformerStack (Data.Vector.Sized.Vector numLayers block))
 instance Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Transformer.GStack.GTransformerStack (Data.Vector.Sized.Vector 0 block)) (query, attentionBias) generatorDevice query generatorDevice
@@ -4210,8 +4205,6 @@ type family TDFinalDropoutF (style :: TransformerStyle) :: Type
 --   layer normalization.</li>
 --   </ul>
 transformerDecoderSpec :: forall style numLayers gradient device dataType headDim headEmbedDim embedDim decoderInputEmbedDim encoderOutputEmbedDim ffnDim posEncDim. STransformerStyle style -> SNat numLayers -> SGradient gradient -> SDevice device -> SDataType dataType -> SDim headDim -> SDim headEmbedDim -> SDim embedDim -> SDim decoderInputEmbedDim -> SDim encoderOutputEmbedDim -> SDim ffnDim -> SDim posEncDim -> Double -> Double -> ModelSpec (GTransformer (TDPosEncF style gradient device dataType decoderInputEmbedDim posEncDim) (TDRelPosEncF style gradient device dataType headDim posEncDim) (TDInitialLayerNormF style gradient device dataType decoderInputEmbedDim) (TDInitialDropoutF style) (TDStackF style numLayers gradient device dataType headDim headEmbedDim embedDim decoderInputEmbedDim encoderOutputEmbedDim ffnDim) (TDFinalLayerNormF style gradient device dataType decoderInputEmbedDim) (TDFinalDropoutF style))
-testEncoder :: IO _
-testDecoder :: IO _
 instance (Torch.GraduallyTyped.NN.Class.HasInitialize posEnc generatorDevice posEnc generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize relPosEnc generatorDevice relPosEnc generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize initialLayerNorm generatorDevice initialLayerNorm generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize initialDropout generatorDevice initialDropout generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize stack generatorDevice stack generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize finalLayerNorm generatorDevice finalLayerNorm generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize finalDropout generatorDevice finalDropout generatorDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Transformer.GTransformer.GTransformer posEnc relPosEnc initialLayerNorm initialDropout stack finalLayerNorm finalDropout) generatorDevice (Torch.GraduallyTyped.NN.Transformer.GTransformer.GTransformer posEnc relPosEnc initialLayerNorm initialDropout stack finalLayerNorm finalDropout) generatorDevice
 instance (Torch.GraduallyTyped.NN.Class.HasStateDict posEnc, Torch.GraduallyTyped.NN.Class.HasStateDict relPosEnc, Torch.GraduallyTyped.NN.Class.HasStateDict initialLayerNorm, Torch.GraduallyTyped.NN.Class.HasStateDict initialDropout, Torch.GraduallyTyped.NN.Class.HasStateDict stack, Torch.GraduallyTyped.NN.Class.HasStateDict finalLayerNorm, Torch.GraduallyTyped.NN.Class.HasStateDict finalDropout) => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Transformer.GTransformer.GTransformer posEnc relPosEnc initialLayerNorm initialDropout stack finalLayerNorm finalDropout)
 instance (Torch.GraduallyTyped.NN.Class.HasForward posEnc (Torch.GraduallyTyped.Tensor.Type.Tensor posGradient posLayout posDevice posDataType posShape) generatorDevice (Torch.GraduallyTyped.Tensor.Type.Tensor posEncGradient posEncLayout posEncDevice posEncDataType posEncShape) generatorDevice0, Torch.GraduallyTyped.NN.Class.HasForward initialLayerNorm (Torch.GraduallyTyped.Tensor.Type.Tensor (inputGradient Torch.GraduallyTyped.Unify.<|> posEncGradient) (inputLayout Torch.GraduallyTyped.Unify.<+> posEncLayout) (inputDevice Torch.GraduallyTyped.Unify.<+> posEncDevice) (inputDataType Torch.GraduallyTyped.Unify.<+> posEncDataType) (Torch.GraduallyTyped.Shape.Class.BroadcastShapesF inputShape posEncShape)) generatorDevice0 tensor1 generatorDevice1, Torch.GraduallyTyped.NN.Class.HasForward initialDropout tensor1 generatorDevice1 tensor2 generatorDevice2, Torch.GraduallyTyped.NN.Class.HasForward stack (tensor2, Torch.GraduallyTyped.Tensor.Type.Tensor attentionMaskGradient attentionMaskLayout attentionMaskDevice attentionMaskDataType (Torch.GraduallyTyped.Tensor.IndexingSlicingJoining.UnsqueezeF ('Torch.GraduallyTyped.Shape.Type.SelectDim ('Torch.GraduallyTyped.Shape.Type.ByIndex 1)) attentionMaskShape)) generatorDevice2 tensor3 generatorDevice3, Torch.GraduallyTyped.NN.Class.HasForward finalLayerNorm tensor3 generatorDevice3 tensor4 generatorDevice4, Torch.GraduallyTyped.NN.Class.HasForward finalDropout tensor4 generatorDevice4 output generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Transformer.GTransformer.GTransformer posEnc () initialLayerNorm initialDropout stack finalLayerNorm finalDropout) (Torch.GraduallyTyped.Tensor.Type.Tensor inputGradient inputLayout inputDevice inputDataType inputShape, Torch.GraduallyTyped.Tensor.Type.Tensor posGradient posLayout posDevice posDataType posShape, Torch.GraduallyTyped.Tensor.Type.Tensor attentionMaskGradient attentionMaskLayout attentionMaskDevice attentionMaskDataType attentionMaskShape) generatorDevice output generatorOutputDevice
@@ -4395,6 +4388,9 @@ type RoBERTaBaseFFNDim = 'Dim ('Name "*") ('Size 3072)
 -- | RoBERTa-Base vocabulary dimension. 'vocab_size = 50265'
 type RoBERTaBaseVocabDim = 'Dim ('Name "*") ('Size 50265)
 
+-- | RoBERTa-Base vocabulary dimension singleton.
+robertaBaseVocabDim :: SDim RoBERTaBaseVocabDim
+
 -- | RoBERTa-Base type vocabulary dimension. 'type_vocab_size = 1'
 type RoBERTaBaseTypeVocabDim = 'Dim ('Name "*") ('Size 1)
 
@@ -4405,7 +4401,6 @@ type RoBERTaBase (transformerHead :: TransformerHead) (gradient :: Gradient Requ
 robertaBaseSpec :: STransformerHead transformerHead -> SGradient gradient -> SDevice device -> ModelSpec (RoBERTaBase transformerHead gradient device)
 
 module Torch.GraduallyTyped.NN.Transformer.RoBERTa
-testForwardRoBERTaBase :: IO ()
 
 module Torch.GraduallyTyped.NN.Transformer.BERT.Common
 
@@ -4528,7 +4523,6 @@ type BERTBaseUncased (transformerHead :: TransformerHead) (gradient :: Gradient 
 bertBaseUnchasedSpec :: STransformerHead transformerHead -> SGradient gradient -> SDevice device -> ModelSpec (BERTBaseUncased transformerHead gradient device)
 
 module Torch.GraduallyTyped.NN.Transformer.BERT
-testForwardBERTBaseUncased :: IO ()
 
 module Torch.GraduallyTyped.NN.Transformer.GEncoderDecoder
 
@@ -4620,7 +4614,6 @@ data EncoderDecoderTransformerGenerationInput decoderInput encoderOutput decoder
 [EncoderDecoderTransformerGenerationInput] :: forall decoderInput encoderOutput decoderPos decoderAttentionMask crossAttentionMask. {edtGenerationDecoderInput :: decoderInput, edtGenerationEncoderOutput :: encoderOutput, edtGenerationDecoderPos :: decoderPos, edtGenerationDecoderAttentionMask :: decoderAttentionMask, edtGenerationCrossAttentionMask :: crossAttentionMask} -> EncoderDecoderTransformerGenerationInput decoderInput encoderOutput decoderPos decoderAttentionMask crossAttentionMask
 data SimplifiedEncoderDecoderTransformerGenerationInput decoderInput encoderOutput inputPaddingMask
 [SimplifiedEncoderDecoderTransformerGenerationInput] :: forall decoderInput encoderOutput inputPaddingMask. {sedtGenerationDecoderInput :: decoderInput, sedtGenerationEncoderOutput :: encoderOutput, sedtGenerationInputPaddingMask :: inputPaddingMask} -> SimplifiedEncoderDecoderTransformerGenerationInput decoderInput encoderOutput inputPaddingMask
-testEncoderDecoderTransformer :: IO _
 instance (GHC.Show.Show input, GHC.Show.Show decoderInput, GHC.Show.Show pos, GHC.Show.Show decoderPos, GHC.Show.Show attentionMask, GHC.Show.Show decoderAttentionMask, GHC.Show.Show crossAttentionMask) => GHC.Show.Show (Torch.GraduallyTyped.NN.Transformer.GEncoderDecoder.EncoderDecoderTransformerInput input decoderInput pos decoderPos attentionMask decoderAttentionMask crossAttentionMask)
 instance (GHC.Show.Show decoderOutput, GHC.Show.Show encoderOutput) => GHC.Show.Show (Torch.GraduallyTyped.NN.Transformer.GEncoderDecoder.EncoderDecoderTransformerOutput decoderOutput encoderOutput)
 instance (GHC.Show.Show decoderInput, GHC.Show.Show encoderOutput, GHC.Show.Show decoderPos, GHC.Show.Show decoderAttentionMask, GHC.Show.Show crossAttentionMask) => GHC.Show.Show (Torch.GraduallyTyped.NN.Transformer.GEncoderDecoder.EncoderDecoderTransformerGenerationInput decoderInput encoderOutput decoderPos decoderAttentionMask crossAttentionMask)
@@ -4691,7 +4684,6 @@ type family T5ModelF style transformerHead numEncoderLayers numDecoderLayers gra
 --   </ul>
 t5ModelSpec :: forall style transformerHead numEncoderLayers numDecoderLayers gradient device headDim headEmbedDim embedDim inputEmbedDim ffnDim vocabDim. (SingI headDim, SingI headEmbedDim, SingI embedDim, SingI inputEmbedDim, SingI ffnDim, SingI vocabDim) => STransformerStyle style -> STransformerHead transformerHead -> SNat numEncoderLayers -> SNat numDecoderLayers -> SGradient gradient -> SDevice device -> ModelSpec (T5ModelF style transformerHead numEncoderLayers numDecoderLayers gradient device headDim headEmbedDim embedDim inputEmbedDim ffnDim vocabDim)
 mkT5Input :: forall batchDim seqDim device m output. (MonadThrow m, SGetDim batchDim, SGetDim seqDim, 'Shape '[batchDim, seqDim] ~ Seq ('Shape '[ 'Dim ('Name "*") 'UncheckedSize, 'Dim ('Name "*") 'UncheckedSize] <+> 'Shape '[batchDim, seqDim]) ('Shape '[batchDim, seqDim]), output ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Int64) ('Shape '[batchDim, seqDim])) => SDim batchDim -> SDim seqDim -> SDevice device -> [[Int]] -> m output
-testT5 :: IO _
 
 module Torch.GraduallyTyped.NN.Transformer.T5.ThreeB
 
@@ -4750,6 +4742,7 @@ type T5SmallFFNDim = 'Dim ('Name "*") ('Size 2048)
 
 -- | T5-Small vocabulary dimension. 'vocab_size = 32128'
 type T5SmallVocabDim = 'Dim ('Name "*") ('Size 32128)
+t5SmallVocabDim :: SDim T5SmallVocabDim
 
 -- | T5-Small model.
 type T5Small (transformerHead :: TransformerHead) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) = T5ModelF 'T5 transformerHead T5SmallNumLayers T5SmallNumLayers gradient device T5SmallHeadDim T5SmallHeadEmbedDim T5SmallEmbedDim T5SmallInputEmbedDim T5SmallFFNDim T5SmallVocabDim
@@ -4968,6 +4961,7 @@ type PegasusXSumEmbedDim = 'Dim ('Name "*") ('Size 1024)
 
 -- | Pegasus-XSum model dimension. 'd_model = 1024'
 type PegasusXSumInputEmbedDim = 'Dim ('Name "*") ('Size 1024)
+pegasusXSumInputEmbedDim :: SDim PegasusXSumInputEmbedDim
 
 -- | Pegasus-XSum feed-forward network dimension. 'encoder_ffn_dim = 4096'
 --   'decoder_ffn_dim = 4096'
@@ -4976,6 +4970,9 @@ type PegasusXSumFFNDim = 'Dim ('Name "*") ('Size 4096)
 -- | Pegasus-XSum vocabulary dimension. 'vocab_size = 96103'
 type PegasusXSumVocabDim = 'Dim ('Name "*") ('Size 96103)
 
+-- | Pegasus-XSum vocabulary dimension singleton.
+pegasusXSumVocabDim :: SDim PegasusXSumVocabDim
+
 -- | Pegasus-XSum model.
 type PegasusXSum (transformerHead :: TransformerHead) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) = PegasusModelF transformerHead PegasusXSumNumLayers gradient device PegasusXSumHeadDim PegasusXSumHeadEmbedDim PegasusXSumEmbedDim PegasusXSumInputEmbedDim PegasusXSumFFNDim PegasusXSumVocabDim
 
@@ -4983,7 +4980,6 @@ type PegasusXSum (transformerHead :: TransformerHead) (gradient :: Gradient Requ
 pegasusXSumSpec :: STransformerHead transformerHead -> SGradient gradient -> SDevice device -> ModelSpec (PegasusXSum transformerHead gradient device)
 
 module Torch.GraduallyTyped.NN.Transformer.Pegasus
-testForwardPegasusXSum :: IO ()
 
 module Torch.GraduallyTyped.NN.Transformer.BART.Common
 
@@ -5042,7 +5038,6 @@ type family BARTModelF (transformerHead :: TransformerHead) (numLayers :: Nat) (
 --   </ul>
 bartModelSpec :: forall transformerHead numLayers gradient device headDim headEmbedDim embedDim inputEmbedDim ffnDim vocabDim. (SingI headDim, SingI headEmbedDim, SingI embedDim, SingI inputEmbedDim, SingI ffnDim, SingI vocabDim) => STransformerHead transformerHead -> SNat numLayers -> SGradient gradient -> SDevice device -> ModelSpec (BARTModelF transformerHead numLayers gradient device headDim headEmbedDim embedDim inputEmbedDim ffnDim vocabDim)
 mkBARTInput :: forall batchDim seqDim device m output. (MonadThrow m, SGetDim batchDim, SGetDim seqDim, 'Shape '[batchDim, seqDim] ~ Seq ('Shape '[ 'Dim ('Name "*") 'UncheckedSize, 'Dim ('Name "*") 'UncheckedSize] <+> 'Shape '[batchDim, seqDim]) ('Shape '[batchDim, seqDim]), output ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Int64) ('Shape '[batchDim, seqDim])) => SDim batchDim -> SDim seqDim -> SDevice device -> [[Int]] -> m output
-testBart :: IO _
 
 module Torch.GraduallyTyped.NN.Transformer.BART.Base
 
@@ -5097,7 +5092,6 @@ type BARTBase (transformerHead :: TransformerHead) (gradient :: Gradient Require
 bartBaseSpec :: STransformerHead transformerHead -> SGradient gradient -> SDevice device -> ModelSpec (BARTBase transformerHead gradient device)
 
 module Torch.GraduallyTyped.NN.Transformer.BART
-testBARTAutoencoder :: String -> IO String
 
 
 -- | This module contains bits and pieces to work with the Spider SQL
@@ -5525,7 +5519,6 @@ instance (GHC.Base.Alternative b, Data.Foldable.Foldable b, GHC.Base.MonadPlus b
 instance (GHC.Base.Alternative b, Data.Foldable.Foldable b, GHC.Base.MonadPlus b) => Text.Parser.Token.TokenParsing (Control.Monad.Trans.Free.FreeT ((->) GHC.Types.Char) (Control.Monad.Trans.State.Lazy.StateT [GHC.Types.Int] b))
 
 module Torch.GraduallyTyped.NN.Transformer.T5
-testForwardT5Small :: IO ()
 
 module Torch.GraduallyTyped.NN.Transformer
 
