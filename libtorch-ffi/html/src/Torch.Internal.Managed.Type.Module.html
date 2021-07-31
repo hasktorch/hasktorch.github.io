@@ -25,11 +25,12 @@
 </span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.Internal.Cast.html"><span class="hs-identifier">Torch.Internal.Cast</span></a></span><span>
 </span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.Internal.Objects.html"><span class="hs-identifier">Torch.Internal.Objects</span></a></span><span>
 </span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad</span></span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">forM</span></span><span class="hs-special">)</span><span>
-</span><span id="line-28"></span><span>
-</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html"><span class="hs-identifier">Torch.Internal.Unmanaged.Type.Module</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Unmanaged</span></span><span>
-</span><span id="line-30"></span><span>
-</span><span id="line-31"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#newModule"><span class="hs-identifier hs-type">newModule</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-32"></span><span id="newModule"><span class="annot"><span class="annottext">newModule :: ForeignPtr StdString -&gt; IO (ForeignPtr Module)
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Concurrent.MVar</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">MVar</span></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">newEmptyMVar</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">putMVar</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">takeMVar</span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.Internal.Unmanaged.Type.Module.html"><span class="hs-identifier">Torch.Internal.Unmanaged.Type.Module</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Unmanaged</span></span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#newModule"><span class="hs-identifier hs-type">newModule</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span id="newModule"><span class="annot"><span class="annottext">newModule :: ForeignPtr StdString -&gt; IO (ForeignPtr Module)
 </span><a href="Torch.Internal.Managed.Type.Module.html#newModule"><span class="hs-identifier hs-var hs-var">newModule</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr StdString -&gt; IO (Ptr Module))
 -&gt; ForeignPtr StdString -&gt; IO (ForeignPtr Module)
 forall a ca y cy.
@@ -37,9 +38,9 @@ forall a ca y cy.
 (ca -&gt; IO cy) -&gt; a -&gt; IO y
 </span><a href="Torch.Internal.Cast.html#cast1"><span class="hs-identifier hs-var">cast1</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr StdString -&gt; IO (Ptr Module)
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#newModule"><span class="hs-identifier hs-var">Unmanaged.newModule</span></a></span><span>
-</span><span id="line-33"></span><span>
-</span><span id="line-34"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#save"><span class="hs-identifier hs-type">save</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FilePath</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
-</span><span id="line-35"></span><span id="save"><span class="annot"><span class="annottext">save :: ForeignPtr Module -&gt; FilePath -&gt; IO ()
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#save"><span class="hs-identifier hs-type">save</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FilePath</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span id="save"><span class="annot"><span class="annottext">save :: ForeignPtr Module -&gt; FilePath -&gt; IO ()
 </span><a href="Torch.Internal.Managed.Type.Module.html#save"><span class="hs-identifier hs-var hs-var">save</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr Module -&gt; FilePath -&gt; IO ())
 -&gt; ForeignPtr Module -&gt; FilePath -&gt; IO ()
 forall a ca x1 cx1 y cy.
@@ -47,18 +48,18 @@ forall a ca x1 cx1 y cy.
 (ca -&gt; cx1 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; IO y
 </span><a href="Torch.Internal.Cast.html#cast2"><span class="hs-identifier hs-var">cast2</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Module -&gt; FilePath -&gt; IO ()
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#save"><span class="hs-identifier hs-var">Unmanaged.save</span></a></span><span>
-</span><span id="line-36"></span><span>
-</span><span id="line-37"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#load"><span class="hs-identifier hs-type">load</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FilePath</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-38"></span><span id="load"><span class="annot"><span class="annottext">load :: FilePath -&gt; IO (ForeignPtr Module)
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#load"><span class="hs-identifier hs-type">load</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FilePath</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-39"></span><span id="load"><span class="annot"><span class="annottext">load :: FilePath -&gt; IO (ForeignPtr Module)
 </span><a href="Torch.Internal.Managed.Type.Module.html#load"><span class="hs-identifier hs-var hs-var">load</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(FilePath -&gt; IO (Ptr Module)) -&gt; FilePath -&gt; IO (ForeignPtr Module)
 forall a ca y cy.
 (Castable a ca, Castable y cy) =&gt;
 (ca -&gt; IO cy) -&gt; a -&gt; IO y
 </span><a href="Torch.Internal.Cast.html#cast1"><span class="hs-identifier hs-var">cast1</span></a></span><span> </span><span class="annot"><span class="annottext">FilePath -&gt; IO (Ptr Module)
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#load"><span class="hs-identifier hs-var">Unmanaged.load</span></a></span><span>
-</span><span id="line-39"></span><span>
-</span><span id="line-40"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#forward"><span class="hs-identifier hs-type">forward</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#StdVector"><span class="hs-identifier hs-type">StdVector</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-41"></span><span id="forward"><span class="annot"><span class="annottext">forward :: ForeignPtr Module
+</span><span id="line-40"></span><span>
+</span><span id="line-41"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#forward"><span class="hs-identifier hs-type">forward</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#StdVector"><span class="hs-identifier hs-type">StdVector</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-42"></span><span id="forward"><span class="annot"><span class="annottext">forward :: ForeignPtr Module
 -&gt; ForeignPtr (StdVector IValue) -&gt; IO (ForeignPtr IValue)
 </span><a href="Torch.Internal.Managed.Type.Module.html#forward"><span class="hs-identifier hs-var hs-var">forward</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr Module -&gt; Ptr (StdVector IValue) -&gt; IO (Ptr IValue))
 -&gt; ForeignPtr Module
@@ -69,9 +70,9 @@ forall a ca x1 cx1 y cy.
 (ca -&gt; cx1 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; IO y
 </span><a href="Torch.Internal.Cast.html#cast2"><span class="hs-identifier hs-var">cast2</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Module -&gt; Ptr (StdVector IValue) -&gt; IO (Ptr IValue)
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#forward"><span class="hs-identifier hs-var">Unmanaged.forward</span></a></span><span>
-</span><span id="line-42"></span><span>
-</span><span id="line-43"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#registerParameter"><span class="hs-identifier hs-type">registerParameter</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
-</span><span id="line-44"></span><span id="registerParameter"><span class="annot"><span class="annottext">registerParameter :: ForeignPtr Module
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#registerParameter"><span class="hs-identifier hs-type">registerParameter</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-45"></span><span id="registerParameter"><span class="annot"><span class="annottext">registerParameter :: ForeignPtr Module
 -&gt; ForeignPtr StdString -&gt; ForeignPtr Tensor -&gt; CBool -&gt; IO ()
 </span><a href="Torch.Internal.Managed.Type.Module.html#registerParameter"><span class="hs-identifier hs-var hs-var">registerParameter</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr Module -&gt; Ptr StdString -&gt; Ptr Tensor -&gt; CBool -&gt; IO ())
 -&gt; ForeignPtr Module
@@ -85,9 +86,9 @@ forall a ca x1 cx1 x2 cx2 x3 cx3 y cy.
 (ca -&gt; cx1 -&gt; cx2 -&gt; cx3 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; x2 -&gt; x3 -&gt; IO y
 </span><a href="Torch.Internal.Cast.html#cast4"><span class="hs-identifier hs-var">cast4</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Module -&gt; Ptr StdString -&gt; Ptr Tensor -&gt; CBool -&gt; IO ()
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#registerParameter"><span class="hs-identifier hs-var">Unmanaged.registerParameter</span></a></span><span>
-</span><span id="line-45"></span><span>
-</span><span id="line-46"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#registerModule"><span class="hs-identifier hs-type">registerModule</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
-</span><span id="line-47"></span><span id="registerModule"><span class="annot"><span class="annottext">registerModule :: ForeignPtr Module
+</span><span id="line-46"></span><span>
+</span><span id="line-47"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#registerModule"><span class="hs-identifier hs-type">registerModule</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span id="registerModule"><span class="annot"><span class="annottext">registerModule :: ForeignPtr Module
 -&gt; ForeignPtr StdString -&gt; ForeignPtr Module -&gt; IO ()
 </span><a href="Torch.Internal.Managed.Type.Module.html#registerModule"><span class="hs-identifier hs-var hs-var">registerModule</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr Module -&gt; Ptr StdString -&gt; Ptr Module -&gt; IO ())
 -&gt; ForeignPtr Module
@@ -99,9 +100,9 @@ forall a ca x1 cx1 x2 cx2 y cy.
 (ca -&gt; cx1 -&gt; cx2 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; x2 -&gt; IO y
 </span><a href="Torch.Internal.Cast.html#cast3"><span class="hs-identifier hs-var">cast3</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Module -&gt; Ptr StdString -&gt; Ptr Module -&gt; IO ()
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#registerModule"><span class="hs-identifier hs-var">Unmanaged.registerModule</span></a></span><span>
-</span><span id="line-48"></span><span>
-</span><span id="line-49"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#train"><span class="hs-identifier hs-type">train</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
-</span><span id="line-50"></span><span id="train"><span class="annot"><span class="annottext">train :: ForeignPtr Module -&gt; CBool -&gt; IO ()
+</span><span id="line-49"></span><span>
+</span><span id="line-50"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#train"><span class="hs-identifier hs-type">train</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span id="train"><span class="annot"><span class="annottext">train :: ForeignPtr Module -&gt; CBool -&gt; IO ()
 </span><a href="Torch.Internal.Managed.Type.Module.html#train"><span class="hs-identifier hs-var hs-var">train</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr Module -&gt; CBool -&gt; IO ())
 -&gt; ForeignPtr Module -&gt; CBool -&gt; IO ()
 forall a ca x1 cx1 y cy.
@@ -109,9 +110,9 @@ forall a ca x1 cx1 y cy.
 (ca -&gt; cx1 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; IO y
 </span><a href="Torch.Internal.Cast.html#cast2"><span class="hs-identifier hs-var">cast2</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Module -&gt; CBool -&gt; IO ()
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#train"><span class="hs-identifier hs-var">Unmanaged.train</span></a></span><span>
-</span><span id="line-51"></span><span>
-</span><span id="line-52"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#runMethod"><span class="hs-identifier hs-type">runMethod</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#C10List"><span class="hs-identifier hs-type">C10List</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-53"></span><span id="runMethod"><span class="annot"><span class="annottext">runMethod :: ForeignPtr Module
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#runMethod"><span class="hs-identifier hs-type">runMethod</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#C10List"><span class="hs-identifier hs-type">C10List</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span id="runMethod"><span class="annot"><span class="annottext">runMethod :: ForeignPtr Module
 -&gt; ForeignPtr StdString
 -&gt; ForeignPtr (C10List IValue)
 -&gt; IO (Ptr IValue)
@@ -127,9 +128,9 @@ forall a ca x1 cx1 x2 cx2 y cy.
 </span><a href="Torch.Internal.Cast.html#cast3"><span class="hs-identifier hs-var">cast3</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Module
 -&gt; Ptr StdString -&gt; Ptr (C10List IValue) -&gt; IO (Ptr IValue)
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#runMethod"><span class="hs-identifier hs-var">Unmanaged.runMethod</span></a></span><span>
-</span><span id="line-54"></span><span>
-</span><span id="line-55"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#runMethod1"><span class="hs-identifier hs-type">runMethod1</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-56"></span><span id="runMethod1"><span class="annot"><span class="annottext">runMethod1 :: ForeignPtr Module
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#runMethod1"><span class="hs-identifier hs-type">runMethod1</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-57"></span><span id="runMethod1"><span class="annot"><span class="annottext">runMethod1 :: ForeignPtr Module
 -&gt; ForeignPtr StdString -&gt; ForeignPtr IValue -&gt; IO (Ptr IValue)
 </span><a href="Torch.Internal.Managed.Type.Module.html#runMethod1"><span class="hs-identifier hs-var hs-var">runMethod1</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr Module -&gt; Ptr StdString -&gt; Ptr IValue -&gt; IO (Ptr IValue))
 -&gt; ForeignPtr Module
@@ -141,9 +142,9 @@ forall a ca x1 cx1 x2 cx2 y cy.
 (ca -&gt; cx1 -&gt; cx2 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; x2 -&gt; IO y
 </span><a href="Torch.Internal.Cast.html#cast3"><span class="hs-identifier hs-var">cast3</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Module -&gt; Ptr StdString -&gt; Ptr IValue -&gt; IO (Ptr IValue)
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#runMethod1"><span class="hs-identifier hs-var">Unmanaged.runMethod1</span></a></span><span>
-</span><span id="line-57"></span><span>
-</span><span id="line-58"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#getParameters"><span class="hs-identifier hs-type">getParameters</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-59"></span><span id="getParameters"><span class="annot"><span class="annottext">getParameters :: ForeignPtr Module -&gt; IO (ForeignPtr TensorList)
+</span><span id="line-58"></span><span>
+</span><span id="line-59"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#getParameters"><span class="hs-identifier hs-type">getParameters</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-60"></span><span id="getParameters"><span class="annot"><span class="annottext">getParameters :: ForeignPtr Module -&gt; IO (ForeignPtr TensorList)
 </span><a href="Torch.Internal.Managed.Type.Module.html#getParameters"><span class="hs-identifier hs-var hs-var">getParameters</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr Module -&gt; IO (Ptr TensorList))
 -&gt; ForeignPtr Module -&gt; IO (ForeignPtr TensorList)
 forall a ca y cy.
@@ -151,9 +152,9 @@ forall a ca y cy.
 (ca -&gt; IO cy) -&gt; a -&gt; IO y
 </span><a href="Torch.Internal.Cast.html#cast1"><span class="hs-identifier hs-var">cast1</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Module -&gt; IO (Ptr TensorList)
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#getParameters"><span class="hs-identifier hs-var">Unmanaged.getParameters</span></a></span><span>
-</span><span id="line-60"></span><span>
-</span><span id="line-61"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#setParameters"><span class="hs-identifier hs-type">setParameters</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
-</span><span id="line-62"></span><span id="setParameters"><span class="annot"><span class="annottext">setParameters :: ForeignPtr Module -&gt; ForeignPtr TensorList -&gt; IO ()
+</span><span id="line-61"></span><span>
+</span><span id="line-62"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#setParameters"><span class="hs-identifier hs-type">setParameters</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-63"></span><span id="setParameters"><span class="annot"><span class="annottext">setParameters :: ForeignPtr Module -&gt; ForeignPtr TensorList -&gt; IO ()
 </span><a href="Torch.Internal.Managed.Type.Module.html#setParameters"><span class="hs-identifier hs-var hs-var">setParameters</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr Module -&gt; Ptr TensorList -&gt; IO ())
 -&gt; ForeignPtr Module -&gt; ForeignPtr TensorList -&gt; IO ()
 forall a ca x1 cx1 y cy.
@@ -161,27 +162,27 @@ forall a ca x1 cx1 y cy.
 (ca -&gt; cx1 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; IO y
 </span><a href="Torch.Internal.Cast.html#cast2"><span class="hs-identifier hs-var">cast2</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Module -&gt; Ptr TensorList -&gt; IO ()
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#setParameters"><span class="hs-identifier hs-var">Unmanaged.setParameters</span></a></span><span>
-</span><span id="line-63"></span><span>
-</span><span id="line-64"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#getNamedParameters"><span class="hs-identifier hs-type">getNamedParameters</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">,</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
-</span><span id="line-65"></span><span id="getNamedParameters"><span class="annot"><span class="annottext">getNamedParameters :: ForeignPtr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)]
-</span><a href="Torch.Internal.Managed.Type.Module.html#getNamedParameters"><span class="hs-identifier hs-var hs-var">getNamedParameters</span></a></span></span><span> </span><span id="local-6989586621686143071"><span class="annot"><span class="annottext">ForeignPtr Module
-</span><a href="#local-6989586621686143071"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ForeignPtr Module
+</span><span id="line-64"></span><span>
+</span><span id="line-65"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#getNamedParameters"><span class="hs-identifier hs-type">getNamedParameters</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">,</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-66"></span><span id="getNamedParameters"><span class="annot"><span class="annottext">getNamedParameters :: ForeignPtr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)]
+</span><a href="Torch.Internal.Managed.Type.Module.html#getNamedParameters"><span class="hs-identifier hs-var hs-var">getNamedParameters</span></a></span></span><span> </span><span id="local-6989586621686148907"><span class="annot"><span class="annottext">ForeignPtr Module
+</span><a href="#local-6989586621686148907"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ForeignPtr Module
 -&gt; (Ptr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)])
 -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)]
 forall a b. ForeignPtr a -&gt; (Ptr a -&gt; IO b) -&gt; IO b
 </span><span class="hs-identifier hs-var">withForeignPtr</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Module
-</span><a href="#local-6989586621686143071"><span class="hs-identifier hs-var">obj</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)])
+</span><a href="#local-6989586621686148907"><span class="hs-identifier hs-var">obj</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)])
  -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)])
 -&gt; (Ptr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)])
 -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)]
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621686143069"><span class="annot"><span class="annottext">Ptr Module
-</span><a href="#local-6989586621686143069"><span class="hs-identifier hs-var">obj'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-66"></span><span>  </span><span id="local-6989586621686143068"><span class="annot"><span class="annottext">[(Ptr StdString, Ptr Tensor)]
-</span><a href="#local-6989586621686143068"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr Module -&gt; IO [(Ptr StdString, Ptr Tensor)]
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621686148905"><span class="annot"><span class="annottext">Ptr Module
+</span><a href="#local-6989586621686148905"><span class="hs-identifier hs-var">obj'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-67"></span><span>  </span><span id="local-6989586621686148904"><span class="annot"><span class="annottext">[(Ptr StdString, Ptr Tensor)]
+</span><a href="#local-6989586621686148904"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr Module -&gt; IO [(Ptr StdString, Ptr Tensor)]
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#getNamedParameters"><span class="hs-identifier hs-var">Unmanaged.getNamedParameters</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Module
-</span><a href="#local-6989586621686143069"><span class="hs-identifier hs-var">obj'</span></a></span><span>
-</span><span id="line-67"></span><span>  </span><span class="annot"><span class="annottext">[(Ptr StdString, Ptr Tensor)]
+</span><a href="#local-6989586621686148905"><span class="hs-identifier hs-var">obj'</span></a></span><span>
+</span><span id="line-68"></span><span>  </span><span class="annot"><span class="annottext">[(Ptr StdString, Ptr Tensor)]
 -&gt; ((Ptr StdString, Ptr Tensor)
     -&gt; IO (ForeignPtr StdString, ForeignPtr Tensor))
 -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)]
@@ -189,61 +190,61 @@ forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
 (Traversable t, Monad m) =&gt;
 t a -&gt; (a -&gt; m b) -&gt; m (t b)
 </span><span class="hs-identifier hs-var">forM</span></span><span> </span><span class="annot"><span class="annottext">[(Ptr StdString, Ptr Tensor)]
-</span><a href="#local-6989586621686143068"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">(((Ptr StdString, Ptr Tensor)
+</span><a href="#local-6989586621686148904"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">(((Ptr StdString, Ptr Tensor)
   -&gt; IO (ForeignPtr StdString, ForeignPtr Tensor))
  -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)])
 -&gt; ((Ptr StdString, Ptr Tensor)
     -&gt; IO (ForeignPtr StdString, ForeignPtr Tensor))
 -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)]
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621686143066"><span class="annot"><span class="annottext">Ptr StdString
-</span><a href="#local-6989586621686143066"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621686143065"><span class="annot"><span class="annottext">Ptr Tensor
-</span><a href="#local-6989586621686143065"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-68"></span><span>    </span><span id="local-6989586621686143064"><span class="annot"><span class="annottext">ForeignPtr StdString
-</span><a href="#local-6989586621686143064"><span class="hs-identifier hs-var">a'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr StdString
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621686148902"><span class="annot"><span class="annottext">Ptr StdString
+</span><a href="#local-6989586621686148902"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621686148901"><span class="annot"><span class="annottext">Ptr Tensor
+</span><a href="#local-6989586621686148901"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-69"></span><span>    </span><span id="local-6989586621686148900"><span class="annot"><span class="annottext">ForeignPtr StdString
+</span><a href="#local-6989586621686148900"><span class="hs-identifier hs-var">a'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr StdString
 -&gt; (ForeignPtr StdString -&gt; IO (ForeignPtr StdString))
 -&gt; IO (ForeignPtr StdString)
 forall a b r. Castable a b =&gt; b -&gt; (a -&gt; IO r) -&gt; IO r
 </span><a href="Torch.Internal.Class.html#uncast"><span class="hs-identifier hs-var">uncast</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr StdString
-</span><a href="#local-6989586621686143066"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr StdString -&gt; IO (ForeignPtr StdString)
+</span><a href="#local-6989586621686148902"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr StdString -&gt; IO (ForeignPtr StdString)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span>
-</span><span id="line-69"></span><span>    </span><span id="local-6989586621686143062"><span class="annot"><span class="annottext">ForeignPtr Tensor
-</span><a href="#local-6989586621686143062"><span class="hs-identifier hs-var">b'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr Tensor
+</span><span id="line-70"></span><span>    </span><span id="local-6989586621686148898"><span class="annot"><span class="annottext">ForeignPtr Tensor
+</span><a href="#local-6989586621686148898"><span class="hs-identifier hs-var">b'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr Tensor
 -&gt; (ForeignPtr Tensor -&gt; IO (ForeignPtr Tensor))
 -&gt; IO (ForeignPtr Tensor)
 forall a b r. Castable a b =&gt; b -&gt; (a -&gt; IO r) -&gt; IO r
 </span><a href="Torch.Internal.Class.html#uncast"><span class="hs-identifier hs-var">uncast</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Tensor
-</span><a href="#local-6989586621686143065"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Tensor -&gt; IO (ForeignPtr Tensor)
+</span><a href="#local-6989586621686148901"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Tensor -&gt; IO (ForeignPtr Tensor)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span>
-</span><span id="line-70"></span><span>    </span><span class="annot"><span class="annottext">(ForeignPtr StdString, ForeignPtr Tensor)
+</span><span id="line-71"></span><span>    </span><span class="annot"><span class="annottext">(ForeignPtr StdString, ForeignPtr Tensor)
 -&gt; IO (ForeignPtr StdString, ForeignPtr Tensor)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ForeignPtr StdString
-</span><a href="#local-6989586621686143064"><span class="hs-identifier hs-var">a'</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">ForeignPtr Tensor
-</span><a href="#local-6989586621686143062"><span class="hs-identifier hs-var">b'</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-71"></span><span>
-</span><span id="line-72"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#getNamedBuffers"><span class="hs-identifier hs-type">getNamedBuffers</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">,</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
-</span><span id="line-73"></span><span id="getNamedBuffers"><span class="annot"><span class="annottext">getNamedBuffers :: ForeignPtr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)]
-</span><a href="Torch.Internal.Managed.Type.Module.html#getNamedBuffers"><span class="hs-identifier hs-var hs-var">getNamedBuffers</span></a></span></span><span> </span><span id="local-6989586621686143060"><span class="annot"><span class="annottext">ForeignPtr Module
-</span><a href="#local-6989586621686143060"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ForeignPtr Module
+</span><a href="#local-6989586621686148900"><span class="hs-identifier hs-var">a'</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">ForeignPtr Tensor
+</span><a href="#local-6989586621686148898"><span class="hs-identifier hs-var">b'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-72"></span><span>
+</span><span id="line-73"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#getNamedBuffers"><span class="hs-identifier hs-type">getNamedBuffers</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">,</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-74"></span><span id="getNamedBuffers"><span class="annot"><span class="annottext">getNamedBuffers :: ForeignPtr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)]
+</span><a href="Torch.Internal.Managed.Type.Module.html#getNamedBuffers"><span class="hs-identifier hs-var hs-var">getNamedBuffers</span></a></span></span><span> </span><span id="local-6989586621686148896"><span class="annot"><span class="annottext">ForeignPtr Module
+</span><a href="#local-6989586621686148896"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ForeignPtr Module
 -&gt; (Ptr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)])
 -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)]
 forall a b. ForeignPtr a -&gt; (Ptr a -&gt; IO b) -&gt; IO b
 </span><span class="hs-identifier hs-var">withForeignPtr</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Module
-</span><a href="#local-6989586621686143060"><span class="hs-identifier hs-var">obj</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)])
+</span><a href="#local-6989586621686148896"><span class="hs-identifier hs-var">obj</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)])
  -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)])
 -&gt; (Ptr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)])
 -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)]
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621686143059"><span class="annot"><span class="annottext">Ptr Module
-</span><a href="#local-6989586621686143059"><span class="hs-identifier hs-var">obj'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-74"></span><span>  </span><span id="local-6989586621686143058"><span class="annot"><span class="annottext">[(Ptr StdString, Ptr Tensor)]
-</span><a href="#local-6989586621686143058"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr Module -&gt; IO [(Ptr StdString, Ptr Tensor)]
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621686148895"><span class="annot"><span class="annottext">Ptr Module
+</span><a href="#local-6989586621686148895"><span class="hs-identifier hs-var">obj'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-75"></span><span>  </span><span id="local-6989586621686148894"><span class="annot"><span class="annottext">[(Ptr StdString, Ptr Tensor)]
+</span><a href="#local-6989586621686148894"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr Module -&gt; IO [(Ptr StdString, Ptr Tensor)]
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#getNamedBuffers"><span class="hs-identifier hs-var">Unmanaged.getNamedBuffers</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Module
-</span><a href="#local-6989586621686143059"><span class="hs-identifier hs-var">obj'</span></a></span><span>
-</span><span id="line-75"></span><span>  </span><span class="annot"><span class="annottext">[(Ptr StdString, Ptr Tensor)]
+</span><a href="#local-6989586621686148895"><span class="hs-identifier hs-var">obj'</span></a></span><span>
+</span><span id="line-76"></span><span>  </span><span class="annot"><span class="annottext">[(Ptr StdString, Ptr Tensor)]
 -&gt; ((Ptr StdString, Ptr Tensor)
     -&gt; IO (ForeignPtr StdString, ForeignPtr Tensor))
 -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)]
@@ -251,61 +252,61 @@ forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
 (Traversable t, Monad m) =&gt;
 t a -&gt; (a -&gt; m b) -&gt; m (t b)
 </span><span class="hs-identifier hs-var">forM</span></span><span> </span><span class="annot"><span class="annottext">[(Ptr StdString, Ptr Tensor)]
-</span><a href="#local-6989586621686143058"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">(((Ptr StdString, Ptr Tensor)
+</span><a href="#local-6989586621686148894"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">(((Ptr StdString, Ptr Tensor)
   -&gt; IO (ForeignPtr StdString, ForeignPtr Tensor))
  -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)])
 -&gt; ((Ptr StdString, Ptr Tensor)
     -&gt; IO (ForeignPtr StdString, ForeignPtr Tensor))
 -&gt; IO [(ForeignPtr StdString, ForeignPtr Tensor)]
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621686143056"><span class="annot"><span class="annottext">Ptr StdString
-</span><a href="#local-6989586621686143056"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621686143055"><span class="annot"><span class="annottext">Ptr Tensor
-</span><a href="#local-6989586621686143055"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-76"></span><span>    </span><span id="local-6989586621686143054"><span class="annot"><span class="annottext">ForeignPtr StdString
-</span><a href="#local-6989586621686143054"><span class="hs-identifier hs-var">a'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr StdString
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621686148892"><span class="annot"><span class="annottext">Ptr StdString
+</span><a href="#local-6989586621686148892"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621686148891"><span class="annot"><span class="annottext">Ptr Tensor
+</span><a href="#local-6989586621686148891"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-77"></span><span>    </span><span id="local-6989586621686148890"><span class="annot"><span class="annottext">ForeignPtr StdString
+</span><a href="#local-6989586621686148890"><span class="hs-identifier hs-var">a'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr StdString
 -&gt; (ForeignPtr StdString -&gt; IO (ForeignPtr StdString))
 -&gt; IO (ForeignPtr StdString)
 forall a b r. Castable a b =&gt; b -&gt; (a -&gt; IO r) -&gt; IO r
 </span><a href="Torch.Internal.Class.html#uncast"><span class="hs-identifier hs-var">uncast</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr StdString
-</span><a href="#local-6989586621686143056"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr StdString -&gt; IO (ForeignPtr StdString)
+</span><a href="#local-6989586621686148892"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr StdString -&gt; IO (ForeignPtr StdString)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span>
-</span><span id="line-77"></span><span>    </span><span id="local-6989586621686143053"><span class="annot"><span class="annottext">ForeignPtr Tensor
-</span><a href="#local-6989586621686143053"><span class="hs-identifier hs-var">b'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr Tensor
+</span><span id="line-78"></span><span>    </span><span id="local-6989586621686148889"><span class="annot"><span class="annottext">ForeignPtr Tensor
+</span><a href="#local-6989586621686148889"><span class="hs-identifier hs-var">b'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr Tensor
 -&gt; (ForeignPtr Tensor -&gt; IO (ForeignPtr Tensor))
 -&gt; IO (ForeignPtr Tensor)
 forall a b r. Castable a b =&gt; b -&gt; (a -&gt; IO r) -&gt; IO r
 </span><a href="Torch.Internal.Class.html#uncast"><span class="hs-identifier hs-var">uncast</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Tensor
-</span><a href="#local-6989586621686143055"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Tensor -&gt; IO (ForeignPtr Tensor)
+</span><a href="#local-6989586621686148891"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Tensor -&gt; IO (ForeignPtr Tensor)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span>
-</span><span id="line-78"></span><span>    </span><span class="annot"><span class="annottext">(ForeignPtr StdString, ForeignPtr Tensor)
+</span><span id="line-79"></span><span>    </span><span class="annot"><span class="annottext">(ForeignPtr StdString, ForeignPtr Tensor)
 -&gt; IO (ForeignPtr StdString, ForeignPtr Tensor)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ForeignPtr StdString
-</span><a href="#local-6989586621686143054"><span class="hs-identifier hs-var">a'</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">ForeignPtr Tensor
-</span><a href="#local-6989586621686143053"><span class="hs-identifier hs-var">b'</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-79"></span><span>
-</span><span id="line-80"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#getNamedAttributes"><span class="hs-identifier hs-type">getNamedAttributes</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">,</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
-</span><span id="line-81"></span><span id="getNamedAttributes"><span class="annot"><span class="annottext">getNamedAttributes :: ForeignPtr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr IValue)]
-</span><a href="Torch.Internal.Managed.Type.Module.html#getNamedAttributes"><span class="hs-identifier hs-var hs-var">getNamedAttributes</span></a></span></span><span> </span><span id="local-6989586621686143051"><span class="annot"><span class="annottext">ForeignPtr Module
-</span><a href="#local-6989586621686143051"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ForeignPtr Module
+</span><a href="#local-6989586621686148890"><span class="hs-identifier hs-var">a'</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">ForeignPtr Tensor
+</span><a href="#local-6989586621686148889"><span class="hs-identifier hs-var">b'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-80"></span><span>
+</span><span id="line-81"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#getNamedAttributes"><span class="hs-identifier hs-type">getNamedAttributes</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">,</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#IValue"><span class="hs-identifier hs-type">IValue</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-82"></span><span id="getNamedAttributes"><span class="annot"><span class="annottext">getNamedAttributes :: ForeignPtr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr IValue)]
+</span><a href="Torch.Internal.Managed.Type.Module.html#getNamedAttributes"><span class="hs-identifier hs-var hs-var">getNamedAttributes</span></a></span></span><span> </span><span id="local-6989586621686148887"><span class="annot"><span class="annottext">ForeignPtr Module
+</span><a href="#local-6989586621686148887"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ForeignPtr Module
 -&gt; (Ptr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr IValue)])
 -&gt; IO [(ForeignPtr StdString, ForeignPtr IValue)]
 forall a b. ForeignPtr a -&gt; (Ptr a -&gt; IO b) -&gt; IO b
 </span><span class="hs-identifier hs-var">withForeignPtr</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Module
-</span><a href="#local-6989586621686143051"><span class="hs-identifier hs-var">obj</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr IValue)])
+</span><a href="#local-6989586621686148887"><span class="hs-identifier hs-var">obj</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr IValue)])
  -&gt; IO [(ForeignPtr StdString, ForeignPtr IValue)])
 -&gt; (Ptr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr IValue)])
 -&gt; IO [(ForeignPtr StdString, ForeignPtr IValue)]
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621686143050"><span class="annot"><span class="annottext">Ptr Module
-</span><a href="#local-6989586621686143050"><span class="hs-identifier hs-var">obj'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-82"></span><span>  </span><span id="local-6989586621686143049"><span class="annot"><span class="annottext">[(Ptr StdString, Ptr IValue)]
-</span><a href="#local-6989586621686143049"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr Module -&gt; IO [(Ptr StdString, Ptr IValue)]
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621686148886"><span class="annot"><span class="annottext">Ptr Module
+</span><a href="#local-6989586621686148886"><span class="hs-identifier hs-var">obj'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-83"></span><span>  </span><span id="local-6989586621686148885"><span class="annot"><span class="annottext">[(Ptr StdString, Ptr IValue)]
+</span><a href="#local-6989586621686148885"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr Module -&gt; IO [(Ptr StdString, Ptr IValue)]
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#getNamedAttributes"><span class="hs-identifier hs-var">Unmanaged.getNamedAttributes</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Module
-</span><a href="#local-6989586621686143050"><span class="hs-identifier hs-var">obj'</span></a></span><span>
-</span><span id="line-83"></span><span>  </span><span class="annot"><span class="annottext">[(Ptr StdString, Ptr IValue)]
+</span><a href="#local-6989586621686148886"><span class="hs-identifier hs-var">obj'</span></a></span><span>
+</span><span id="line-84"></span><span>  </span><span class="annot"><span class="annottext">[(Ptr StdString, Ptr IValue)]
 -&gt; ((Ptr StdString, Ptr IValue)
     -&gt; IO (ForeignPtr StdString, ForeignPtr IValue))
 -&gt; IO [(ForeignPtr StdString, ForeignPtr IValue)]
@@ -313,61 +314,61 @@ forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
 (Traversable t, Monad m) =&gt;
 t a -&gt; (a -&gt; m b) -&gt; m (t b)
 </span><span class="hs-identifier hs-var">forM</span></span><span> </span><span class="annot"><span class="annottext">[(Ptr StdString, Ptr IValue)]
-</span><a href="#local-6989586621686143049"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">(((Ptr StdString, Ptr IValue)
+</span><a href="#local-6989586621686148885"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">(((Ptr StdString, Ptr IValue)
   -&gt; IO (ForeignPtr StdString, ForeignPtr IValue))
  -&gt; IO [(ForeignPtr StdString, ForeignPtr IValue)])
 -&gt; ((Ptr StdString, Ptr IValue)
     -&gt; IO (ForeignPtr StdString, ForeignPtr IValue))
 -&gt; IO [(ForeignPtr StdString, ForeignPtr IValue)]
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621686143047"><span class="annot"><span class="annottext">Ptr StdString
-</span><a href="#local-6989586621686143047"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621686143046"><span class="annot"><span class="annottext">Ptr IValue
-</span><a href="#local-6989586621686143046"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-84"></span><span>    </span><span id="local-6989586621686143045"><span class="annot"><span class="annottext">ForeignPtr StdString
-</span><a href="#local-6989586621686143045"><span class="hs-identifier hs-var">a'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr StdString
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621686148883"><span class="annot"><span class="annottext">Ptr StdString
+</span><a href="#local-6989586621686148883"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621686148882"><span class="annot"><span class="annottext">Ptr IValue
+</span><a href="#local-6989586621686148882"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-85"></span><span>    </span><span id="local-6989586621686148881"><span class="annot"><span class="annottext">ForeignPtr StdString
+</span><a href="#local-6989586621686148881"><span class="hs-identifier hs-var">a'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr StdString
 -&gt; (ForeignPtr StdString -&gt; IO (ForeignPtr StdString))
 -&gt; IO (ForeignPtr StdString)
 forall a b r. Castable a b =&gt; b -&gt; (a -&gt; IO r) -&gt; IO r
 </span><a href="Torch.Internal.Class.html#uncast"><span class="hs-identifier hs-var">uncast</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr StdString
-</span><a href="#local-6989586621686143047"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr StdString -&gt; IO (ForeignPtr StdString)
+</span><a href="#local-6989586621686148883"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr StdString -&gt; IO (ForeignPtr StdString)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span>
-</span><span id="line-85"></span><span>    </span><span id="local-6989586621686143044"><span class="annot"><span class="annottext">ForeignPtr IValue
-</span><a href="#local-6989586621686143044"><span class="hs-identifier hs-var">b'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr IValue
+</span><span id="line-86"></span><span>    </span><span id="local-6989586621686148880"><span class="annot"><span class="annottext">ForeignPtr IValue
+</span><a href="#local-6989586621686148880"><span class="hs-identifier hs-var">b'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr IValue
 -&gt; (ForeignPtr IValue -&gt; IO (ForeignPtr IValue))
 -&gt; IO (ForeignPtr IValue)
 forall a b r. Castable a b =&gt; b -&gt; (a -&gt; IO r) -&gt; IO r
 </span><a href="Torch.Internal.Class.html#uncast"><span class="hs-identifier hs-var">uncast</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr IValue
-</span><a href="#local-6989586621686143046"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr IValue -&gt; IO (ForeignPtr IValue)
+</span><a href="#local-6989586621686148882"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr IValue -&gt; IO (ForeignPtr IValue)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span>
-</span><span id="line-86"></span><span>    </span><span class="annot"><span class="annottext">(ForeignPtr StdString, ForeignPtr IValue)
+</span><span id="line-87"></span><span>    </span><span class="annot"><span class="annottext">(ForeignPtr StdString, ForeignPtr IValue)
 -&gt; IO (ForeignPtr StdString, ForeignPtr IValue)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ForeignPtr StdString
-</span><a href="#local-6989586621686143045"><span class="hs-identifier hs-var">a'</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">ForeignPtr IValue
-</span><a href="#local-6989586621686143044"><span class="hs-identifier hs-var">b'</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-87"></span><span>
-</span><span id="line-88"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#getNamedModules"><span class="hs-identifier hs-type">getNamedModules</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">,</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
-</span><span id="line-89"></span><span id="getNamedModules"><span class="annot"><span class="annottext">getNamedModules :: ForeignPtr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)]
-</span><a href="Torch.Internal.Managed.Type.Module.html#getNamedModules"><span class="hs-identifier hs-var hs-var">getNamedModules</span></a></span></span><span> </span><span id="local-6989586621686143042"><span class="annot"><span class="annottext">ForeignPtr Module
-</span><a href="#local-6989586621686143042"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ForeignPtr Module
+</span><a href="#local-6989586621686148881"><span class="hs-identifier hs-var">a'</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">ForeignPtr IValue
+</span><a href="#local-6989586621686148880"><span class="hs-identifier hs-var">b'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-88"></span><span>
+</span><span id="line-89"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#getNamedModules"><span class="hs-identifier hs-type">getNamedModules</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">,</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-90"></span><span id="getNamedModules"><span class="annot"><span class="annottext">getNamedModules :: ForeignPtr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)]
+</span><a href="Torch.Internal.Managed.Type.Module.html#getNamedModules"><span class="hs-identifier hs-var hs-var">getNamedModules</span></a></span></span><span> </span><span id="local-6989586621686148878"><span class="annot"><span class="annottext">ForeignPtr Module
+</span><a href="#local-6989586621686148878"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ForeignPtr Module
 -&gt; (Ptr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)])
 -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)]
 forall a b. ForeignPtr a -&gt; (Ptr a -&gt; IO b) -&gt; IO b
 </span><span class="hs-identifier hs-var">withForeignPtr</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Module
-</span><a href="#local-6989586621686143042"><span class="hs-identifier hs-var">obj</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)])
+</span><a href="#local-6989586621686148878"><span class="hs-identifier hs-var">obj</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)])
  -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)])
 -&gt; (Ptr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)])
 -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)]
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621686143041"><span class="annot"><span class="annottext">Ptr Module
-</span><a href="#local-6989586621686143041"><span class="hs-identifier hs-var">obj'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-90"></span><span>  </span><span id="local-6989586621686143040"><span class="annot"><span class="annottext">[(Ptr StdString, Ptr Module)]
-</span><a href="#local-6989586621686143040"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr Module -&gt; IO [(Ptr StdString, Ptr Module)]
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621686148877"><span class="annot"><span class="annottext">Ptr Module
+</span><a href="#local-6989586621686148877"><span class="hs-identifier hs-var">obj'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-91"></span><span>  </span><span id="local-6989586621686148876"><span class="annot"><span class="annottext">[(Ptr StdString, Ptr Module)]
+</span><a href="#local-6989586621686148876"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr Module -&gt; IO [(Ptr StdString, Ptr Module)]
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#getNamedModules"><span class="hs-identifier hs-var">Unmanaged.getNamedModules</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Module
-</span><a href="#local-6989586621686143041"><span class="hs-identifier hs-var">obj'</span></a></span><span>
-</span><span id="line-91"></span><span>  </span><span class="annot"><span class="annottext">[(Ptr StdString, Ptr Module)]
+</span><a href="#local-6989586621686148877"><span class="hs-identifier hs-var">obj'</span></a></span><span>
+</span><span id="line-92"></span><span>  </span><span class="annot"><span class="annottext">[(Ptr StdString, Ptr Module)]
 -&gt; ((Ptr StdString, Ptr Module)
     -&gt; IO (ForeignPtr StdString, ForeignPtr Module))
 -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)]
@@ -375,61 +376,61 @@ forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
 (Traversable t, Monad m) =&gt;
 t a -&gt; (a -&gt; m b) -&gt; m (t b)
 </span><span class="hs-identifier hs-var">forM</span></span><span> </span><span class="annot"><span class="annottext">[(Ptr StdString, Ptr Module)]
-</span><a href="#local-6989586621686143040"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">(((Ptr StdString, Ptr Module)
+</span><a href="#local-6989586621686148876"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">(((Ptr StdString, Ptr Module)
   -&gt; IO (ForeignPtr StdString, ForeignPtr Module))
  -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)])
 -&gt; ((Ptr StdString, Ptr Module)
     -&gt; IO (ForeignPtr StdString, ForeignPtr Module))
 -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)]
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621686143038"><span class="annot"><span class="annottext">Ptr StdString
-</span><a href="#local-6989586621686143038"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621686143037"><span class="annot"><span class="annottext">Ptr Module
-</span><a href="#local-6989586621686143037"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-92"></span><span>    </span><span id="local-6989586621686143036"><span class="annot"><span class="annottext">ForeignPtr StdString
-</span><a href="#local-6989586621686143036"><span class="hs-identifier hs-var">a'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr StdString
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621686148874"><span class="annot"><span class="annottext">Ptr StdString
+</span><a href="#local-6989586621686148874"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621686148873"><span class="annot"><span class="annottext">Ptr Module
+</span><a href="#local-6989586621686148873"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-93"></span><span>    </span><span id="local-6989586621686148872"><span class="annot"><span class="annottext">ForeignPtr StdString
+</span><a href="#local-6989586621686148872"><span class="hs-identifier hs-var">a'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr StdString
 -&gt; (ForeignPtr StdString -&gt; IO (ForeignPtr StdString))
 -&gt; IO (ForeignPtr StdString)
 forall a b r. Castable a b =&gt; b -&gt; (a -&gt; IO r) -&gt; IO r
 </span><a href="Torch.Internal.Class.html#uncast"><span class="hs-identifier hs-var">uncast</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr StdString
-</span><a href="#local-6989586621686143038"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr StdString -&gt; IO (ForeignPtr StdString)
+</span><a href="#local-6989586621686148874"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr StdString -&gt; IO (ForeignPtr StdString)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span>
-</span><span id="line-93"></span><span>    </span><span id="local-6989586621686143035"><span class="annot"><span class="annottext">ForeignPtr Module
-</span><a href="#local-6989586621686143035"><span class="hs-identifier hs-var">b'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr Module
+</span><span id="line-94"></span><span>    </span><span id="local-6989586621686148871"><span class="annot"><span class="annottext">ForeignPtr Module
+</span><a href="#local-6989586621686148871"><span class="hs-identifier hs-var">b'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr Module
 -&gt; (ForeignPtr Module -&gt; IO (ForeignPtr Module))
 -&gt; IO (ForeignPtr Module)
 forall a b r. Castable a b =&gt; b -&gt; (a -&gt; IO r) -&gt; IO r
 </span><a href="Torch.Internal.Class.html#uncast"><span class="hs-identifier hs-var">uncast</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Module
-</span><a href="#local-6989586621686143037"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Module -&gt; IO (ForeignPtr Module)
+</span><a href="#local-6989586621686148873"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Module -&gt; IO (ForeignPtr Module)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span>
-</span><span id="line-94"></span><span>    </span><span class="annot"><span class="annottext">(ForeignPtr StdString, ForeignPtr Module)
+</span><span id="line-95"></span><span>    </span><span class="annot"><span class="annottext">(ForeignPtr StdString, ForeignPtr Module)
 -&gt; IO (ForeignPtr StdString, ForeignPtr Module)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ForeignPtr StdString
-</span><a href="#local-6989586621686143036"><span class="hs-identifier hs-var">a'</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">ForeignPtr Module
-</span><a href="#local-6989586621686143035"><span class="hs-identifier hs-var">b'</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-95"></span><span>
-</span><span id="line-96"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#getNamedChildren"><span class="hs-identifier hs-type">getNamedChildren</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">,</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
-</span><span id="line-97"></span><span id="getNamedChildren"><span class="annot"><span class="annottext">getNamedChildren :: ForeignPtr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)]
-</span><a href="Torch.Internal.Managed.Type.Module.html#getNamedChildren"><span class="hs-identifier hs-var hs-var">getNamedChildren</span></a></span></span><span> </span><span id="local-6989586621686143033"><span class="annot"><span class="annottext">ForeignPtr Module
-</span><a href="#local-6989586621686143033"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ForeignPtr Module
+</span><a href="#local-6989586621686148872"><span class="hs-identifier hs-var">a'</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">ForeignPtr Module
+</span><a href="#local-6989586621686148871"><span class="hs-identifier hs-var">b'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-96"></span><span>
+</span><span id="line-97"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#getNamedChildren"><span class="hs-identifier hs-type">getNamedChildren</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">,</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-98"></span><span id="getNamedChildren"><span class="annot"><span class="annottext">getNamedChildren :: ForeignPtr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)]
+</span><a href="Torch.Internal.Managed.Type.Module.html#getNamedChildren"><span class="hs-identifier hs-var hs-var">getNamedChildren</span></a></span></span><span> </span><span id="local-6989586621686148869"><span class="annot"><span class="annottext">ForeignPtr Module
+</span><a href="#local-6989586621686148869"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ForeignPtr Module
 -&gt; (Ptr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)])
 -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)]
 forall a b. ForeignPtr a -&gt; (Ptr a -&gt; IO b) -&gt; IO b
 </span><span class="hs-identifier hs-var">withForeignPtr</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Module
-</span><a href="#local-6989586621686143033"><span class="hs-identifier hs-var">obj</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)])
+</span><a href="#local-6989586621686148869"><span class="hs-identifier hs-var">obj</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)])
  -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)])
 -&gt; (Ptr Module -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)])
 -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)]
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621686143032"><span class="annot"><span class="annottext">Ptr Module
-</span><a href="#local-6989586621686143032"><span class="hs-identifier hs-var">obj'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-98"></span><span>  </span><span id="local-6989586621686143031"><span class="annot"><span class="annottext">[(Ptr StdString, Ptr Module)]
-</span><a href="#local-6989586621686143031"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr Module -&gt; IO [(Ptr StdString, Ptr Module)]
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621686148868"><span class="annot"><span class="annottext">Ptr Module
+</span><a href="#local-6989586621686148868"><span class="hs-identifier hs-var">obj'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-99"></span><span>  </span><span id="local-6989586621686148867"><span class="annot"><span class="annottext">[(Ptr StdString, Ptr Module)]
+</span><a href="#local-6989586621686148867"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr Module -&gt; IO [(Ptr StdString, Ptr Module)]
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#getNamedChildren"><span class="hs-identifier hs-var">Unmanaged.getNamedChildren</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Module
-</span><a href="#local-6989586621686143032"><span class="hs-identifier hs-var">obj'</span></a></span><span>
-</span><span id="line-99"></span><span>  </span><span class="annot"><span class="annottext">[(Ptr StdString, Ptr Module)]
+</span><a href="#local-6989586621686148868"><span class="hs-identifier hs-var">obj'</span></a></span><span>
+</span><span id="line-100"></span><span>  </span><span class="annot"><span class="annottext">[(Ptr StdString, Ptr Module)]
 -&gt; ((Ptr StdString, Ptr Module)
     -&gt; IO (ForeignPtr StdString, ForeignPtr Module))
 -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)]
@@ -437,43 +438,43 @@ forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
 (Traversable t, Monad m) =&gt;
 t a -&gt; (a -&gt; m b) -&gt; m (t b)
 </span><span class="hs-identifier hs-var">forM</span></span><span> </span><span class="annot"><span class="annottext">[(Ptr StdString, Ptr Module)]
-</span><a href="#local-6989586621686143031"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">(((Ptr StdString, Ptr Module)
+</span><a href="#local-6989586621686148867"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">(((Ptr StdString, Ptr Module)
   -&gt; IO (ForeignPtr StdString, ForeignPtr Module))
  -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)])
 -&gt; ((Ptr StdString, Ptr Module)
     -&gt; IO (ForeignPtr StdString, ForeignPtr Module))
 -&gt; IO [(ForeignPtr StdString, ForeignPtr Module)]
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621686143029"><span class="annot"><span class="annottext">Ptr StdString
-</span><a href="#local-6989586621686143029"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621686143028"><span class="annot"><span class="annottext">Ptr Module
-</span><a href="#local-6989586621686143028"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-100"></span><span>    </span><span id="local-6989586621686143027"><span class="annot"><span class="annottext">ForeignPtr StdString
-</span><a href="#local-6989586621686143027"><span class="hs-identifier hs-var">a'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr StdString
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621686148865"><span class="annot"><span class="annottext">Ptr StdString
+</span><a href="#local-6989586621686148865"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621686148864"><span class="annot"><span class="annottext">Ptr Module
+</span><a href="#local-6989586621686148864"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-101"></span><span>    </span><span id="local-6989586621686148863"><span class="annot"><span class="annottext">ForeignPtr StdString
+</span><a href="#local-6989586621686148863"><span class="hs-identifier hs-var">a'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr StdString
 -&gt; (ForeignPtr StdString -&gt; IO (ForeignPtr StdString))
 -&gt; IO (ForeignPtr StdString)
 forall a b r. Castable a b =&gt; b -&gt; (a -&gt; IO r) -&gt; IO r
 </span><a href="Torch.Internal.Class.html#uncast"><span class="hs-identifier hs-var">uncast</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr StdString
-</span><a href="#local-6989586621686143029"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr StdString -&gt; IO (ForeignPtr StdString)
+</span><a href="#local-6989586621686148865"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr StdString -&gt; IO (ForeignPtr StdString)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span>
-</span><span id="line-101"></span><span>    </span><span id="local-6989586621686143026"><span class="annot"><span class="annottext">ForeignPtr Module
-</span><a href="#local-6989586621686143026"><span class="hs-identifier hs-var">b'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr Module
+</span><span id="line-102"></span><span>    </span><span id="local-6989586621686148862"><span class="annot"><span class="annottext">ForeignPtr Module
+</span><a href="#local-6989586621686148862"><span class="hs-identifier hs-var">b'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr Module
 -&gt; (ForeignPtr Module -&gt; IO (ForeignPtr Module))
 -&gt; IO (ForeignPtr Module)
 forall a b r. Castable a b =&gt; b -&gt; (a -&gt; IO r) -&gt; IO r
 </span><a href="Torch.Internal.Class.html#uncast"><span class="hs-identifier hs-var">uncast</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Module
-</span><a href="#local-6989586621686143028"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Module -&gt; IO (ForeignPtr Module)
+</span><a href="#local-6989586621686148864"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Module -&gt; IO (ForeignPtr Module)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span>
-</span><span id="line-102"></span><span>    </span><span class="annot"><span class="annottext">(ForeignPtr StdString, ForeignPtr Module)
+</span><span id="line-103"></span><span>    </span><span class="annot"><span class="annottext">(ForeignPtr StdString, ForeignPtr Module)
 -&gt; IO (ForeignPtr StdString, ForeignPtr Module)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ForeignPtr StdString
-</span><a href="#local-6989586621686143027"><span class="hs-identifier hs-var">a'</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">ForeignPtr Module
-</span><a href="#local-6989586621686143026"><span class="hs-identifier hs-var">b'</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-103"></span><span>
-</span><span id="line-104"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#toDevice"><span class="hs-identifier hs-type">toDevice</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#DeviceType"><span class="hs-identifier hs-type">DeviceType</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int16</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
-</span><span id="line-105"></span><span id="toDevice"><span class="annot"><span class="annottext">toDevice :: ForeignPtr Module -&gt; DeviceType -&gt; DeviceType -&gt; IO ()
+</span><a href="#local-6989586621686148863"><span class="hs-identifier hs-var">a'</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">ForeignPtr Module
+</span><a href="#local-6989586621686148862"><span class="hs-identifier hs-var">b'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-104"></span><span>
+</span><span id="line-105"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#toDevice"><span class="hs-identifier hs-type">toDevice</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#DeviceType"><span class="hs-identifier hs-type">DeviceType</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int16</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-106"></span><span id="toDevice"><span class="annot"><span class="annottext">toDevice :: ForeignPtr Module -&gt; DeviceType -&gt; DeviceType -&gt; IO ()
 </span><a href="Torch.Internal.Managed.Type.Module.html#toDevice"><span class="hs-identifier hs-var hs-var">toDevice</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr Module -&gt; DeviceType -&gt; DeviceType -&gt; IO ())
 -&gt; ForeignPtr Module -&gt; DeviceType -&gt; DeviceType -&gt; IO ()
 forall a ca x1 cx1 x2 cx2 y cy.
@@ -481,9 +482,9 @@ forall a ca x1 cx1 x2 cx2 y cy.
 (ca -&gt; cx1 -&gt; cx2 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; x2 -&gt; IO y
 </span><a href="Torch.Internal.Cast.html#cast3"><span class="hs-identifier hs-var">cast3</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Module -&gt; DeviceType -&gt; DeviceType -&gt; IO ()
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#toDevice"><span class="hs-identifier hs-var">Unmanaged.toDevice</span></a></span><span>
-</span><span id="line-106"></span><span>
-</span><span id="line-107"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#clone"><span class="hs-identifier hs-type">clone</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-108"></span><span id="clone"><span class="annot"><span class="annottext">clone :: ForeignPtr Module -&gt; IO (ForeignPtr Module)
+</span><span id="line-107"></span><span>
+</span><span id="line-108"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#clone"><span class="hs-identifier hs-type">clone</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-109"></span><span id="clone"><span class="annot"><span class="annottext">clone :: ForeignPtr Module -&gt; IO (ForeignPtr Module)
 </span><a href="Torch.Internal.Managed.Type.Module.html#clone"><span class="hs-identifier hs-var hs-var">clone</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr Module -&gt; IO (Ptr Module))
 -&gt; ForeignPtr Module -&gt; IO (ForeignPtr Module)
 forall a ca y cy.
@@ -491,9 +492,9 @@ forall a ca y cy.
 (ca -&gt; IO cy) -&gt; a -&gt; IO y
 </span><a href="Torch.Internal.Cast.html#cast1"><span class="hs-identifier hs-var">cast1</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Module -&gt; IO (Ptr Module)
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#clone"><span class="hs-identifier hs-var">Unmanaged.clone</span></a></span><span>
-</span><span id="line-109"></span><span>
-</span><span id="line-110"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#define"><span class="hs-identifier hs-type">define</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
-</span><span id="line-111"></span><span id="define"><span class="annot"><span class="annottext">define :: ForeignPtr Module -&gt; ForeignPtr StdString -&gt; IO ()
+</span><span id="line-110"></span><span>
+</span><span id="line-111"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#define"><span class="hs-identifier hs-type">define</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-112"></span><span id="define"><span class="annot"><span class="annottext">define :: ForeignPtr Module -&gt; ForeignPtr StdString -&gt; IO ()
 </span><a href="Torch.Internal.Managed.Type.Module.html#define"><span class="hs-identifier hs-var hs-var">define</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr Module -&gt; Ptr StdString -&gt; IO ())
 -&gt; ForeignPtr Module -&gt; ForeignPtr StdString -&gt; IO ()
 forall a ca x1 cx1 y cy.
@@ -501,19 +502,26 @@ forall a ca x1 cx1 y cy.
 (ca -&gt; cx1 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; IO y
 </span><a href="Torch.Internal.Cast.html#cast2"><span class="hs-identifier hs-var">cast2</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Module -&gt; Ptr StdString -&gt; IO ()
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#define"><span class="hs-identifier hs-var">Unmanaged.define</span></a></span><span>
-</span><span id="line-112"></span><span>
-</span><span id="line-113"></span><span class="hs-comment">-- TODO: Not using unsafeForeignPtrToPtr</span><span>
-</span><span id="line-114"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#trace"><span class="hs-identifier hs-type">trace</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-115"></span><span id="trace"><span class="annot"><span class="annottext">trace :: FilePath
+</span><span id="line-113"></span><span>
+</span><span id="line-114"></span><span>
+</span><span id="line-115"></span><span class="hs-comment">-- Note: Not to release &quot;ForeignPtr TensorList&quot; before calling trace, put the pointer to MVar, and touch the reference.</span><span>
+</span><span id="line-116"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#trace"><span class="hs-identifier hs-type">trace</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-117"></span><span id="trace"><span class="annot"><span class="annottext">trace :: FilePath
 -&gt; FilePath
 -&gt; (ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList))
 -&gt; ForeignPtr TensorList
 -&gt; IO (ForeignPtr Module)
-</span><a href="Torch.Internal.Managed.Type.Module.html#trace"><span class="hs-identifier hs-var hs-var">trace</span></a></span></span><span> </span><span id="local-6989586621686143017"><span class="annot"><span class="annottext">FilePath
-</span><a href="#local-6989586621686143017"><span class="hs-identifier hs-var">moduleName</span></a></span></span><span> </span><span id="local-6989586621686143016"><span class="annot"><span class="annottext">FilePath
-</span><a href="#local-6989586621686143016"><span class="hs-identifier hs-var">functionName</span></a></span></span><span> </span><span id="local-6989586621686143015"><span class="annot"><span class="annottext">ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList)
-</span><a href="#local-6989586621686143015"><span class="hs-identifier hs-var">func</span></a></span></span><span> </span><span id="local-6989586621686143014"><span class="annot"><span class="annottext">ForeignPtr TensorList
-</span><a href="#local-6989586621686143014"><span class="hs-identifier hs-var">inputs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(CString -&gt; CString -&gt; Ptr TensorList -&gt; IO (Ptr Module))
+</span><a href="Torch.Internal.Managed.Type.Module.html#trace"><span class="hs-identifier hs-var hs-var">trace</span></a></span></span><span> </span><span id="local-6989586621686148853"><span class="annot"><span class="annottext">FilePath
+</span><a href="#local-6989586621686148853"><span class="hs-identifier hs-var">moduleName</span></a></span></span><span> </span><span id="local-6989586621686148852"><span class="annot"><span class="annottext">FilePath
+</span><a href="#local-6989586621686148852"><span class="hs-identifier hs-var">functionName</span></a></span></span><span> </span><span id="local-6989586621686148851"><span class="annot"><span class="annottext">ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList)
+</span><a href="#local-6989586621686148851"><span class="hs-identifier hs-var">func</span></a></span></span><span> </span><span id="local-6989586621686148850"><span class="annot"><span class="annottext">ForeignPtr TensorList
+</span><a href="#local-6989586621686148850"><span class="hs-identifier hs-var">inputs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-118"></span><span>  </span><span id="local-6989586621686148849"><span class="annot"><span class="annottext">MVar (ForeignPtr TensorList)
+</span><a href="#local-6989586621686148849"><span class="hs-identifier hs-var">ref</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO (MVar (ForeignPtr TensorList))
+forall a. IO (MVar a)
+</span><span class="hs-identifier hs-var">newEmptyMVar</span></span><span>
+</span><span id="line-119"></span><span>  </span><span id="local-6989586621686148848"><span class="annot"><span class="annottext">ForeignPtr Module
+</span><a href="#local-6989586621686148848"><span class="hs-identifier hs-var">ret</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(CString -&gt; CString -&gt; Ptr TensorList -&gt; IO (Ptr Module))
 -&gt; FilePath
 -&gt; FilePath
 -&gt; ForeignPtr TensorList
@@ -521,41 +529,65 @@ forall a ca x1 cx1 y cy.
 forall a ca x1 cx1 x2 cx2 y cy.
 (Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable y cy) =&gt;
 (ca -&gt; cx1 -&gt; cx2 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; x2 -&gt; IO y
-</span><a href="Torch.Internal.Cast.html#cast3"><span class="hs-identifier hs-var">cast3</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621686143013"><span class="annot"><span class="annottext">CString
-</span><a href="#local-6989586621686143013"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span id="local-6989586621686143012"><span class="annot"><span class="annottext">CString
-</span><a href="#local-6989586621686143012"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621686143011"><span class="annot"><span class="annottext">Ptr TensorList
-</span><a href="#local-6989586621686143011"><span class="hs-identifier hs-var">inps</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">CString
+</span><a href="Torch.Internal.Cast.html#cast3"><span class="hs-identifier hs-var">cast3</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621686148847"><span class="annot"><span class="annottext">CString
+</span><a href="#local-6989586621686148847"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span id="local-6989586621686148846"><span class="annot"><span class="annottext">CString
+</span><a href="#local-6989586621686148846"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621686148845"><span class="annot"><span class="annottext">Ptr TensorList
+</span><a href="#local-6989586621686148845"><span class="hs-identifier hs-var">inps</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">CString
 -&gt; CString
 -&gt; (Ptr TensorList -&gt; IO (Ptr TensorList))
 -&gt; Ptr TensorList
 -&gt; IO (Ptr Module)
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#trace"><span class="hs-identifier hs-var">Unmanaged.trace</span></a></span><span> </span><span class="annot"><span class="annottext">CString
-</span><a href="#local-6989586621686143013"><span class="hs-identifier hs-var">m</span></a></span><span> </span><span class="annot"><span class="annottext">CString
-</span><a href="#local-6989586621686143012"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList))
--&gt; Ptr TensorList -&gt; IO (Ptr TensorList)
-</span><a href="#local-6989586621686143009"><span class="hs-identifier hs-var">trans</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList)
-</span><a href="#local-6989586621686143015"><span class="hs-identifier hs-var">func</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Ptr TensorList
-</span><a href="#local-6989586621686143011"><span class="hs-identifier hs-var">inps</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">FilePath
-</span><a href="#local-6989586621686143017"><span class="hs-identifier hs-var">moduleName</span></a></span><span> </span><span class="annot"><span class="annottext">FilePath
-</span><a href="#local-6989586621686143016"><span class="hs-identifier hs-var">functionName</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
-</span><a href="#local-6989586621686143014"><span class="hs-identifier hs-var">inputs</span></a></span><span>
-</span><span id="line-116"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-117"></span><span>    </span><span class="annot"><a href="#local-6989586621686143009"><span class="hs-identifier hs-type">trans</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-118"></span><span>    </span><span id="local-6989586621686143009"><span class="annot"><span class="annottext">trans :: (ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList))
--&gt; Ptr TensorList -&gt; IO (Ptr TensorList)
-</span><a href="#local-6989586621686143009"><span class="hs-identifier hs-var hs-var">trans</span></a></span></span><span> </span><span id="local-6989586621686143008"><span class="annot"><span class="annottext">ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList)
-</span><a href="#local-6989586621686143008"><span class="hs-identifier hs-var">func</span></a></span></span><span> </span><span id="local-6989586621686143007"><span class="annot"><span class="annottext">Ptr TensorList
-</span><a href="#local-6989586621686143007"><span class="hs-identifier hs-var">inputs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-119"></span><span>      </span><span id="local-6989586621686143006"><span class="annot"><span class="annottext">ForeignPtr TensorList
-</span><a href="#local-6989586621686143006"><span class="hs-identifier hs-var">inputs'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr TensorList -&gt; IO (ForeignPtr TensorList)
+</span><a href="#local-6989586621686148847"><span class="hs-identifier hs-var">m</span></a></span><span> </span><span class="annot"><span class="annottext">CString
+</span><a href="#local-6989586621686148846"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">MVar (ForeignPtr TensorList)
+-&gt; (ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList))
+-&gt; Ptr TensorList
+-&gt; IO (Ptr TensorList)
+</span><a href="#local-6989586621686148843"><span class="hs-identifier hs-var">trans</span></a></span><span> </span><span class="annot"><span class="annottext">MVar (ForeignPtr TensorList)
+</span><a href="#local-6989586621686148849"><span class="hs-identifier hs-var">ref</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList)
+</span><a href="#local-6989586621686148851"><span class="hs-identifier hs-var">func</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Ptr TensorList
+</span><a href="#local-6989586621686148845"><span class="hs-identifier hs-var">inps</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">FilePath
+</span><a href="#local-6989586621686148853"><span class="hs-identifier hs-var">moduleName</span></a></span><span> </span><span class="annot"><span class="annottext">FilePath
+</span><a href="#local-6989586621686148852"><span class="hs-identifier hs-var">functionName</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
+</span><a href="#local-6989586621686148850"><span class="hs-identifier hs-var">inputs</span></a></span><span>
+</span><span id="line-120"></span><span>  </span><span id="local-6989586621686148842"><span class="annot"><span class="annottext">ForeignPtr TensorList
+</span><a href="#local-6989586621686148842"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">MVar (ForeignPtr TensorList) -&gt; IO (ForeignPtr TensorList)
+forall a. MVar a -&gt; IO a
+</span><span class="hs-identifier hs-var">takeMVar</span></span><span> </span><span class="annot"><span class="annottext">MVar (ForeignPtr TensorList)
+</span><a href="#local-6989586621686148849"><span class="hs-identifier hs-var">ref</span></a></span><span>
+</span><span id="line-121"></span><span>  </span><span class="annot"><span class="annottext">ForeignPtr TensorList -&gt; IO ()
+forall a. ForeignPtr a -&gt; IO ()
+</span><span class="hs-identifier hs-var">touchForeignPtr</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
+</span><a href="#local-6989586621686148842"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-122"></span><span>  </span><span class="annot"><span class="annottext">ForeignPtr Module -&gt; IO (ForeignPtr Module)
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Module
+</span><a href="#local-6989586621686148848"><span class="hs-identifier hs-var">ret</span></a></span><span>
+</span><span id="line-123"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-124"></span><span>    </span><span class="annot"><a href="#local-6989586621686148843"><span class="hs-identifier hs-type">trans</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MVar</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-125"></span><span>    </span><span id="local-6989586621686148843"><span class="annot"><span class="annottext">trans :: MVar (ForeignPtr TensorList)
+-&gt; (ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList))
+-&gt; Ptr TensorList
+-&gt; IO (Ptr TensorList)
+</span><a href="#local-6989586621686148843"><span class="hs-identifier hs-var hs-var">trans</span></a></span></span><span> </span><span id="local-6989586621686148840"><span class="annot"><span class="annottext">MVar (ForeignPtr TensorList)
+</span><a href="#local-6989586621686148840"><span class="hs-identifier hs-var">ref</span></a></span></span><span> </span><span id="local-6989586621686148839"><span class="annot"><span class="annottext">ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList)
+</span><a href="#local-6989586621686148839"><span class="hs-identifier hs-var">func</span></a></span></span><span> </span><span id="local-6989586621686148838"><span class="annot"><span class="annottext">Ptr TensorList
+</span><a href="#local-6989586621686148838"><span class="hs-identifier hs-var">inputs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-126"></span><span>      </span><span id="local-6989586621686148837"><span class="annot"><span class="annottext">ForeignPtr TensorList
+</span><a href="#local-6989586621686148837"><span class="hs-identifier hs-var">inputs'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr TensorList -&gt; IO (ForeignPtr TensorList)
 forall a. CppObject a =&gt; Ptr a -&gt; IO (ForeignPtr a)
 </span><a href="Torch.Internal.Class.html#fromPtr"><span class="hs-identifier hs-var">fromPtr</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr TensorList
-</span><a href="#local-6989586621686143007"><span class="hs-identifier hs-var">inputs</span></a></span><span>
-</span><span id="line-120"></span><span>      </span><span id="local-6989586621686143004"><span class="annot"><span class="annottext">ForeignPtr TensorList
-</span><a href="#local-6989586621686143004"><span class="hs-identifier hs-var">ret</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList)
-</span><a href="#local-6989586621686143008"><span class="hs-identifier hs-var">func</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
-</span><a href="#local-6989586621686143006"><span class="hs-identifier hs-var">inputs'</span></a></span><span>
-</span><span id="line-121"></span><span>      </span><span class="annot"><span class="annottext">Ptr TensorList -&gt; IO (Ptr TensorList)
+</span><a href="#local-6989586621686148838"><span class="hs-identifier hs-var">inputs</span></a></span><span>
+</span><span id="line-127"></span><span>      </span><span id="local-6989586621686148835"><span class="annot"><span class="annottext">ForeignPtr TensorList
+</span><a href="#local-6989586621686148835"><span class="hs-identifier hs-var">ret</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList)
+</span><a href="#local-6989586621686148839"><span class="hs-identifier hs-var">func</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
+</span><a href="#local-6989586621686148837"><span class="hs-identifier hs-var">inputs'</span></a></span><span>
+</span><span id="line-128"></span><span>      </span><span class="annot"><span class="annottext">MVar (ForeignPtr TensorList) -&gt; ForeignPtr TensorList -&gt; IO ()
+forall a. MVar a -&gt; a -&gt; IO ()
+</span><span class="hs-identifier hs-var">putMVar</span></span><span> </span><span class="annot"><span class="annottext">MVar (ForeignPtr TensorList)
+</span><a href="#local-6989586621686148840"><span class="hs-identifier hs-var">ref</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
+</span><a href="#local-6989586621686148835"><span class="hs-identifier hs-var">ret</span></a></span><span>
+</span><span id="line-129"></span><span>      </span><span class="annot"><span class="annottext">Ptr TensorList -&gt; IO (Ptr TensorList)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(Ptr TensorList -&gt; IO (Ptr TensorList))
 -&gt; Ptr TensorList -&gt; IO (Ptr TensorList)
@@ -563,44 +595,76 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList -&gt; Ptr TensorList
 forall a. ForeignPtr a -&gt; Ptr a
 </span><span class="hs-identifier hs-var">unsafeForeignPtrToPtr</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
-</span><a href="#local-6989586621686143004"><span class="hs-identifier hs-var">ret</span></a></span><span>
-</span><span id="line-122"></span><span>
-</span><span id="line-123"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#traceAsGraph"><span class="hs-identifier hs-type">traceAsGraph</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#SharedPtr"><span class="hs-identifier hs-type">SharedPtr</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitGraph"><span class="hs-identifier hs-type">JitGraph</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-124"></span><span id="traceAsGraph"><span class="annot"><span class="annottext">traceAsGraph :: (ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList))
+</span><a href="#local-6989586621686148835"><span class="hs-identifier hs-var">ret</span></a></span><span>
+</span><span id="line-130"></span><span>
+</span><span id="line-131"></span><span class="hs-comment">-- Note: Not to release &quot;ForeignPtr TensorList&quot; after calling trace, put the pointer to MVar, and touch the reference.</span><span>
+</span><span id="line-132"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#traceAsGraph"><span class="hs-identifier hs-type">traceAsGraph</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#SharedPtr"><span class="hs-identifier hs-type">SharedPtr</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitGraph"><span class="hs-identifier hs-type">JitGraph</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-133"></span><span id="traceAsGraph"><span class="annot"><span class="annottext">traceAsGraph :: (ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList))
 -&gt; ForeignPtr TensorList -&gt; IO (ForeignPtr (SharedPtr JitGraph))
-</span><a href="Torch.Internal.Managed.Type.Module.html#traceAsGraph"><span class="hs-identifier hs-var hs-var">traceAsGraph</span></a></span></span><span> </span><span id="local-6989586621686143001"><span class="annot"><span class="annottext">ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList)
-</span><a href="#local-6989586621686143001"><span class="hs-identifier hs-var">func</span></a></span></span><span> </span><span id="local-6989586621686143000"><span class="annot"><span class="annottext">ForeignPtr TensorList
-</span><a href="#local-6989586621686143000"><span class="hs-identifier hs-var">inputs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr TensorList -&gt; IO (Ptr (SharedPtr JitGraph)))
+</span><a href="Torch.Internal.Managed.Type.Module.html#traceAsGraph"><span class="hs-identifier hs-var hs-var">traceAsGraph</span></a></span></span><span> </span><span id="local-6989586621686148832"><span class="annot"><span class="annottext">ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList)
+</span><a href="#local-6989586621686148832"><span class="hs-identifier hs-var">func</span></a></span></span><span> </span><span id="local-6989586621686148831"><span class="annot"><span class="annottext">ForeignPtr TensorList
+</span><a href="#local-6989586621686148831"><span class="hs-identifier hs-var">inputs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-134"></span><span>  </span><span id="local-6989586621686148830"><span class="annot"><span class="annottext">MVar (ForeignPtr TensorList)
+</span><a href="#local-6989586621686148830"><span class="hs-identifier hs-var">ref</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO (MVar (ForeignPtr TensorList))
+forall a. IO (MVar a)
+</span><span class="hs-identifier hs-var">newEmptyMVar</span></span><span>
+</span><span id="line-135"></span><span>  </span><span id="local-6989586621686148829"><span class="annot"><span class="annottext">ForeignPtr (SharedPtr JitGraph)
+</span><a href="#local-6989586621686148829"><span class="hs-identifier hs-var">ret</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Ptr TensorList -&gt; IO (Ptr (SharedPtr JitGraph)))
 -&gt; ForeignPtr TensorList -&gt; IO (ForeignPtr (SharedPtr JitGraph))
 forall a ca y cy.
 (Castable a ca, Castable y cy) =&gt;
 (ca -&gt; IO cy) -&gt; a -&gt; IO y
-</span><a href="Torch.Internal.Cast.html#cast1"><span class="hs-identifier hs-var">cast1</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621686142999"><span class="annot"><span class="annottext">Ptr TensorList
-</span><a href="#local-6989586621686142999"><span class="hs-identifier hs-var">inps</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(Ptr TensorList -&gt; IO (Ptr TensorList))
+</span><a href="Torch.Internal.Cast.html#cast1"><span class="hs-identifier hs-var">cast1</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621686148828"><span class="annot"><span class="annottext">Ptr TensorList
+</span><a href="#local-6989586621686148828"><span class="hs-identifier hs-var">inps</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(Ptr TensorList -&gt; IO (Ptr TensorList))
 -&gt; Ptr TensorList -&gt; IO (Ptr (SharedPtr JitGraph))
-</span><a href="Torch.Internal.Unmanaged.Type.Module.html#traceAsGraph"><span class="hs-identifier hs-var">Unmanaged.traceAsGraph</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList))
--&gt; Ptr TensorList -&gt; IO (Ptr TensorList)
-</span><a href="#local-6989586621686142997"><span class="hs-identifier hs-var">trans</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList)
-</span><a href="#local-6989586621686143001"><span class="hs-identifier hs-var">func</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Ptr TensorList
-</span><a href="#local-6989586621686142999"><span class="hs-identifier hs-var">inps</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
-</span><a href="#local-6989586621686143000"><span class="hs-identifier hs-var">inputs</span></a></span><span>
-</span><span id="line-125"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-126"></span><span>    </span><span class="annot"><a href="#local-6989586621686142997"><span class="hs-identifier hs-type">trans</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-127"></span><span>    </span><span id="local-6989586621686142997"><span class="annot"><span class="annottext">trans :: (ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList))
--&gt; Ptr TensorList -&gt; IO (Ptr TensorList)
-</span><a href="#local-6989586621686142997"><span class="hs-identifier hs-var hs-var">trans</span></a></span></span><span> </span><span id="local-6989586621686142996"><span class="annot"><span class="annottext">ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList)
-</span><a href="#local-6989586621686142996"><span class="hs-identifier hs-var">func</span></a></span></span><span> </span><span id="local-6989586621686142995"><span class="annot"><span class="annottext">Ptr TensorList
-</span><a href="#local-6989586621686142995"><span class="hs-identifier hs-var">inputs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-128"></span><span>      </span><span id="local-6989586621686142994"><span class="annot"><span class="annottext">ForeignPtr TensorList
-</span><a href="#local-6989586621686142994"><span class="hs-identifier hs-var">inputs'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr TensorList -&gt; IO (ForeignPtr TensorList)
+</span><a href="Torch.Internal.Unmanaged.Type.Module.html#traceAsGraph"><span class="hs-identifier hs-var">Unmanaged.traceAsGraph</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">MVar (ForeignPtr TensorList)
+-&gt; (ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList))
+-&gt; Ptr TensorList
+-&gt; IO (Ptr TensorList)
+</span><a href="#local-6989586621686148826"><span class="hs-identifier hs-var">trans</span></a></span><span> </span><span class="annot"><span class="annottext">MVar (ForeignPtr TensorList)
+</span><a href="#local-6989586621686148830"><span class="hs-identifier hs-var">ref</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList)
+</span><a href="#local-6989586621686148832"><span class="hs-identifier hs-var">func</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Ptr TensorList
+</span><a href="#local-6989586621686148828"><span class="hs-identifier hs-var">inps</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
+</span><a href="#local-6989586621686148831"><span class="hs-identifier hs-var">inputs</span></a></span><span>
+</span><span id="line-136"></span><span>  </span><span id="local-6989586621686148825"><span class="annot"><span class="annottext">ForeignPtr TensorList
+</span><a href="#local-6989586621686148825"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">MVar (ForeignPtr TensorList) -&gt; IO (ForeignPtr TensorList)
+forall a. MVar a -&gt; IO a
+</span><span class="hs-identifier hs-var">takeMVar</span></span><span> </span><span class="annot"><span class="annottext">MVar (ForeignPtr TensorList)
+</span><a href="#local-6989586621686148830"><span class="hs-identifier hs-var">ref</span></a></span><span>
+</span><span id="line-137"></span><span>  </span><span class="annot"><span class="annottext">ForeignPtr TensorList -&gt; IO ()
+forall a. ForeignPtr a -&gt; IO ()
+</span><span class="hs-identifier hs-var">touchForeignPtr</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
+</span><a href="#local-6989586621686148825"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-138"></span><span>  </span><span class="annot"><span class="annottext">ForeignPtr (SharedPtr JitGraph)
+-&gt; IO (ForeignPtr (SharedPtr JitGraph))
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr (SharedPtr JitGraph)
+</span><a href="#local-6989586621686148829"><span class="hs-identifier hs-var">ret</span></a></span><span>
+</span><span id="line-139"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-140"></span><span>    </span><span class="annot"><a href="#local-6989586621686148826"><span class="hs-identifier hs-type">trans</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MVar</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#TensorList"><span class="hs-identifier hs-type">TensorList</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-141"></span><span>    </span><span id="local-6989586621686148826"><span class="annot"><span class="annottext">trans :: MVar (ForeignPtr TensorList)
+-&gt; (ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList))
+-&gt; Ptr TensorList
+-&gt; IO (Ptr TensorList)
+</span><a href="#local-6989586621686148826"><span class="hs-identifier hs-var hs-var">trans</span></a></span></span><span> </span><span id="local-6989586621686148824"><span class="annot"><span class="annottext">MVar (ForeignPtr TensorList)
+</span><a href="#local-6989586621686148824"><span class="hs-identifier hs-var">ref</span></a></span></span><span> </span><span id="local-6989586621686148823"><span class="annot"><span class="annottext">ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList)
+</span><a href="#local-6989586621686148823"><span class="hs-identifier hs-var">func</span></a></span></span><span> </span><span id="local-6989586621686148822"><span class="annot"><span class="annottext">Ptr TensorList
+</span><a href="#local-6989586621686148822"><span class="hs-identifier hs-var">inputs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-142"></span><span>      </span><span id="local-6989586621686148821"><span class="annot"><span class="annottext">ForeignPtr TensorList
+</span><a href="#local-6989586621686148821"><span class="hs-identifier hs-var">inputs'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr TensorList -&gt; IO (ForeignPtr TensorList)
 forall a. CppObject a =&gt; Ptr a -&gt; IO (ForeignPtr a)
 </span><a href="Torch.Internal.Class.html#fromPtr"><span class="hs-identifier hs-var">fromPtr</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr TensorList
-</span><a href="#local-6989586621686142995"><span class="hs-identifier hs-var">inputs</span></a></span><span>
-</span><span id="line-129"></span><span>      </span><span id="local-6989586621686142993"><span class="annot"><span class="annottext">ForeignPtr TensorList
-</span><a href="#local-6989586621686142993"><span class="hs-identifier hs-var">ret</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList)
-</span><a href="#local-6989586621686142996"><span class="hs-identifier hs-var">func</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
-</span><a href="#local-6989586621686142994"><span class="hs-identifier hs-var">inputs'</span></a></span><span>
-</span><span id="line-130"></span><span>      </span><span class="annot"><span class="annottext">Ptr TensorList -&gt; IO (Ptr TensorList)
+</span><a href="#local-6989586621686148822"><span class="hs-identifier hs-var">inputs</span></a></span><span>
+</span><span id="line-143"></span><span>      </span><span id="local-6989586621686148820"><span class="annot"><span class="annottext">ForeignPtr TensorList
+</span><a href="#local-6989586621686148820"><span class="hs-identifier hs-var">ret</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList -&gt; IO (ForeignPtr TensorList)
+</span><a href="#local-6989586621686148823"><span class="hs-identifier hs-var">func</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
+</span><a href="#local-6989586621686148821"><span class="hs-identifier hs-var">inputs'</span></a></span><span>
+</span><span id="line-144"></span><span>      </span><span class="annot"><span class="annottext">MVar (ForeignPtr TensorList) -&gt; ForeignPtr TensorList -&gt; IO ()
+forall a. MVar a -&gt; a -&gt; IO ()
+</span><span class="hs-identifier hs-var">putMVar</span></span><span> </span><span class="annot"><span class="annottext">MVar (ForeignPtr TensorList)
+</span><a href="#local-6989586621686148824"><span class="hs-identifier hs-var">ref</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
+</span><a href="#local-6989586621686148820"><span class="hs-identifier hs-var">ret</span></a></span><span>
+</span><span id="line-145"></span><span>      </span><span class="annot"><span class="annottext">Ptr TensorList -&gt; IO (Ptr TensorList)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(Ptr TensorList -&gt; IO (Ptr TensorList))
 -&gt; Ptr TensorList -&gt; IO (Ptr TensorList)
@@ -608,39 +672,39 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList -&gt; Ptr TensorList
 forall a. ForeignPtr a -&gt; Ptr a
 </span><span class="hs-identifier hs-var">unsafeForeignPtrToPtr</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
-</span><a href="#local-6989586621686142993"><span class="hs-identifier hs-var">ret</span></a></span><span>
-</span><span id="line-131"></span><span>
-</span><span id="line-132"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#printGraph"><span class="hs-identifier hs-type">printGraph</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#SharedPtr"><span class="hs-identifier hs-type">SharedPtr</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitGraph"><span class="hs-identifier hs-type">JitGraph</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-133"></span><span id="printGraph"><span class="annot"><span class="annottext">printGraph :: ForeignPtr (SharedPtr JitGraph) -&gt; IO (ForeignPtr StdString)
-</span><a href="Torch.Internal.Managed.Type.Module.html#printGraph"><span class="hs-identifier hs-var hs-var">printGraph</span></a></span></span><span> </span><span id="local-6989586621686142991"><span class="annot"><span class="annottext">ForeignPtr (SharedPtr JitGraph)
-</span><a href="#local-6989586621686142991"><span class="hs-identifier hs-var">graph</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr (SharedPtr JitGraph) -&gt; IO (Ptr StdString))
+</span><a href="#local-6989586621686148820"><span class="hs-identifier hs-var">ret</span></a></span><span>
+</span><span id="line-146"></span><span>
+</span><span id="line-147"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#printGraph"><span class="hs-identifier hs-type">printGraph</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#SharedPtr"><span class="hs-identifier hs-type">SharedPtr</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitGraph"><span class="hs-identifier hs-type">JitGraph</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-148"></span><span id="printGraph"><span class="annot"><span class="annottext">printGraph :: ForeignPtr (SharedPtr JitGraph) -&gt; IO (ForeignPtr StdString)
+</span><a href="Torch.Internal.Managed.Type.Module.html#printGraph"><span class="hs-identifier hs-var hs-var">printGraph</span></a></span></span><span> </span><span id="local-6989586621686148818"><span class="annot"><span class="annottext">ForeignPtr (SharedPtr JitGraph)
+</span><a href="#local-6989586621686148818"><span class="hs-identifier hs-var">graph</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr (SharedPtr JitGraph) -&gt; IO (Ptr StdString))
 -&gt; ForeignPtr (SharedPtr JitGraph) -&gt; IO (ForeignPtr StdString)
 forall a ca y cy.
 (Castable a ca, Castable y cy) =&gt;
 (ca -&gt; IO cy) -&gt; a -&gt; IO y
 </span><a href="Torch.Internal.Cast.html#cast1"><span class="hs-identifier hs-var">cast1</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr (SharedPtr JitGraph) -&gt; IO (Ptr StdString)
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#printGraph"><span class="hs-identifier hs-var">Unmanaged.printGraph</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr (SharedPtr JitGraph)
-</span><a href="#local-6989586621686142991"><span class="hs-identifier hs-var">graph</span></a></span><span>
-</span><span id="line-134"></span><span>
-</span><span id="line-135"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#printOnnx"><span class="hs-identifier hs-type">printOnnx</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#SharedPtr"><span class="hs-identifier hs-type">SharedPtr</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitGraph"><span class="hs-identifier hs-type">JitGraph</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-136"></span><span id="printOnnx"><span class="annot"><span class="annottext">printOnnx :: ForeignPtr (SharedPtr JitGraph) -&gt; IO (ForeignPtr StdString)
-</span><a href="Torch.Internal.Managed.Type.Module.html#printOnnx"><span class="hs-identifier hs-var hs-var">printOnnx</span></a></span></span><span> </span><span id="local-6989586621686142988"><span class="annot"><span class="annottext">ForeignPtr (SharedPtr JitGraph)
-</span><a href="#local-6989586621686142988"><span class="hs-identifier hs-var">graph</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr (SharedPtr JitGraph) -&gt; IO (Ptr StdString))
+</span><a href="#local-6989586621686148818"><span class="hs-identifier hs-var">graph</span></a></span><span>
+</span><span id="line-149"></span><span>
+</span><span id="line-150"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#printOnnx"><span class="hs-identifier hs-type">printOnnx</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Internal.Type.html#SharedPtr"><span class="hs-identifier hs-type">SharedPtr</span></a></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#JitGraph"><span class="hs-identifier hs-type">JitGraph</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-151"></span><span id="printOnnx"><span class="annot"><span class="annottext">printOnnx :: ForeignPtr (SharedPtr JitGraph) -&gt; IO (ForeignPtr StdString)
+</span><a href="Torch.Internal.Managed.Type.Module.html#printOnnx"><span class="hs-identifier hs-var hs-var">printOnnx</span></a></span></span><span> </span><span id="local-6989586621686148815"><span class="annot"><span class="annottext">ForeignPtr (SharedPtr JitGraph)
+</span><a href="#local-6989586621686148815"><span class="hs-identifier hs-var">graph</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr (SharedPtr JitGraph) -&gt; IO (Ptr StdString))
 -&gt; ForeignPtr (SharedPtr JitGraph) -&gt; IO (ForeignPtr StdString)
 forall a ca y cy.
 (Castable a ca, Castable y cy) =&gt;
 (ca -&gt; IO cy) -&gt; a -&gt; IO y
 </span><a href="Torch.Internal.Cast.html#cast1"><span class="hs-identifier hs-var">cast1</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr (SharedPtr JitGraph) -&gt; IO (Ptr StdString)
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#printOnnx"><span class="hs-identifier hs-var">Unmanaged.printOnnx</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr (SharedPtr JitGraph)
-</span><a href="#local-6989586621686142988"><span class="hs-identifier hs-var">graph</span></a></span><span>
-</span><span id="line-137"></span><span>
-</span><span id="line-138"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#dumpToStr"><span class="hs-identifier hs-type">dumpToStr</span></a></span><span>
-</span><span id="line-139"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span>
-</span><span id="line-140"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span>
-</span><span id="line-141"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span>
-</span><span id="line-142"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span>
-</span><span id="line-143"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-144"></span><span id="dumpToStr"><span class="annot"><span class="annottext">dumpToStr :: ForeignPtr Module
+</span><a href="#local-6989586621686148815"><span class="hs-identifier hs-var">graph</span></a></span><span>
+</span><span id="line-152"></span><span>
+</span><span id="line-153"></span><span class="annot"><a href="Torch.Internal.Managed.Type.Module.html#dumpToStr"><span class="hs-identifier hs-type">dumpToStr</span></a></span><span>
+</span><span id="line-154"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#Module"><span class="hs-identifier hs-type">Module</span></a></span><span>
+</span><span id="line-155"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span>
+</span><span id="line-156"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span>
+</span><span id="line-157"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBool</span></span><span>
+</span><span id="line-158"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="Torch.Internal.Type.html#StdString"><span class="hs-identifier hs-type">StdString</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-159"></span><span id="dumpToStr"><span class="annot"><span class="annottext">dumpToStr :: ForeignPtr Module
 -&gt; CBool -&gt; CBool -&gt; CBool -&gt; IO (ForeignPtr StdString)
 </span><a href="Torch.Internal.Managed.Type.Module.html#dumpToStr"><span class="hs-identifier hs-var hs-var">dumpToStr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Ptr Module -&gt; CBool -&gt; CBool -&gt; CBool -&gt; IO (Ptr StdString))
 -&gt; ForeignPtr Module
@@ -654,4 +718,4 @@ forall a ca x1 cx1 x2 cx2 x3 cx3 y cy.
 (ca -&gt; cx1 -&gt; cx2 -&gt; cx3 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; x2 -&gt; x3 -&gt; IO y
 </span><a href="Torch.Internal.Cast.html#cast4"><span class="hs-identifier hs-var">cast4</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Module -&gt; CBool -&gt; CBool -&gt; CBool -&gt; IO (Ptr StdString)
 </span><a href="Torch.Internal.Unmanaged.Type.Module.html#dumpToStr"><span class="hs-identifier hs-var">Unmanaged.dumpToStr</span></a></span><span>
-</span><span id="line-145"></span></pre></body></html>
+</span><span id="line-160"></span></pre></body></html>
