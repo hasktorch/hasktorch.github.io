@@ -148,9 +148,24 @@ WithBias :: HasBias
 WithoutBias :: HasBias
 type WithBiasSym0 = 'WithBias :: HasBias
 type WithoutBiasSym0 = 'WithoutBias :: HasBias
-data SHasBias z_awUJ
+data SHasBias z_axTm
 [SWithBias] :: SHasBias ('WithBias :: HasBias)
 [SWithoutBias] :: SHasBias ('WithoutBias :: HasBias)
+data HasDropout
+WithDropout :: HasDropout
+WithoutDropout :: HasDropout
+type WithDropoutSym0 = 'WithDropout :: HasDropout
+type WithoutDropoutSym0 = 'WithoutDropout :: HasDropout
+data SHasDropout z_ay0R
+[SWithDropout] :: SHasDropout ('WithDropout :: HasDropout)
+[SWithoutDropout] :: SHasDropout ('WithoutDropout :: HasDropout)
+instance Data.Singletons.Internal.SingKind Torch.GraduallyTyped.NN.Type.HasDropout
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.NN.Type.WithDropout
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.NN.Type.WithoutDropout
+instance GHC.Generics.Generic Torch.GraduallyTyped.NN.Type.HasDropout
+instance GHC.Show.Show Torch.GraduallyTyped.NN.Type.HasDropout
+instance GHC.Classes.Ord Torch.GraduallyTyped.NN.Type.HasDropout
+instance GHC.Classes.Eq Torch.GraduallyTyped.NN.Type.HasDropout
 instance Data.Singletons.Internal.SingKind Torch.GraduallyTyped.NN.Type.HasBias
 instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.NN.Type.WithBias
 instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.NN.Type.WithoutBias
@@ -358,7 +373,7 @@ Dense :: LayoutType
 Sparse :: LayoutType
 type DenseSym0 = 'Dense :: LayoutType
 type SparseSym0 = 'Sparse :: LayoutType
-data SLayoutType z_aAkp
+data SLayoutType z_aBMM
 [SDense] :: SLayoutType ('Dense :: LayoutType)
 [SSparse] :: SLayoutType ('Sparse :: LayoutType)
 class KnownLayoutType (layoutType :: LayoutType)
@@ -527,7 +542,7 @@ type QInt8Sym0 = 'QInt8 :: DType
 type QUInt8Sym0 = 'QUInt8 :: DType
 type QInt32Sym0 = 'QInt32 :: DType
 type BFloat16Sym0 = 'BFloat16 :: DType
-data SDType z_aE8Z
+data SDType z_aFBm
 [SBool] :: SDType ('Bool :: DType)
 [SUInt8] :: SDType ('UInt8 :: DType)
 [SInt8] :: SDType ('Int8 :: DType)
@@ -600,15 +615,6 @@ instance GHC.Read.Read Torch.GraduallyTyped.DType.DType
 instance GHC.Show.Show Torch.GraduallyTyped.DType.DType
 instance GHC.Classes.Eq Torch.GraduallyTyped.DType.DType
 
-module Torch.GraduallyTyped.Random
-data Generator (device :: Device (DeviceType Nat))
-[UnsafeGenerator] :: forall device. {generatorSeed :: Word64, generatorDeviceType :: DeviceType Int16, generatorState :: TVar (Maybe (ForeignPtr Generator))} -> Generator device
-sMkGenerator :: forall device. SDevice device -> Word64 -> Generator device
-mkGenerator :: forall device. SingI device => Word64 -> Generator device
-sGeneratorToDevice :: forall generatorDevice' generatorDevice. SDevice generatorDevice' -> Generator generatorDevice -> Generator generatorDevice'
-generatorToDevice :: forall generatorDevice' generatorDevice. SingI generatorDevice' => Generator generatorDevice -> Generator generatorDevice'
-withGenerator :: (ForeignPtr Generator -> IO (ForeignPtr Tensor)) -> Word64 -> DeviceType Int16 -> TVar (Maybe (ForeignPtr Generator)) -> IO (ForeignPtr Tensor, Word64, TVar (Maybe (ForeignPtr Generator)))
-
 module Torch.GraduallyTyped.RequiresGradient
 
 -- | Data type to represent whether or not the tensor requires gradient
@@ -622,7 +628,7 @@ WithGradient :: RequiresGradient
 WithoutGradient :: RequiresGradient
 type WithGradientSym0 = 'WithGradient :: RequiresGradient
 type WithoutGradientSym0 = 'WithoutGradient :: RequiresGradient
-data SRequiresGradient z_aHsL
+data SRequiresGradient z_aI8S
 [SWithGradient] :: SRequiresGradient ('WithGradient :: RequiresGradient)
 [SWithoutGradient] :: SRequiresGradient ('WithoutGradient :: RequiresGradient)
 class KnownRequiresGradient (requiresGradient :: RequiresGradient)
@@ -1116,12 +1122,12 @@ class SGetGradient (gradient :: Gradient RequiresGradient)
 --   <pre>
 --   &gt;&gt;&gt; sOnes' gradient = sOnes $ TensorSpec gradient (SLayout SDense) (SDevice SCPU) (SDataType SFloat) (SShape $ SName @"batch" :&amp;: SSize @32 :|: SName @"feature" :&amp;: SSize @8 :|: SNil)
 --   
---   &gt;&gt;&gt; t = sOnes' $ SGradient SWithGradient
+--   &gt;&gt;&gt; t &lt;- sOnes' $ SGradient SWithGradient
 --   
 --   &gt;&gt;&gt; sGetGradient t
 --   SGradient SWithGradient
 --   
---   &gt;&gt;&gt; t = sOnes' $ SUncheckedGradient WithoutGradient
+--   &gt;&gt;&gt; t &lt;- sOnes' $ SUncheckedGradient WithoutGradient
 --   
 --   &gt;&gt;&gt; sGetGradient t
 --   SUncheckedGradient WithoutGradient
@@ -1133,12 +1139,12 @@ sGetGradient :: forall layout device dataType shape. SGetGradient gradient => Te
 --   <pre>
 --   &gt;&gt;&gt; sOnes' gradient = sOnes $ TensorSpec gradient (SLayout SDense) (SDevice SCPU) (SDataType SFloat) (SShape $ SName @"batch" :&amp;: SSize @32 :|: SName @"feature" :&amp;: SSize @8 :|: SNil)
 --   
---   &gt;&gt;&gt; t = sOnes' $ SGradient SWithGradient
+--   &gt;&gt;&gt; t &lt;- sOnes' $ SGradient SWithGradient
 --   
 --   &gt;&gt;&gt; getRequiresGradient t
 --   WithGradient
 --   
---   &gt;&gt;&gt; t = sOnes' $ SUncheckedGradient WithoutGradient
+--   &gt;&gt;&gt; t &lt;- sOnes' $ SUncheckedGradient WithoutGradient
 --   
 --   &gt;&gt;&gt; getRequiresGradient t
 --   WithoutGradient
@@ -1149,41 +1155,44 @@ GradientError :: RequiresGradient -> RequiresGradient -> GradientError
 [geExpected] :: GradientError -> RequiresGradient
 [geActual] :: GradientError -> RequiresGradient
 
--- | Checks whether or not the input tensor has the memory layout
---   <tt>layout</tt> and returns a statically annotated copy of it wrapped
---   in a <a>MonadThrow</a> <tt>m</tt>.
+-- | Checks whether or not gradient computations are required for a tensor
+--   and returns a statically annotated copy of it wrapped in a
+--   <a>MonadThrow</a> <tt>m</tt>.
 --   
 --   For instance, if <tt>m</tt> is <a>Maybe</a>, then the result will be
---   wrapped in <a>Just</a> if and only if the tensor has indeed the memory
---   layout <tt>layout</tt>. If it does not have it, then the result will
---   be <a>Nothing</a>.
+--   wrapped in <a>Just</a> if and only if gradients are computed for the
+--   tensor according to the argument <tt>gradient</tt>. If gradients are
+--   expected but none are computed, then the result will be
+--   <a>Nothing</a>. If gradients are not expected but are computed, then
+--   the result will be <a>Nothing</a> as well.
 --   
---   In the REPL, <tt>m</tt> will default to <a>IO</a>: &gt;&gt;&gt; t =
---   sOnes $ TensorSpec (SGradient SWithGradient) (SUncheckedLayout Dense)
---   (SDevice SCPU) (SDataType SFloat) (SShape $ SName <tt>"batch" :&amp;:
---   SSize </tt>32 :|: SName <tt>"feature" :&amp;: SSize </tt>8 :|: SNil)
---   &gt;&gt;&gt; t' &lt;- sCheckedLayout (SLayout SDense) t &gt;&gt;&gt;
---   :type t' t' :: Tensor ('Gradient 'WithGradient) ('Layout 'Dense)
---   ('Device 'CPU) ('DataType 'Float) ('Shape '[ 'Dim ('Name "batch")
---   ('Size 32), 'Dim ('Name "feature") ('Size 8)]) &gt;&gt;&gt; t' &lt;-
---   sCheckedLayout (SLayout SSparse) t *** Exception: LayoutError
---   {leExpected = Sparse, leActual = Dense}
-sCheckedGradient :: forall gradient' m gradient layout device dataType shape. (SGetGradient gradient, MonadThrow m) => SGradient gradient' -> Tensor gradient layout device dataType shape -> m (Tensor (Seq (gradient <+> gradient') gradient') layout device dataType shape)
-checkedGradient :: forall gradient' m gradient layout device dataType shape. (SingI gradient', SGetGradient gradient, MonadThrow m) => Tensor gradient layout device dataType shape -> m (Tensor (Seq (gradient <+> gradient') gradient') layout device dataType shape)
+--   In the REPL, <tt>m</tt> will default to <a>IO</a>: &gt;&gt;&gt; t
+--   &lt;- sOnes $ TensorSpec (SUncheckedGradient WithGradient) (SLayout
+--   SDense) (SDevice SCPU) (SDataType SFloat) (SShape $ SName <tt>"batch"
+--   :&amp;: SSize </tt>32 :|: SName <tt>"feature" :&amp;: SSize </tt>8 :|:
+--   SNil) &gt;&gt;&gt; t' &lt;- sCheckedGradient (SGradient SWithGradient)
+--   t &gt;&gt;&gt; :type t' t' :: Tensor ('Gradient 'WithGradient)
+--   ('Layout 'Dense) ('Device 'CPU) ('DataType 'Float) ('Shape '[ 'Dim
+--   ('Name "batch") ('Size 32), 'Dim ('Name "feature") ('Size 8)])
+--   &gt;&gt;&gt; t' &lt;- sCheckedGradient (SGradient SWithoutGradient) t
+--   *** Exception: GradientError {geExpected = WithoutGradient, geActual =
+--   WithGradient}
+sCheckedGradient :: forall gradient' m gradient layout device dataType shape. (SGetGradient gradient, MonadThrow m, Catch (gradient <+> gradient')) => SGradient gradient' -> Tensor gradient layout device dataType shape -> m (Tensor gradient' layout device dataType shape)
+checkedGradient :: forall gradient' m gradient layout device dataType shape. (SingI gradient', SGetGradient gradient, MonadThrow m, Catch (gradient <+> gradient')) => Tensor gradient layout device dataType shape -> m (Tensor gradient' layout device dataType shape)
 
--- | Returns the input tensor but with <a>UncheckedLayout</a> as memory
---   layout type annotation. Any static information about the tensor's
---   memory layout is thus erased. However, the tensor's underlying data
---   structure is not changed.
+-- | Returns the input tensor but with <tt>UncheckedGradeint</tt> as
+--   gradient type annotation. Any static information about whether or not
+--   the gradient computation is required for the tensor is lost. However,
+--   the tensor's underlying data structure is not changed.
 --   
 --   <pre>
---   &gt;&gt;&gt; t = ones @('Gradient 'WithGradient) @('Layout 'Dense) @('Device 'CPU) @('DataType 'Float) @('Shape '[ 'Dim ('Name "batch") ('Size 32), 'Dim ('Name "feature") ('Size 8)])
+--   &gt;&gt;&gt; t &lt;- ones @('Gradient 'WithGradient) @('Layout 'Dense) @('Device 'CPU) @('DataType 'Float) @('Shape '[ 'Dim ('Name "batch") ('Size 32), 'Dim ('Name "feature") ('Size 8)])
 --   
---   &gt;&gt;&gt; :type uncheckedLayout t
---   uncheckedLayout t
+--   &gt;&gt;&gt; :type uncheckedGradient t
+--   uncheckedGradient t
 --     :: Tensor
---          ('Gradient 'WithGradient)
---          'UncheckedLayout
+--          'UncheckedGradient
+--          ('Layout 'Dense)
 --          ('Device 'CPU)
 --          ('DataType 'Float)
 --          ('Shape
@@ -1207,12 +1216,12 @@ class SGetLayout (layout :: Layout LayoutType)
 --   <pre>
 --   &gt;&gt;&gt; sOnes' layout = sOnes $ TensorSpec (SGradient SWithGradient) layout (SDevice SCPU) (SDataType SFloat) (SShape $ SName @"batch" :&amp;: SSize @32 :|: SName @"feature" :&amp;: SSize @8 :|: SNil)
 --   
---   &gt;&gt;&gt; t = sOnes' $ SLayout SDense
+--   &gt;&gt;&gt; t &lt;- sOnes' $ SLayout SDense
 --   
 --   &gt;&gt;&gt; sGetLayout t
 --   SLayout SDense
 --   
---   &gt;&gt;&gt; t = sOnes' $ SUncheckedLayout Dense
+--   &gt;&gt;&gt; t &lt;- sOnes' $ SUncheckedLayout Dense
 --   
 --   &gt;&gt;&gt; sGetLayout t
 --   SUncheckedLayout Dense
@@ -1224,12 +1233,12 @@ sGetLayout :: forall gradient device dataType shape. SGetLayout layout => Tensor
 --   <pre>
 --   &gt;&gt;&gt; sOnes' layout = sOnes $ TensorSpec (SGradient SWithGradient) layout (SDevice SCPU) (SDataType SFloat) (SShape $ SName @"batch" :&amp;: SSize @32 :|: SName @"feature" :&amp;: SSize @8 :|: SNil)
 --   
---   &gt;&gt;&gt; t = sOnes' $ SLayout SDense
+--   &gt;&gt;&gt; t &lt;- sOnes' $ SLayout SDense
 --   
 --   &gt;&gt;&gt; getLayoutType t
 --   Dense
 --   
---   &gt;&gt;&gt; t = sOnes' $ SUncheckedLayout Dense
+--   &gt;&gt;&gt; t &lt;- sOnes' $ SUncheckedLayout Dense
 --   
 --   &gt;&gt;&gt; getLayoutType t
 --   Dense
@@ -1249,18 +1258,18 @@ LayoutError :: LayoutType -> LayoutType -> LayoutError
 --   layout <tt>layout</tt>. If it does not have it, then the result will
 --   be <a>Nothing</a>.
 --   
---   In the REPL, <tt>m</tt> will default to <a>IO</a>: &gt;&gt;&gt; t =
---   sOnes $ TensorSpec (SGradient SWithGradient) (SUncheckedLayout Dense)
---   (SDevice SCPU) (SDataType SFloat) (SShape $ SName <tt>"batch" :&amp;:
---   SSize </tt>32 :|: SName <tt>"feature" :&amp;: SSize </tt>8 :|: SNil)
---   &gt;&gt;&gt; t' &lt;- sCheckedLayout (SLayout SDense) t &gt;&gt;&gt;
---   :type t' t' :: Tensor ('Gradient 'WithGradient) ('Layout 'Dense)
---   ('Device 'CPU) ('DataType 'Float) ('Shape '[ 'Dim ('Name "batch")
---   ('Size 32), 'Dim ('Name "feature") ('Size 8)]) &gt;&gt;&gt; t' &lt;-
---   sCheckedLayout (SLayout SSparse) t *** Exception: LayoutError
+--   In the REPL, <tt>m</tt> will default to <a>IO</a>: &gt;&gt;&gt; t
+--   &lt;- sOnes $ TensorSpec (SGradient SWithGradient) (SUncheckedLayout
+--   Dense) (SDevice SCPU) (SDataType SFloat) (SShape $ SName <tt>"batch"
+--   :&amp;: SSize </tt>32 :|: SName <tt>"feature" :&amp;: SSize </tt>8 :|:
+--   SNil) &gt;&gt;&gt; t' &lt;- sCheckedLayout (SLayout SDense) t
+--   &gt;&gt;&gt; :type t' t' :: Tensor ('Gradient 'WithGradient) ('Layout
+--   'Dense) ('Device 'CPU) ('DataType 'Float) ('Shape '[ 'Dim ('Name
+--   "batch") ('Size 32), 'Dim ('Name "feature") ('Size 8)]) &gt;&gt;&gt;
+--   t' &lt;- sCheckedLayout (SLayout SSparse) t *** Exception: LayoutError
 --   {leExpected = Sparse, leActual = Dense}
-sCheckedLayout :: forall layout' m gradient layout device dataType shape. (SGetLayout layout, MonadThrow m) => SLayout layout' -> Tensor gradient layout device dataType shape -> m (Tensor gradient (Seq (layout <+> layout') layout') device dataType shape)
-checkedLayout :: forall layout' m gradient layout device dataType shape. (SingI layout', SGetLayout layout, MonadThrow m) => Tensor gradient layout device dataType shape -> m (Tensor gradient (Seq (layout <+> layout') layout') device dataType shape)
+sCheckedLayout :: forall layout' m gradient layout device dataType shape. (SGetLayout layout, MonadThrow m, Catch (layout <+> layout')) => SLayout layout' -> Tensor gradient layout device dataType shape -> m (Tensor gradient layout' device dataType shape)
+checkedLayout :: forall layout' m gradient layout device dataType shape. (SingI layout', SGetLayout layout, MonadThrow m, Catch (layout <+> layout')) => Tensor gradient layout device dataType shape -> m (Tensor gradient layout' device dataType shape)
 
 -- | Returns the input tensor but with <a>UncheckedLayout</a> as memory
 --   layout type annotation. Any static information about the tensor's
@@ -1268,7 +1277,7 @@ checkedLayout :: forall layout' m gradient layout device dataType shape. (SingI 
 --   structure is not changed.
 --   
 --   <pre>
---   &gt;&gt;&gt; t = ones @('Gradient 'WithGradient) @('Layout 'Dense) @('Device 'CPU) @('DataType 'Float) @('Shape '[ 'Dim ('Name "batch") ('Size 32), 'Dim ('Name "feature") ('Size 8)])
+--   &gt;&gt;&gt; t &lt;- ones @('Gradient 'WithGradient) @('Layout 'Dense) @('Device 'CPU) @('DataType 'Float) @('Shape '[ 'Dim ('Name "batch") ('Size 32), 'Dim ('Name "feature") ('Size 8)])
 --   
 --   &gt;&gt;&gt; :type uncheckedLayout t
 --   uncheckedLayout t
@@ -1298,12 +1307,12 @@ class SGetDevice (device :: Device (DeviceType Nat))
 --   <pre>
 --   &gt;&gt;&gt; ones' device = sOnes $ TensorSpec (SGradient SWithGradient) (SLayout SDense) device (SDataType SFloat) (SShape $ SName @"batch" :&amp;: SSize @32 :|: SName @"feature" :&amp;: SSize @8 :|: SNil)
 --   
---   &gt;&gt;&gt; t = ones' $ SDevice SCPU
+--   &gt;&gt;&gt; t &lt;- ones' $ SDevice SCPU
 --   
 --   &gt;&gt;&gt; sGetDevice t
 --   SDevice SCPU
 --   
---   &gt;&gt;&gt; t = ones' $ SUncheckedDevice CPU
+--   &gt;&gt;&gt; t &lt;- ones' $ SUncheckedDevice CPU
 --   
 --   &gt;&gt;&gt; sGetDevice t
 --   SUncheckedDevice CPU
@@ -1315,12 +1324,12 @@ sGetDevice :: forall gradient layout dataType shape. SGetDevice device => Tensor
 --   <pre>
 --   &gt;&gt;&gt; ones' device = sOnes $ TensorSpec (SGradient SWithGradient) (SLayout SDense) device (SDataType SFloat) (SShape $ SName @"batch" :&amp;: SSize @32 :|: SName @"feature" :&amp;: SSize @8 :|: SNil)
 --   
---   &gt;&gt;&gt; t = ones' $ SDevice SCPU
+--   &gt;&gt;&gt; t &lt;- ones' $ SDevice SCPU
 --   
 --   &gt;&gt;&gt; getDeviceType t
 --   CPU
 --   
---   &gt;&gt;&gt; t = ones' $ SUncheckedDevice CPU
+--   &gt;&gt;&gt; t &lt;- ones' $ SUncheckedDevice CPU
 --   
 --   &gt;&gt;&gt; getDeviceType t
 --   CPU
@@ -1339,8 +1348,8 @@ DeviceError :: DeviceType Int16 -> DeviceType Int16 -> DeviceError
 --   wrapped in <a>Just</a> if and only if the tensor is indeed on
 --   <tt>device</tt>. If it is not, then the result will be <a>Nothing</a>.
 --   
---   In the REPL, <tt>m</tt> will default to <a>IO</a>: &gt;&gt;&gt; t =
---   sOnes $ TensorSpec (SGradient SWithGradient) (SLayout SDense)
+--   In the REPL, <tt>m</tt> will default to <a>IO</a>: &gt;&gt;&gt; t
+--   &lt;- sOnes $ TensorSpec (SGradient SWithGradient) (SLayout SDense)
 --   (SUncheckedDevice CPU) (SDataType SFloat) (SShape $ SName <tt>"batch"
 --   :&amp;: SSize </tt>32 :|: SName <tt>"feature" :&amp;: SSize </tt>8 :|:
 --   SNil) &gt;&gt;&gt; t' &lt;- sCheckedDevice (SDevice SCPU) t
@@ -1349,8 +1358,8 @@ DeviceError :: DeviceType Int16 -> DeviceType Int16 -> DeviceError
 --   "batch") ('Size 32), 'Dim ('Name "feature") ('Size 8)]) &gt;&gt;&gt;
 --   t' &lt;- sCheckedDevice (SDevice (SCUDA @0)) t *** Exception:
 --   DeviceError {deExpected = CUDA 0, deActual = CPU}
-sCheckedDevice :: forall device' m gradient layout device dataType shape. (SGetDevice device, MonadThrow m) => SDevice device' -> Tensor gradient layout device dataType shape -> m (Tensor gradient layout (Seq (device <+> device') device') dataType shape)
-checkedDevice :: forall device' m gradient layout device dataType shape. (SingI device', SGetDevice device, MonadThrow m) => Tensor gradient layout device dataType shape -> m (Tensor gradient layout (Seq (device <+> device') device') dataType shape)
+sCheckedDevice :: forall device' m gradient layout device dataType shape. (SGetDevice device, MonadThrow m, Catch (device <+> device')) => SDevice device' -> Tensor gradient layout device dataType shape -> m (Tensor gradient layout device' dataType shape)
+checkedDevice :: forall device' m gradient layout device dataType shape. (SingI device', SGetDevice device, MonadThrow m, Catch (device <+> device')) => Tensor gradient layout device dataType shape -> m (Tensor gradient layout device' dataType shape)
 
 -- | Returns the input tensor but with <a>UncheckedDevice</a> as device
 --   type annotation. Any static information about the tensor's device is
@@ -1358,7 +1367,7 @@ checkedDevice :: forall device' m gradient layout device dataType shape. (SingI 
 --   changed.
 --   
 --   <pre>
---   &gt;&gt;&gt; t = ones @('Gradient 'WithGradient) @('Layout 'Dense) @('Device 'CPU) @('DataType 'Float) @('Shape '[ 'Dim ('Name "batch") ('Size 32), 'Dim ('Name "feature") ('Size 8)])
+--   &gt;&gt;&gt; t &lt;- ones @('Gradient 'WithGradient) @('Layout 'Dense) @('Device 'CPU) @('DataType 'Float) @('Shape '[ 'Dim ('Name "batch") ('Size 32), 'Dim ('Name "feature") ('Size 8)])
 --   
 --   &gt;&gt;&gt; :type uncheckedDevice t
 --   uncheckedDevice t
@@ -1412,12 +1421,12 @@ class SGetDataType (dataType :: DataType DType)
 --   <pre>
 --   &gt;&gt;&gt; sOnes' dataType = sOnes $ TensorSpec (SGradient SWithGradient) (SLayout SDense) (SDevice SCPU) dataType (SShape $ SName @"batch" :&amp;: SSize @32 :|: SName @"feature" :&amp;: SSize @8 :|: SNil)
 --   
---   &gt;&gt;&gt; t = sOnes' $ SDataType SFloat
+--   &gt;&gt;&gt; t &lt;- sOnes' $ SDataType SFloat
 --   
 --   &gt;&gt;&gt; sGetDataType t
 --   SDataType SFloat
 --   
---   &gt;&gt;&gt; t = sOnes' $ SUncheckedDataType Float
+--   &gt;&gt;&gt; t &lt;- sOnes' $ SUncheckedDataType Float
 --   
 --   &gt;&gt;&gt; sGetDataType t
 --   SUncheckedDataType Float
@@ -1429,12 +1438,12 @@ sGetDataType :: forall gradient layout device shape. SGetDataType dataType => Te
 --   <pre>
 --   &gt;&gt;&gt; sOnes' dataType = sOnes $ TensorSpec (SGradient SWithGradient) (SLayout SDense) (SDevice SCPU) dataType (SShape $ SName @"batch" :&amp;: SSize @32 :|: SName @"feature" :&amp;: SSize @8 :|: SNil)
 --   
---   &gt;&gt;&gt; t = sOnes' $ SDataType SFloat
+--   &gt;&gt;&gt; t &lt;- sOnes' $ SDataType SFloat
 --   
 --   &gt;&gt;&gt; getDType t
 --   Float
 --   
---   &gt;&gt;&gt; t = sOnes' $ SUncheckedDataType Float
+--   &gt;&gt;&gt; t &lt;- sOnes' $ SUncheckedDataType Float
 --   
 --   &gt;&gt;&gt; getDType t
 --   Float
@@ -1454,18 +1463,18 @@ DataTypeError :: DType -> DType -> DataTypeError
 --   type <tt>dataType</tt>. If it does not have it, then the result will
 --   be <a>Nothing</a>.
 --   
---   In the REPL, <tt>m</tt> will default to <a>IO</a>: &gt;&gt;&gt; t =
---   sOnes $ TensorSpec (SGradient SWithGradient) (SLayout SDense) (SDevice
---   SCPU) (SUncheckedDataType Float) (SShape $ SName <tt>"batch" :&amp;:
---   SSize </tt>32 :|: SName <tt>"feature" :&amp;: SSize </tt>8 :|: SNil)
---   &gt;&gt;&gt; t' &lt;- checkedDataType <tt>('DataType 'Float) t
+--   In the REPL, <tt>m</tt> will default to <a>IO</a>: &gt;&gt;&gt; t
+--   &lt;- sOnes $ TensorSpec (SGradient SWithGradient) (SLayout SDense)
+--   (SDevice SCPU) (SUncheckedDataType Float) (SShape $ SName <tt>"batch"
+--   :&amp;: SSize </tt>32 :|: SName <tt>"feature" :&amp;: SSize </tt>8 :|:
+--   SNil) &gt;&gt;&gt; t' &lt;- checkedDataType <tt>('DataType 'Float) t
 --   &gt;&gt;&gt; :type t' t' :: Tensor ('Gradient 'WithGradient) ('Layout
 --   'Dense) ('Device 'CPU) ('DataType 'Float) ('Shape '[ 'Dim ('Name
 --   "batch") ('Size 32), 'Dim ('Name "feature") ('Size 8)]) &gt;&gt;&gt;
 --   t' &lt;- checkedDataType </tt>('DataType 'Double) t *** Exception:
 --   DataTypeError {dtExpected = Double, dtActual = Float}
-sCheckedDataType :: forall dataType' m gradient layout device dataType shape. (SGetDataType dataType, MonadThrow m) => SDataType dataType' -> Tensor gradient layout device dataType shape -> m (Tensor gradient layout device (Seq (dataType <+> dataType') dataType') shape)
-checkedDataType :: forall dataType' m gradient layout device dataType shape. (SingI dataType', SGetDataType dataType, MonadThrow m) => Tensor gradient layout device dataType shape -> m (Tensor gradient layout device (Seq (dataType <+> dataType') dataType') shape)
+sCheckedDataType :: forall dataType' m gradient layout device dataType shape. (SGetDataType dataType, MonadThrow m, Catch (dataType <+> dataType')) => SDataType dataType' -> Tensor gradient layout device dataType shape -> m (Tensor gradient layout device dataType' shape)
+checkedDataType :: forall dataType' m gradient layout device dataType shape. (SingI dataType', SGetDataType dataType, MonadThrow m, Catch (dataType <+> dataType')) => Tensor gradient layout device dataType shape -> m (Tensor gradient layout device dataType' shape)
 
 -- | Returns the input tensor but with <a>UncheckedDataType</a> as
 --   data-type type annotation. Any static information about the tensor's
@@ -1473,7 +1482,7 @@ checkedDataType :: forall dataType' m gradient layout device dataType shape. (Si
 --   structure is not changed.
 --   
 --   <pre>
---   &gt;&gt;&gt; t = ones @('Gradient 'WithGradient) @('Layout 'Dense) @('Device 'CPU) @('DataType 'Float) @('Shape '[ 'Dim ('Name "batch") ('Size 32), 'Dim ('Name "feature") ('Size 8)])
+--   &gt;&gt;&gt; t &lt;- ones @('Gradient 'WithGradient) @('Layout 'Dense) @('Device 'CPU) @('DataType 'Float) @('Shape '[ 'Dim ('Name "batch") ('Size 32), 'Dim ('Name "feature") ('Size 8)])
 --   
 --   &gt;&gt;&gt; :type uncheckedDataType t
 --   uncheckedDataType t
@@ -1494,22 +1503,22 @@ class SGetShape (shape :: Shape [Dim (Name Symbol) (Size Nat)])
 --   <pre>
 --   &gt;&gt;&gt; sOnes' = sOnes . TensorSpec (SGradient SWithGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat)
 --   
---   &gt;&gt;&gt; t = sOnes' . SShape $ SName @"batch" :&amp;: SSize @32 :|: SName @"feature" :&amp;: SSize @8 :|: SNil
+--   &gt;&gt;&gt; t &lt;- sOnes' . SShape $ SName @"batch" :&amp;: SSize @32 :|: SName @"feature" :&amp;: SSize @8 :|: SNil
 --   
 --   &gt;&gt;&gt; sGetShape t
 --   SShape (SCons (SDim {sDimName = SName, sDimSize = SSize}) (SCons (SDim {sDimName = SName, sDimSize = SSize}) SNil))
 --   
---   &gt;&gt;&gt; t = sOnes' . SUncheckedShape $ [Dim "batch" 32, Dim "feature" 8]
+--   &gt;&gt;&gt; t &lt;- sOnes' . SUncheckedShape $ [Dim "batch" 32, Dim "feature" 8]
 --   
 --   &gt;&gt;&gt; sGetShape t
 --   SUncheckedShape [Dim {dimName = "batch", dimSize = 32},Dim {dimName = "feature", dimSize = 8}]
 --   
---   &gt;&gt;&gt; t = sOnes' . SShape $ SUncheckedName "batch" :&amp;: SUncheckedSize 32 :|: SUncheckedName "feature" :&amp;: SSize @32 :|: SNil
+--   &gt;&gt;&gt; t &lt;- sOnes' . SShape $ SUncheckedName "batch" :&amp;: SUncheckedSize 32 :|: SUncheckedName "feature" :&amp;: SSize @32 :|: SNil
 --   
 --   &gt;&gt;&gt; sGetShape t
 --   SShape (SCons (SDim {sDimName = SUncheckedName "batch", sDimSize = SUncheckedSize 32}) (SCons (SDim {sDimName = SUncheckedName "feature", sDimSize = SSize}) SNil))
 --   
---   &gt;&gt;&gt; t = sOnes' . SShape $ SName @"batch" :&amp;: SUncheckedSize 32 :|: SName @"feature" :&amp;: SUncheckedSize 8 :|: SNil
+--   &gt;&gt;&gt; t &lt;- sOnes' . SShape $ SName @"batch" :&amp;: SUncheckedSize 32 :|: SName @"feature" :&amp;: SUncheckedSize 8 :|: SNil
 --   
 --   &gt;&gt;&gt; sGetShape t
 --   SShape (SCons (SDim {sDimName = SName, sDimSize = SUncheckedSize 32}) (SCons (SDim {sDimName = SName, sDimSize = SUncheckedSize 8}) SNil))
@@ -1521,22 +1530,22 @@ sGetShape :: forall gradient layout device dataType. SGetShape shape => Tensor g
 --   <pre>
 --   &gt;&gt;&gt; sOnes' = sOnes . TensorSpec (SGradient SWithGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat)
 --   
---   &gt;&gt;&gt; t = sOnes' . SShape $ SName @"batch" :&amp;: SSize @32 :|: SName @"feature" :&amp;: SSize @8 :|: SNil
+--   &gt;&gt;&gt; t &lt;- sOnes' . SShape $ SName @"batch" :&amp;: SSize @32 :|: SName @"feature" :&amp;: SSize @8 :|: SNil
 --   
 --   &gt;&gt;&gt; getDims t
 --   [Dim {dimName = "batch", dimSize = 32},Dim {dimName = "feature", dimSize = 8}]
 --   
---   &gt;&gt;&gt; t = sOnes' . SUncheckedShape $ [Dim "batch" 32, Dim "feature" 8]
+--   &gt;&gt;&gt; t &lt;- sOnes' . SUncheckedShape $ [Dim "batch" 32, Dim "feature" 8]
 --   
 --   &gt;&gt;&gt; getDims t
 --   [Dim {dimName = "batch", dimSize = 32},Dim {dimName = "feature", dimSize = 8}]
 --   
---   &gt;&gt;&gt; t = sOnes' . SShape $ SUncheckedName "batch" :&amp;: SUncheckedSize 32 :|: SUncheckedName "feature" :&amp;: SSize @32 :|: SNil
+--   &gt;&gt;&gt; t &lt;- sOnes' . SShape $ SUncheckedName "batch" :&amp;: SUncheckedSize 32 :|: SUncheckedName "feature" :&amp;: SSize @32 :|: SNil
 --   
 --   &gt;&gt;&gt; getDims t
 --   [Dim {dimName = "batch", dimSize = 32},Dim {dimName = "feature", dimSize = 32}]
 --   
---   &gt;&gt;&gt; t = sOnes' . SShape $ SName @"batch" :&amp;: SUncheckedSize 32 :|: SName @"feature" :&amp;: SUncheckedSize 8 :|: SNil
+--   &gt;&gt;&gt; t &lt;- sOnes' . SShape $ SName @"batch" :&amp;: SUncheckedSize 32 :|: SName @"feature" :&amp;: SUncheckedSize 8 :|: SNil
 --   
 --   &gt;&gt;&gt; getDims t
 --   [Dim {dimName = "batch", dimSize = 32},Dim {dimName = "feature", dimSize = 8}]
@@ -1563,10 +1572,10 @@ ShapeError :: [Dim String Integer] -> [Dim String Integer] -> ShapeError
 --   wrapped in <a>Just</a> if and only if the tensor has indeed the shape
 --   <tt>shape</tt>. If it is not, then the result will be <a>Nothing</a>.
 --   
---   In the REPL, <tt>m</tt> will default to <a>IO</a>: &gt;&gt;&gt; t =
---   sOnes $ TensorSpec (SGradient SWithGradient) (SLayout SDense) (SDevice
---   SCPU) (SDataType SFloat) (SUncheckedShape [Dim "batch" 32, Dim
---   "feature" 8]) &gt;&gt;&gt; t' &lt;- sCheckedShape (SShape $ SName
+--   In the REPL, <tt>m</tt> will default to <a>IO</a>: &gt;&gt;&gt; t
+--   &lt;- sOnes $ TensorSpec (SGradient SWithGradient) (SLayout SDense)
+--   (SDevice SCPU) (SDataType SFloat) (SUncheckedShape [Dim "batch" 32,
+--   Dim "feature" 8]) &gt;&gt;&gt; t' &lt;- sCheckedShape (SShape $ SName
 --   <tt>"batch" :&amp;: SSize </tt>32 :|: SName <tt>"feature" :&amp;:
 --   SSize </tt>8 :|: SNil) t &gt;&gt;&gt; :type t' t' :: Tensor ('Gradient
 --   'WithGradient) ('Layout 'Dense) ('Device 'CPU) ('DataType 'Float)
@@ -1582,8 +1591,8 @@ ShapeError :: [Dim String Integer] -> [Dim String Integer] -> ShapeError
 --   {seExpected = [Dim {dimName = "batch", dimSize = 32},Dim {dimName =
 --   "feature", dimSize = 32}], seActual = [Dim {dimName = "batch", dimSize
 --   = 32},Dim {dimName = "feature", dimSize = 8}]}
-sCheckedShape :: forall shape' m gradient layout device dataType shape. (SGetShape shape, MonadThrow m) => SShape shape' -> Tensor gradient layout device dataType shape -> m (Tensor gradient layout device dataType (Seq (shape <+> shape') shape'))
-checkedShape :: forall shape' m gradient layout device dataType shape. (SingI shape', SGetShape shape, MonadThrow m) => Tensor gradient layout device dataType shape -> m (Tensor gradient layout device dataType (Seq (shape <+> shape') shape'))
+sCheckedShape :: forall shape' m gradient layout device dataType shape. (SGetShape shape, MonadThrow m, Catch (shape <+> shape')) => SShape shape' -> Tensor gradient layout device dataType shape -> m (Tensor gradient layout device dataType shape')
+checkedShape :: forall shape' m gradient layout device dataType shape. (SingI shape', SGetShape shape, MonadThrow m, Catch (shape <+> shape')) => Tensor gradient layout device dataType shape -> m (Tensor gradient layout device dataType shape')
 
 -- | Returns the input tensor but with the selected dimension replaces with
 --   <tt>UncheckedDim</tt> as dimension type annotation. The static
@@ -1591,7 +1600,7 @@ checkedShape :: forall shape' m gradient layout device dataType shape. (SingI sh
 --   However, the tensor's underlying data structure is not changed.
 --   
 --   <pre>
---   &gt;&gt;&gt; t = ones @('Gradient 'WithGradient) @('Layout 'Dense) @('Device 'CPU) @('DataType 'Float) @('Shape '[ 'Dim ('Name "batch") ('Size 32), 'Dim ('Name "feature") ('Size 8)])
+--   &gt;&gt;&gt; t &lt;- ones @('Gradient 'WithGradient) @('Layout 'Dense) @('Device 'CPU) @('DataType 'Float) @('Shape '[ 'Dim ('Name "batch") ('Size 32), 'Dim ('Name "feature") ('Size 8)])
 --   
 --   &gt;&gt;&gt; :type uncheckedDim @('SelectDim ('ByName "batch")) t
 --   uncheckedDim @('SelectDim ('ByName "batch")) t
@@ -1604,7 +1613,7 @@ checkedShape :: forall shape' m gradient layout device dataType shape. (SingI sh
 --             '[ 'Dim 'UncheckedName 'UncheckedSize,
 --                'Dim ('Name "feature") ('Size 8)])
 --   
---   &gt;&gt;&gt; t = ones @('Gradient 'WithGradient) @('Layout 'Dense) @('Device 'CPU) @('DataType 'Float) @('Shape '[ 'Dim ('Name "batch") ('Size 32), 'Dim ('Name "feature") ('Size 8)])
+--   &gt;&gt;&gt; t &lt;- ones @('Gradient 'WithGradient) @('Layout 'Dense) @('Device 'CPU) @('DataType 'Float) @('Shape '[ 'Dim ('Name "batch") ('Size 32), 'Dim ('Name "feature") ('Size 8)])
 --   
 --   &gt;&gt;&gt; :type uncheckedDim @('SelectDim ('ByIndex 1)) t
 --   uncheckedDim @('SelectDim ('ByIndex 1)) t
@@ -1625,7 +1634,7 @@ uncheckedDim :: forall selectDim gradient layout device dataType shape. Tensor g
 --   changed.
 --   
 --   <pre>
---   &gt;&gt;&gt; t = ones @('Gradient 'WithGradient) @('Layout 'Dense) @('Device 'CPU) @('DataType 'Float) @('Shape '[ 'Dim ('Name "batch") ('Size 32), 'Dim ('Name "feature") ('Size 8)])
+--   &gt;&gt;&gt; t &lt;- ones @('Gradient 'WithGradient) @('Layout 'Dense) @('Device 'CPU) @('DataType 'Float) @('Shape '[ 'Dim ('Name "batch") ('Size 32), 'Dim ('Name "feature") ('Size 8)])
 --   
 --   &gt;&gt;&gt; :type uncheckedShape t
 --   uncheckedShape t
@@ -1769,181 +1778,6 @@ instance Torch.Internal.Class.Castable (Torch.HList.HList tensors) [GHC.ForeignP
 instance Torch.Internal.Class.Castable (Torch.HList.HList '[]) [GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Tensor]
 instance forall k (l :: [k]). Torch.Internal.Class.Castable (Torch.HList.HList l) [GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Tensor] => Torch.Internal.Class.Castable (Torch.HList.HList l) (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.TensorList)
 
-module Torch.GraduallyTyped.Tensor.Creation
-
--- | Create a gradually typed tensor of ones.
---   
---   <pre>
---   &gt;&gt;&gt; shape = SShape $ SName @"batch" :&amp;: SSize @32 :|: SUncheckedName "feature" :&amp;: SUncheckedSize 8 :|: SNil
---   
---   &gt;&gt;&gt; :type sOnes $ TensorSpec (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SInt64) shape
---   sOnes $ TensorSpec (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SInt64) shape
---     :: Tensor
---          ('Gradient 'WithoutGradient)
---          ('Layout 'Dense)
---          ('Device 'CPU)
---          ('DataType 'Int64)
---          ('Shape
---             '[ 'Dim ('Name "batch") ('Size 32),
---                'Dim 'UncheckedName 'UncheckedSize])
---   </pre>
-sOnes :: forall gradient layout device dataType shape. TensorSpec gradient layout device dataType shape -> Tensor gradient layout device dataType shape
-
--- | Create a typed tensor of ones.
---   
---   <pre>
---   &gt;&gt;&gt; ones :: CPUParameter ('DataType 'Float) ('Shape '[])
---   Tensor Float []  1.0000
---   
---   &gt;&gt;&gt; ones :: CPUTensor ('DataType 'Int64) ('Shape '[ 'Dim ('Name "*") ('Size 1)])
---   Tensor Int64 [1] [ 1]
---   </pre>
-ones :: forall gradient layout device dataType shape. (SingI gradient, SingI layout, SingI device, SingI dataType, SingI shape) => Tensor gradient layout device dataType shape
-
--- | Create a gradually typed tensor of zeros.
---   
---   <pre>
---   &gt;&gt;&gt; shape = SShape $ SName @"batch" :&amp;: SSize @32 :|: SUncheckedName "feature" :&amp;: SUncheckedSize 8 :|: SNil
---   
---   &gt;&gt;&gt; :type sZeros $ TensorSpec (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SInt64) shape
---   sZeros $ TensorSpec (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SInt64) shape
---     :: Tensor
---          ('Gradient 'WithoutGradient)
---          ('Layout 'Dense)
---          ('Device 'CPU)
---          ('DataType 'Int64)
---          ('Shape
---             '[ 'Dim ('Name "batch") ('Size 32),
---                'Dim 'UncheckedName 'UncheckedSize])
---   </pre>
-sZeros :: forall gradient layout device dataType shape. TensorSpec gradient layout device dataType shape -> Tensor gradient layout device dataType shape
-
--- | Create a typed tensor of zeros.
---   
---   <pre>
---   &gt;&gt;&gt; zeros :: CPUParameter ('DataType 'Float) ('Shape '[])
---   Tensor Float []  0.0000
---   
---   &gt;&gt;&gt; zeros :: CPUTensor ('DataType 'Int64) ('Shape '[ 'Dim ('Name "*") ('Size 1)])
---   Tensor Int64 [1] [ 0]
---   </pre>
-zeros :: forall gradient layout device dataType shape. (SingI gradient, SingI layout, SingI device, SingI dataType, SingI shape) => Tensor gradient layout device dataType shape
-
--- | Create a gradually typed tensor filled with a given scalar value.
---   
---   <pre>
---   &gt;&gt;&gt; shape = SShape $ SName @"batch" :&amp;: SSize @32 :|: SUncheckedName "feature" :&amp;: SUncheckedSize 8 :|: SNil
---   
---   &gt;&gt;&gt; input = -1
---   
---   &gt;&gt;&gt; :type sFull (TensorSpec (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SInt64) shape) input
---   sFull (TensorSpec (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SInt64) shape) input
---     :: Tensor
---          ('Gradient 'WithoutGradient)
---          ('Layout 'Dense)
---          ('Device 'CPU)
---          ('DataType 'Int64)
---          ('Shape
---             '[ 'Dim ('Name "batch") ('Size 32),
---                'Dim 'UncheckedName 'UncheckedSize])
---   </pre>
-sFull :: forall gradient layout device dataType shape input. Scalar input => TensorSpec gradient layout device dataType shape -> input -> Tensor gradient layout device dataType shape
-
--- | Create a typed tensor filled with a given scalar value.
---   
---   <pre>
---   &gt;&gt;&gt; full (-1) :: CPUParameter ('DataType 'Float) ('Shape '[])
---   Tensor Float [] -1.0000
---   
---   &gt;&gt;&gt; full (-1) :: CPUTensor ('DataType 'Int64) ('Shape '[ 'Dim ('Name "*") ('Size 1)])
---   Tensor Int64 [1] [-1]
---   </pre>
-full :: forall gradient layout device dataType shape input. (SingI gradient, SingI layout, SingI device, SingI dataType, SingI shape, Scalar input) => input -> Tensor gradient layout device dataType shape
-
--- | Create a gradually typed random tensor.
-sRandn :: forall gradient layout device dataType shape generatorDevice m. MonadThrow m => TensorSpec gradient layout device dataType shape -> Generator generatorDevice -> m (Tensor gradient layout (device <+> generatorDevice) dataType shape, Generator (device <+> generatorDevice))
-
--- | Create typed random tensor.
-randn :: forall gradient layout device dataType shape generatorDevice m. MonadThrow m => (SingI gradient, SingI layout, SingI device, SingI dataType, SingI shape) => Generator generatorDevice -> m (Tensor gradient layout (device <+> generatorDevice) dataType shape, Generator (device <+> generatorDevice))
-
--- | Create a gradually typed one-dimensional tensor of the numbers
---   <tt>0</tt> to <tt>size -1</tt>.
-sArangeNaturals :: forall gradient layout device dataType size shape. shape ~ 'Shape '[ 'Dim ('Name "*") size] => SGradient gradient -> SLayout layout -> SDevice device -> SDataType dataType -> SSize size -> Tensor gradient layout device dataType shape
-
--- | Create a typed one-dimensional tensor of the numbers <tt>0</tt> to
---   <tt>size -1</tt>.
-arangeNaturals :: forall size gradient layout device dataType shape. (shape ~ 'Shape '[ 'Dim ('Name "*") size], SingI gradient, SingI layout, SingI device, SingI dataType, SingI size) => Tensor gradient layout device dataType shape
-
--- | Create a gradually typed rectangular tensor with ones on the diagonal
---   and zeros elsewhere.
-sEye :: forall gradient layout device dataType rows cols shape. shape ~ 'Shape '[ 'Dim ('Name "*") rows, 'Dim ('Name "*") cols] => SGradient gradient -> SLayout layout -> SDevice device -> SDataType dataType -> SSize rows -> SSize cols -> Tensor gradient layout device dataType shape
-
--- | Create a typed rectangular tensor with ones on the diagonal and zeros
---   elsewhere.
-eye :: forall rows cols gradient layout device dataType shape. (shape ~ 'Shape '[ 'Dim ('Name "*") rows, 'Dim ('Name "*") cols], SingI gradient, SingI layout, SingI device, SingI dataType, SingI rows, SingI cols) => Tensor gradient layout device dataType shape
-
--- | Create a gradually typed square tensor with ones on the diagonal and
---   zeros elsewhere.
-sEyeSquare :: forall gradient layout device dataType size shape. shape ~ 'Shape '[ 'Dim ('Name "*") size, 'Dim ('Name "*") size] => SGradient gradient -> SLayout layout -> SDevice device -> SDataType dataType -> SSize size -> Tensor gradient layout device dataType shape
-
--- | Create a typed square tensor with ones on the diagonal and zeros
---   elsewhere.
-eyeSquare :: forall size gradient layout device dataType shape. (shape ~ 'Shape '[ 'Dim ('Name "*") size, 'Dim ('Name "*") size], SingI gradient, SingI layout, SingI device, SingI dataType, SingI size) => Tensor gradient layout device dataType shape
-
-module Torch.GraduallyTyped.NN.Class
-data NamedModel model
-NamedModel :: Text -> model -> NamedModel model
-class HasForward model input generatorDevice output generatorOutputDevice | model input generatorDevice -> output, model input generatorDevice -> generatorOutputDevice
-
--- | <tt>forward m i g</tt> for a model <tt>m</tt>, an input <tt>i</tt>,
---   and a generator <tt>g</tt> returns the tuple <tt>(o, g')</tt> where
---   <tt>o</tt> is the output of the model applied to the input and
---   <tt>g'</tt> is the updated generator. <tt>forward m i g</tt> may throw
---   an exception if the input <tt>i</tt> or the generator <tt>g</tt> are
---   not compatible with the model <tt>m</tt>.
-forward :: forall m. (HasForward model input generatorDevice output generatorOutputDevice, MonadThrow m) => model -> input -> Generator generatorDevice -> m (output, Generator generatorOutputDevice)
-type family ModelSpec model = (spec :: Type) | spec -> model
-class HasInitialize (model :: Type) (generatorDevice :: Device (DeviceType Nat)) (output :: Type) (generatorOutputDevice :: Device (DeviceType Nat)) | model generatorDevice -> output, model generatorDevice -> generatorOutputDevice
-initialize :: forall m. (HasInitialize model generatorDevice output generatorOutputDevice, MonadThrow m) => ModelSpec model -> Generator generatorDevice -> m (output, Generator generatorOutputDevice)
-data VectorSpec (n :: Nat) (a :: Type)
-[VectorSpec] :: forall n a. SNat n -> Vector n (ModelSpec a) -> VectorSpec n a
-type StateDictKey = Text
-type StateDict = Map StateDictKey (ForeignPtr Tensor)
-newtype FromStateDictError
-FromStateDictKeyNotFoundError :: StateDictKey -> FromStateDictError
-[fsdeExpectedKey] :: FromStateDictError -> StateDictKey
-newtype ToStateDictError
-ToStateDictKeyAlreadyInUseError :: StateDictKey -> ToStateDictError
-[fsdeTakenKey] :: ToStateDictError -> StateDictKey
-class HasStateDict model
-fromStateDict :: forall m. (HasStateDict model, MonadIO m, MonadThrow m, MonadState StateDict m) => ModelSpec model -> StateDictKey -> m model
-toStateDict :: forall m. (HasStateDict model, MonadThrow m, MonadState StateDict m) => StateDictKey -> model -> m ()
-
--- | Load a state dictionary from a TorchScript file.
-stateDictFromFile :: FilePath -> IO StateDict
-
--- | Save a state dictionary to a TorchScript file.
-stateDictToFile :: StateDict -> FilePath -> IO ()
-instance GHC.Show.Show Torch.GraduallyTyped.NN.Class.FromStateDictError
-instance GHC.Show.Show Torch.GraduallyTyped.NN.Class.ToStateDictError
-instance Torch.GraduallyTyped.NN.Class.HasStateDict ()
-instance Torch.GraduallyTyped.NN.Class.HasStateDict model => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Class.NamedModel model)
-instance (Torch.GraduallyTyped.NN.Class.HasStateDict a, Torch.GraduallyTyped.NN.Class.HasStateDict b) => Torch.GraduallyTyped.NN.Class.HasStateDict (a, b)
-instance Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout device dataType shape)
-instance Torch.GraduallyTyped.NN.Class.HasStateDict a => Torch.GraduallyTyped.NN.Class.HasStateDict (Data.Vector.Sized.Vector n a)
-instance GHC.Exception.Type.Exception Torch.GraduallyTyped.NN.Class.ToStateDictError
-instance GHC.Exception.Type.Exception Torch.GraduallyTyped.NN.Class.FromStateDictError
-instance (Torch.GraduallyTyped.NN.Class.HasInitialize a generatorDevice output generatorOutputDevice, Torch.GraduallyTyped.NN.Class.HasInitialize a generatorOutputDevice output generatorOutputDevice, n' GHC.Types.~ (n GHC.TypeNats.+ 1)) => Torch.GraduallyTyped.NN.Class.HasInitialize (Data.Vector.Sized.Vector n' a) generatorDevice (Data.Vector.Sized.Vector n' output) generatorOutputDevice
-instance Torch.GraduallyTyped.NN.Class.HasInitialize () generatorDevice () generatorDevice
-instance Torch.GraduallyTyped.NN.Class.HasInitialize model generatorDevice output generatorOutputDevice => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Class.NamedModel model) generatorDevice (Torch.GraduallyTyped.NN.Class.NamedModel output) generatorOutputDevice
-instance (Torch.GraduallyTyped.NN.Class.HasInitialize a generatorDevice aOutput aGeneratorOutputDevice, Torch.GraduallyTyped.NN.Class.HasInitialize b aGeneratorOutputDevice bOutput generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (a, b) generatorDevice (aOutput, bOutput) generatorOutputDevice
-instance Torch.GraduallyTyped.NN.Class.HasForward () input generatorDevice input generatorDevice
-instance Torch.GraduallyTyped.NN.Class.HasForward model input generatorDevice output generatorOutputDevice => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Class.NamedModel model) input generatorDevice output generatorOutputDevice
-instance (Torch.GraduallyTyped.NN.Class.HasForward a input generatorDevice output' generatorOutputDevice', Torch.GraduallyTyped.NN.Class.HasForward b output' generatorOutputDevice' output generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (a, b) input generatorDevice output generatorOutputDevice
-instance Torch.GraduallyTyped.NN.Class.HasForward (Data.Vector.Sized.Vector 0 a) input generatorDevice input generatorDevice
-instance Torch.GraduallyTyped.NN.Class.HasForward a input generatorDevice output generatorOutputDevice => Torch.GraduallyTyped.NN.Class.HasForward (Data.Vector.Sized.Vector 1 a) input generatorDevice output generatorOutputDevice
-instance (Torch.GraduallyTyped.NN.Class.HasForward a input generatorDevice output generatorOutputDevice, Torch.GraduallyTyped.NN.Class.HasForward a output generatorOutputDevice output generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (Data.Vector.Sized.Vector n a) input generatorDevice output generatorOutputDevice
-
 module Torch.GraduallyTyped.Tensor.Other
 
 -- | triu
@@ -1953,7 +1787,7 @@ triu :: forall gradient layout device dataType shape. Int -> Tensor gradient lay
 tril :: forall gradient layout device dataType shape. Int -> Tensor gradient layout device dataType shape -> Tensor gradient layout device dataType shape
 
 -- | masked fill
-maskedFill :: forall gradient layout device dataType shape value gradient' layout' device' dataType' shape'. Scalar value => Tensor gradient layout device dataType shape -> value -> Tensor gradient' layout' device' dataType' shape' -> Tensor (Seq (gradient <+> 'Gradient 'WithoutGradient) gradient') (layout <+> (layout' <+> 'Layout 'Dense)) (device <+> device') (Seq (dataType <+> 'DataType 'Bool) dataType') (BroadcastShapesF shape shape')
+maskedFill :: forall gradient layout device dataType shape value gradient' layout' device' dataType' shape'. (Scalar value, Catch (gradient <+> 'Gradient 'WithoutGradient), Catch (dataType <+> 'DataType 'Bool)) => Tensor gradient layout device dataType shape -> value -> Tensor gradient' layout' device' dataType' shape' -> Tensor gradient' (layout <+> (layout' <+> 'Layout 'Dense)) (device <+> device') dataType' (BroadcastShapesF shape shape')
 
 module Torch.GraduallyTyped.Tensor.MathOperations.Reduction
 type ReductionErrorMessage (reduction :: Symbol) (by :: By Symbol Nat) (dims :: [Dim (Name Symbol) (Size Nat)]) = "Cannot apply '" <> reduction <> "' on the dimension matching" % "" % "    '" <> by <> "'" % "" % "in the shape" % "" % "    '" <> dims <> "'." % ""
@@ -1963,7 +1797,7 @@ type family BoolReductionF (reduction :: Symbol) (selectDim :: SelectDim (By Sym
 -- | Tests if all element in input evaluates to True.
 --   
 --   <pre>
---   &gt;&gt;&gt; g = sMkGenerator (SDevice SCPU) 0
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
 --   
 --   &gt;&gt;&gt; shape = SShape $ SName @"*" :&amp;: SSize @2 :|: SName @"*" :&amp;: SSize @4 :|: SNil
 --   
@@ -1987,7 +1821,7 @@ all :: forall requiresGradient layout device dataType shape m. MonadThrow m => T
 --   version that accepts non-singleton parameters see <a>allDim</a>.
 --   
 --   <pre>
---   &gt;&gt;&gt; g = sMkGenerator (SDevice SCPU) 0
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
 --   
 --   &gt;&gt;&gt; shape = SShape $ SName @"*" :&amp;: SSize @2 :|: SName @"*" :&amp;: SSize @4 :|: SNil
 --   
@@ -2016,7 +1850,7 @@ sAllDim :: forall selectDim gradient layout device dataType shape shape' m. (Mon
 --   version that accepts singleton parameters see <a>sAllDim</a>.
 --   
 --   <pre>
---   &gt;&gt;&gt; g = sMkGenerator (SDevice SCPU) 0
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
 --   
 --   &gt;&gt;&gt; type Shape' = 'Shape '[ 'Dim ('Name "*") ('Size 2), 'Dim ('Name "*") ('Size 4) ]
 --   
@@ -2038,7 +1872,7 @@ allDim :: forall selectDim gradient layout device dataType shape shape' m. (Sing
 -- | Tests if any element in input evaluates to True.
 --   
 --   <pre>
---   &gt;&gt;&gt; g = sMkGenerator (SDevice SCPU) 0
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
 --   
 --   &gt;&gt;&gt; shape = SShape $ SName @"*" :&amp;: SSize @2 :|: SName @"*" :&amp;: SSize @4 :|: SNil
 --   
@@ -2062,7 +1896,7 @@ any :: forall requiresGradient layout device dataType shape m. MonadThrow m => T
 --   version that accepts non-singleton parameters see <a>anyDim</a>.
 --   
 --   <pre>
---   &gt;&gt;&gt; g = sMkGenerator (SDevice SCPU) 0
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
 --   
 --   &gt;&gt;&gt; shape = SShape $ SName @"*" :&amp;: SSize @2 :|: SName @"*" :&amp;: SSize @4 :|: SNil
 --   
@@ -2091,7 +1925,7 @@ sAnyDim :: forall selectDim gradient layout device shape dataType m. MonadThrow 
 --   version that accepts singleton parameters see <a>sAnyDim</a>.
 --   
 --   <pre>
---   &gt;&gt;&gt; g = sMkGenerator (SDevice SCPU) 0
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
 --   
 --   &gt;&gt;&gt; type Shape' = 'Shape '[ 'Dim ('Name "*") ('Size 2), 'Dim ('Name "*") ('Size 4) ]
 --   
@@ -2117,7 +1951,7 @@ type family MeanF (selectDims :: SelectDims [By Symbol Nat]) (shape :: Shape [Di
 --   non-singleton parameters see <tt>meanDim</tt>.
 --   
 --   <pre>
---   &gt;&gt;&gt; g = sMkGenerator (SDevice SCPU) 0
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
 --   
 --   &gt;&gt;&gt; shape = SShape $ SName @"batch" :&amp;: SSize @8 :|: SName @"width" :&amp;: SSize @224 :|: SName @"height" :&amp;: SSize @224 :|: SNil
 --   
@@ -2148,7 +1982,7 @@ sMeanDims :: forall selectDims gradient layout device dataType shape m. MonadThr
 --   singleton parameters see <tt>sMeanDim</tt>.
 --   
 --   <pre>
---   &gt;&gt;&gt; g = sMkGenerator (SDevice SCPU) 0
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
 --   
 --   &gt;&gt;&gt; type Shape' = 'Shape '[ 'Dim ('Name "batch") ('Size 8), 'Dim ('Name "feature") ('Size 4) ]
 --   
@@ -2170,18 +2004,18 @@ sMeanDims :: forall selectDims gradient layout device dataType shape m. MonadThr
 meanDims :: forall selectDims gradient layout device dataType shape m. (SingI selectDims, MonadThrow m) => Tensor gradient layout device dataType shape -> m (Tensor gradient layout device dataType (MeanF selectDims shape))
 
 module Torch.GraduallyTyped.Tensor.MathOperations.Comparison
-gt :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') (Seq (dataType <+> dataType') ('DataType 'Bool)) (BroadcastShapesF shape shape')
-lt :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') (Seq (dataType <+> dataType') ('DataType 'Bool)) (BroadcastShapesF shape shape')
-ge :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') (Seq (dataType <+> dataType') ('DataType 'Bool)) (BroadcastShapesF shape shape')
-le :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') (Seq (dataType <+> dataType') ('DataType 'Bool)) (BroadcastShapesF shape shape')
-eq :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') (Seq (dataType <+> dataType') ('DataType 'Bool)) (BroadcastShapesF shape shape')
-ne :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') (Seq (dataType <+> dataType') ('DataType 'Bool)) (BroadcastShapesF shape shape')
-(>.) :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') (Seq (dataType <+> dataType') ('DataType 'Bool)) (BroadcastShapesF shape shape')
-(<.) :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') (Seq (dataType <+> dataType') ('DataType 'Bool)) (BroadcastShapesF shape shape')
-(>=.) :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') (Seq (dataType <+> dataType') ('DataType 'Bool)) (BroadcastShapesF shape shape')
-(<=.) :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') (Seq (dataType <+> dataType') ('DataType 'Bool)) (BroadcastShapesF shape shape')
-(==.) :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') (Seq (dataType <+> dataType') ('DataType 'Bool)) (BroadcastShapesF shape shape')
-(/=.) :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') (Seq (dataType <+> dataType') ('DataType 'Bool)) (BroadcastShapesF shape shape')
+gt :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Catch (dataType <+> dataType') => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') ('DataType 'Bool) (BroadcastShapesF shape shape')
+lt :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Catch (dataType <+> dataType') => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') ('DataType 'Bool) (BroadcastShapesF shape shape')
+ge :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Catch (dataType <+> dataType') => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') ('DataType 'Bool) (BroadcastShapesF shape shape')
+le :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Catch (dataType <+> dataType') => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') ('DataType 'Bool) (BroadcastShapesF shape shape')
+eq :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Catch (dataType <+> dataType') => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') ('DataType 'Bool) (BroadcastShapesF shape shape')
+ne :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Catch (dataType <+> dataType') => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') ('DataType 'Bool) (BroadcastShapesF shape shape')
+(>.) :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Catch (dataType <+> dataType') => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') ('DataType 'Bool) (BroadcastShapesF shape shape')
+(<.) :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Catch (dataType <+> dataType') => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') ('DataType 'Bool) (BroadcastShapesF shape shape')
+(>=.) :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Catch (dataType <+> dataType') => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') ('DataType 'Bool) (BroadcastShapesF shape shape')
+(<=.) :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Catch (dataType <+> dataType') => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') ('DataType 'Bool) (BroadcastShapesF shape shape')
+(==.) :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Catch (dataType <+> dataType') => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') ('DataType 'Bool) (BroadcastShapesF shape shape')
+(/=.) :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. Catch (dataType <+> dataType') => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') ('DataType 'Bool) (BroadcastShapesF shape shape')
 data Order
 Ascending :: Order
 Descending :: Order
@@ -2207,7 +2041,7 @@ class HasCat (selectDim :: SelectDim (By Symbol Nat)) k (c :: k -> Type) (a :: k
 --   concatenating dimension) or be empty.
 --   
 --   <pre>
---   &gt;&gt;&gt; t = ones @('Gradient 'WithGradient) @('Layout 'Dense) @('Device 'CPU) @('DataType 'Float) @('Shape '[ 'Dim ('Name "batch") ('Size 32), 'Dim ('Name "feature") ('Size 8)])
+--   &gt;&gt;&gt; t &lt;- ones @('Gradient 'WithGradient) @('Layout 'Dense) @('Device 'CPU) @('DataType 'Float) @('Shape '[ 'Dim ('Name "batch") ('Size 32), 'Dim ('Name "feature") ('Size 8)])
 --   
 --   &gt;&gt;&gt; :type cat @('SelectDim ('ByName "feature")) [t]
 --   cat @('SelectDim ('ByName "feature")) [t]
@@ -2256,7 +2090,7 @@ type family ReshapeF (shape :: Shape [Dim (Name Symbol) (Size Nat)]) (shape' :: 
 --   input tensor, but with the specified shape:
 --   
 --   <pre>
---   &gt;&gt;&gt; g = sMkGenerator (SDevice SCPU) 0
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
 --   
 --   &gt;&gt;&gt; (input, _) &lt;- sRandn (TensorSpec (SGradient SWithGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat) (SShape $ SName @"*" :&amp;: SSize @4 :|: SNil)) g
 --   
@@ -2297,7 +2131,7 @@ sReshape :: forall m shape' gradient layout device dataType shape shape''. Monad
 --   input tensor, but with the specified shape:
 --   
 --   <pre>
---   &gt;&gt;&gt; g = sMkGenerator (SDevice SCPU) 0
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
 --   
 --   &gt;&gt;&gt; (input, _) &lt;- sRandn (TensorSpec (SGradient SWithGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat) (SShape $ SName @"*" :&amp;: SSize @4 :|: SNil)) g
 --   
@@ -2371,11 +2205,11 @@ type family TransposeIndexIndexDimsF (index0 :: Nat) (index1 :: Nat) (dims :: [D
 --   swapped.
 --   
 --   <pre>
---   &gt;&gt;&gt; g = mkGenerator @('Device 'CPU) 0
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
 --   
---   &gt;&gt;&gt; (input, _) &lt;- randn @('Gradient 'WithGradient) @('Layout 'Dense) @('Device 'CPU) @('DataType 'Float) @('Shape '[ 'Dim ('Name "batch") ('Size 10), 'Dim ('Name "feature") ('Size 5)]) g
+--   &gt;&gt;&gt; (input, _) &lt;- sRandn (TensorSpec (SGradient SWithGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat) (SShape $ SName @"batch" :&amp;: SSize @10 :|: SName @"feature" :&amp;: SSize @5 :|: SNil)) g
 --   
---   &gt;&gt;&gt; output &lt;- transpose @('SelectDim ('ByName "batch")) @('SelectDim ('ByName "feature")) input
+--   &gt;&gt;&gt; output &lt;- sTranspose (SSelectDim (SByName @"batch")) (SSelectDim (SByName @"feature")) input
 --   
 --   &gt;&gt;&gt; :type output
 --   output
@@ -2429,7 +2263,7 @@ expand :: forall shape' gradient layout device dataType shape input output. (Sin
 --   given dimension removed.
 --   
 --   <pre>
---   &gt;&gt;&gt; nats = sArangeNaturals (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SInt32) (SSize @8)
+--   &gt;&gt;&gt; nats &lt;- sArangeNaturals (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SInt32) (SSize @8)
 --   
 --   &gt;&gt;&gt; input &lt;- sReshape (SShape $ SName @"*" :&amp;: SSize @4 :|: SName @"*" :&amp;: SSize @2 :|: SNil) nats
 --   
@@ -2440,18 +2274,26 @@ expand :: forall shape' gradient layout device dataType shape input output. (Sin
 --                       [ 6,  7]]
 --   </pre>
 --   
---   <tt>index</tt> can be provided at compile-time: &gt;&gt;&gt; sSelect
---   (SSelectDim (SByIndex <tt>0)) (SIndex </tt>1) input Tensor Int32 [2] [
---   2, 3]
+--   <tt>index</tt> can be provided at compile-time:
 --   
---   <tt>index</tt> can also be provided at runtime: &gt;&gt;&gt; sSelect
---   (SSelectDim (SByIndex @0)) (SUncheckedIndex 1) input Tensor Int32 [2]
---   [ 2, 3]
+--   <pre>
+--   &gt;&gt;&gt; sSelect (SSelectDim (SByIndex @0)) (SIndex @1) input
+--   Tensor Int32 [2] [ 2,  3]
+--   </pre>
+--   
+--   <tt>index</tt> can also be provided at runtime:
+--   
+--   <pre>
+--   &gt;&gt;&gt; sSelect (SSelectDim (SByIndex @0)) (SUncheckedIndex 1) input
+--   Tensor Int32 [2] [ 2,  3]
+--   </pre>
 --   
 --   It produces a runtime error if the <tt>index</tt> is too large:
---   &gt;&gt;&gt; sSelect (SSelectDim (SByIndex @0)) (SUncheckedIndex 10)
---   input *** Exception: IndexOutOfBoundError {ioobeIndex = 10, ioobeDim =
---   Dim {dimName = "*", dimSize = 4}}
+--   
+--   <pre>
+--   &gt;&gt;&gt; sSelect (SSelectDim (SByIndex @0)) (SUncheckedIndex 10) input
+--   *** Exception: IndexOutOfBoundError {ioobeIndex = 10, ioobeDim = Dim {dimName = "*", dimSize = 4}}
+--   </pre>
 sSelect :: forall selectDim index gradient layout device dataType shapeIn shapeOut m. (index `InRangeF` GetDimF selectDim shapeIn, shapeOut ~ RemoveDimF selectDim shapeIn, SGetShape shapeIn, MonadThrow m) => SSelectDim selectDim -> SIndex index -> Tensor gradient layout device dataType shapeIn -> m (Tensor gradient layout device dataType shapeOut)
 data IndexOutOfBoundError
 IndexOutOfBoundError :: Integer -> Dim String Integer -> IndexOutOfBoundError
@@ -2478,55 +2320,55 @@ SliceFromUpTo :: a -> a -> IndexType a
 SliceFromWithStride :: a -> a -> IndexType a
 SliceUpToWithStride :: a -> a -> IndexType a
 SliceFromUpToWithStride :: a -> a -> a -> IndexType a
-type NoneSym0 = 'None :: IndexType (a_a1m8Y :: Type)
-type EllipsisSym0 = 'Ellipsis :: IndexType (a_a1m8Y :: Type)
-type SliceAllSym0 = 'SliceAll :: IndexType (a_a1m8Y :: Type)
-type SliceAtSym1 (a6989586621679333846 :: a_a1m8Y) = 'SliceAt a6989586621679333846 :: IndexType (a_a1m8Y :: Type)
-data SliceAtSym0 a6989586621679333846
-[SliceAtSym0KindInference] :: SameKind (Apply SliceAtSym0 arg_a1miF) (SliceAtSym1 arg_a1miF) => SliceAtSym0 a6989586621679333846
-type SliceBoolSym1 (a6989586621679333848 :: Bool) = 'SliceBool a6989586621679333848 :: IndexType (a_a1m8Y :: Type)
-data SliceBoolSym0 a6989586621679333848
-[SliceBoolSym0KindInference] :: SameKind (Apply SliceBoolSym0 arg_a1miH) (SliceBoolSym1 arg_a1miH) => SliceBoolSym0 a6989586621679333848
-type SliceFromSym1 (a6989586621679333850 :: a_a1m8Y) = 'SliceFrom a6989586621679333850 :: IndexType (a_a1m8Y :: Type)
-data SliceFromSym0 a6989586621679333850
-[SliceFromSym0KindInference] :: SameKind (Apply SliceFromSym0 arg_a1miJ) (SliceFromSym1 arg_a1miJ) => SliceFromSym0 a6989586621679333850
-type SliceUpToSym1 (a6989586621679333852 :: a_a1m8Y) = 'SliceUpTo a6989586621679333852 :: IndexType (a_a1m8Y :: Type)
-data SliceUpToSym0 a6989586621679333852
-[SliceUpToSym0KindInference] :: SameKind (Apply SliceUpToSym0 arg_a1miL) (SliceUpToSym1 arg_a1miL) => SliceUpToSym0 a6989586621679333852
-type SliceFromUpToSym2 (a6989586621679333854 :: a_a1m8Y) (a6989586621679333855 :: a_a1m8Y) = 'SliceFromUpTo a6989586621679333854 a6989586621679333855 :: IndexType (a_a1m8Y :: Type)
-data SliceFromUpToSym1 a6989586621679333854 a6989586621679333855
-[SliceFromUpToSym1KindInference] :: SameKind (Apply (SliceFromUpToSym1 a6989586621679333854) arg_a1miN) (SliceFromUpToSym2 a6989586621679333854 arg_a1miN) => SliceFromUpToSym1 a6989586621679333854 a6989586621679333855
-data SliceFromUpToSym0 a6989586621679333854
-[SliceFromUpToSym0KindInference] :: SameKind (Apply SliceFromUpToSym0 arg_a1miN) (SliceFromUpToSym1 arg_a1miN) => SliceFromUpToSym0 a6989586621679333854
-type SliceFromWithStrideSym2 (a6989586621679333857 :: a_a1m8Y) (a6989586621679333858 :: a_a1m8Y) = 'SliceFromWithStride a6989586621679333857 a6989586621679333858 :: IndexType (a_a1m8Y :: Type)
-data SliceFromWithStrideSym1 a6989586621679333857 a6989586621679333858
-[SliceFromWithStrideSym1KindInference] :: SameKind (Apply (SliceFromWithStrideSym1 a6989586621679333857) arg_a1miQ) (SliceFromWithStrideSym2 a6989586621679333857 arg_a1miQ) => SliceFromWithStrideSym1 a6989586621679333857 a6989586621679333858
-data SliceFromWithStrideSym0 a6989586621679333857
-[SliceFromWithStrideSym0KindInference] :: SameKind (Apply SliceFromWithStrideSym0 arg_a1miQ) (SliceFromWithStrideSym1 arg_a1miQ) => SliceFromWithStrideSym0 a6989586621679333857
-type SliceUpToWithStrideSym2 (a6989586621679333860 :: a_a1m8Y) (a6989586621679333861 :: a_a1m8Y) = 'SliceUpToWithStride a6989586621679333860 a6989586621679333861 :: IndexType (a_a1m8Y :: Type)
-data SliceUpToWithStrideSym1 a6989586621679333860 a6989586621679333861
-[SliceUpToWithStrideSym1KindInference] :: SameKind (Apply (SliceUpToWithStrideSym1 a6989586621679333860) arg_a1miT) (SliceUpToWithStrideSym2 a6989586621679333860 arg_a1miT) => SliceUpToWithStrideSym1 a6989586621679333860 a6989586621679333861
-data SliceUpToWithStrideSym0 a6989586621679333860
-[SliceUpToWithStrideSym0KindInference] :: SameKind (Apply SliceUpToWithStrideSym0 arg_a1miT) (SliceUpToWithStrideSym1 arg_a1miT) => SliceUpToWithStrideSym0 a6989586621679333860
-type SliceFromUpToWithStrideSym3 (a6989586621679333863 :: a_a1m8Y) (a6989586621679333864 :: a_a1m8Y) (a6989586621679333865 :: a_a1m8Y) = 'SliceFromUpToWithStride a6989586621679333863 a6989586621679333864 a6989586621679333865 :: IndexType (a_a1m8Y :: Type)
-data SliceFromUpToWithStrideSym2 a6989586621679333863 a6989586621679333864 a6989586621679333865
-[SliceFromUpToWithStrideSym2KindInference] :: SameKind (Apply (SliceFromUpToWithStrideSym2 a6989586621679333863 a6989586621679333864) arg_a1miW) (SliceFromUpToWithStrideSym3 a6989586621679333863 a6989586621679333864 arg_a1miW) => SliceFromUpToWithStrideSym2 a6989586621679333863 a6989586621679333864 a6989586621679333865
-data SliceFromUpToWithStrideSym1 a6989586621679333863 a6989586621679333864
-[SliceFromUpToWithStrideSym1KindInference] :: SameKind (Apply (SliceFromUpToWithStrideSym1 a6989586621679333863) arg_a1miW) (SliceFromUpToWithStrideSym2 a6989586621679333863 arg_a1miW) => SliceFromUpToWithStrideSym1 a6989586621679333863 a6989586621679333864
-data SliceFromUpToWithStrideSym0 a6989586621679333863
-[SliceFromUpToWithStrideSym0KindInference] :: SameKind (Apply SliceFromUpToWithStrideSym0 arg_a1miW) (SliceFromUpToWithStrideSym1 arg_a1miW) => SliceFromUpToWithStrideSym0 a6989586621679333863
-data SIndexType z_a1mk5
-[SNone] :: forall (a_a1m8Y :: Type). () => SIndexType ('None :: IndexType (a_a1m8Y :: Type))
-[SEllipsis] :: forall (a_a1m8Y :: Type). () => SIndexType ('Ellipsis :: IndexType (a_a1m8Y :: Type))
-[SSliceAll] :: forall (a_a1m8Y :: Type). () => SIndexType ('SliceAll :: IndexType (a_a1m8Y :: Type))
-[SSliceAt] :: forall (a_a1m8Y :: Type) (n_a1mj0 :: a_a1m8Y). () => Sing n_a1mj0 -> SIndexType ('SliceAt n_a1mj0 :: IndexType (a_a1m8Y :: Type))
-[SSliceBool] :: forall (a_a1m8Y :: Type) (n_a1mj2 :: Bool). () => Sing n_a1mj2 -> SIndexType ('SliceBool n_a1mj2 :: IndexType (a_a1m8Y :: Type))
-[SSliceFrom] :: forall (a_a1m8Y :: Type) (n_a1mj4 :: a_a1m8Y). () => Sing n_a1mj4 -> SIndexType ('SliceFrom n_a1mj4 :: IndexType (a_a1m8Y :: Type))
-[SSliceUpTo] :: forall (a_a1m8Y :: Type) (n_a1mj6 :: a_a1m8Y). () => Sing n_a1mj6 -> SIndexType ('SliceUpTo n_a1mj6 :: IndexType (a_a1m8Y :: Type))
-[SSliceFromUpTo] :: forall (a_a1m8Y :: Type) (n_a1mj8 :: a_a1m8Y) (n_a1mj9 :: a_a1m8Y). () => Sing n_a1mj8 -> Sing n_a1mj9 -> SIndexType ('SliceFromUpTo n_a1mj8 n_a1mj9 :: IndexType (a_a1m8Y :: Type))
-[SSliceFromWithStride] :: forall (a_a1m8Y :: Type) (n_a1mjc :: a_a1m8Y) (n_a1mjd :: a_a1m8Y). () => Sing n_a1mjc -> Sing n_a1mjd -> SIndexType ('SliceFromWithStride n_a1mjc n_a1mjd :: IndexType (a_a1m8Y :: Type))
-[SSliceUpToWithStride] :: forall (a_a1m8Y :: Type) (n_a1mjg :: a_a1m8Y) (n_a1mjh :: a_a1m8Y). () => Sing n_a1mjg -> Sing n_a1mjh -> SIndexType ('SliceUpToWithStride n_a1mjg n_a1mjh :: IndexType (a_a1m8Y :: Type))
-[SSliceFromUpToWithStride] :: forall (a_a1m8Y :: Type) (n_a1mjk :: a_a1m8Y) (n_a1mjl :: a_a1m8Y) (n_a1mjm :: a_a1m8Y). () => Sing n_a1mjk -> Sing n_a1mjl -> Sing n_a1mjm -> SIndexType ('SliceFromUpToWithStride n_a1mjk n_a1mjl n_a1mjm :: IndexType (a_a1m8Y :: Type))
+type NoneSym0 = 'None :: IndexType (a_a1h45 :: Type)
+type EllipsisSym0 = 'Ellipsis :: IndexType (a_a1h45 :: Type)
+type SliceAllSym0 = 'SliceAll :: IndexType (a_a1h45 :: Type)
+type SliceAtSym1 (a6989586621679314323 :: a_a1h45) = 'SliceAt a6989586621679314323 :: IndexType (a_a1h45 :: Type)
+data SliceAtSym0 a6989586621679314323
+[SliceAtSym0KindInference] :: SameKind (Apply SliceAtSym0 arg_a1hdM) (SliceAtSym1 arg_a1hdM) => SliceAtSym0 a6989586621679314323
+type SliceBoolSym1 (a6989586621679314325 :: Bool) = 'SliceBool a6989586621679314325 :: IndexType (a_a1h45 :: Type)
+data SliceBoolSym0 a6989586621679314325
+[SliceBoolSym0KindInference] :: SameKind (Apply SliceBoolSym0 arg_a1hdO) (SliceBoolSym1 arg_a1hdO) => SliceBoolSym0 a6989586621679314325
+type SliceFromSym1 (a6989586621679314327 :: a_a1h45) = 'SliceFrom a6989586621679314327 :: IndexType (a_a1h45 :: Type)
+data SliceFromSym0 a6989586621679314327
+[SliceFromSym0KindInference] :: SameKind (Apply SliceFromSym0 arg_a1hdQ) (SliceFromSym1 arg_a1hdQ) => SliceFromSym0 a6989586621679314327
+type SliceUpToSym1 (a6989586621679314329 :: a_a1h45) = 'SliceUpTo a6989586621679314329 :: IndexType (a_a1h45 :: Type)
+data SliceUpToSym0 a6989586621679314329
+[SliceUpToSym0KindInference] :: SameKind (Apply SliceUpToSym0 arg_a1hdS) (SliceUpToSym1 arg_a1hdS) => SliceUpToSym0 a6989586621679314329
+type SliceFromUpToSym2 (a6989586621679314331 :: a_a1h45) (a6989586621679314332 :: a_a1h45) = 'SliceFromUpTo a6989586621679314331 a6989586621679314332 :: IndexType (a_a1h45 :: Type)
+data SliceFromUpToSym1 a6989586621679314331 a6989586621679314332
+[SliceFromUpToSym1KindInference] :: SameKind (Apply (SliceFromUpToSym1 a6989586621679314331) arg_a1hdU) (SliceFromUpToSym2 a6989586621679314331 arg_a1hdU) => SliceFromUpToSym1 a6989586621679314331 a6989586621679314332
+data SliceFromUpToSym0 a6989586621679314331
+[SliceFromUpToSym0KindInference] :: SameKind (Apply SliceFromUpToSym0 arg_a1hdU) (SliceFromUpToSym1 arg_a1hdU) => SliceFromUpToSym0 a6989586621679314331
+type SliceFromWithStrideSym2 (a6989586621679314334 :: a_a1h45) (a6989586621679314335 :: a_a1h45) = 'SliceFromWithStride a6989586621679314334 a6989586621679314335 :: IndexType (a_a1h45 :: Type)
+data SliceFromWithStrideSym1 a6989586621679314334 a6989586621679314335
+[SliceFromWithStrideSym1KindInference] :: SameKind (Apply (SliceFromWithStrideSym1 a6989586621679314334) arg_a1hdX) (SliceFromWithStrideSym2 a6989586621679314334 arg_a1hdX) => SliceFromWithStrideSym1 a6989586621679314334 a6989586621679314335
+data SliceFromWithStrideSym0 a6989586621679314334
+[SliceFromWithStrideSym0KindInference] :: SameKind (Apply SliceFromWithStrideSym0 arg_a1hdX) (SliceFromWithStrideSym1 arg_a1hdX) => SliceFromWithStrideSym0 a6989586621679314334
+type SliceUpToWithStrideSym2 (a6989586621679314337 :: a_a1h45) (a6989586621679314338 :: a_a1h45) = 'SliceUpToWithStride a6989586621679314337 a6989586621679314338 :: IndexType (a_a1h45 :: Type)
+data SliceUpToWithStrideSym1 a6989586621679314337 a6989586621679314338
+[SliceUpToWithStrideSym1KindInference] :: SameKind (Apply (SliceUpToWithStrideSym1 a6989586621679314337) arg_a1he0) (SliceUpToWithStrideSym2 a6989586621679314337 arg_a1he0) => SliceUpToWithStrideSym1 a6989586621679314337 a6989586621679314338
+data SliceUpToWithStrideSym0 a6989586621679314337
+[SliceUpToWithStrideSym0KindInference] :: SameKind (Apply SliceUpToWithStrideSym0 arg_a1he0) (SliceUpToWithStrideSym1 arg_a1he0) => SliceUpToWithStrideSym0 a6989586621679314337
+type SliceFromUpToWithStrideSym3 (a6989586621679314340 :: a_a1h45) (a6989586621679314341 :: a_a1h45) (a6989586621679314342 :: a_a1h45) = 'SliceFromUpToWithStride a6989586621679314340 a6989586621679314341 a6989586621679314342 :: IndexType (a_a1h45 :: Type)
+data SliceFromUpToWithStrideSym2 a6989586621679314340 a6989586621679314341 a6989586621679314342
+[SliceFromUpToWithStrideSym2KindInference] :: SameKind (Apply (SliceFromUpToWithStrideSym2 a6989586621679314340 a6989586621679314341) arg_a1he3) (SliceFromUpToWithStrideSym3 a6989586621679314340 a6989586621679314341 arg_a1he3) => SliceFromUpToWithStrideSym2 a6989586621679314340 a6989586621679314341 a6989586621679314342
+data SliceFromUpToWithStrideSym1 a6989586621679314340 a6989586621679314341
+[SliceFromUpToWithStrideSym1KindInference] :: SameKind (Apply (SliceFromUpToWithStrideSym1 a6989586621679314340) arg_a1he3) (SliceFromUpToWithStrideSym2 a6989586621679314340 arg_a1he3) => SliceFromUpToWithStrideSym1 a6989586621679314340 a6989586621679314341
+data SliceFromUpToWithStrideSym0 a6989586621679314340
+[SliceFromUpToWithStrideSym0KindInference] :: SameKind (Apply SliceFromUpToWithStrideSym0 arg_a1he3) (SliceFromUpToWithStrideSym1 arg_a1he3) => SliceFromUpToWithStrideSym0 a6989586621679314340
+data SIndexType z_a1hfc
+[SNone] :: forall (a_a1h45 :: Type). () => SIndexType ('None :: IndexType (a_a1h45 :: Type))
+[SEllipsis] :: forall (a_a1h45 :: Type). () => SIndexType ('Ellipsis :: IndexType (a_a1h45 :: Type))
+[SSliceAll] :: forall (a_a1h45 :: Type). () => SIndexType ('SliceAll :: IndexType (a_a1h45 :: Type))
+[SSliceAt] :: forall (a_a1h45 :: Type) (n_a1he7 :: a_a1h45). () => Sing n_a1he7 -> SIndexType ('SliceAt n_a1he7 :: IndexType (a_a1h45 :: Type))
+[SSliceBool] :: forall (a_a1h45 :: Type) (n_a1he9 :: Bool). () => Sing n_a1he9 -> SIndexType ('SliceBool n_a1he9 :: IndexType (a_a1h45 :: Type))
+[SSliceFrom] :: forall (a_a1h45 :: Type) (n_a1heb :: a_a1h45). () => Sing n_a1heb -> SIndexType ('SliceFrom n_a1heb :: IndexType (a_a1h45 :: Type))
+[SSliceUpTo] :: forall (a_a1h45 :: Type) (n_a1hed :: a_a1h45). () => Sing n_a1hed -> SIndexType ('SliceUpTo n_a1hed :: IndexType (a_a1h45 :: Type))
+[SSliceFromUpTo] :: forall (a_a1h45 :: Type) (n_a1hef :: a_a1h45) (n_a1heg :: a_a1h45). () => Sing n_a1hef -> Sing n_a1heg -> SIndexType ('SliceFromUpTo n_a1hef n_a1heg :: IndexType (a_a1h45 :: Type))
+[SSliceFromWithStride] :: forall (a_a1h45 :: Type) (n_a1hej :: a_a1h45) (n_a1hek :: a_a1h45). () => Sing n_a1hej -> Sing n_a1hek -> SIndexType ('SliceFromWithStride n_a1hej n_a1hek :: IndexType (a_a1h45 :: Type))
+[SSliceUpToWithStride] :: forall (a_a1h45 :: Type) (n_a1hen :: a_a1h45) (n_a1heo :: a_a1h45). () => Sing n_a1hen -> Sing n_a1heo -> SIndexType ('SliceUpToWithStride n_a1hen n_a1heo :: IndexType (a_a1h45 :: Type))
+[SSliceFromUpToWithStride] :: forall (a_a1h45 :: Type) (n_a1her :: a_a1h45) (n_a1hes :: a_a1h45) (n_a1het :: a_a1h45). () => Sing n_a1her -> Sing n_a1hes -> Sing n_a1het -> SIndexType ('SliceFromUpToWithStride n_a1her n_a1hes n_a1het :: IndexType (a_a1h45 :: Type))
 type family ReverseShape shape
 type family ErrorOnEllipsis indices
 type StrideZeroErrorMessage = 'Text "Slice stride cannot be zero"
@@ -2590,14 +2432,14 @@ instance Data.Singletons.Internal.SingI Torch.GraduallyTyped.Tensor.Indexing.Sli
 instance forall a (d :: a). Data.Singletons.Internal.SingI d => Data.Singletons.Internal.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStrideSym1 d)
 instance forall a (d1 :: a) (d2 :: a). (Data.Singletons.Internal.SingI d1, Data.Singletons.Internal.SingI d2) => Data.Singletons.Internal.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStrideSym2 d1 d2)
 instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStrideSym0
-instance forall a (a6989586621679333863 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStrideSym1 a6989586621679333863)
-instance forall a (a6989586621679333863 :: a) (a6989586621679333864 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStrideSym2 a6989586621679333863 a6989586621679333864)
+instance forall a (a6989586621679314340 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStrideSym1 a6989586621679314340)
+instance forall a (a6989586621679314340 :: a) (a6989586621679314341 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStrideSym2 a6989586621679314340 a6989586621679314341)
 instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStrideSym0
-instance forall a (a6989586621679333860 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStrideSym1 a6989586621679333860)
+instance forall a (a6989586621679314337 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStrideSym1 a6989586621679314337)
 instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStrideSym0
-instance forall a (a6989586621679333857 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStrideSym1 a6989586621679333857)
+instance forall a (a6989586621679314334 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStrideSym1 a6989586621679314334)
 instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym0
-instance forall a (a6989586621679333854 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym1 a6989586621679333854)
+instance forall a (a6989586621679314331 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym1 a6989586621679314331)
 instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceUpToSym0
 instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromSym0
 instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceBoolSym0
@@ -2635,7 +2477,7 @@ acosh :: forall gradient layout device dataType shape. Tensor gradient layout de
 --   where the <tt>other</tt> input is a scalar.
 --   
 --   <pre>
---   &gt;&gt;&gt; g = sMkGenerator (SDevice SCPU) 0
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
 --   
 --   &gt;&gt;&gt; sRandn' = sRandn . TensorSpec (SGradient SWithGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat)
 --   
@@ -3170,8 +3012,10 @@ gelu :: forall gradient layout device dataType shape. Tensor gradient layout dev
 --   also <a>https://arxiv.org/abs/1606.08415</a>.
 --   
 --   <pre>
---   &gt;&gt;&gt; geluNew $ sFull (TensorSpec (SGradient SWithGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat) (SShape $ SNil)) 0.5
---   Tensor Float []  0.3457
+--   &gt;&gt;&gt; t &lt;- sFull (TensorSpec (SGradient SWithGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat) (SShape $ SNil)) 0.5
+--   
+--   &gt;&gt;&gt; fromTensor @Float $ geluNew t
+--   0.345714
 --   </pre>
 geluNew :: forall gradient layout device dataType shape. Tensor gradient layout device dataType shape -> Tensor gradient layout device dataType shape
 
@@ -3212,7 +3056,7 @@ type family MatmulF (shape :: Shape [Dim (Name Symbol) (Size Nat)]) (shape' :: S
 --   The following code serves the examples of <tt>matmul</tt> below:
 --   
 --   <pre>
---   &gt;&gt;&gt; g = sMkGenerator (SDevice SCPU) 0
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
 --   
 --   &gt;&gt;&gt; sRandn' = sRandn . TensorSpec (SGradient SWithGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat)
 --   </pre>
@@ -3353,19 +3197,6 @@ matmul :: forall gradient layout layout' device device' dataType dataType' shape
 
 module Torch.GraduallyTyped.Tensor.MathOperations
 
-module Torch.GraduallyTyped.Tensor
-
-module Torch.GraduallyTyped.Autograd
-class HasGrad parameters where {
-    type family Gradients parameters :: Type;
-    type family Loss parameters :: Type;
-}
-
--- | calculate gradients of a zero-dimensional tensor with respect to a
---   list of independent tensor parameters
-grad :: HasGrad parameters => Loss parameters -> parameters -> Gradients parameters
-instance Torch.GraduallyTyped.Autograd.HasGrad (Torch.GraduallyTyped.Tensor.Type.Tensor ('Torch.GraduallyTyped.RequiresGradient.Gradient 'Torch.GraduallyTyped.RequiresGradient.WithGradient) layout device dataType shape)
-
 module Torch.GraduallyTyped.NN.Functional.NonLinearActivation
 type SoftMaxErrorMessage (by :: By Symbol Nat) (dims :: [Dim (Name Symbol) (Size Nat)]) = "Cannot apply softmax on the dimension matching" % "" % "    '" <> by <> "'" % "" % "in the shape" % "" % "    '" <> dims <> "'." % ""
 type family SoftmaxCheckF (by :: By Symbol Nat) (dims :: [Dim (Name Symbol) (Size Nat)]) (result :: Maybe (Dim (Name Symbol) (Size Nat))) :: [Dim (Name Symbol) (Size Nat)]
@@ -3380,7 +3211,7 @@ type family SoftmaxF (selectDim :: SelectDim (By Symbol Nat)) (shape :: Shape [D
 --   sum to &lt;math&gt;:
 --   
 --   <pre>
---   &gt;&gt;&gt; g = sMkGenerator (SDevice SCPU) 0
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
 --   
 --   &gt;&gt;&gt; (input, _) &lt;- sRandn (TensorSpec (SGradient SWithGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat) (SShape $ SName @"batch" :&amp;: SSize @32 :|: SName @"feature" :&amp;: SSize @8 :|: SNil)) g
 --   
@@ -3408,7 +3239,7 @@ softmax :: forall selectDim gradient layout device dataType shape. SSelectDim se
 --   sum to &lt;math&gt;:
 --   
 --   <pre>
---   &gt;&gt;&gt; g = sMkGenerator (SDevice SCPU) 0
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
 --   
 --   &gt;&gt;&gt; (input, _) &lt;- sRandn (TensorSpec (SGradient SWithGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat) (SShape $ SName @"batch" :&amp;: SSize @32 :|: SName @"feature" :&amp;: SSize @8 :|: SNil)) g
 --   
@@ -3426,6 +3257,215 @@ softmax :: forall selectDim gradient layout device dataType shape. SSelectDim se
 --                'Dim ('Name "feature") ('Size 8)])
 --   </pre>
 logSoftmax :: forall selectDim gradient layout device dataType shape. SSelectDim selectDim -> Tensor gradient layout device dataType shape -> Tensor gradient layout device dataType (SoftmaxF selectDim shape)
+
+module Torch.GraduallyTyped.Random
+newtype Generator (device :: Device (DeviceType Nat))
+[UnsafeGenerator] :: forall device. TVar (Either (SDevice device, Word64) (ForeignPtr Generator)) -> Generator device
+sMkGenerator :: forall m device. MonadThrow m => SDevice device -> Word64 -> m (Generator device)
+mkGenerator :: forall m device. (SingI device, MonadThrow m) => Word64 -> m (Generator device)
+sSetGeneratorDevice :: forall m generatorDevice' generatorDevice. MonadThrow m => SDevice generatorDevice' -> Generator generatorDevice -> m (Generator generatorDevice')
+setGeneratorDevice :: forall m generatorDevice' generatorDevice. (SingI generatorDevice', MonadThrow m) => Generator generatorDevice -> m (Generator generatorDevice')
+class SGetGeneratorDevice (device :: Device (DeviceType Nat))
+sGetGenPtrDevice :: SGetGeneratorDevice device => ForeignPtr Generator -> SDevice device
+sGetGeneratorDevice :: forall device. SGetGeneratorDevice device => Generator device -> SDevice device
+getGeneratorDeviceType :: forall device. SGetGeneratorDevice device => Generator device -> DeviceType Int16
+getGenPtr :: SGetGeneratorDevice device => TVar (Either (SDevice device, Word64) (ForeignPtr Generator)) -> IO (ForeignPtr Generator)
+sCreateWithGenerator :: forall m gradient layout device dataType shape generatorDevice. (SGetGeneratorDevice generatorDevice, MonadThrow m) => TensorSpec gradient layout device dataType shape -> Generator generatorDevice -> (ForeignPtr TensorOptions -> [Dim String Integer] -> ForeignPtr Generator -> IO (ForeignPtr Tensor)) -> m (Tensor gradient layout (device <+> generatorDevice) dataType shape, Generator (device <+> generatorDevice))
+sForwardWithGenerator :: forall m gradient layout device dataType shape generatorDevice. (SGetGeneratorDevice generatorDevice, MonadThrow m) => Tensor gradient layout device dataType shape -> Generator generatorDevice -> (ForeignPtr Tensor -> ForeignPtr Generator -> IO (ForeignPtr Tensor)) -> m (Tensor gradient layout (device <+> generatorDevice) dataType shape, Generator (device <+> generatorDevice))
+instance Torch.GraduallyTyped.Random.SGetGeneratorDevice 'Torch.GraduallyTyped.Device.UncheckedDevice
+instance Torch.GraduallyTyped.Random.SGetGeneratorDevice ('Torch.GraduallyTyped.Device.Device 'Torch.GraduallyTyped.Device.CPU)
+instance GHC.TypeNats.KnownNat deviceIndex => Torch.GraduallyTyped.Random.SGetGeneratorDevice ('Torch.GraduallyTyped.Device.Device ('Torch.GraduallyTyped.Device.CUDA deviceIndex))
+
+module Torch.GraduallyTyped.Tensor.Creation
+
+-- | Create a gradually typed tensor of ones.
+--   
+--   <pre>
+--   &gt;&gt;&gt; shape = SShape $ SName @"batch" :&amp;: SSize @32 :|: SUncheckedName "feature" :&amp;: SUncheckedSize 8 :|: SNil
+--   
+--   &gt;&gt;&gt; :type sOnes $ TensorSpec (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SInt64) shape
+--   sOnes $ TensorSpec (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SInt64) shape
+--     :: MonadThrow m =&gt;
+--        m (Tensor
+--             ('Gradient 'WithoutGradient)
+--             ('Layout 'Dense)
+--             ('Device 'CPU)
+--             ('DataType 'Int64)
+--             ('Shape
+--                '[ 'Dim ('Name "batch") ('Size 32),
+--                   'Dim 'UncheckedName 'UncheckedSize]))
+--   </pre>
+sOnes :: forall gradient layout device dataType shape m. MonadThrow m => TensorSpec gradient layout device dataType shape -> m (Tensor gradient layout device dataType shape)
+
+-- | Create a typed tensor of ones.
+--   
+--   <pre>
+--   &gt;&gt;&gt; ones :: IO (CPUParameter ('DataType 'Float) ('Shape '[]))
+--   Tensor Float []  1.0000
+--   
+--   &gt;&gt;&gt; ones :: IO (CPUTensor ('DataType 'Int64) ('Shape '[ 'Dim ('Name "*") ('Size 1)]))
+--   Tensor Int64 [1] [ 1]
+--   </pre>
+ones :: forall gradient layout device dataType shape m. MonadThrow m => (SingI gradient, SingI layout, SingI device, SingI dataType, SingI shape) => m (Tensor gradient layout device dataType shape)
+
+-- | Create a gradually typed tensor of zeros.
+--   
+--   <pre>
+--   &gt;&gt;&gt; shape = SShape $ SName @"batch" :&amp;: SSize @32 :|: SUncheckedName "feature" :&amp;: SUncheckedSize 8 :|: SNil
+--   
+--   &gt;&gt;&gt; :type sZeros $ TensorSpec (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SInt64) shape
+--   sZeros $ TensorSpec (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SInt64) shape
+--     :: MonadThrow m =&gt;
+--        m (Tensor
+--             ('Gradient 'WithoutGradient)
+--             ('Layout 'Dense)
+--             ('Device 'CPU)
+--             ('DataType 'Int64)
+--             ('Shape
+--                '[ 'Dim ('Name "batch") ('Size 32),
+--                   'Dim 'UncheckedName 'UncheckedSize]))
+--   </pre>
+sZeros :: forall gradient layout device dataType shape m. MonadThrow m => TensorSpec gradient layout device dataType shape -> m (Tensor gradient layout device dataType shape)
+
+-- | Create a typed tensor of zeros.
+--   
+--   <pre>
+--   &gt;&gt;&gt; zeros :: IO (CPUParameter ('DataType 'Float) ('Shape '[]))
+--   Tensor Float []  0.0000
+--   
+--   &gt;&gt;&gt; zeros :: IO (CPUTensor ('DataType 'Int64) ('Shape '[ 'Dim ('Name "*") ('Size 1)]))
+--   Tensor Int64 [1] [ 0]
+--   </pre>
+zeros :: forall gradient layout device dataType shape m. MonadThrow m => (SingI gradient, SingI layout, SingI device, SingI dataType, SingI shape) => m (Tensor gradient layout device dataType shape)
+
+-- | Create a gradually typed tensor filled with a given scalar value.
+--   
+--   <pre>
+--   &gt;&gt;&gt; shape = SShape $ SName @"batch" :&amp;: SSize @32 :|: SUncheckedName "feature" :&amp;: SUncheckedSize 8 :|: SNil
+--   
+--   &gt;&gt;&gt; input = -1
+--   
+--   &gt;&gt;&gt; :type sFull (TensorSpec (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SInt64) shape) input
+--   sFull (TensorSpec (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SInt64) shape) input
+--     :: MonadThrow m =&gt;
+--        m (Tensor
+--             ('Gradient 'WithoutGradient)
+--             ('Layout 'Dense)
+--             ('Device 'CPU)
+--             ('DataType 'Int64)
+--             ('Shape
+--                '[ 'Dim ('Name "batch") ('Size 32),
+--                   'Dim 'UncheckedName 'UncheckedSize]))
+--   </pre>
+sFull :: forall gradient layout device dataType shape input m. (MonadThrow m, Scalar input) => TensorSpec gradient layout device dataType shape -> input -> m (Tensor gradient layout device dataType shape)
+
+-- | Create a typed tensor filled with a given scalar value.
+--   
+--   <pre>
+--   &gt;&gt;&gt; full (-1) :: IO (CPUParameter ('DataType 'Float) ('Shape '[]))
+--   Tensor Float [] -1.0000
+--   
+--   &gt;&gt;&gt; full (-1) :: IO (CPUTensor ('DataType 'Int64) ('Shape '[ 'Dim ('Name "*") ('Size 1)]))
+--   Tensor Int64 [1] [-1]
+--   </pre>
+full :: forall gradient layout device dataType shape input m. (MonadThrow m, SingI gradient, SingI layout, SingI device, SingI dataType, SingI shape, Scalar input) => input -> m (Tensor gradient layout device dataType shape)
+
+-- | Create a gradually typed random tensor.
+sRandn :: forall gradient layout device dataType shape generatorDevice m. (SGetGeneratorDevice generatorDevice, MonadThrow m) => TensorSpec gradient layout device dataType shape -> Generator generatorDevice -> m (Tensor gradient layout (device <+> generatorDevice) dataType shape, Generator (device <+> generatorDevice))
+
+-- | Create typed random tensor.
+randn :: forall gradient layout device dataType shape generatorDevice m. (SGetGeneratorDevice generatorDevice, MonadThrow m) => (SingI gradient, SingI layout, SingI device, SingI dataType, SingI shape) => Generator generatorDevice -> m (Tensor gradient layout (device <+> generatorDevice) dataType shape, Generator (device <+> generatorDevice))
+
+-- | Create a gradually typed one-dimensional tensor of the numbers
+--   <tt>0</tt> to <tt>size -1</tt>.
+sArangeNaturals :: forall m gradient layout device dataType size shape. (MonadThrow m, shape ~ 'Shape '[ 'Dim ('Name "*") size]) => SGradient gradient -> SLayout layout -> SDevice device -> SDataType dataType -> SSize size -> m (Tensor gradient layout device dataType shape)
+
+-- | Create a typed one-dimensional tensor of the numbers <tt>0</tt> to
+--   <tt>size -1</tt>.
+arangeNaturals :: forall size gradient layout device dataType shape m. (MonadThrow m, shape ~ 'Shape '[ 'Dim ('Name "*") size], SingI gradient, SingI layout, SingI device, SingI dataType, SingI size) => m (Tensor gradient layout device dataType shape)
+
+-- | Create a gradually typed rectangular tensor with ones on the diagonal
+--   and zeros elsewhere.
+sEye :: forall gradient layout device dataType rows cols shape m. (MonadThrow m, shape ~ 'Shape '[ 'Dim ('Name "*") rows, 'Dim ('Name "*") cols]) => SGradient gradient -> SLayout layout -> SDevice device -> SDataType dataType -> SSize rows -> SSize cols -> m (Tensor gradient layout device dataType shape)
+
+-- | Create a typed rectangular tensor with ones on the diagonal and zeros
+--   elsewhere.
+eye :: forall rows cols gradient layout device dataType shape m. (MonadThrow m, shape ~ 'Shape '[ 'Dim ('Name "*") rows, 'Dim ('Name "*") cols], SingI gradient, SingI layout, SingI device, SingI dataType, SingI rows, SingI cols) => m (Tensor gradient layout device dataType shape)
+
+-- | Create a gradually typed square tensor with ones on the diagonal and
+--   zeros elsewhere.
+sEyeSquare :: forall gradient layout device dataType size shape m. (MonadThrow m, shape ~ 'Shape '[ 'Dim ('Name "*") size, 'Dim ('Name "*") size]) => SGradient gradient -> SLayout layout -> SDevice device -> SDataType dataType -> SSize size -> m (Tensor gradient layout device dataType shape)
+
+-- | Create a typed square tensor with ones on the diagonal and zeros
+--   elsewhere.
+eyeSquare :: forall size gradient layout device dataType shape m. (MonadThrow m, shape ~ 'Shape '[ 'Dim ('Name "*") size, 'Dim ('Name "*") size], SingI gradient, SingI layout, SingI device, SingI dataType, SingI size) => m (Tensor gradient layout device dataType shape)
+
+module Torch.GraduallyTyped.Tensor
+
+module Torch.GraduallyTyped.Autograd
+class HasGrad parameters where {
+    type family Gradients parameters :: Type;
+    type family Loss parameters :: Type;
+}
+
+-- | calculate gradients of a zero-dimensional tensor with respect to a
+--   list of independent tensor parameters
+grad :: HasGrad parameters => Loss parameters -> parameters -> Gradients parameters
+instance Torch.GraduallyTyped.Autograd.HasGrad (Torch.GraduallyTyped.Tensor.Type.Tensor ('Torch.GraduallyTyped.RequiresGradient.Gradient 'Torch.GraduallyTyped.RequiresGradient.WithGradient) layout device dataType shape)
+
+module Torch.GraduallyTyped.NN.Class
+data NamedModel model
+NamedModel :: Text -> model -> NamedModel model
+class HasForward model input generatorDevice output generatorOutputDevice | model input generatorDevice -> output, model input generatorDevice -> generatorOutputDevice
+
+-- | <tt>forward m i g</tt> for a model <tt>m</tt>, an input <tt>i</tt>,
+--   and a generator <tt>g</tt> returns the tuple <tt>(o, g')</tt> where
+--   <tt>o</tt> is the output of the model applied to the input and
+--   <tt>g'</tt> is the updated generator. <tt>forward m i g</tt> may throw
+--   an exception if the input <tt>i</tt> or the generator <tt>g</tt> are
+--   not compatible with the model <tt>m</tt>.
+forward :: forall m. (HasForward model input generatorDevice output generatorOutputDevice, MonadThrow m) => model -> input -> Generator generatorDevice -> m (output, Generator generatorOutputDevice)
+type family ModelSpec model = (spec :: Type) | spec -> model
+class HasInitialize (model :: Type) (generatorDevice :: Device (DeviceType Nat)) (output :: Type) (generatorOutputDevice :: Device (DeviceType Nat)) | model generatorDevice -> output, model generatorDevice -> generatorOutputDevice
+initialize :: forall m. (HasInitialize model generatorDevice output generatorOutputDevice, MonadThrow m) => ModelSpec model -> Generator generatorDevice -> m (output, Generator generatorOutputDevice)
+data VectorSpec (n :: Nat) (a :: Type)
+[VectorSpec] :: forall n a. SNat n -> Vector n (ModelSpec a) -> VectorSpec n a
+type StateDictKey = Text
+type StateDict = Map StateDictKey (ForeignPtr Tensor)
+newtype FromStateDictError
+FromStateDictKeyNotFoundError :: StateDictKey -> FromStateDictError
+[fsdeExpectedKey] :: FromStateDictError -> StateDictKey
+newtype ToStateDictError
+ToStateDictKeyAlreadyInUseError :: StateDictKey -> ToStateDictError
+[fsdeTakenKey] :: ToStateDictError -> StateDictKey
+class HasStateDict model
+fromStateDict :: forall m. (HasStateDict model, MonadIO m, MonadThrow m, MonadState StateDict m) => ModelSpec model -> StateDictKey -> m model
+toStateDict :: forall m. (HasStateDict model, MonadThrow m, MonadState StateDict m) => StateDictKey -> model -> m ()
+
+-- | Load a state dictionary from a TorchScript file.
+stateDictFromFile :: FilePath -> IO StateDict
+
+-- | Save a state dictionary to a TorchScript file.
+stateDictToFile :: StateDict -> FilePath -> IO ()
+instance GHC.Show.Show Torch.GraduallyTyped.NN.Class.FromStateDictError
+instance GHC.Show.Show Torch.GraduallyTyped.NN.Class.ToStateDictError
+instance Torch.GraduallyTyped.NN.Class.HasStateDict ()
+instance Torch.GraduallyTyped.NN.Class.HasStateDict model => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Class.NamedModel model)
+instance (Torch.GraduallyTyped.NN.Class.HasStateDict a, Torch.GraduallyTyped.NN.Class.HasStateDict b) => Torch.GraduallyTyped.NN.Class.HasStateDict (a, b)
+instance Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout device dataType shape)
+instance Torch.GraduallyTyped.NN.Class.HasStateDict a => Torch.GraduallyTyped.NN.Class.HasStateDict (Data.Vector.Sized.Vector n a)
+instance GHC.Exception.Type.Exception Torch.GraduallyTyped.NN.Class.ToStateDictError
+instance GHC.Exception.Type.Exception Torch.GraduallyTyped.NN.Class.FromStateDictError
+instance (Torch.GraduallyTyped.NN.Class.HasInitialize a generatorDevice output generatorOutputDevice, Torch.GraduallyTyped.NN.Class.HasInitialize a generatorOutputDevice output generatorOutputDevice, n' GHC.Types.~ (n GHC.TypeNats.+ 1)) => Torch.GraduallyTyped.NN.Class.HasInitialize (Data.Vector.Sized.Vector n' a) generatorDevice (Data.Vector.Sized.Vector n' output) generatorOutputDevice
+instance Torch.GraduallyTyped.NN.Class.HasInitialize () generatorDevice () generatorDevice
+instance Torch.GraduallyTyped.NN.Class.HasInitialize model generatorDevice output generatorOutputDevice => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Class.NamedModel model) generatorDevice (Torch.GraduallyTyped.NN.Class.NamedModel output) generatorOutputDevice
+instance (Torch.GraduallyTyped.NN.Class.HasInitialize a generatorDevice aOutput aGeneratorOutputDevice, Torch.GraduallyTyped.NN.Class.HasInitialize b aGeneratorOutputDevice bOutput generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (a, b) generatorDevice (aOutput, bOutput) generatorOutputDevice
+instance Torch.GraduallyTyped.NN.Class.HasForward () input generatorDevice input generatorDevice
+instance Torch.GraduallyTyped.NN.Class.HasForward model input generatorDevice output generatorOutputDevice => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Class.NamedModel model) input generatorDevice output generatorOutputDevice
+instance (Torch.GraduallyTyped.NN.Class.HasForward a input generatorDevice output' generatorOutputDevice', Torch.GraduallyTyped.NN.Class.HasForward b output' generatorOutputDevice' output generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (a, b) input generatorDevice output generatorOutputDevice
+instance Torch.GraduallyTyped.NN.Class.HasForward (Data.Vector.Sized.Vector 0 a) input generatorDevice input generatorDevice
+instance Torch.GraduallyTyped.NN.Class.HasForward a input generatorDevice output generatorOutputDevice => Torch.GraduallyTyped.NN.Class.HasForward (Data.Vector.Sized.Vector 1 a) input generatorDevice output generatorOutputDevice
+instance (Torch.GraduallyTyped.NN.Class.HasForward a input generatorDevice output generatorOutputDevice, Torch.GraduallyTyped.NN.Class.HasForward a output generatorOutputDevice output generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (Data.Vector.Sized.Vector n a) input generatorDevice output generatorOutputDevice
 
 module Torch.GraduallyTyped.NN.Activation
 data Softmax (selectDim :: SelectDim (By Symbol Nat))
@@ -3500,7 +3540,7 @@ type PegasusSym0 = 'Pegasus :: TransformerStyle
 type BERTSym0 = 'BERT :: TransformerStyle
 type RoBERTaSym0 = 'RoBERTa :: TransformerStyle
 type GPT2Sym0 = 'GPT2 :: TransformerStyle
-data STransformerStyle z_a1u8B
+data STransformerStyle z_a1wso
 [ST5] :: STransformerStyle ('T5 :: TransformerStyle)
 [SByT5] :: STransformerStyle ('ByT5 :: TransformerStyle)
 [SBART] :: STransformerStyle ('BART :: TransformerStyle)
@@ -3516,7 +3556,7 @@ WithoutHead :: TransformerHead
 WithLMHead :: TransformerHead
 type WithoutHeadSym0 = 'WithoutHead :: TransformerHead
 type WithLMHeadSym0 = 'WithLMHead :: TransformerHead
-data STransformerHead z_a1ufW
+data STransformerHead z_a1wzJ
 [SWithoutHead] :: STransformerHead ('WithoutHead :: TransformerHead)
 [SWithLMHead] :: STransformerHead ('WithLMHead :: TransformerHead)
 padded :: Integral n => n -> a -> [a] -> [a]
@@ -3527,7 +3567,7 @@ padded :: Integral n => n -> a -> [a] -> [a]
 --   length is inferred from the length of the inner list. The input ids
 --   are padded to the maximum sequence length. The output tensor is
 --   truncated to the maximum sequence length.
-mkTransformerInput :: forall batchDim seqDim device m output. (MonadThrow m, SGetDim batchDim, SGetDim seqDim, 'Shape '[batchDim, seqDim] ~ Seq ('Shape '[ 'Dim ('Name "*") 'UncheckedSize, 'Dim ('Name "*") 'UncheckedSize] <+> 'Shape '[batchDim, seqDim]) ('Shape '[batchDim, seqDim]), output ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Int64) ('Shape '[batchDim, seqDim])) => Int -> SDim batchDim -> SDim seqDim -> SDevice device -> [[Int]] -> m output
+mkTransformerInput :: forall batchDim seqDim device m output. (MonadThrow m, SGetDim batchDim, SGetDim seqDim, Catch ('Shape '[ 'Dim ('Name "*") 'UncheckedSize, 'Dim ('Name "*") 'UncheckedSize] <+> 'Shape '[batchDim, seqDim]), output ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Int64) ('Shape '[batchDim, seqDim])) => Int -> SDim batchDim -> SDim seqDim -> SDevice device -> [[Int]] -> m output
 type MkPosC device shape seqDim seqName seqSize output = (SGetDevice device, SGetShape shape, seqDim ~ (shape ! 1), seqDim ~ 'Dim seqName seqSize, output ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Int64) ('Shape '[ 'Dim ('Name "*") seqSize]))
 
 -- | Computes absolute positions of the input tokens. Given an input tensor
@@ -3546,7 +3586,7 @@ MkAbsPosWithOffset :: Int -> MkAbsPos
 --   [[0,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25,26],[1,0,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25],[2,1,0,17,18,19,20,21,22,23,24,24,24,24,25,25,25],[3,2,1,0,17,18,19,20,21,22,23,24,24,24,24,25,25],[4,3,2,1,0,17,18,19,20,21,22,23,24,24,24,24,25],[5,4,3,2,1,0,17,18,19,20,21,22,23,24,24,24,24],[6,5,4,3,2,1,0,17,18,19,20,21,22,23,24,24,24],[7,6,5,4,3,2,1,0,17,18,19,20,21,22,23,24,24],[8,7,6,5,4,3,2,1,0,17,18,19,20,21,22,23,24],[8,8,7,6,5,4,3,2,1,0,17,18,19,20,21,22,23],[8,8,8,7,6,5,4,3,2,1,0,17,18,19,20,21,22],[8,8,8,8,7,6,5,4,3,2,1,0,17,18,19,20,21],[9,8,8,8,8,7,6,5,4,3,2,1,0,17,18,19,20],[9,9,8,8,8,8,7,6,5,4,3,2,1,0,17,18,19],[9,9,9,8,8,8,8,7,6,5,4,3,2,1,0,17,18],[9,9,9,9,8,8,8,8,7,6,5,4,3,2,1,0,17],[10,9,9,9,9,8,8,8,8,7,6,5,4,3,2,1,0],[10,10,9,9,9,9,8,8,8,8,7,6,5,4,3,2,1],[10,10,10,9,9,9,9,8,8,8,8,7,6,5,4,3,2],[10,10,10,10,9,9,9,9,8,8,8,8,7,6,5,4,3],[10,10,10,10,10,9,9,9,9,8,8,8,8,7,6,5,4]]
 --   </pre>
 mkRelPos' :: Int -> Int -> Int -> Int -> [[Int]]
-type MkRelPosC device shape seqDim seqName seqSize output = (SGetDevice device, SGetShape shape, seqDim ~ (shape ! 1), seqDim ~ 'Dim seqName seqSize, 'Shape '[ 'Dim ('Name "*") ('Size 1), 'Dim ('Name "*") seqSize, 'Dim ('Name "*") seqSize] ~ Seq ('[ 'Dim ('Name "*") 'UncheckedSize, 'Dim ('Name "*") 'UncheckedSize] <+> '[ 'Dim ('Name "*") seqSize, 'Dim ('Name "*") seqSize]) ('Shape '[ 'Dim ('Name "*") ('Size 1), 'Dim ('Name "*") seqSize, 'Dim ('Name "*") seqSize]), output ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Int64) ('Shape '[ 'Dim ('Name "*") ('Size 1), 'Dim ('Name "*") seqSize, 'Dim ('Name "*") seqSize]))
+type MkRelPosC device shape seqDim seqName seqSize output = (SGetDevice device, SGetShape shape, seqDim ~ (shape ! 1), seqDim ~ 'Dim seqName seqSize, Catch ('[ 'Dim ('Name "*") 'UncheckedSize, 'Dim ('Name "*") 'UncheckedSize] <+> '[ 'Dim ('Name "*") seqSize, 'Dim ('Name "*") seqSize]), output ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Int64) ('Shape '[ 'Dim ('Name "*") ('Size 1), 'Dim ('Name "*") seqSize, 'Dim ('Name "*") seqSize]))
 
 -- | Computes relative positions of the input tokens to the encoder. Given
 --   an input tensor of shape <tt>[batchDim, Dim seqName seqSize]</tt>,
@@ -3570,16 +3610,16 @@ mkDecoderRelPos :: forall m gradient layout device dataType shape relPosEncBucke
 data MkRelPos (relPosEncBucketDim :: Dim (Name Symbol) (Size Nat))
 [MkRelPos] :: forall relPosEncBucketDim. {relPosEncBucketDim :: SDim relPosEncBucketDim, relPosMaxDistance :: Int} -> MkRelPos relPosEncBucketDim
 [MkDecoderRelPos] :: forall relPosEncBucketDim. {decoderRelPosEncBucketDim :: SDim relPosEncBucketDim, decoderRelPosMaxDistance :: Int} -> MkRelPos relPosEncBucketDim
-type MkTransformerPaddingMaskC layout device dataType shape output = (SGetDevice device, output ~ Tensor ('Gradient 'WithoutGradient) (layout <+> 'Layout 'Dense) device (Seq (dataType <+> 'DataType 'Int64) ('DataType 'Bool)) (BroadcastShapesF shape ('Shape '[ 'Dim ('Name "*") ('Size 1)])))
+type MkTransformerPaddingMaskC layout device dataType shape output = (SGetDevice device, Catch (dataType <+> 'DataType 'Int64), output ~ Tensor ('Gradient 'WithoutGradient) (layout <+> 'Layout 'Dense) device ('DataType 'Bool) (BroadcastShapesF shape ('Shape '[ 'Dim ('Name "*") ('Size 1)])))
 
 -- | Computes the padding mask for a transformer. Given an input tensor of
 --   shape <tt>[batchDim, Dim seqName seqSize]</tt>, returns a tensor of
 --   shape <tt>[batchDim, Dim "*" seqSize]</tt>.
-mkTransformerPaddingMask :: forall gradient layout device dataType shape output. MkTransformerPaddingMaskC layout device dataType shape output => Int -> Tensor gradient layout device dataType shape -> output
+mkTransformerPaddingMask :: forall m gradient layout device dataType shape output. (MonadThrow m, MkTransformerPaddingMaskC layout device dataType shape output) => Int -> Tensor gradient layout device dataType shape -> m output
 newtype MkTransformerPaddingMask
 MkTransformerPaddingMask :: Int -> MkTransformerPaddingMask
 [padTokenId] :: MkTransformerPaddingMask -> Int
-type MkTransformerAttentionMaskC transformerDataType gradient layout device dataType shape seqDim output = (SGetLayout layout, SGetDevice device, SGetShape shape, seqDim ~ (shape ! 1), output ~ Tensor (Seq (gradient <+> 'Gradient 'WithoutGradient) ('Gradient 'WithoutGradient)) (layout <+> 'Layout 'Dense) device (Seq (dataType <+> 'DataType 'Bool) transformerDataType) (BroadcastShapesF (UnsqueezeF ('SelectDim ('ByIndex 1)) shape) ('Shape '[ 'Dim ('Name "*") ('Size 1), seqDim, seqDim])))
+type MkTransformerAttentionMaskC transformerDataType gradient layout device dataType shape seqDim output = (SGetLayout layout, SGetDevice device, SGetShape shape, seqDim ~ (shape ! 1), Catch (gradient <+> 'Gradient 'WithoutGradient), Catch (dataType <+> 'DataType 'Bool), output ~ Tensor ('Gradient 'WithoutGradient) (layout <+> 'Layout 'Dense) device transformerDataType (BroadcastShapesF (UnsqueezeF ('SelectDim ('ByIndex 1)) shape) ('Shape '[ 'Dim ('Name "*") ('Size 1), seqDim, seqDim])))
 
 -- | Creates a bidirectional attention mask for a transformer. Given a
 --   padding mask of shape <tt>[batchDim, seqDim]</tt>, returns a tensor of
@@ -3595,7 +3635,7 @@ type MkTransformerDecoderAttentionMaskC transformerDataType layout device shape 
 mkTransformerDecoderAttentionMask :: forall m transformerDataType gradient layout device dataType shape seqDim output. (MonadThrow m, MkTransformerDecoderAttentionMaskC transformerDataType layout device shape seqDim output) => SDataType transformerDataType -> Double -> Tensor gradient layout device dataType shape -> m output
 data MkTransformerDecoderAttentionMask (dataType :: DataType DType)
 [MkTransformerDecoderAttentionMask] :: forall dataType. {decoderAttentionMaskDataType :: SDataType dataType, decoderAttentionMaskBias :: Double} -> MkTransformerDecoderAttentionMask dataType
-type MkTransformerCrossAttentionMaskC transformerDataType decoderInputShape decoderInputSeqDim gradient layout device dataType shape seqDim output = (SGetLayout layout, SGetDevice device, SGetShape shape, seqDim ~ (shape ! 1), SGetShape decoderInputShape, decoderInputSeqDim ~ (decoderInputShape ! 1), output ~ Tensor (Seq (gradient <+> 'Gradient 'WithoutGradient) ('Gradient 'WithoutGradient)) (layout <+> 'Layout 'Dense) device (Seq (dataType <+> 'DataType 'Bool) transformerDataType) (BroadcastShapesF (UnsqueezeF ('SelectDim ('ByIndex 1)) shape) ('Shape '[ 'Dim ('Name "*") ('Size 1), decoderInputSeqDim, seqDim])))
+type MkTransformerCrossAttentionMaskC transformerDataType decoderInputShape decoderInputSeqDim gradient layout device dataType shape seqDim output = (SGetLayout layout, SGetDevice device, SGetShape shape, seqDim ~ (shape ! 1), SGetShape decoderInputShape, decoderInputSeqDim ~ (decoderInputShape ! 1), Catch (gradient <+> 'Gradient 'WithoutGradient), Catch (dataType <+> 'DataType 'Bool), output ~ Tensor ('Gradient 'WithoutGradient) (layout <+> 'Layout 'Dense) device transformerDataType (BroadcastShapesF (UnsqueezeF ('SelectDim ('ByIndex 1)) shape) ('Shape '[ 'Dim ('Name "*") ('Size 1), decoderInputSeqDim, seqDim])))
 
 -- | Creates a cross-attention mask for an encoder-decoder transformer.
 --   Given an encoder padding mask of shape <tt>[batchDim, seqDim]</tt>,
@@ -3664,20 +3704,20 @@ calculateGain :: ForNonLinearity -> Float
 calculateFan :: [Dim String Integer] -> (Integer, Integer)
 
 -- | Xavier uniform initialization
-sXavierUniform :: forall gradient layout device dataType shape gain generatorDevice m. (Num gain, Floating gain, Scalar gain, MonadThrow m) => TensorSpec gradient layout device dataType shape -> gain -> Generator generatorDevice -> m (Tensor gradient layout (device <+> generatorDevice) dataType shape, Generator (device <+> generatorDevice))
+sXavierUniform :: forall gradient layout device dataType shape gain generatorDevice m. (Num gain, Floating gain, Scalar gain, MonadThrow m, SGetGeneratorDevice generatorDevice) => TensorSpec gradient layout device dataType shape -> gain -> Generator generatorDevice -> m (Tensor gradient layout (device <+> generatorDevice) dataType shape, Generator (device <+> generatorDevice))
 
 -- | Xavier normal initialization
-sXavierNormal :: forall gradient layout device dataType shape gain generatorDevice m. (Num gain, Floating gain, Scalar gain, MonadThrow m) => TensorSpec gradient layout device dataType shape -> gain -> Generator generatorDevice -> m (Tensor gradient layout (device <+> generatorDevice) dataType shape, Generator (device <+> generatorDevice))
+sXavierNormal :: forall gradient layout device dataType shape gain generatorDevice m. (Num gain, Floating gain, Scalar gain, MonadThrow m, SGetGeneratorDevice generatorDevice) => TensorSpec gradient layout device dataType shape -> gain -> Generator generatorDevice -> m (Tensor gradient layout (device <+> generatorDevice) dataType shape, Generator (device <+> generatorDevice))
 
 -- | Get fan in or fan out value depending on selected fan mode, used by
 --   Kaiming
 getter :: forall a. FanMode -> (a, a) -> a
 
 -- | Kaiming uniform initialization
-sKaimingUniform :: forall gradient layout device dataType shape generatorDevice m. MonadThrow m => TensorSpec gradient layout device dataType shape -> FanMode -> ForNonLinearity -> Generator generatorDevice -> m (Tensor gradient layout (device <+> generatorDevice) dataType shape, Generator (device <+> generatorDevice))
+sKaimingUniform :: forall gradient layout device dataType shape generatorDevice m. (MonadThrow m, SGetGeneratorDevice generatorDevice) => TensorSpec gradient layout device dataType shape -> FanMode -> ForNonLinearity -> Generator generatorDevice -> m (Tensor gradient layout (device <+> generatorDevice) dataType shape, Generator (device <+> generatorDevice))
 
 -- | Kaiming normal initialization
-sKaimingNormal :: forall gradient layout device dataType shape generatorDevice m. MonadThrow m => TensorSpec gradient layout device dataType shape -> FanMode -> ForNonLinearity -> Generator generatorDevice -> m (Tensor gradient layout (device <+> generatorDevice) dataType shape, Generator (device <+> generatorDevice))
+sKaimingNormal :: forall gradient layout device dataType shape generatorDevice m. (MonadThrow m, SGetGeneratorDevice generatorDevice) => TensorSpec gradient layout device dataType shape -> FanMode -> ForNonLinearity -> Generator generatorDevice -> m (Tensor gradient layout (device <+> generatorDevice) dataType shape, Generator (device <+> generatorDevice))
 instance GHC.Generics.Generic Torch.GraduallyTyped.NN.Initialization.ForNonLinearity
 instance GHC.Show.Show Torch.GraduallyTyped.NN.Initialization.ForNonLinearity
 instance GHC.Classes.Ord Torch.GraduallyTyped.NN.Initialization.ForNonLinearity
@@ -3690,17 +3730,17 @@ instance GHC.Classes.Eq Torch.GraduallyTyped.NN.Initialization.FanMode
 module Torch.GraduallyTyped.NN.Functional.Sparse
 type EmbedDimsErrorMessage (embedDims :: [Dim (Name Symbol) (Size Nat)]) = "Cannot apply the embedding." % "The embedding weight tensor must have exactly two dimensions," % "but the following dimensions were found:" % "" % "    " <> embedDims <> "." % ""
 type family EmbeddingF (weightShape :: Shape [Dim (Name Symbol) (Size Nat)]) (inputShape :: Shape [Dim (Name Symbol) (Size Nat)]) :: Shape [Dim (Name Symbol) (Size Nat)]
-embedding :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. SGetLayout layout => Maybe Natural -> Bool -> Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor (gradient <|> gradient') (layout <+> layout') (device <+> device') (Seq (dataType' <+> 'DataType 'Int64) dataType) (EmbeddingF shape shape')
+embedding :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape'. (SGetLayout layout, Catch (dataType' <+> 'DataType 'Int64)) => Maybe Natural -> Bool -> Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor (gradient <|> gradient') (layout <+> layout') (device <+> device') dataType (EmbeddingF shape shape')
 
 module Torch.GraduallyTyped.NN.Sparse
 data Embedding (gradient :: Gradient RequiresGradient) (layout :: Layout LayoutType) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (embedNumDim :: Dim (Name Symbol) (Size Nat)) (embedDim :: Dim (Name Symbol) (Size Nat)) (paddingIdx :: Maybe Nat)
 [Embedding] :: forall gradient layout device dataType embedNumDim embedDim paddingIdx. {embeddingWeight :: Tensor gradient layout device dataType ('Shape '[embedNumDim, embedDim])} -> Embedding gradient layout device dataType embedNumDim embedDim paddingIdx
 data EmbeddingSpec (gradient :: Gradient RequiresGradient) (layout :: Layout LayoutType) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (embedNumDim :: Dim (Name Symbol) (Size Nat)) (embedDim :: Dim (Name Symbol) (Size Nat)) (paddingIdx :: Maybe Nat)
 [EmbeddingSpec] :: forall gradient layout device dataType embedNumDim embedDim paddingIdx. SGradient gradient -> SLayout layout -> SDevice device -> SDataType dataType -> SDim embedNumDim -> SDim embedDim -> SMaybe paddingIdx -> EmbeddingSpec gradient layout device dataType embedNumDim embedDim paddingIdx
-instance (output GHC.Types.~ Torch.GraduallyTyped.NN.Sparse.Embedding gradient layout (device Torch.GraduallyTyped.Unify.<+> generatorDevice) dataType embedNumDim embedDim paddingIdx, generatorOutputDevice GHC.Types.~ (device Torch.GraduallyTyped.Unify.<+> generatorDevice)) => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Sparse.Embedding gradient layout device dataType embedNumDim embedDim paddingIdx) generatorDevice output generatorOutputDevice
+instance (output GHC.Types.~ Torch.GraduallyTyped.NN.Sparse.Embedding gradient layout (device Torch.GraduallyTyped.Unify.<+> generatorDevice) dataType embedNumDim embedDim paddingIdx, generatorOutputDevice GHC.Types.~ (device Torch.GraduallyTyped.Unify.<+> generatorDevice), Torch.GraduallyTyped.Random.SGetGeneratorDevice generatorDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Sparse.Embedding gradient layout device dataType embedNumDim embedDim paddingIdx) generatorDevice output generatorOutputDevice
 instance Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Sparse.Embedding gradient layout device dataType embedNumDim embedDim paddingIdx)
-instance (Torch.GraduallyTyped.Tensor.Type.SGetLayout layout, output GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor (gradient Torch.GraduallyTyped.Unify.<|> gradient') (layout Torch.GraduallyTyped.Unify.<+> layout') (device Torch.GraduallyTyped.Unify.<+> device') (Torch.GraduallyTyped.Prelude.Seq (dataType' Torch.GraduallyTyped.Unify.<+> 'Torch.GraduallyTyped.DType.DataType 'Torch.GraduallyTyped.DType.Int64) dataType) (Torch.GraduallyTyped.NN.Functional.Sparse.EmbeddingF ('Torch.GraduallyTyped.Shape.Type.Shape '[embedNumDim, embedDim]) shape')) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Sparse.Embedding gradient layout device dataType embedNumDim embedDim 'GHC.Maybe.Nothing) (Torch.GraduallyTyped.Tensor.Type.Tensor gradient' layout' device' dataType' shape') generatorDevice output generatorDevice
-instance (Torch.GraduallyTyped.Tensor.Type.SGetLayout layout, GHC.TypeNats.KnownNat paddingIdx, output GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor (gradient Torch.GraduallyTyped.Unify.<|> gradient') (layout Torch.GraduallyTyped.Unify.<+> layout') (device Torch.GraduallyTyped.Unify.<+> device') (Torch.GraduallyTyped.Prelude.Seq (dataType' Torch.GraduallyTyped.Unify.<+> 'Torch.GraduallyTyped.DType.DataType 'Torch.GraduallyTyped.DType.Int64) dataType) (Torch.GraduallyTyped.NN.Functional.Sparse.EmbeddingF ('Torch.GraduallyTyped.Shape.Type.Shape '[embedNumDim, embedDim]) shape')) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Sparse.Embedding gradient layout device dataType embedNumDim embedDim ('GHC.Maybe.Just paddingIdx)) (Torch.GraduallyTyped.Tensor.Type.Tensor gradient' layout' device' dataType' shape') generatorDevice output generatorDevice
+instance (Torch.GraduallyTyped.Tensor.Type.SGetLayout layout, Torch.GraduallyTyped.Prelude.Catch (dataType' Torch.GraduallyTyped.Unify.<+> 'Torch.GraduallyTyped.DType.DataType 'Torch.GraduallyTyped.DType.Int64), output GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor (gradient Torch.GraduallyTyped.Unify.<|> gradient') (layout Torch.GraduallyTyped.Unify.<+> layout') (device Torch.GraduallyTyped.Unify.<+> device') dataType (Torch.GraduallyTyped.NN.Functional.Sparse.EmbeddingF ('Torch.GraduallyTyped.Shape.Type.Shape '[embedNumDim, embedDim]) shape')) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Sparse.Embedding gradient layout device dataType embedNumDim embedDim 'GHC.Maybe.Nothing) (Torch.GraduallyTyped.Tensor.Type.Tensor gradient' layout' device' dataType' shape') generatorDevice output generatorDevice
+instance (Torch.GraduallyTyped.Tensor.Type.SGetLayout layout, GHC.TypeNats.KnownNat paddingIdx, Torch.GraduallyTyped.Prelude.Catch (dataType' Torch.GraduallyTyped.Unify.<+> 'Torch.GraduallyTyped.DType.DataType 'Torch.GraduallyTyped.DType.Int64), output GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor (gradient Torch.GraduallyTyped.Unify.<|> gradient') (layout Torch.GraduallyTyped.Unify.<+> layout') (device Torch.GraduallyTyped.Unify.<+> device') dataType (Torch.GraduallyTyped.NN.Functional.Sparse.EmbeddingF ('Torch.GraduallyTyped.Shape.Type.Shape '[embedNumDim, embedDim]) shape')) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Sparse.Embedding gradient layout device dataType embedNumDim embedDim ('GHC.Maybe.Just paddingIdx)) (Torch.GraduallyTyped.Tensor.Type.Tensor gradient' layout' device' dataType' shape') generatorDevice output generatorDevice
 
 module Torch.GraduallyTyped.NN.Functional.Normalization
 type family LayerNormImplF (reverseNormalizedDims :: [Dim (Name Symbol) (Size Nat)]) (reverseInputDims :: [Dim (Name Symbol) (Size Nat)]) :: [Dim (Name Symbol) (Size Nat)]
@@ -3783,7 +3823,7 @@ type LinearWeightDimsErrorMessage (weightDims :: [Dim (Name Symbol) (Size Nat)])
 --   
 --   &gt;&gt;&gt; inputShape = SShape $ batchDim :|: inputDim :|: SNil
 --   
---   &gt;&gt;&gt; g = sMkGenerator (SDevice SCPU) 0
+--   &gt;&gt;&gt; g &lt;- sMkGenerator (SDevice SCPU) 0
 --   
 --   &gt;&gt;&gt; sRandn' = sRandn . TensorSpec (SGradient SWithoutGradient) (SLayout SDense) (SDevice SCPU) (SDataType SFloat)
 --   
@@ -3821,8 +3861,8 @@ data GLinear (weight :: Type) (bias :: Type)
 type family LinearWeightF (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (inputDim :: Dim (Name Symbol) (Size Nat)) (outputDim :: Dim (Name Symbol) (Size Nat)) :: Type
 type family LinearBiasF (hasBias :: HasBias) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (outputDim :: Dim (Name Symbol) (Size Nat)) :: Type
 linearSpec :: forall hasBias gradient device dataType inputDim outputDim. SHasBias hasBias -> SGradient gradient -> SDevice device -> SDataType dataType -> SDim inputDim -> SDim outputDim -> ModelSpec (GLinear (NamedModel (LinearWeightF gradient device dataType inputDim outputDim)) (NamedModel (LinearBiasF hasBias gradient device dataType outputDim)))
-instance (output GHC.Types.~ Torch.GraduallyTyped.NN.Linear.GLinear (Torch.GraduallyTyped.Tensor.Type.Tensor gradient ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense) (device Torch.GraduallyTyped.Unify.<+> generatorDevice) dataType ('Torch.GraduallyTyped.Shape.Type.Shape '[outputDim, inputDim])) (), generatorOutputDevice GHC.Types.~ (device Torch.GraduallyTyped.Unify.<+> generatorDevice)) => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Linear.GLinear (Torch.GraduallyTyped.Tensor.Type.Tensor gradient ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense) device dataType ('Torch.GraduallyTyped.Shape.Type.Shape '[outputDim, inputDim])) ()) generatorDevice output generatorOutputDevice
-instance (output GHC.Types.~ Torch.GraduallyTyped.NN.Linear.GLinear (Torch.GraduallyTyped.Tensor.Type.Tensor gradient ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense) (device Torch.GraduallyTyped.Unify.<+> generatorDevice) dataType ('Torch.GraduallyTyped.Shape.Type.Shape '[outputDim, inputDim])) (Torch.GraduallyTyped.Tensor.Type.Tensor gradient ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense) (device Torch.GraduallyTyped.Unify.<+> generatorDevice) dataType ('Torch.GraduallyTyped.Shape.Type.Shape '[outputDim])), generatorOutputDevice GHC.Types.~ (device Torch.GraduallyTyped.Unify.<+> generatorDevice)) => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Linear.GLinear (Torch.GraduallyTyped.Tensor.Type.Tensor gradient ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense) device dataType ('Torch.GraduallyTyped.Shape.Type.Shape '[outputDim, inputDim])) (Torch.GraduallyTyped.Tensor.Type.Tensor gradient ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense) device dataType ('Torch.GraduallyTyped.Shape.Type.Shape '[outputDim]))) generatorDevice output generatorOutputDevice
+instance (output GHC.Types.~ Torch.GraduallyTyped.NN.Linear.GLinear (Torch.GraduallyTyped.Tensor.Type.Tensor gradient ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense) (device Torch.GraduallyTyped.Unify.<+> generatorDevice) dataType ('Torch.GraduallyTyped.Shape.Type.Shape '[outputDim, inputDim])) (), generatorOutputDevice GHC.Types.~ (device Torch.GraduallyTyped.Unify.<+> generatorDevice), Torch.GraduallyTyped.Random.SGetGeneratorDevice generatorDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Linear.GLinear (Torch.GraduallyTyped.Tensor.Type.Tensor gradient ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense) device dataType ('Torch.GraduallyTyped.Shape.Type.Shape '[outputDim, inputDim])) ()) generatorDevice output generatorOutputDevice
+instance (output GHC.Types.~ Torch.GraduallyTyped.NN.Linear.GLinear (Torch.GraduallyTyped.Tensor.Type.Tensor gradient ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense) (device Torch.GraduallyTyped.Unify.<+> generatorDevice) dataType ('Torch.GraduallyTyped.Shape.Type.Shape '[outputDim, inputDim])) (Torch.GraduallyTyped.Tensor.Type.Tensor gradient ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense) (device Torch.GraduallyTyped.Unify.<+> generatorDevice) dataType ('Torch.GraduallyTyped.Shape.Type.Shape '[outputDim])), generatorOutputDevice GHC.Types.~ (device Torch.GraduallyTyped.Unify.<+> generatorDevice), Torch.GraduallyTyped.Random.SGetGeneratorDevice generatorDevice, Torch.GraduallyTyped.Random.SGetGeneratorDevice generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Linear.GLinear (Torch.GraduallyTyped.Tensor.Type.Tensor gradient ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense) device dataType ('Torch.GraduallyTyped.Shape.Type.Shape '[outputDim, inputDim])) (Torch.GraduallyTyped.Tensor.Type.Tensor gradient ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense) device dataType ('Torch.GraduallyTyped.Shape.Type.Shape '[outputDim]))) generatorDevice output generatorOutputDevice
 instance Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Linear.GLinear weight bias) generatorDevice (Torch.GraduallyTyped.NN.Linear.GLinear weight bias) generatorDevice => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Linear.GLinear (Torch.GraduallyTyped.NN.Class.NamedModel weight) (Torch.GraduallyTyped.NN.Class.NamedModel bias)) generatorDevice (Torch.GraduallyTyped.NN.Linear.GLinear (Torch.GraduallyTyped.NN.Class.NamedModel weight) (Torch.GraduallyTyped.NN.Class.NamedModel bias)) generatorDevice
 instance (Torch.GraduallyTyped.NN.Class.HasStateDict weight, Torch.GraduallyTyped.NN.Class.HasStateDict bias) => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Linear.GLinear weight bias)
 instance (output GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor (gradient Torch.GraduallyTyped.Unify.<|> gradient') ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense Torch.GraduallyTyped.Unify.<+> layout') (device Torch.GraduallyTyped.Unify.<+> device') (dataType Torch.GraduallyTyped.Unify.<+> dataType') (Torch.GraduallyTyped.NN.Functional.Linear.LinearWithoutBiasF ('Torch.GraduallyTyped.Shape.Type.Shape '[outputDim, inputDim]) shape')) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Linear.GLinear (Torch.GraduallyTyped.Tensor.Type.Tensor gradient ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense) device dataType ('Torch.GraduallyTyped.Shape.Type.Shape '[outputDim, inputDim])) ()) (Torch.GraduallyTyped.Tensor.Type.Tensor gradient' layout' device' dataType' shape') generatorDevice output generatorDevice
@@ -3895,7 +3935,7 @@ module Torch.GraduallyTyped.NN.Functional.Dropout
 
 -- | Dropout randomly zeroes some of the elements of the input tensor with
 --   probability <tt>p</tt> using samples from a Bernoulli distribution.
-dropout :: forall gradient layout device dataType shape generatorDevice m. MonadThrow m => Double -> Tensor gradient layout device dataType shape -> Generator generatorDevice -> m (Tensor gradient layout (device <+> generatorDevice) dataType shape, Generator (device <+> generatorDevice))
+dropout :: forall gradient layout device dataType shape generatorDevice m. (SGetDevice device, SGetGeneratorDevice generatorDevice, MonadThrow m) => Double -> Tensor gradient layout device dataType shape -> Generator generatorDevice -> m (Tensor gradient layout (device <+> generatorDevice) dataType shape, Generator (device <+> generatorDevice))
 
 module Torch.GraduallyTyped.NN.Functional
 
@@ -3911,7 +3951,7 @@ instance GHC.Generics.Generic Torch.GraduallyTyped.NN.Dropout.Dropout
 instance GHC.Show.Show Torch.GraduallyTyped.NN.Dropout.Dropout
 instance Torch.GraduallyTyped.NN.Class.HasInitialize Torch.GraduallyTyped.NN.Dropout.Dropout generatorDevice Torch.GraduallyTyped.NN.Dropout.Dropout generatorDevice
 instance Torch.GraduallyTyped.NN.Class.HasStateDict Torch.GraduallyTyped.NN.Dropout.Dropout
-instance (input GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout device dataType shape, output GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout (device Torch.GraduallyTyped.Unify.<+> generatorDevice) dataType shape, generatorOutputDevice GHC.Types.~ (device Torch.GraduallyTyped.Unify.<+> generatorDevice)) => Torch.GraduallyTyped.NN.Class.HasForward Torch.GraduallyTyped.NN.Dropout.Dropout input generatorDevice output generatorOutputDevice
+instance (input GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout device dataType shape, output GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout (device Torch.GraduallyTyped.Unify.<+> generatorDevice) dataType shape, generatorOutputDevice GHC.Types.~ (device Torch.GraduallyTyped.Unify.<+> generatorDevice), Torch.GraduallyTyped.Tensor.Type.SGetDevice device, Torch.GraduallyTyped.Random.SGetGeneratorDevice generatorDevice) => Torch.GraduallyTyped.NN.Class.HasForward Torch.GraduallyTyped.NN.Dropout.Dropout input generatorDevice output generatorOutputDevice
 
 module Torch.GraduallyTyped.NN.Transformer.GMultiHeadAttention
 
@@ -4560,7 +4600,7 @@ type family RoBERTaModelF (transformerHead :: TransformerHead) (numLayers :: Nat
 --   model parameters are to be allocated.</li>
 --   </ul>
 robertaModelSpec :: forall transformerHead numLayers gradient device headDim headEmbedDim embedDim inputEmbedDim ffnDim vocabDim typeVocabDim. (SingI headDim, SingI headEmbedDim, SingI embedDim, SingI inputEmbedDim, SingI ffnDim, SingI vocabDim, SingI typeVocabDim) => STransformerHead transformerHead -> SNat numLayers -> SGradient gradient -> SDevice device -> ModelSpec (RoBERTaModelF transformerHead numLayers gradient device headDim headEmbedDim embedDim inputEmbedDim ffnDim vocabDim typeVocabDim)
-mkRoBERTaInput :: forall batchDim seqDim device m output. (MonadThrow m, SGetDim batchDim, SGetDim seqDim, 'Shape '[batchDim, seqDim] ~ Seq ('Shape '[ 'Dim ('Name "*") 'UncheckedSize, 'Dim ('Name "*") 'UncheckedSize] <+> 'Shape '[batchDim, seqDim]) ('Shape '[batchDim, seqDim]), output ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Int64) ('Shape '[batchDim, seqDim])) => SDim batchDim -> SDim seqDim -> SDevice device -> [[Int]] -> m output
+mkRoBERTaInput :: forall batchDim seqDim device m output. (MonadThrow m, SGetDim batchDim, SGetDim seqDim, Catch ('Shape '[ 'Dim ('Name "*") 'UncheckedSize, 'Dim ('Name "*") 'UncheckedSize] <+> 'Shape '[batchDim, seqDim]), output ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Int64) ('Shape '[batchDim, seqDim])) => SDim batchDim -> SDim seqDim -> SDevice device -> [[Int]] -> m output
 
 module Torch.GraduallyTyped.NN.Transformer.RoBERTa.Base
 
@@ -4653,7 +4693,7 @@ type family BERTModelF (transformerHead :: TransformerHead) (numLayers :: Nat) (
 --   parameters are to be allocated.</li>
 --   </ul>
 bertModelSpec :: forall transformerHead numLayers gradient device headDim headEmbedDim embedDim inputEmbedDim ffnDim vocabDim typeVocabDim. (SingI headDim, SingI headEmbedDim, SingI embedDim, SingI inputEmbedDim, SingI ffnDim, SingI vocabDim, SingI typeVocabDim) => STransformerHead transformerHead -> SNat numLayers -> SGradient gradient -> SDevice device -> ModelSpec (BERTModelF transformerHead numLayers gradient device headDim headEmbedDim embedDim inputEmbedDim ffnDim vocabDim typeVocabDim)
-mkBERTInput :: forall batchDim seqDim device m output. (MonadThrow m, SGetDim batchDim, SGetDim seqDim, 'Shape '[batchDim, seqDim] ~ Seq ('Shape '[ 'Dim ('Name "*") 'UncheckedSize, 'Dim ('Name "*") 'UncheckedSize] <+> 'Shape '[batchDim, seqDim]) ('Shape '[batchDim, seqDim]), output ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Int64) ('Shape '[batchDim, seqDim])) => SDim batchDim -> SDim seqDim -> SDevice device -> [[Int]] -> m output
+mkBERTInput :: forall batchDim seqDim device m output. (MonadThrow m, SGetDim batchDim, SGetDim seqDim, Catch ('Shape '[ 'Dim ('Name "*") 'UncheckedSize, 'Dim ('Name "*") 'UncheckedSize] <+> 'Shape '[batchDim, seqDim]), output ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Int64) ('Shape '[batchDim, seqDim])) => SDim batchDim -> SDim seqDim -> SDevice device -> [[Int]] -> m output
 
 module Torch.GraduallyTyped.NN.Transformer.BERT.BaseUncased
 
@@ -4875,7 +4915,7 @@ type family T5ModelF style transformerHead numEncoderLayers numDecoderLayers gra
 --   model parameters are to be allocated.</li>
 --   </ul>
 t5ModelSpec :: forall style transformerHead numEncoderLayers numDecoderLayers gradient device headDim headEmbedDim embedDim inputEmbedDim ffnDim vocabDim. (SingI headDim, SingI headEmbedDim, SingI embedDim, SingI inputEmbedDim, SingI ffnDim, SingI vocabDim) => STransformerStyle style -> STransformerHead transformerHead -> SNat numEncoderLayers -> SNat numDecoderLayers -> SGradient gradient -> SDevice device -> ModelSpec (T5ModelF style transformerHead numEncoderLayers numDecoderLayers gradient device headDim headEmbedDim embedDim inputEmbedDim ffnDim vocabDim)
-mkT5Input :: forall batchDim seqDim device m output. (MonadThrow m, SGetDim batchDim, SGetDim seqDim, 'Shape '[batchDim, seqDim] ~ Seq ('Shape '[ 'Dim ('Name "*") 'UncheckedSize, 'Dim ('Name "*") 'UncheckedSize] <+> 'Shape '[batchDim, seqDim]) ('Shape '[batchDim, seqDim]), output ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Int64) ('Shape '[batchDim, seqDim])) => SDim batchDim -> SDim seqDim -> SDevice device -> [[Int]] -> m output
+mkT5Input :: forall batchDim seqDim device m output. (MonadThrow m, SGetDim batchDim, SGetDim seqDim, Catch ('Shape '[ 'Dim ('Name "*") 'UncheckedSize, 'Dim ('Name "*") 'UncheckedSize] <+> 'Shape '[batchDim, seqDim]), output ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Int64) ('Shape '[batchDim, seqDim])) => SDim batchDim -> SDim seqDim -> SDevice device -> [[Int]] -> m output
 
 module Torch.GraduallyTyped.NN.Transformer.T5.ThreeB
 
@@ -5131,7 +5171,7 @@ type family PegasusModelF (transformerHead :: TransformerHead) (numLayers :: Nat
 --   model parameters are to be allocated.</li>
 --   </ul>
 pegasusModelSpec :: forall transformerHead numLayers gradient device headDim headEmbedDim embedDim inputEmbedDim ffnDim vocabDim. (SingI headDim, SingI headEmbedDim, SingI embedDim, SingI inputEmbedDim, SingI ffnDim, SingI vocabDim) => STransformerHead transformerHead -> SNat numLayers -> SGradient gradient -> SDevice device -> ModelSpec (PegasusModelF transformerHead numLayers gradient device headDim headEmbedDim embedDim inputEmbedDim ffnDim vocabDim)
-mkPegasusInput :: forall batchDim seqDim device m output. (MonadThrow m, SGetDim batchDim, SGetDim seqDim, 'Shape '[batchDim, seqDim] ~ Seq ('Shape '[ 'Dim ('Name "*") 'UncheckedSize, 'Dim ('Name "*") 'UncheckedSize] <+> 'Shape '[batchDim, seqDim]) ('Shape '[batchDim, seqDim]), output ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Int64) ('Shape '[batchDim, seqDim])) => SDim batchDim -> SDim seqDim -> SDevice device -> [[Int]] -> m output
+mkPegasusInput :: forall batchDim seqDim device m output. (MonadThrow m, SGetDim batchDim, SGetDim seqDim, Catch ('Shape '[ 'Dim ('Name "*") 'UncheckedSize, 'Dim ('Name "*") 'UncheckedSize] <+> 'Shape '[batchDim, seqDim]), output ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Int64) ('Shape '[batchDim, seqDim])) => SDim batchDim -> SDim seqDim -> SDevice device -> [[Int]] -> m output
 
 module Torch.GraduallyTyped.NN.Transformer.Pegasus.XSum
 
@@ -5229,7 +5269,7 @@ type family BARTModelF (transformerHead :: TransformerHead) (numLayers :: Nat) (
 --   parameters are to be allocated.</li>
 --   </ul>
 bartModelSpec :: forall transformerHead numLayers gradient device headDim headEmbedDim embedDim inputEmbedDim ffnDim vocabDim. (SingI headDim, SingI headEmbedDim, SingI embedDim, SingI inputEmbedDim, SingI ffnDim, SingI vocabDim) => STransformerHead transformerHead -> SNat numLayers -> SGradient gradient -> SDevice device -> ModelSpec (BARTModelF transformerHead numLayers gradient device headDim headEmbedDim embedDim inputEmbedDim ffnDim vocabDim)
-mkBARTInput :: forall batchDim seqDim device m output. (MonadThrow m, SGetDim batchDim, SGetDim seqDim, 'Shape '[batchDim, seqDim] ~ Seq ('Shape '[ 'Dim ('Name "*") 'UncheckedSize, 'Dim ('Name "*") 'UncheckedSize] <+> 'Shape '[batchDim, seqDim]) ('Shape '[batchDim, seqDim]), output ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Int64) ('Shape '[batchDim, seqDim])) => SDim batchDim -> SDim seqDim -> SDevice device -> [[Int]] -> m output
+mkBARTInput :: forall batchDim seqDim device m output. (MonadThrow m, SGetDim batchDim, SGetDim seqDim, Catch ('Shape '[ 'Dim ('Name "*") 'UncheckedSize, 'Dim ('Name "*") 'UncheckedSize] <+> 'Shape '[batchDim, seqDim]), output ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Int64) ('Shape '[batchDim, seqDim])) => SDim batchDim -> SDim seqDim -> SDevice device -> [[Int]] -> m output
 
 module Torch.GraduallyTyped.NN.Transformer.BART.Base
 
@@ -5715,6 +5755,16 @@ module Torch.GraduallyTyped.NN.Transformer.T5
 module Torch.GraduallyTyped.NN.Transformer
 
 module Torch.GraduallyTyped.NN
+data Tanh
+[Tanh] :: Tanh
+data GeluNew
+[GeluNew] :: GeluNew
+data Gelu
+[Gelu] :: Gelu
+data Relu
+[Relu] :: Relu
+data Softmax (selectDim :: SelectDim (By Symbol Nat))
+[Softmax] :: forall selectDim. {softmaxSelectDim :: SSelectDim selectDim} -> Softmax selectDim
 
 module Torch.GraduallyTyped
 class HasGrad parameters where {
@@ -5725,3 +5775,154 @@ class HasGrad parameters where {
 -- | calculate gradients of a zero-dimensional tensor with respect to a
 --   list of independent tensor parameters
 grad :: HasGrad parameters => Loss parameters -> parameters -> Gradients parameters
+
+module Torch.GraduallyTyped.Examples.TwoLayerNetwork
+
+-- | Compute the sine cardinal (sinc) function, see
+--   <a>https://mathworld.wolfram.com/SincFunction.html</a>.
+sinc :: Floating a => a -> a
+
+-- | Compute the sine cardinal (sinc) function and add normally distributed
+--   noise of strength epsilon. We use the <a>normal</a> function from
+--   <a>Normal</a> which requires a random number generator with
+--   <a>RandomGen</a> instance.
+noisySinc :: (Floating a, Random a, RandomGen g) => a -> a -> g -> (a, g)
+
+-- | Datatype to represent a dataset of sine cardinal (sinc) inputs and
+--   outputs. The <a>name</a> field is used to identify the split of the
+--   dataset.
+data SincData
+SincData :: Text -> [(Float, Float)] -> SincData
+[name] :: SincData -> Text
+[unSincData] :: SincData -> [(Float, Float)]
+
+-- | Create a dataset of noisy sine cardinal (sinc) values of a desired
+--   size.
+mkSincData :: (RandomGen g, Monad m) => Text -> Int -> StateT g m SincData
+
+-- | Data type to represent a simple two-layer neural network. It is a
+--   product type of two layer types, <tt>fstLayer</tt> and
+--   <tt>sndLayer</tt>, an activation function, <tt>activation</tt>, and a
+--   dropout layer, <tt>dropout</tt>.
+data TwoLayerNetwork fstLayer activation dropout sndLayer
+TwoLayerNetwork :: fstLayer -> activation -> dropout -> sndLayer -> TwoLayerNetwork fstLayer activation dropout sndLayer
+[tlnFstLayer] :: TwoLayerNetwork fstLayer activation dropout sndLayer -> fstLayer
+[tlnActivation] :: TwoLayerNetwork fstLayer activation dropout sndLayer -> activation
+[tlnDropout] :: TwoLayerNetwork fstLayer activation dropout sndLayer -> dropout
+[tlnSndLayer] :: TwoLayerNetwork fstLayer activation dropout sndLayer -> sndLayer
+
+-- | Specifies the type of the two-layer network.
+type TwoLayerNetworkF gradient hasDropout device dataType inputDim outputDim hiddenDim = NamedModel (TwoLayerNetwork (TLNFstLayerF gradient device dataType inputDim hiddenDim) TLNActivationF (TLNDropoutF hasDropout) (TLNSndLayerF gradient device dataType outputDim hiddenDim))
+
+-- | Specifies the type of the first layer of the neural network.
+type TLNFstLayerF gradient device dataType inputDim hiddenDim = NamedModel (GLinear (NamedModel (LinearWeightF gradient device dataType inputDim hiddenDim)) (NamedModel (LinearBiasF 'WithBias gradient device dataType hiddenDim)))
+
+-- | Specifies the type of the activation function
+type TLNActivationF = Tanh
+
+-- | Specifies the type of the dropout layer
+type family TLNDropoutF hasDropout
+
+-- | Specifies the type of the second layer of the neural network.
+type TLNSndLayerF gradient device dataType outputDim hiddenDim = NamedModel (GLinear (NamedModel (LinearWeightF gradient device dataType hiddenDim outputDim)) (NamedModel (LinearBiasF 'WithBias gradient device dataType outputDim)))
+
+-- | Creates a value that specifies the parameters of a two-layer neural
+--   network.
+twoLayerNetworkSpec :: forall gradient hasDropout device dataType inputDim outputDim hiddenDim. SGradient gradient -> SHasDropout hasDropout -> SDevice device -> SDataType dataType -> SDim inputDim -> SDim outputDim -> SDim hiddenDim -> Double -> ModelSpec (TwoLayerNetworkF gradient hasDropout device dataType inputDim outputDim hiddenDim)
+
+-- | Options for the Adam optimizer.
+data AdamOptions
+AdamOptions :: Double -> Double -> Double -> Double -> Double -> Bool -> AdamOptions
+
+-- | learning rate
+[learningRate] :: AdamOptions -> Double
+
+-- | beta1
+[beta1] :: AdamOptions -> Double
+
+-- | beta2
+[beta2] :: AdamOptions -> Double
+
+-- | epsilon
+[epsilon] :: AdamOptions -> Double
+
+-- | weight decay
+[weightDecay] :: AdamOptions -> Double
+
+-- | use amsgrad
+[amsgrad] :: AdamOptions -> Bool
+
+-- | Default Adam options.
+defaultAdamOptions :: AdamOptions
+
+-- | Optimizer data type.
+data Optimizer model
+[UnsafeOptimizer] :: forall model. {optimizerStateDictKeys :: [StateDictKey], optimizerPtr :: ForeignPtr Optimizer} -> Optimizer model
+
+-- | Get the model state dictionary from an optimizer.
+getStateDict :: forall model. Optimizer model -> IO StateDict
+
+-- | Extract a model from an optimizer.
+getModel :: forall model. HasStateDict model => ModelSpec model -> Optimizer model -> IO model
+
+-- | Create a new Adam optimizer from a model.
+mkAdam :: forall model. HasStateDict model => AdamOptions -> model -> IO (Optimizer model)
+
+-- | Compute the mean squared error between two tensors.
+mseLoss :: forall m gradient layout device dataType shape gradient' layout' device' dataType' shape'. (MonadThrow m, Catch (shape <+> shape')) => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> m (Tensor (gradient <|> gradient') (layout <+> layout') (device <+> device') (dataType <+> dataType') ('Shape '[]))
+
+-- | Perform one step of optimization.
+stepWithGenerator :: (HasStateDict model, SGetGeneratorDevice generatorDevice, SGetGeneratorDevice generatorOutputDevice, Catch (lossShape <+> 'Shape '[]), Catch (lossGradient <+> 'Gradient 'WithGradient)) => Optimizer model -> ModelSpec model -> (model -> Generator generatorDevice -> IO (Tensor lossGradient lossLayout lossDataType lossDevice lossShape, Generator generatorOutputDevice)) -> Generator generatorDevice -> IO (Tensor lossGradient lossLayout lossDataType lossDevice lossShape, Generator generatorOutputDevice)
+
+-- | Train the model for one epoch.
+train :: forall m model input generatorDevice lossGradient lossLayout lossDataType lossDevice lossShape generatorOutputDevice. (MonadIO m, HasStateDict model, HasForward model input generatorDevice (Tensor lossGradient lossLayout lossDataType lossDevice lossShape) generatorOutputDevice, HasForward model input generatorOutputDevice (Tensor lossGradient lossLayout lossDataType lossDevice lossShape) generatorOutputDevice, SGetGeneratorDevice generatorDevice, SGetGeneratorDevice generatorOutputDevice, SGetGradient lossGradient, SGetShape lossShape, Catch (lossShape <+> 'Shape '[]), Catch (lossGradient <+> 'Gradient 'WithGradient)) => Optimizer model -> ModelSpec model -> ListT m input -> Generator generatorDevice -> m (Either (Generator generatorDevice) (Tensor ('Gradient 'WithoutGradient) lossLayout lossDataType lossDevice ('Shape '[]), Generator generatorOutputDevice))
+
+-- | Evaluate the model on the given examples.
+eval :: (MonadIO m, HasStateDict model, HasForward model input generatorDevice (Tensor lossGradient lossLayout lossDataType lossDevice lossShape) generatorOutputDevice, HasForward model input generatorOutputDevice (Tensor lossGradient lossLayout lossDataType lossDevice lossShape) generatorOutputDevice, SGetGradient lossGradient, SGetShape lossShape, Catch (lossShape <+> 'Shape '[]), Catch (lossGradient <+> 'Gradient 'WithoutGradient)) => model -> ListT m input -> Generator generatorDevice -> m (Either (Generator generatorDevice) (Tensor ('Gradient 'WithoutGradient) lossLayout lossDataType lossDevice ('Shape '[]), Generator generatorOutputDevice))
+
+-- | Single-cycle learning rate schedule. See, for instance,
+--   <a>https://arxiv.org/abs/1803.09820</a>.
+--   
+--   This is a simple schedule that is a stepwise linear interpolation
+--   between the initial, maximum, and final learning rates. The initial
+--   learning rate is zero.
+singleCycleLearningRateSchedule :: Double -> Double -> Int -> Int -> Int -> Int -> Double
+
+-- | Data type for monitoring the training and evaluation losses.
+data Monitor
+
+-- | monitor for training loss
+TrainingMonitor :: Float -> Int -> Monitor
+[mtLoss] :: Monitor -> Float
+[mtEpoch] :: Monitor -> Int
+
+-- | monitor for evaluation loss
+EvaluationMonitor :: Float -> Int -> Monitor
+[meLoss] :: Monitor -> Float
+[meEpoch] :: Monitor -> Int
+
+-- | A simple monitor that prints the training and evaluation losses to
+--   stdout.
+monitor :: MonadIO m => Consumer Monitor m r
+
+-- | Collate a stream of examples into batches. The returned batches are of
+--   the form <tt>(input, target)</tt>, where <tt>(input, target)</tt> is a
+--   pair of tensors. <tt>input</tt> and <tt>target</tt> are both of shape:
+--   
+--   <pre>
+--   Dim (SName @"*") (UncheckedSize batchSize) :|: Dim (SName @"*") (SSize @1) :|: SNil
+--   </pre>
+--   
+--   where <tt>batchSize</tt> is the number of examples in the batch.
+collate :: SDevice device -> Int -> ListT IO (Float, Float) -> _
+
+-- | Run the two-layer network training loop on a toy dataset.
+runTwoLayerNetworkExample :: IO ()
+instance GHC.Classes.Ord Torch.GraduallyTyped.Examples.TwoLayerNetwork.SincData
+instance GHC.Classes.Eq Torch.GraduallyTyped.Examples.TwoLayerNetwork.SincData
+instance GHC.Show.Show Torch.GraduallyTyped.Examples.TwoLayerNetwork.Monitor
+instance (Torch.GraduallyTyped.NN.Class.HasInitialize fstLayer generatorDevice fstLayer generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize activation generatorDevice activation generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize dropout generatorDevice dropout generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize sndLayer generatorDevice sndLayer generatorDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.Examples.TwoLayerNetwork.TwoLayerNetwork fstLayer activation dropout sndLayer) generatorDevice (Torch.GraduallyTyped.Examples.TwoLayerNetwork.TwoLayerNetwork fstLayer activation dropout sndLayer) generatorDevice
+instance (Torch.GraduallyTyped.NN.Class.HasStateDict fstLayer, Torch.GraduallyTyped.NN.Class.HasStateDict activation, Torch.GraduallyTyped.NN.Class.HasStateDict dropout, Torch.GraduallyTyped.NN.Class.HasStateDict sndLayer) => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.Examples.TwoLayerNetwork.TwoLayerNetwork fstLayer activation dropout sndLayer)
+instance (Torch.GraduallyTyped.NN.Class.HasForward fstLayer (Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout dataType device shape) generatorDevice output0 generatorDevice0, Torch.GraduallyTyped.NN.Class.HasForward activation output0 generatorDevice0 output1 generatorDevice1, Torch.GraduallyTyped.NN.Class.HasForward dropout output1 generatorDevice1 output2 generatorDevice2, Torch.GraduallyTyped.NN.Class.HasForward sndLayer output2 generatorDevice2 output generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.Examples.TwoLayerNetwork.TwoLayerNetwork fstLayer activation dropout sndLayer) (Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout dataType device shape) generatorDevice output generatorOutputDevice
+instance (Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.Examples.TwoLayerNetwork.TwoLayerNetwork fstLayer activation dropout sndLayer) input generatorDevice (Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout device dataType shape) generatorOutputDevice, Torch.GraduallyTyped.Prelude.Catch (shape Torch.GraduallyTyped.Unify.<+> shape'), output GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor (gradient Torch.GraduallyTyped.Unify.<|> gradient') (layout Torch.GraduallyTyped.Unify.<+> layout') (device Torch.GraduallyTyped.Unify.<+> device') (dataType Torch.GraduallyTyped.Unify.<+> dataType') ('Torch.GraduallyTyped.Shape.Type.Shape '[])) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.Examples.TwoLayerNetwork.TwoLayerNetwork fstLayer activation dropout sndLayer) (input, Torch.GraduallyTyped.Tensor.Type.Tensor gradient' layout' device' dataType' shape') generatorDevice output generatorOutputDevice
+instance Torch.Data.Pipeline.Dataset GHC.Types.IO Torch.GraduallyTyped.Examples.TwoLayerNetwork.SincData GHC.Types.Int (GHC.Types.Float, GHC.Types.Float)

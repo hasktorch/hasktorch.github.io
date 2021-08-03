@@ -437,19 +437,19 @@ instance (Control.Monad.Trans.Control.MonadBaseControl GHC.Types.IO m, Pipes.Saf
 module Torch.Data.Utils
 
 -- | Run a map function in parallel over the given stream.
-pmap :: (MonadIO m, MonadBaseControl IO m) => (a -> b) -> ListT m a -> ContT r m (ListT m b)
+pmap :: (MonadIO m, MonadBaseControl IO m) => Buffer b -> (a -> b) -> ListT m a -> ContT r m (ListT m b)
 
 -- | Run a pipe in parallel over the given stream.
-pmap' :: (MonadIO m, MonadBaseControl IO m) => Pipe a b m () -> ListT m a -> ContT r m (ListT m b)
+pmap' :: (MonadIO m, MonadBaseControl IO m) => Buffer b -> Pipe a b m () -> ListT m a -> ContT r m (ListT m b)
 
 -- | Map a ListT transform over the given the stream in parallel. This
 --   should be useful for using functions which groups elements of a stream
 --   and yields them downstream.
-pmapGroup :: (MonadIO m, MonadBaseControl IO m) => (ListT m a -> ListT m b) -> ListT m a -> ContT r m (ListT m b)
+pmapGroup :: (MonadIO m, MonadBaseControl IO m) => Buffer b -> (ListT m a -> ListT m b) -> ListT m a -> ContT r m (ListT m b)
 
 -- | Run a given batching function in parallel. See <a>collate</a> for how
 --   the given samples are batched.
-bufferedCollate :: (MonadIO m, MonadBaseControl IO m) => Int -> ([sample] -> Maybe batch) -> ListT m sample -> ContT r m (ListT m batch)
+bufferedCollate :: (MonadIO m, MonadBaseControl IO m) => Buffer batch -> Int -> ([sample] -> Maybe batch) -> ListT m sample -> ContT r m (ListT m batch)
 
 -- | Run a batching function with integer batch size over the given stream.
 --   The elements of the stream are split into lists of the given batch
@@ -7942,19 +7942,19 @@ readImage :: FilePath -> IO (Either String (Tensor, PixelFormat))
 readImageAsRGB8 :: FilePath -> IO (Either String Tensor)
 readImageAsRGB8WithScaling :: FilePath -> Int -> Int -> Bool -> IO (Either String (Image PixelRGB8, Tensor))
 centerCrop :: Int -> Int -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679673128 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679673135 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawLine :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679673179 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679673186 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 drawRect :: Int -> Int -> Int -> Int -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawString :: String -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
 drawChar :: Int -> Int -> Int -> (Int, Int, Int) -> (Int, Int, Int) -> Image PixelRGB8 -> IO ()
-inline_c_ffi_6989586621679673258 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679673265 :: Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 resizeRGB8 :: Int -> Int -> Bool -> Image PixelRGB8 -> Image PixelRGB8
-inline_c_ffi_6989586621679673308 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
+inline_c_ffi_6989586621679673315 :: Ptr Word8 -> Ptr Word8 -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> IO ()
 pixelFormat :: DynamicImage -> PixelFormat
 fromDynImage :: DynamicImage -> Tensor
-inline_c_ffi_6989586621679673350 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
-inline_c_ffi_6989586621679673375 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
+inline_c_ffi_6989586621679673357 :: Ptr Word16 -> Ptr Int32 -> CInt -> IO ()
+inline_c_ffi_6989586621679673382 :: Ptr Word32 -> Ptr Int64 -> CInt -> IO ()
 fromImages :: [Image PixelRGB8] -> IO Tensor
 writeImage :: forall p. Pixel p => Int -> Int -> Int -> p -> Tensor -> IO (Image p)
 writeBitmap :: FilePath -> Tensor -> IO ()
