@@ -1,0 +1,1795 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DataKinds #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE RankNTypes #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE TypeFamilies #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE TypeOperators #-}</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.GraduallyTyped.NN.Training</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.IO.Class</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">MonadIO</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier">Data.Singletons.Prelude.List</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier">SList</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier">Pipes</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">P</span></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier">Pipes.Prelude</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">P</span></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Class</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier">HasForward</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier">HasStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier">ModelSpec</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html"><span class="hs-identifier">Torch.GraduallyTyped.Optim</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#Optimizer"><span class="hs-identifier">Optimizer</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#stepWithGenerator"><span class="hs-identifier">stepWithGenerator</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html"><span class="hs-identifier">Torch.GraduallyTyped.Prelude</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Catch"><span class="hs-identifier">Catch</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html"><span class="hs-identifier">Torch.GraduallyTyped.Random</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier">Generator</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#SGetGeneratorDevice"><span class="hs-identifier">SGetGeneratorDevice</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html"><span class="hs-identifier">Torch.GraduallyTyped.RequiresGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier">Gradient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#RequiresGradient"><span class="hs-identifier">RequiresGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier">SGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#SRequiresGradient"><span class="hs-identifier">SRequiresGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Shape.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SShape"><span class="hs-identifier">SShape</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier">Shape</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Pointwise.html"><span class="hs-identifier">Torch.GraduallyTyped.Tensor.MathOperations.Pointwise</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Pointwise.html#divScalar"><span class="hs-identifier">divScalar</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Tensor.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#SGetGradient"><span class="hs-identifier">SGetGradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#SGetShape"><span class="hs-identifier">SGetShape</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier">Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#sCheckedGradient"><span class="hs-identifier">sCheckedGradient</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#sCheckedShape"><span class="hs-identifier">sCheckedShape</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#withoutGradient"><span class="hs-identifier">withoutGradient</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html"><span class="hs-identifier">Torch.GraduallyTyped.Unify</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-keyword">type</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator">(&lt;+&gt;)</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span class="hs-comment">-- | Train the model for one epoch.</span><span>
+</span><span id="line-24"></span><span class="annot"><a href="Torch.GraduallyTyped.NN.Training.html#train"><span class="hs-identifier hs-type">train</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679649200"><span class="annot"><a href="#local-6989586621679649200"><span class="hs-identifier hs-type">m</span></a></span></span><span> </span><span id="local-6989586621679649199"><span class="annot"><a href="#local-6989586621679649199"><span class="hs-identifier hs-type">model</span></a></span></span><span> </span><span id="local-6989586621679649198"><span class="annot"><a href="#local-6989586621679649198"><span class="hs-identifier hs-type">input</span></a></span></span><span> </span><span id="local-6989586621679649197"><span class="annot"><a href="#local-6989586621679649197"><span class="hs-identifier hs-type">generatorDevice</span></a></span></span><span> </span><span id="local-6989586621679649196"><span class="annot"><a href="#local-6989586621679649196"><span class="hs-identifier hs-type">lossGradient</span></a></span></span><span> </span><span id="local-6989586621679649195"><span class="annot"><a href="#local-6989586621679649195"><span class="hs-identifier hs-type">lossLayout</span></a></span></span><span> </span><span id="local-6989586621679649194"><span class="annot"><a href="#local-6989586621679649194"><span class="hs-identifier hs-type">lossDataType</span></a></span></span><span> </span><span id="local-6989586621679649193"><span class="annot"><a href="#local-6989586621679649193"><span class="hs-identifier hs-type">lossDevice</span></a></span></span><span> </span><span id="local-6989586621679649192"><span class="annot"><a href="#local-6989586621679649192"><span class="hs-identifier hs-type">lossShape</span></a></span></span><span> </span><span id="local-6989586621679649191"><span class="annot"><a href="#local-6989586621679649191"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadIO</span></span><span> </span><span class="annot"><a href="#local-6989586621679649200"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649199"><span class="hs-identifier hs-type">model</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-28"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649199"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649198"><span class="hs-identifier hs-type">input</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649197"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649196"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649195"><span class="hs-identifier hs-type">lossLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649194"><span class="hs-identifier hs-type">lossDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649193"><span class="hs-identifier hs-type">lossDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649192"><span class="hs-identifier hs-type">lossShape</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679649191"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-29"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649199"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649198"><span class="hs-identifier hs-type">input</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649191"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649196"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649195"><span class="hs-identifier hs-type">lossLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649194"><span class="hs-identifier hs-type">lossDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649193"><span class="hs-identifier hs-type">lossDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649192"><span class="hs-identifier hs-type">lossShape</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679649191"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-30"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#SGetGeneratorDevice"><span class="hs-identifier hs-type">SGetGeneratorDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649197"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-31"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#SGetGeneratorDevice"><span class="hs-identifier hs-type">SGetGeneratorDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649191"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-32"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#SGetGradient"><span class="hs-identifier hs-type">SGetGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649196"><span class="hs-identifier hs-type">lossGradient</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-33"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#SGetShape"><span class="hs-identifier hs-type">SGetShape</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649192"><span class="hs-identifier hs-type">lossShape</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-34"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Catch"><span class="hs-identifier hs-type">Catch</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679649192"><span class="hs-identifier hs-type">lossShape</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier hs-type">Shape</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-35"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Catch"><span class="hs-identifier hs-type">Catch</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679649196"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier hs-type">Gradient</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#WithGradient"><span class="hs-identifier hs-type">WithGradient</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-comment">-- | optimizer for the model</span><span>
+</span><span id="line-38"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#Optimizer"><span class="hs-identifier hs-type">Optimizer</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649199"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-comment">-- | model specification</span><span>
+</span><span id="line-40"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier hs-type">ModelSpec</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649199"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-comment">-- | stream of training examples</span><span>
+</span><span id="line-42"></span><span>  </span><span class="annot"><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-type">P.ListT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649200"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649198"><span class="hs-identifier hs-type">input</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-comment">-- | random generator</span><span>
+</span><span id="line-44"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649197"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-comment">-- | returned is either the original generator or the average training loss and a new generator</span><span>
+</span><span id="line-46"></span><span>  </span><span class="annot"><a href="#local-6989586621679649200"><span class="hs-identifier hs-type">m</span></a></span><span>
+</span><span id="line-47"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span>
+</span><span id="line-48"></span><span>        </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649197"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span>        </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier hs-type">Gradient</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#WithoutGradient"><span class="hs-identifier hs-type">WithoutGradient</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679649195"><span class="hs-identifier hs-type">lossLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649194"><span class="hs-identifier hs-type">lossDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649193"><span class="hs-identifier hs-type">lossDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier hs-type">Shape</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649191"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span id="train"><span class="annot"><span class="annottext">train :: Optimizer model
+-&gt; ModelSpec model
+-&gt; ListT m input
+-&gt; Generator generatorDevice
+-&gt; m (Either
+        (Generator generatorDevice)
+        (Tensor
+           ('Gradient 'WithoutGradient)
+           lossLayout
+           lossDataType
+           lossDevice
+           ('Shape '[]),
+         Generator generatorOutputDevice))
+</span><a href="Torch.GraduallyTyped.NN.Training.html#train"><span class="hs-identifier hs-var hs-var">train</span></a></span></span><span> </span><span id="local-6989586621679649190"><span class="annot"><span class="annottext">Optimizer model
+</span><a href="#local-6989586621679649190"><span class="hs-identifier hs-var">optim</span></a></span></span><span> </span><span id="local-6989586621679649189"><span class="annot"><span class="annottext">ModelSpec model
+</span><a href="#local-6989586621679649189"><span class="hs-identifier hs-var">modelSpec</span></a></span></span><span> </span><span id="local-6989586621679649188"><span class="annot"><span class="annottext">ListT m input
+</span><a href="#local-6989586621679649188"><span class="hs-identifier hs-var">examples</span></a></span></span><span> </span><span id="local-6989586621679649187"><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679649187"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-52"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679649186"><span class="annot"><span class="annottext">producer :: Proxy X () () (input, Int) m ()
+</span><a href="#local-6989586621679649186"><span class="hs-identifier hs-var hs-var">producer</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Producer input m ()
+-&gt; Producer Int m () -&gt; Proxy X () () (input, Int) m ()
+forall (m :: * -&gt; *) a r b x' x.
+Monad m =&gt;
+Producer a m r -&gt; Producer b m r -&gt; Proxy x' x () (a, b) m r
+</span><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.zip</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ListT m input -&gt; Producer input m ()
+forall (m :: * -&gt; *) a. ListT m a -&gt; Producer a m ()
+</span><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var hs-var">P.enumerate</span></a></span><span> </span><span class="annot"><span class="annottext">ListT m input
+</span><a href="#local-6989586621679649188"><span class="hs-identifier hs-var">examples</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Int] -&gt; Producer Int m ()
+forall (m :: * -&gt; *) (f :: * -&gt; *) a x' x.
+(Functor m, Foldable f) =&gt;
+f a -&gt; Proxy x' x () a m ()
+</span><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.each</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">..</span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span>  </span><span id="local-6989586621679649182"><span class="annot"><span class="annottext">Either () ((input, Int), Proxy X () () (input, Int) m ())
+</span><a href="#local-6989586621679649182"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
+-&gt; m (Either () ((input, Int), Proxy X () () (input, Int) m ()))
+forall (m :: * -&gt; *) a r.
+Monad m =&gt;
+Producer a m r -&gt; m (Either r (a, Producer a m r))
+</span><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.next</span></a></span><span> </span><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
+</span><a href="#local-6989586621679649186"><span class="hs-identifier hs-var">producer</span></a></span><span>
+</span><span id="line-54"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Either () ((input, Int), Proxy X () () (input, Int) m ())
+</span><a href="#local-6989586621679649182"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-55"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span class="annot"><span class="annottext">()
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either
+  (Generator generatorDevice)
+  (Tensor
+     ('Gradient 'WithoutGradient)
+     lossLayout
+     lossDataType
+     lossDevice
+     ('Shape '[]),
+   Generator generatorOutputDevice)
+-&gt; m (Either
+        (Generator generatorDevice)
+        (Tensor
+           ('Gradient 'WithoutGradient)
+           lossLayout
+           lossDataType
+           lossDevice
+           ('Shape '[]),
+         Generator generatorOutputDevice))
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either
+   (Generator generatorDevice)
+   (Tensor
+      ('Gradient 'WithoutGradient)
+      lossLayout
+      lossDataType
+      lossDevice
+      ('Shape '[]),
+    Generator generatorOutputDevice)
+ -&gt; m (Either
+         (Generator generatorDevice)
+         (Tensor
+            ('Gradient 'WithoutGradient)
+            lossLayout
+            lossDataType
+            lossDevice
+            ('Shape '[]),
+          Generator generatorOutputDevice)))
+-&gt; (Generator generatorDevice
+    -&gt; Either
+         (Generator generatorDevice)
+         (Tensor
+            ('Gradient 'WithoutGradient)
+            lossLayout
+            lossDataType
+            lossDevice
+            ('Shape '[]),
+          Generator generatorOutputDevice))
+-&gt; Generator generatorDevice
+-&gt; m (Either
+        (Generator generatorDevice)
+        (Tensor
+           ('Gradient 'WithoutGradient)
+           lossLayout
+           lossDataType
+           lossDevice
+           ('Shape '[]),
+         Generator generatorOutputDevice))
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
+-&gt; Either
+     (Generator generatorDevice)
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        ('Shape '[]),
+      Generator generatorOutputDevice)
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(Generator generatorDevice
+ -&gt; m (Either
+         (Generator generatorDevice)
+         (Tensor
+            ('Gradient 'WithoutGradient)
+            lossLayout
+            lossDataType
+            lossDevice
+            ('Shape '[]),
+          Generator generatorOutputDevice)))
+-&gt; Generator generatorDevice
+-&gt; m (Either
+        (Generator generatorDevice)
+        (Tensor
+           ('Gradient 'WithoutGradient)
+           lossLayout
+           lossDataType
+           lossDevice
+           ('Shape '[]),
+         Generator generatorOutputDevice))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679649187"><span class="hs-identifier hs-var">g</span></a></span><span>
+</span><span id="line-56"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span id="local-6989586621679649179"><span class="annot"><span class="annottext">input
+</span><a href="#local-6989586621679649179"><span class="hs-identifier hs-var">input</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679649178"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679649178"><span class="hs-identifier hs-var">iter</span></a></span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span id="local-6989586621679649177"><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
+</span><a href="#local-6989586621679649177"><span class="hs-identifier hs-var">producer'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-57"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679649176"><span class="annot"><span class="annottext">step :: ((Tensor
+    ('Gradient 'WithoutGradient)
+    lossLayout
+    lossDataType
+    lossDevice
+    ('Shape '[]),
+  Int),
+ Generator generatorOutputDevice)
+-&gt; (input, Int)
+-&gt; m ((Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[]),
+       Int),
+      Generator generatorOutputDevice)
+</span><a href="#local-6989586621679649176"><span class="hs-identifier hs-var hs-var">step</span></a></span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span id="local-6989586621679649175"><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+</span><a href="#local-6989586621679649175"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span id="local-6989586621679649174"><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679649174"><span class="hs-identifier hs-var">g'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679649173"><span class="annot"><span class="annottext">input
+</span><a href="#local-6989586621679649173"><span class="hs-identifier hs-var">input'</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679649172"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679649172"><span class="hs-identifier hs-var">iter'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO
+  ((Tensor
+      ('Gradient 'WithoutGradient)
+      lossLayout
+      lossDataType
+      lossDevice
+      ('Shape '[]),
+    Int),
+   Generator generatorOutputDevice)
+-&gt; m ((Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[]),
+       Int),
+      Generator generatorOutputDevice)
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">(IO
+   ((Tensor
+       ('Gradient 'WithoutGradient)
+       lossLayout
+       lossDataType
+       lossDevice
+       ('Shape '[]),
+     Int),
+    Generator generatorOutputDevice)
+ -&gt; m ((Tensor
+          ('Gradient 'WithoutGradient)
+          lossLayout
+          lossDataType
+          lossDevice
+          ('Shape '[]),
+        Int),
+       Generator generatorOutputDevice))
+-&gt; IO
+     ((Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[]),
+       Int),
+      Generator generatorOutputDevice)
+-&gt; m ((Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[]),
+       Int),
+      Generator generatorOutputDevice)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-58"></span><span>            </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679649170"><span class="annot"><span class="annottext">forward' :: model
+-&gt; Generator generatorOutputDevice
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        ('Shape '[]),
+      Generator generatorOutputDevice)
+</span><a href="#local-6989586621679649170"><span class="hs-identifier hs-var hs-var">forward'</span></a></span></span><span> </span><span id="local-6989586621679649169"><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679649169"><span class="hs-identifier hs-var">model</span></a></span></span><span> </span><span id="local-6989586621679649168"><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679649168"><span class="hs-identifier hs-var">g''</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-59"></span><span>                  </span><span class="hs-special">(</span><span id="local-6989586621679649167"><span class="annot"><span class="annottext">Tensor lossGradient lossLayout lossDataType lossDevice lossShape
+</span><a href="#local-6989586621679649167"><span class="hs-identifier hs-var">loss'</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679649166"><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679649166"><span class="hs-identifier hs-var">g'''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">model
+-&gt; input
+-&gt; Generator generatorOutputDevice
+-&gt; IO
+     (Tensor lossGradient lossLayout lossDataType lossDevice lossShape,
+      Generator generatorOutputDevice)
+forall model input (generatorDevice :: Device (DeviceType Nat))
+       output (generatorOutputDevice :: Device (DeviceType Nat))
+       (m :: * -&gt; *).
+(HasForward
+   model input generatorDevice output generatorOutputDevice,
+ MonadThrow m) =&gt;
+model
+-&gt; input
+-&gt; Generator generatorDevice
+-&gt; m (output, Generator generatorOutputDevice)
+</span><a href="Torch.GraduallyTyped.NN.Class.html#forward"><span class="hs-identifier hs-var">forward</span></a></span><span> </span><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679649169"><span class="hs-identifier hs-var">model</span></a></span><span> </span><span class="annot"><span class="annottext">input
+</span><a href="#local-6989586621679649173"><span class="hs-identifier hs-var">input'</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679649168"><span class="hs-identifier hs-var">g''</span></a></span><span>
+</span><span id="line-60"></span><span>                  </span><span id="local-6989586621679649164"><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+</span><a href="#local-6989586621679649164"><span class="hs-identifier hs-var">loss''</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">SShape ('Shape '[])
+-&gt; Tensor
+     ('Gradient 'WithGradient)
+     lossLayout
+     lossDataType
+     lossDevice
+     lossShape
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        ('Shape '[]))
+forall (shape' :: Shape [Dim (Name Symbol) (Size Nat)])
+       (m :: * -&gt; *) (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)]).
+(SGetShape shape, MonadThrow m, Catch (shape &lt;+&gt; shape')) =&gt;
+SShape shape'
+-&gt; Tensor gradient layout device dataType shape
+-&gt; m (Tensor gradient layout device dataType shape')
+</span><a href="Torch.GraduallyTyped.Tensor.Type.html#sCheckedShape"><span class="hs-identifier hs-var">sCheckedShape</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SList '[] -&gt; SShape ('Shape '[])
+forall (dims :: [Dim (Name Symbol) (Size Nat)]).
+SList dims -&gt; SShape ('Shape dims)
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#SShape"><span class="hs-identifier hs-var">SShape</span></a></span><span> </span><span class="annot"><span class="annottext">SList '[]
+forall a. SList '[]
+</span><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier hs-var">SNil</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Tensor
+   ('Gradient 'WithGradient)
+   lossLayout
+   lossDataType
+   lossDevice
+   lossShape
+ -&gt; IO
+      (Tensor
+         ('Gradient 'WithGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[])))
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        lossShape)
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        ('Shape '[]))
+forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
+</span><span class="hs-operator hs-var">=&lt;&lt;</span></span><span> </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithGradient)
+-&gt; Tensor lossGradient lossLayout lossDataType lossDevice lossShape
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        lossShape)
+forall (gradient' :: Gradient RequiresGradient) (m :: * -&gt; *)
+       (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)]).
+(SGetGradient gradient, MonadThrow m,
+ Catch (gradient &lt;+&gt; gradient')) =&gt;
+SGradient gradient'
+-&gt; Tensor gradient layout device dataType shape
+-&gt; m (Tensor gradient' layout device dataType shape)
+</span><a href="Torch.GraduallyTyped.Tensor.Type.html#sCheckedGradient"><span class="hs-identifier hs-var">sCheckedGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SRequiresGradient 'WithGradient
+-&gt; SGradient ('Gradient 'WithGradient)
+forall (requiresGradient :: RequiresGradient).
+SRequiresGradient requiresGradient
+-&gt; SGradient ('Gradient requiresGradient)
+</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-var">SGradient</span></a></span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithGradient
+</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SWithGradient"><span class="hs-identifier hs-var">SWithGradient</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Tensor lossGradient lossLayout lossDataType lossDevice lossShape
+</span><a href="#local-6989586621679649167"><span class="hs-identifier hs-var">loss'</span></a></span><span>
+</span><span id="line-61"></span><span>                  </span><span class="annot"><span class="annottext">(Tensor
+   ('Gradient 'WithGradient)
+   lossLayout
+   lossDataType
+   lossDevice
+   ('Shape '[]),
+ Generator generatorOutputDevice)
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        ('Shape '[]),
+      Generator generatorOutputDevice)
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+</span><a href="#local-6989586621679649164"><span class="hs-identifier hs-var">loss''</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679649166"><span class="hs-identifier hs-var">g'''</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-62"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679649158"><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+</span><a href="#local-6989586621679649158"><span class="hs-identifier hs-var">loss'</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679649157"><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679649157"><span class="hs-identifier hs-var">g''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Optimizer model
+-&gt; ModelSpec model
+-&gt; (model
+    -&gt; Generator generatorOutputDevice
+    -&gt; IO
+         (Tensor
+            ('Gradient 'WithGradient)
+            lossLayout
+            lossDataType
+            lossDevice
+            ('Shape '[]),
+          Generator generatorOutputDevice))
+-&gt; Generator generatorOutputDevice
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        ('Shape '[]),
+      Generator generatorOutputDevice)
+forall model (generatorDevice :: Device (DeviceType Nat))
+       (lossGradient :: Gradient RequiresGradient)
+       (lossLayout :: Layout LayoutType)
+       (lossDataType :: Device (DeviceType Nat))
+       (lossDevice :: DataType DType)
+       (lossShape :: Shape [Dim (Name Symbol) (Size Nat)])
+       (generatorOutputDevice :: Device (DeviceType Nat)).
+(HasStateDict model, SGetGeneratorDevice generatorDevice,
+ SGetGeneratorDevice generatorOutputDevice,
+ Catch (lossShape &lt;+&gt; 'Shape '[]),
+ Catch (lossGradient &lt;+&gt; 'Gradient 'WithGradient)) =&gt;
+Optimizer model
+-&gt; ModelSpec model
+-&gt; (model
+    -&gt; Generator generatorDevice
+    -&gt; IO
+         (Tensor lossGradient lossLayout lossDataType lossDevice lossShape,
+          Generator generatorOutputDevice))
+-&gt; Generator generatorDevice
+-&gt; IO
+     (Tensor lossGradient lossLayout lossDataType lossDevice lossShape,
+      Generator generatorOutputDevice)
+</span><a href="Torch.GraduallyTyped.Optim.html#stepWithGenerator"><span class="hs-identifier hs-var">stepWithGenerator</span></a></span><span> </span><span class="annot"><span class="annottext">Optimizer model
+</span><a href="#local-6989586621679649190"><span class="hs-identifier hs-var">optim</span></a></span><span> </span><span class="annot"><span class="annottext">ModelSpec model
+</span><a href="#local-6989586621679649189"><span class="hs-identifier hs-var">modelSpec</span></a></span><span> </span><span class="annot"><span class="annottext">model
+-&gt; Generator generatorOutputDevice
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        ('Shape '[]),
+      Generator generatorOutputDevice)
+</span><a href="#local-6989586621679649170"><span class="hs-identifier hs-var">forward'</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679649174"><span class="hs-identifier hs-var">g'</span></a></span><span>
+</span><span id="line-63"></span><span>            </span><span id="local-6989586621679649156"><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+</span><a href="#local-6989586621679649156"><span class="hs-identifier hs-var">loss''</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        ('Shape '[]))
+forall (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)]).
+Tensor gradient layout device dataType shape
+-&gt; IO
+     (Tensor ('Gradient 'WithoutGradient) layout device dataType shape)
+</span><a href="Torch.GraduallyTyped.Tensor.Type.html#withoutGradient"><span class="hs-identifier hs-var">withoutGradient</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+</span><a href="#local-6989586621679649158"><span class="hs-identifier hs-var">loss'</span></a></span><span>
+</span><span id="line-64"></span><span>            </span><span class="annot"><span class="annottext">((Tensor
+    ('Gradient 'WithoutGradient)
+    lossLayout
+    lossDataType
+    lossDevice
+    ('Shape '[]),
+  Int),
+ Generator generatorOutputDevice)
+-&gt; IO
+     ((Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[]),
+       Int),
+      Generator generatorOutputDevice)
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+</span><a href="#local-6989586621679649175"><span class="hs-identifier hs-var">loss</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     lossLayout
+     lossDataType
+     lossDevice
+     ('Shape '[])
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     lossLayout
+     lossDataType
+     lossDevice
+     ('Shape '[])
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+</span><a href="#local-6989586621679649156"><span class="hs-identifier hs-var">loss''</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679649172"><span class="hs-identifier hs-var">iter'</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679649157"><span class="hs-identifier hs-var">g''</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-65"></span><span>          </span><span id="local-6989586621679649154"><span class="annot"><span class="annottext">init' :: m ((Tensor
+      ('Gradient 'WithoutGradient)
+      lossLayout
+      lossDataType
+      lossDevice
+      ('Shape '[]),
+    Int),
+   Generator generatorOutputDevice)
+</span><a href="#local-6989586621679649154"><span class="hs-identifier hs-var hs-var">init'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO
+  ((Tensor
+      ('Gradient 'WithoutGradient)
+      lossLayout
+      lossDataType
+      lossDevice
+      ('Shape '[]),
+    Int),
+   Generator generatorOutputDevice)
+-&gt; m ((Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[]),
+       Int),
+      Generator generatorOutputDevice)
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">(IO
+   ((Tensor
+       ('Gradient 'WithoutGradient)
+       lossLayout
+       lossDataType
+       lossDevice
+       ('Shape '[]),
+     Int),
+    Generator generatorOutputDevice)
+ -&gt; m ((Tensor
+          ('Gradient 'WithoutGradient)
+          lossLayout
+          lossDataType
+          lossDevice
+          ('Shape '[]),
+        Int),
+       Generator generatorOutputDevice))
+-&gt; IO
+     ((Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[]),
+       Int),
+      Generator generatorOutputDevice)
+-&gt; m ((Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[]),
+       Int),
+      Generator generatorOutputDevice)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-66"></span><span>            </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679649153"><span class="annot"><span class="annottext">forward' :: model
+-&gt; Generator generatorDevice
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        ('Shape '[]),
+      Generator generatorOutputDevice)
+</span><a href="#local-6989586621679649153"><span class="hs-identifier hs-var hs-var">forward'</span></a></span></span><span> </span><span id="local-6989586621679649152"><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679649152"><span class="hs-identifier hs-var">model</span></a></span></span><span> </span><span id="local-6989586621679649151"><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679649151"><span class="hs-identifier hs-var">g'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-67"></span><span>                  </span><span class="hs-special">(</span><span id="local-6989586621679649150"><span class="annot"><span class="annottext">Tensor lossGradient lossLayout lossDataType lossDevice lossShape
+</span><a href="#local-6989586621679649150"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679649149"><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679649149"><span class="hs-identifier hs-var">g''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">model
+-&gt; input
+-&gt; Generator generatorDevice
+-&gt; IO
+     (Tensor lossGradient lossLayout lossDataType lossDevice lossShape,
+      Generator generatorOutputDevice)
+forall model input (generatorDevice :: Device (DeviceType Nat))
+       output (generatorOutputDevice :: Device (DeviceType Nat))
+       (m :: * -&gt; *).
+(HasForward
+   model input generatorDevice output generatorOutputDevice,
+ MonadThrow m) =&gt;
+model
+-&gt; input
+-&gt; Generator generatorDevice
+-&gt; m (output, Generator generatorOutputDevice)
+</span><a href="Torch.GraduallyTyped.NN.Class.html#forward"><span class="hs-identifier hs-var">forward</span></a></span><span> </span><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679649152"><span class="hs-identifier hs-var">model</span></a></span><span> </span><span class="annot"><span class="annottext">input
+</span><a href="#local-6989586621679649179"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679649151"><span class="hs-identifier hs-var">g'</span></a></span><span>
+</span><span id="line-68"></span><span>                  </span><span id="local-6989586621679649148"><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+</span><a href="#local-6989586621679649148"><span class="hs-identifier hs-var">loss'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">SShape ('Shape '[])
+-&gt; Tensor
+     ('Gradient 'WithGradient)
+     lossLayout
+     lossDataType
+     lossDevice
+     lossShape
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        ('Shape '[]))
+forall (shape' :: Shape [Dim (Name Symbol) (Size Nat)])
+       (m :: * -&gt; *) (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)]).
+(SGetShape shape, MonadThrow m, Catch (shape &lt;+&gt; shape')) =&gt;
+SShape shape'
+-&gt; Tensor gradient layout device dataType shape
+-&gt; m (Tensor gradient layout device dataType shape')
+</span><a href="Torch.GraduallyTyped.Tensor.Type.html#sCheckedShape"><span class="hs-identifier hs-var">sCheckedShape</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SList '[] -&gt; SShape ('Shape '[])
+forall (dims :: [Dim (Name Symbol) (Size Nat)]).
+SList dims -&gt; SShape ('Shape dims)
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#SShape"><span class="hs-identifier hs-var">SShape</span></a></span><span> </span><span class="annot"><span class="annottext">SList '[]
+forall a. SList '[]
+</span><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier hs-var">SNil</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Tensor
+   ('Gradient 'WithGradient)
+   lossLayout
+   lossDataType
+   lossDevice
+   lossShape
+ -&gt; IO
+      (Tensor
+         ('Gradient 'WithGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[])))
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        lossShape)
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        ('Shape '[]))
+forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
+</span><span class="hs-operator hs-var">=&lt;&lt;</span></span><span> </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithGradient)
+-&gt; Tensor lossGradient lossLayout lossDataType lossDevice lossShape
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        lossShape)
+forall (gradient' :: Gradient RequiresGradient) (m :: * -&gt; *)
+       (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)]).
+(SGetGradient gradient, MonadThrow m,
+ Catch (gradient &lt;+&gt; gradient')) =&gt;
+SGradient gradient'
+-&gt; Tensor gradient layout device dataType shape
+-&gt; m (Tensor gradient' layout device dataType shape)
+</span><a href="Torch.GraduallyTyped.Tensor.Type.html#sCheckedGradient"><span class="hs-identifier hs-var">sCheckedGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SRequiresGradient 'WithGradient
+-&gt; SGradient ('Gradient 'WithGradient)
+forall (requiresGradient :: RequiresGradient).
+SRequiresGradient requiresGradient
+-&gt; SGradient ('Gradient requiresGradient)
+</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-var">SGradient</span></a></span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithGradient
+</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SWithGradient"><span class="hs-identifier hs-var">SWithGradient</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Tensor lossGradient lossLayout lossDataType lossDevice lossShape
+</span><a href="#local-6989586621679649150"><span class="hs-identifier hs-var">loss</span></a></span><span>
+</span><span id="line-69"></span><span>                  </span><span class="annot"><span class="annottext">(Tensor
+   ('Gradient 'WithGradient)
+   lossLayout
+   lossDataType
+   lossDevice
+   ('Shape '[]),
+ Generator generatorOutputDevice)
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        ('Shape '[]),
+      Generator generatorOutputDevice)
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+</span><a href="#local-6989586621679649148"><span class="hs-identifier hs-var">loss'</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679649149"><span class="hs-identifier hs-var">g''</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-70"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679649147"><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+</span><a href="#local-6989586621679649147"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679649146"><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679649146"><span class="hs-identifier hs-var">g'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Optimizer model
+-&gt; ModelSpec model
+-&gt; (model
+    -&gt; Generator generatorDevice
+    -&gt; IO
+         (Tensor
+            ('Gradient 'WithGradient)
+            lossLayout
+            lossDataType
+            lossDevice
+            ('Shape '[]),
+          Generator generatorOutputDevice))
+-&gt; Generator generatorDevice
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        ('Shape '[]),
+      Generator generatorOutputDevice)
+forall model (generatorDevice :: Device (DeviceType Nat))
+       (lossGradient :: Gradient RequiresGradient)
+       (lossLayout :: Layout LayoutType)
+       (lossDataType :: Device (DeviceType Nat))
+       (lossDevice :: DataType DType)
+       (lossShape :: Shape [Dim (Name Symbol) (Size Nat)])
+       (generatorOutputDevice :: Device (DeviceType Nat)).
+(HasStateDict model, SGetGeneratorDevice generatorDevice,
+ SGetGeneratorDevice generatorOutputDevice,
+ Catch (lossShape &lt;+&gt; 'Shape '[]),
+ Catch (lossGradient &lt;+&gt; 'Gradient 'WithGradient)) =&gt;
+Optimizer model
+-&gt; ModelSpec model
+-&gt; (model
+    -&gt; Generator generatorDevice
+    -&gt; IO
+         (Tensor lossGradient lossLayout lossDataType lossDevice lossShape,
+          Generator generatorOutputDevice))
+-&gt; Generator generatorDevice
+-&gt; IO
+     (Tensor lossGradient lossLayout lossDataType lossDevice lossShape,
+      Generator generatorOutputDevice)
+</span><a href="Torch.GraduallyTyped.Optim.html#stepWithGenerator"><span class="hs-identifier hs-var">stepWithGenerator</span></a></span><span> </span><span class="annot"><span class="annottext">Optimizer model
+</span><a href="#local-6989586621679649190"><span class="hs-identifier hs-var">optim</span></a></span><span> </span><span class="annot"><span class="annottext">ModelSpec model
+</span><a href="#local-6989586621679649189"><span class="hs-identifier hs-var">modelSpec</span></a></span><span> </span><span class="annot"><span class="annottext">model
+-&gt; Generator generatorDevice
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        ('Shape '[]),
+      Generator generatorOutputDevice)
+</span><a href="#local-6989586621679649153"><span class="hs-identifier hs-var">forward'</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679649187"><span class="hs-identifier hs-var">g</span></a></span><span>
+</span><span id="line-71"></span><span>            </span><span id="local-6989586621679649145"><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+</span><a href="#local-6989586621679649145"><span class="hs-identifier hs-var">loss'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        ('Shape '[]))
+forall (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)]).
+Tensor gradient layout device dataType shape
+-&gt; IO
+     (Tensor ('Gradient 'WithoutGradient) layout device dataType shape)
+</span><a href="Torch.GraduallyTyped.Tensor.Type.html#withoutGradient"><span class="hs-identifier hs-var">withoutGradient</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+</span><a href="#local-6989586621679649147"><span class="hs-identifier hs-var">loss</span></a></span><span>
+</span><span id="line-72"></span><span>            </span><span class="annot"><span class="annottext">((Tensor
+    ('Gradient 'WithoutGradient)
+    lossLayout
+    lossDataType
+    lossDevice
+    ('Shape '[]),
+  Int),
+ Generator generatorOutputDevice)
+-&gt; IO
+     ((Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[]),
+       Int),
+      Generator generatorOutputDevice)
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+</span><a href="#local-6989586621679649145"><span class="hs-identifier hs-var">loss'</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679649178"><span class="hs-identifier hs-var">iter</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679649146"><span class="hs-identifier hs-var">g'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-73"></span><span>          </span><span id="local-6989586621679649144"><span class="annot"><span class="annottext">done :: ((Tensor gradient layout device dataType shape, divisor), b)
+-&gt; f (Either a (Tensor gradient layout device dataType shape, b))
+</span><a href="#local-6989586621679649144"><span class="hs-identifier hs-var hs-var">done</span></a></span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span id="local-6989586621679649143"><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679649143"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679649142"><span class="annot"><span class="annottext">divisor
+</span><a href="#local-6989586621679649142"><span class="hs-identifier hs-var">iter'</span></a></span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span id="local-6989586621679649141"><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679649141"><span class="hs-identifier hs-var">g''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Either a (Tensor gradient layout device dataType shape, b)
+-&gt; f (Either a (Tensor gradient layout device dataType shape, b))
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either a (Tensor gradient layout device dataType shape, b)
+ -&gt; f (Either a (Tensor gradient layout device dataType shape, b)))
+-&gt; ((Tensor gradient layout device dataType shape, b)
+    -&gt; Either a (Tensor gradient layout device dataType shape, b))
+-&gt; (Tensor gradient layout device dataType shape, b)
+-&gt; f (Either a (Tensor gradient layout device dataType shape, b))
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(Tensor gradient layout device dataType shape, b)
+-&gt; Either a (Tensor gradient layout device dataType shape, b)
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">((Tensor gradient layout device dataType shape, b)
+ -&gt; f (Either a (Tensor gradient layout device dataType shape, b)))
+-&gt; (Tensor gradient layout device dataType shape, b)
+-&gt; f (Either a (Tensor gradient layout device dataType shape, b))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679649143"><span class="hs-identifier hs-var">loss</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+-&gt; divisor -&gt; Tensor gradient layout device dataType shape
+forall divisor (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)]).
+Scalar divisor =&gt;
+Tensor gradient layout device dataType shape
+-&gt; divisor -&gt; Tensor gradient layout device dataType shape
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Pointwise.html#divScalar"><span class="hs-operator hs-var">`divScalar`</span></a></span><span> </span><span class="annot"><span class="annottext">divisor
+</span><a href="#local-6989586621679649142"><span class="hs-identifier hs-var">iter'</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679649141"><span class="hs-identifier hs-var">g''</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-74"></span><span>      </span><span class="annot"><span class="annottext">(((Tensor
+     ('Gradient 'WithoutGradient)
+     lossLayout
+     lossDataType
+     lossDevice
+     ('Shape '[]),
+   Int),
+  Generator generatorOutputDevice)
+ -&gt; (input, Int)
+ -&gt; m ((Tensor
+          ('Gradient 'WithoutGradient)
+          lossLayout
+          lossDataType
+          lossDevice
+          ('Shape '[]),
+        Int),
+       Generator generatorOutputDevice))
+-&gt; m ((Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[]),
+       Int),
+      Generator generatorOutputDevice)
+-&gt; (((Tensor
+        ('Gradient 'WithoutGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        ('Shape '[]),
+      Int),
+     Generator generatorOutputDevice)
+    -&gt; m (Either
+            (Generator generatorDevice)
+            (Tensor
+               ('Gradient 'WithoutGradient)
+               lossLayout
+               lossDataType
+               lossDevice
+               ('Shape '[]),
+             Generator generatorOutputDevice)))
+-&gt; Proxy X () () (input, Int) m ()
+-&gt; m (Either
+        (Generator generatorDevice)
+        (Tensor
+           ('Gradient 'WithoutGradient)
+           lossLayout
+           lossDataType
+           lossDevice
+           ('Shape '[]),
+         Generator generatorOutputDevice))
+forall (m :: * -&gt; *) x a b.
+Monad m =&gt;
+(x -&gt; a -&gt; m x) -&gt; m x -&gt; (x -&gt; m b) -&gt; Producer a m () -&gt; m b
+</span><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.foldM</span></a></span><span> </span><span class="annot"><span class="annottext">((Tensor
+    ('Gradient 'WithoutGradient)
+    lossLayout
+    lossDataType
+    lossDevice
+    ('Shape '[]),
+  Int),
+ Generator generatorOutputDevice)
+-&gt; (input, Int)
+-&gt; m ((Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[]),
+       Int),
+      Generator generatorOutputDevice)
+</span><a href="#local-6989586621679649176"><span class="hs-identifier hs-var">step</span></a></span><span> </span><span class="annot"><span class="annottext">m ((Tensor
+      ('Gradient 'WithoutGradient)
+      lossLayout
+      lossDataType
+      lossDevice
+      ('Shape '[]),
+    Int),
+   Generator generatorOutputDevice)
+</span><a href="#local-6989586621679649154"><span class="hs-identifier hs-var">init'</span></a></span><span> </span><span class="annot"><span class="annottext">((Tensor
+    ('Gradient 'WithoutGradient)
+    lossLayout
+    lossDataType
+    lossDevice
+    ('Shape '[]),
+  Int),
+ Generator generatorOutputDevice)
+-&gt; m (Either
+        (Generator generatorDevice)
+        (Tensor
+           ('Gradient 'WithoutGradient)
+           lossLayout
+           lossDataType
+           lossDevice
+           ('Shape '[]),
+         Generator generatorOutputDevice))
+forall (f :: * -&gt; *) divisor
+       (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)]) b a.
+(Applicative f, Scalar divisor) =&gt;
+((Tensor gradient layout device dataType shape, divisor), b)
+-&gt; f (Either a (Tensor gradient layout device dataType shape, b))
+</span><a href="#local-6989586621679649144"><span class="hs-identifier hs-var">done</span></a></span><span> </span><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
+</span><a href="#local-6989586621679649177"><span class="hs-identifier hs-var">producer'</span></a></span><span>
+</span><span id="line-75"></span><span>
+</span><span id="line-76"></span><span class="hs-comment">-- | Evaluate the model on the given examples.</span><span>
+</span><span id="line-77"></span><span id="local-6989586621679649130"><span id="local-6989586621679649131"><span id="local-6989586621679649132"><span id="local-6989586621679649133"><span id="local-6989586621679649134"><span id="local-6989586621679649135"><span id="local-6989586621679649136"><span id="local-6989586621679649137"><span id="local-6989586621679649138"><span id="local-6989586621679649139"><span class="annot"><a href="Torch.GraduallyTyped.NN.Training.html#eval"><span class="hs-identifier hs-type">eval</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-78"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadIO</span></span><span> </span><span class="annot"><a href="#local-6989586621679649139"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-79"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649138"><span class="hs-identifier hs-type">model</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-80"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649138"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649137"><span class="hs-identifier hs-type">input</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649136"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649135"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649134"><span class="hs-identifier hs-type">lossLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649133"><span class="hs-identifier hs-type">lossDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649132"><span class="hs-identifier hs-type">lossDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649131"><span class="hs-identifier hs-type">lossShape</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679649130"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-81"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649138"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649137"><span class="hs-identifier hs-type">input</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649130"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649135"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649134"><span class="hs-identifier hs-type">lossLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649133"><span class="hs-identifier hs-type">lossDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649132"><span class="hs-identifier hs-type">lossDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649131"><span class="hs-identifier hs-type">lossShape</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679649130"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-82"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#SGetGradient"><span class="hs-identifier hs-type">SGetGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649135"><span class="hs-identifier hs-type">lossGradient</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-83"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#SGetShape"><span class="hs-identifier hs-type">SGetShape</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649131"><span class="hs-identifier hs-type">lossShape</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-84"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Catch"><span class="hs-identifier hs-type">Catch</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679649131"><span class="hs-identifier hs-type">lossShape</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier hs-type">Shape</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-85"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Catch"><span class="hs-identifier hs-type">Catch</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679649135"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier hs-type">Gradient</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#WithoutGradient"><span class="hs-identifier hs-type">WithoutGradient</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-86"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-87"></span><span>  </span><span class="hs-comment">-- | model</span><span>
+</span><span id="line-88"></span><span>  </span><span class="annot"><a href="#local-6989586621679649138"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-89"></span><span>  </span><span class="hs-comment">-- | stream of examples</span><span>
+</span><span id="line-90"></span><span>  </span><span class="annot"><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-type">P.ListT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649139"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649137"><span class="hs-identifier hs-type">input</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-91"></span><span>  </span><span class="hs-comment">-- | random generator</span><span>
+</span><span id="line-92"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649136"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-93"></span><span>  </span><span class="hs-comment">-- | returned is either the original generator or the average evaluation loss and a new generator</span><span>
+</span><span id="line-94"></span><span>  </span><span class="annot"><a href="#local-6989586621679649139"><span class="hs-identifier hs-type">m</span></a></span><span>
+</span><span id="line-95"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span>
+</span><span id="line-96"></span><span>        </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649136"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-97"></span><span>        </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier hs-type">Gradient</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#WithoutGradient"><span class="hs-identifier hs-type">WithoutGradient</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679649134"><span class="hs-identifier hs-type">lossLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649133"><span class="hs-identifier hs-type">lossDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649132"><span class="hs-identifier hs-type">lossDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier hs-type">Shape</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679649130"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-98"></span><span>    </span><span class="hs-special">)</span></span></span></span></span></span></span></span></span></span></span><span>
+</span><span id="line-99"></span><span id="eval"><span class="annot"><span class="annottext">eval :: model
+-&gt; ListT m input
+-&gt; Generator generatorDevice
+-&gt; m (Either
+        (Generator generatorDevice)
+        (Tensor
+           ('Gradient 'WithoutGradient)
+           lossLayout
+           lossDataType
+           lossDevice
+           ('Shape '[]),
+         Generator generatorOutputDevice))
+</span><a href="Torch.GraduallyTyped.NN.Training.html#eval"><span class="hs-identifier hs-var hs-var">eval</span></a></span></span><span> </span><span id="local-6989586621679649128"><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679649128"><span class="hs-identifier hs-var">model</span></a></span></span><span> </span><span id="local-6989586621679649127"><span class="annot"><span class="annottext">ListT m input
+</span><a href="#local-6989586621679649127"><span class="hs-identifier hs-var">examples</span></a></span></span><span> </span><span id="local-6989586621679649126"><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679649126"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-100"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679649125"><span class="annot"><span class="annottext">producer :: Proxy X () () (input, Int) m ()
+</span><a href="#local-6989586621679649125"><span class="hs-identifier hs-var hs-var">producer</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Producer input m ()
+-&gt; Producer Int m () -&gt; Proxy X () () (input, Int) m ()
+forall (m :: * -&gt; *) a r b x' x.
+Monad m =&gt;
+Producer a m r -&gt; Producer b m r -&gt; Proxy x' x () (a, b) m r
+</span><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.zip</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ListT m input -&gt; Producer input m ()
+forall (m :: * -&gt; *) a. ListT m a -&gt; Producer a m ()
+</span><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var hs-var">P.enumerate</span></a></span><span> </span><span class="annot"><span class="annottext">ListT m input
+</span><a href="#local-6989586621679649127"><span class="hs-identifier hs-var">examples</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Int] -&gt; Producer Int m ()
+forall (m :: * -&gt; *) (f :: * -&gt; *) a x' x.
+(Functor m, Foldable f) =&gt;
+f a -&gt; Proxy x' x () a m ()
+</span><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.each</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">..</span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-101"></span><span>  </span><span id="local-6989586621679649124"><span class="annot"><span class="annottext">Either () ((input, Int), Proxy X () () (input, Int) m ())
+</span><a href="#local-6989586621679649124"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
+-&gt; m (Either () ((input, Int), Proxy X () () (input, Int) m ()))
+forall (m :: * -&gt; *) a r.
+Monad m =&gt;
+Producer a m r -&gt; m (Either r (a, Producer a m r))
+</span><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.next</span></a></span><span> </span><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
+</span><a href="#local-6989586621679649125"><span class="hs-identifier hs-var">producer</span></a></span><span>
+</span><span id="line-102"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Either () ((input, Int), Proxy X () () (input, Int) m ())
+</span><a href="#local-6989586621679649124"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-103"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span class="annot"><span class="annottext">()
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either
+  (Generator generatorDevice)
+  (Tensor
+     ('Gradient 'WithoutGradient)
+     lossLayout
+     lossDataType
+     lossDevice
+     ('Shape '[]),
+   Generator generatorOutputDevice)
+-&gt; m (Either
+        (Generator generatorDevice)
+        (Tensor
+           ('Gradient 'WithoutGradient)
+           lossLayout
+           lossDataType
+           lossDevice
+           ('Shape '[]),
+         Generator generatorOutputDevice))
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either
+   (Generator generatorDevice)
+   (Tensor
+      ('Gradient 'WithoutGradient)
+      lossLayout
+      lossDataType
+      lossDevice
+      ('Shape '[]),
+    Generator generatorOutputDevice)
+ -&gt; m (Either
+         (Generator generatorDevice)
+         (Tensor
+            ('Gradient 'WithoutGradient)
+            lossLayout
+            lossDataType
+            lossDevice
+            ('Shape '[]),
+          Generator generatorOutputDevice)))
+-&gt; (Generator generatorDevice
+    -&gt; Either
+         (Generator generatorDevice)
+         (Tensor
+            ('Gradient 'WithoutGradient)
+            lossLayout
+            lossDataType
+            lossDevice
+            ('Shape '[]),
+          Generator generatorOutputDevice))
+-&gt; Generator generatorDevice
+-&gt; m (Either
+        (Generator generatorDevice)
+        (Tensor
+           ('Gradient 'WithoutGradient)
+           lossLayout
+           lossDataType
+           lossDevice
+           ('Shape '[]),
+         Generator generatorOutputDevice))
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
+-&gt; Either
+     (Generator generatorDevice)
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        ('Shape '[]),
+      Generator generatorOutputDevice)
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(Generator generatorDevice
+ -&gt; m (Either
+         (Generator generatorDevice)
+         (Tensor
+            ('Gradient 'WithoutGradient)
+            lossLayout
+            lossDataType
+            lossDevice
+            ('Shape '[]),
+          Generator generatorOutputDevice)))
+-&gt; Generator generatorDevice
+-&gt; m (Either
+        (Generator generatorDevice)
+        (Tensor
+           ('Gradient 'WithoutGradient)
+           lossLayout
+           lossDataType
+           lossDevice
+           ('Shape '[]),
+         Generator generatorOutputDevice))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679649126"><span class="hs-identifier hs-var">g</span></a></span><span>
+</span><span id="line-104"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span id="local-6989586621679649123"><span class="annot"><span class="annottext">input
+</span><a href="#local-6989586621679649123"><span class="hs-identifier hs-var">input</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679649122"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679649122"><span class="hs-identifier hs-var">iter</span></a></span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span id="local-6989586621679649121"><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
+</span><a href="#local-6989586621679649121"><span class="hs-identifier hs-var">producer'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-105"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679649120"><span class="annot"><span class="annottext">step :: ((Tensor
+    ('Gradient 'WithoutGradient)
+    lossLayout
+    lossDataType
+    lossDevice
+    ('Shape '[]),
+  Int),
+ Generator generatorOutputDevice)
+-&gt; (input, Int)
+-&gt; m ((Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[]),
+       Int),
+      Generator generatorOutputDevice)
+</span><a href="#local-6989586621679649120"><span class="hs-identifier hs-var hs-var">step</span></a></span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span id="local-6989586621679649119"><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+</span><a href="#local-6989586621679649119"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span id="local-6989586621679649118"><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679649118"><span class="hs-identifier hs-var">g'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679649117"><span class="annot"><span class="annottext">input
+</span><a href="#local-6989586621679649117"><span class="hs-identifier hs-var">input'</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679649116"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679649116"><span class="hs-identifier hs-var">iter'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO
+  ((Tensor
+      ('Gradient 'WithoutGradient)
+      lossLayout
+      lossDataType
+      lossDevice
+      ('Shape '[]),
+    Int),
+   Generator generatorOutputDevice)
+-&gt; m ((Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[]),
+       Int),
+      Generator generatorOutputDevice)
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">(IO
+   ((Tensor
+       ('Gradient 'WithoutGradient)
+       lossLayout
+       lossDataType
+       lossDevice
+       ('Shape '[]),
+     Int),
+    Generator generatorOutputDevice)
+ -&gt; m ((Tensor
+          ('Gradient 'WithoutGradient)
+          lossLayout
+          lossDataType
+          lossDevice
+          ('Shape '[]),
+        Int),
+       Generator generatorOutputDevice))
+-&gt; IO
+     ((Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[]),
+       Int),
+      Generator generatorOutputDevice)
+-&gt; m ((Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[]),
+       Int),
+      Generator generatorOutputDevice)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-106"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679649115"><span class="annot"><span class="annottext">Tensor lossGradient lossLayout lossDataType lossDevice lossShape
+</span><a href="#local-6989586621679649115"><span class="hs-identifier hs-var">loss'</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679649114"><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679649114"><span class="hs-identifier hs-var">g''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">model
+-&gt; input
+-&gt; Generator generatorOutputDevice
+-&gt; IO
+     (Tensor lossGradient lossLayout lossDataType lossDevice lossShape,
+      Generator generatorOutputDevice)
+forall model input (generatorDevice :: Device (DeviceType Nat))
+       output (generatorOutputDevice :: Device (DeviceType Nat))
+       (m :: * -&gt; *).
+(HasForward
+   model input generatorDevice output generatorOutputDevice,
+ MonadThrow m) =&gt;
+model
+-&gt; input
+-&gt; Generator generatorDevice
+-&gt; m (output, Generator generatorOutputDevice)
+</span><a href="Torch.GraduallyTyped.NN.Class.html#forward"><span class="hs-identifier hs-var">forward</span></a></span><span> </span><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679649128"><span class="hs-identifier hs-var">model</span></a></span><span> </span><span class="annot"><span class="annottext">input
+</span><a href="#local-6989586621679649117"><span class="hs-identifier hs-var">input'</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679649118"><span class="hs-identifier hs-var">g'</span></a></span><span>
+</span><span id="line-107"></span><span>            </span><span id="local-6989586621679649113"><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+</span><a href="#local-6989586621679649113"><span class="hs-identifier hs-var">loss''</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">SShape ('Shape '[])
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     lossLayout
+     lossDataType
+     lossDevice
+     lossShape
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        ('Shape '[]))
+forall (shape' :: Shape [Dim (Name Symbol) (Size Nat)])
+       (m :: * -&gt; *) (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)]).
+(SGetShape shape, MonadThrow m, Catch (shape &lt;+&gt; shape')) =&gt;
+SShape shape'
+-&gt; Tensor gradient layout device dataType shape
+-&gt; m (Tensor gradient layout device dataType shape')
+</span><a href="Torch.GraduallyTyped.Tensor.Type.html#sCheckedShape"><span class="hs-identifier hs-var">sCheckedShape</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SList '[] -&gt; SShape ('Shape '[])
+forall (dims :: [Dim (Name Symbol) (Size Nat)]).
+SList dims -&gt; SShape ('Shape dims)
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#SShape"><span class="hs-identifier hs-var">SShape</span></a></span><span> </span><span class="annot"><span class="annottext">SList '[]
+forall a. SList '[]
+</span><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier hs-var">SNil</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Tensor
+   ('Gradient 'WithoutGradient)
+   lossLayout
+   lossDataType
+   lossDevice
+   lossShape
+ -&gt; IO
+      (Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[])))
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        lossShape)
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        ('Shape '[]))
+forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
+</span><span class="hs-operator hs-var">=&lt;&lt;</span></span><span> </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithoutGradient)
+-&gt; Tensor lossGradient lossLayout lossDataType lossDevice lossShape
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        lossShape)
+forall (gradient' :: Gradient RequiresGradient) (m :: * -&gt; *)
+       (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)]).
+(SGetGradient gradient, MonadThrow m,
+ Catch (gradient &lt;+&gt; gradient')) =&gt;
+SGradient gradient'
+-&gt; Tensor gradient layout device dataType shape
+-&gt; m (Tensor gradient' layout device dataType shape)
+</span><a href="Torch.GraduallyTyped.Tensor.Type.html#sCheckedGradient"><span class="hs-identifier hs-var">sCheckedGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
+-&gt; SGradient ('Gradient 'WithoutGradient)
+forall (requiresGradient :: RequiresGradient).
+SRequiresGradient requiresGradient
+-&gt; SGradient ('Gradient requiresGradient)
+</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-var">SGradient</span></a></span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
+</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SWithoutGradient"><span class="hs-identifier hs-var">SWithoutGradient</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Tensor lossGradient lossLayout lossDataType lossDevice lossShape
+</span><a href="#local-6989586621679649115"><span class="hs-identifier hs-var">loss'</span></a></span><span>
+</span><span id="line-108"></span><span>            </span><span class="annot"><span class="annottext">((Tensor
+    ('Gradient 'WithoutGradient)
+    lossLayout
+    lossDataType
+    lossDevice
+    ('Shape '[]),
+  Int),
+ Generator generatorOutputDevice)
+-&gt; IO
+     ((Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[]),
+       Int),
+      Generator generatorOutputDevice)
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+</span><a href="#local-6989586621679649119"><span class="hs-identifier hs-var">loss</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     lossLayout
+     lossDataType
+     lossDevice
+     ('Shape '[])
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     lossLayout
+     lossDataType
+     lossDevice
+     ('Shape '[])
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+</span><a href="#local-6989586621679649113"><span class="hs-identifier hs-var">loss''</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679649116"><span class="hs-identifier hs-var">iter'</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679649114"><span class="hs-identifier hs-var">g''</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-109"></span><span>          </span><span id="local-6989586621679649111"><span class="annot"><span class="annottext">init' :: m ((Tensor
+      ('Gradient 'WithoutGradient)
+      lossLayout
+      lossDataType
+      lossDevice
+      ('Shape '[]),
+    Int),
+   Generator generatorOutputDevice)
+</span><a href="#local-6989586621679649111"><span class="hs-identifier hs-var hs-var">init'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO
+  ((Tensor
+      ('Gradient 'WithoutGradient)
+      lossLayout
+      lossDataType
+      lossDevice
+      ('Shape '[]),
+    Int),
+   Generator generatorOutputDevice)
+-&gt; m ((Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[]),
+       Int),
+      Generator generatorOutputDevice)
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">(IO
+   ((Tensor
+       ('Gradient 'WithoutGradient)
+       lossLayout
+       lossDataType
+       lossDevice
+       ('Shape '[]),
+     Int),
+    Generator generatorOutputDevice)
+ -&gt; m ((Tensor
+          ('Gradient 'WithoutGradient)
+          lossLayout
+          lossDataType
+          lossDevice
+          ('Shape '[]),
+        Int),
+       Generator generatorOutputDevice))
+-&gt; IO
+     ((Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[]),
+       Int),
+      Generator generatorOutputDevice)
+-&gt; m ((Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[]),
+       Int),
+      Generator generatorOutputDevice)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-110"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679649110"><span class="annot"><span class="annottext">Tensor lossGradient lossLayout lossDataType lossDevice lossShape
+</span><a href="#local-6989586621679649110"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679649109"><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679649109"><span class="hs-identifier hs-var">g'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">model
+-&gt; input
+-&gt; Generator generatorDevice
+-&gt; IO
+     (Tensor lossGradient lossLayout lossDataType lossDevice lossShape,
+      Generator generatorOutputDevice)
+forall model input (generatorDevice :: Device (DeviceType Nat))
+       output (generatorOutputDevice :: Device (DeviceType Nat))
+       (m :: * -&gt; *).
+(HasForward
+   model input generatorDevice output generatorOutputDevice,
+ MonadThrow m) =&gt;
+model
+-&gt; input
+-&gt; Generator generatorDevice
+-&gt; m (output, Generator generatorOutputDevice)
+</span><a href="Torch.GraduallyTyped.NN.Class.html#forward"><span class="hs-identifier hs-var">forward</span></a></span><span> </span><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679649128"><span class="hs-identifier hs-var">model</span></a></span><span> </span><span class="annot"><span class="annottext">input
+</span><a href="#local-6989586621679649123"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679649126"><span class="hs-identifier hs-var">g</span></a></span><span>
+</span><span id="line-111"></span><span>            </span><span id="local-6989586621679649108"><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+</span><a href="#local-6989586621679649108"><span class="hs-identifier hs-var">loss'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">SShape ('Shape '[])
+-&gt; Tensor
+     ('Gradient 'WithoutGradient)
+     lossLayout
+     lossDataType
+     lossDevice
+     lossShape
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        ('Shape '[]))
+forall (shape' :: Shape [Dim (Name Symbol) (Size Nat)])
+       (m :: * -&gt; *) (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)]).
+(SGetShape shape, MonadThrow m, Catch (shape &lt;+&gt; shape')) =&gt;
+SShape shape'
+-&gt; Tensor gradient layout device dataType shape
+-&gt; m (Tensor gradient layout device dataType shape')
+</span><a href="Torch.GraduallyTyped.Tensor.Type.html#sCheckedShape"><span class="hs-identifier hs-var">sCheckedShape</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SList '[] -&gt; SShape ('Shape '[])
+forall (dims :: [Dim (Name Symbol) (Size Nat)]).
+SList dims -&gt; SShape ('Shape dims)
+</span><a href="Torch.GraduallyTyped.Shape.Type.html#SShape"><span class="hs-identifier hs-var">SShape</span></a></span><span> </span><span class="annot"><span class="annottext">SList '[]
+forall a. SList '[]
+</span><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier hs-var">SNil</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Tensor
+   ('Gradient 'WithoutGradient)
+   lossLayout
+   lossDataType
+   lossDevice
+   lossShape
+ -&gt; IO
+      (Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[])))
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        lossShape)
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        ('Shape '[]))
+forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
+</span><span class="hs-operator hs-var">=&lt;&lt;</span></span><span> </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithoutGradient)
+-&gt; Tensor lossGradient lossLayout lossDataType lossDevice lossShape
+-&gt; IO
+     (Tensor
+        ('Gradient 'WithoutGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        lossShape)
+forall (gradient' :: Gradient RequiresGradient) (m :: * -&gt; *)
+       (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)]).
+(SGetGradient gradient, MonadThrow m,
+ Catch (gradient &lt;+&gt; gradient')) =&gt;
+SGradient gradient'
+-&gt; Tensor gradient layout device dataType shape
+-&gt; m (Tensor gradient' layout device dataType shape)
+</span><a href="Torch.GraduallyTyped.Tensor.Type.html#sCheckedGradient"><span class="hs-identifier hs-var">sCheckedGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
+-&gt; SGradient ('Gradient 'WithoutGradient)
+forall (requiresGradient :: RequiresGradient).
+SRequiresGradient requiresGradient
+-&gt; SGradient ('Gradient requiresGradient)
+</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-var">SGradient</span></a></span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
+</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SWithoutGradient"><span class="hs-identifier hs-var">SWithoutGradient</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Tensor lossGradient lossLayout lossDataType lossDevice lossShape
+</span><a href="#local-6989586621679649110"><span class="hs-identifier hs-var">loss</span></a></span><span>
+</span><span id="line-112"></span><span>            </span><span class="annot"><span class="annottext">((Tensor
+    ('Gradient 'WithoutGradient)
+    lossLayout
+    lossDataType
+    lossDevice
+    ('Shape '[]),
+  Int),
+ Generator generatorOutputDevice)
+-&gt; IO
+     ((Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[]),
+       Int),
+      Generator generatorOutputDevice)
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
+  lossLayout
+  lossDataType
+  lossDevice
+  ('Shape '[])
+</span><a href="#local-6989586621679649108"><span class="hs-identifier hs-var">loss'</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679649122"><span class="hs-identifier hs-var">iter</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679649109"><span class="hs-identifier hs-var">g'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-113"></span><span>          </span><span id="local-6989586621679649107"><span class="annot"><span class="annottext">done :: ((Tensor gradient layout device dataType shape, divisor), b)
+-&gt; f (Either a (Tensor gradient layout device dataType shape, b))
+</span><a href="#local-6989586621679649107"><span class="hs-identifier hs-var hs-var">done</span></a></span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span id="local-6989586621679649106"><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679649106"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679649105"><span class="annot"><span class="annottext">divisor
+</span><a href="#local-6989586621679649105"><span class="hs-identifier hs-var">iter'</span></a></span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span id="local-6989586621679649104"><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679649104"><span class="hs-identifier hs-var">g''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Either a (Tensor gradient layout device dataType shape, b)
+-&gt; f (Either a (Tensor gradient layout device dataType shape, b))
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either a (Tensor gradient layout device dataType shape, b)
+ -&gt; f (Either a (Tensor gradient layout device dataType shape, b)))
+-&gt; ((Tensor gradient layout device dataType shape, b)
+    -&gt; Either a (Tensor gradient layout device dataType shape, b))
+-&gt; (Tensor gradient layout device dataType shape, b)
+-&gt; f (Either a (Tensor gradient layout device dataType shape, b))
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(Tensor gradient layout device dataType shape, b)
+-&gt; Either a (Tensor gradient layout device dataType shape, b)
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">((Tensor gradient layout device dataType shape, b)
+ -&gt; f (Either a (Tensor gradient layout device dataType shape, b)))
+-&gt; (Tensor gradient layout device dataType shape, b)
+-&gt; f (Either a (Tensor gradient layout device dataType shape, b))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679649106"><span class="hs-identifier hs-var">loss</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+-&gt; divisor -&gt; Tensor gradient layout device dataType shape
+forall divisor (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)]).
+Scalar divisor =&gt;
+Tensor gradient layout device dataType shape
+-&gt; divisor -&gt; Tensor gradient layout device dataType shape
+</span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Pointwise.html#divScalar"><span class="hs-operator hs-var">`divScalar`</span></a></span><span> </span><span class="annot"><span class="annottext">divisor
+</span><a href="#local-6989586621679649105"><span class="hs-identifier hs-var">iter'</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679649104"><span class="hs-identifier hs-var">g''</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-114"></span><span>      </span><span class="annot"><span class="annottext">(((Tensor
+     ('Gradient 'WithoutGradient)
+     lossLayout
+     lossDataType
+     lossDevice
+     ('Shape '[]),
+   Int),
+  Generator generatorOutputDevice)
+ -&gt; (input, Int)
+ -&gt; m ((Tensor
+          ('Gradient 'WithoutGradient)
+          lossLayout
+          lossDataType
+          lossDevice
+          ('Shape '[]),
+        Int),
+       Generator generatorOutputDevice))
+-&gt; m ((Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[]),
+       Int),
+      Generator generatorOutputDevice)
+-&gt; (((Tensor
+        ('Gradient 'WithoutGradient)
+        lossLayout
+        lossDataType
+        lossDevice
+        ('Shape '[]),
+      Int),
+     Generator generatorOutputDevice)
+    -&gt; m (Either
+            (Generator generatorDevice)
+            (Tensor
+               ('Gradient 'WithoutGradient)
+               lossLayout
+               lossDataType
+               lossDevice
+               ('Shape '[]),
+             Generator generatorOutputDevice)))
+-&gt; Proxy X () () (input, Int) m ()
+-&gt; m (Either
+        (Generator generatorDevice)
+        (Tensor
+           ('Gradient 'WithoutGradient)
+           lossLayout
+           lossDataType
+           lossDevice
+           ('Shape '[]),
+         Generator generatorOutputDevice))
+forall (m :: * -&gt; *) x a b.
+Monad m =&gt;
+(x -&gt; a -&gt; m x) -&gt; m x -&gt; (x -&gt; m b) -&gt; Producer a m () -&gt; m b
+</span><a href="../file:///nix/store/2275zkfvd9na2mx7hmkq7wzrgjyxz84l-pipes-lib-pipes-4.3.15-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.foldM</span></a></span><span> </span><span class="annot"><span class="annottext">((Tensor
+    ('Gradient 'WithoutGradient)
+    lossLayout
+    lossDataType
+    lossDevice
+    ('Shape '[]),
+  Int),
+ Generator generatorOutputDevice)
+-&gt; (input, Int)
+-&gt; m ((Tensor
+         ('Gradient 'WithoutGradient)
+         lossLayout
+         lossDataType
+         lossDevice
+         ('Shape '[]),
+       Int),
+      Generator generatorOutputDevice)
+</span><a href="#local-6989586621679649120"><span class="hs-identifier hs-var">step</span></a></span><span> </span><span class="annot"><span class="annottext">m ((Tensor
+      ('Gradient 'WithoutGradient)
+      lossLayout
+      lossDataType
+      lossDevice
+      ('Shape '[]),
+    Int),
+   Generator generatorOutputDevice)
+</span><a href="#local-6989586621679649111"><span class="hs-identifier hs-var">init'</span></a></span><span> </span><span class="annot"><span class="annottext">((Tensor
+    ('Gradient 'WithoutGradient)
+    lossLayout
+    lossDataType
+    lossDevice
+    ('Shape '[]),
+  Int),
+ Generator generatorOutputDevice)
+-&gt; m (Either
+        (Generator generatorDevice)
+        (Tensor
+           ('Gradient 'WithoutGradient)
+           lossLayout
+           lossDataType
+           lossDevice
+           ('Shape '[]),
+         Generator generatorOutputDevice))
+forall (f :: * -&gt; *) divisor
+       (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)]) b a.
+(Applicative f, Scalar divisor) =&gt;
+((Tensor gradient layout device dataType shape, divisor), b)
+-&gt; f (Either a (Tensor gradient layout device dataType shape, b))
+</span><a href="#local-6989586621679649107"><span class="hs-identifier hs-var">done</span></a></span><span> </span><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
+</span><a href="#local-6989586621679649121"><span class="hs-identifier hs-var">producer'</span></a></span><span>
+</span><span id="line-115"></span></pre></body></html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.GraduallyTyped.LearningRateSchedules</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-4"></span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- | Single-cycle learning rate schedule.</span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- See, for instance, https://arxiv.org/abs/1803.09820.</span><span>
+</span><span id="line-7"></span><span class="hs-comment">--</span><span>
+</span><span id="line-8"></span><span class="hs-comment">-- This is a simple schedule that is a stepwise linear interpolation</span><span>
+</span><span id="line-9"></span><span class="hs-comment">-- between the initial, maximum, and final learning rates.</span><span>
+</span><span id="line-10"></span><span class="hs-comment">-- The initial learning rate is zero.</span><span>
+</span><span id="line-11"></span><span class="annot"><a href="Torch.GraduallyTyped.LearningRateSchedules.html#singleCycleLearningRateSchedule"><span class="hs-identifier hs-type">singleCycleLearningRateSchedule</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-comment">-- | peak learning rate after warmup</span><span>
+</span><span id="line-13"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-comment">-- | learning rate at the end of the schedule</span><span>
+</span><span id="line-15"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-comment">-- | total number of epochs</span><span>
+</span><span id="line-17"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-comment">-- | number of warm-up epochs</span><span>
+</span><span id="line-19"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-comment">-- | number of cool-down epochs</span><span>
+</span><span id="line-21"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-comment">-- | current epoch</span><span>
+</span><span id="line-23"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-comment">-- | current learning rate</span><span>
+</span><span id="line-25"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-26"></span><span id="singleCycleLearningRateSchedule"><span class="annot"><span class="annottext">singleCycleLearningRateSchedule :: Double -&gt; Double -&gt; Int -&gt; Int -&gt; Int -&gt; Int -&gt; Double
+</span><a href="Torch.GraduallyTyped.LearningRateSchedules.html#singleCycleLearningRateSchedule"><span class="hs-identifier hs-var hs-var">singleCycleLearningRateSchedule</span></a></span></span><span> </span><span id="local-6989586621679635488"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679635488"><span class="hs-identifier hs-var">maxLearningRate</span></a></span></span><span> </span><span id="local-6989586621679635487"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679635487"><span class="hs-identifier hs-var">finalLearningRate</span></a></span></span><span> </span><span id="local-6989586621679635486"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679635486"><span class="hs-identifier hs-var">numEpochs</span></a></span></span><span> </span><span id="local-6989586621679635485"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679635485"><span class="hs-identifier hs-var">numWarmupEpochs</span></a></span></span><span> </span><span id="local-6989586621679635484"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679635484"><span class="hs-identifier hs-var">numCooldownEpochs</span></a></span></span><span> </span><span id="local-6989586621679635483"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679635483"><span class="hs-identifier hs-var">epoch</span></a></span></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679635483"><span class="hs-identifier hs-var">epoch</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0.0</span></span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679635483"><span class="hs-identifier hs-var">epoch</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679635483"><span class="hs-identifier hs-var">epoch</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679635485"><span class="hs-identifier hs-var">numWarmupEpochs</span></a></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-29"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679635479"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679635479"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Double
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679635483"><span class="hs-identifier hs-var">epoch</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">/</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Double
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679635485"><span class="hs-identifier hs-var">numWarmupEpochs</span></a></span><span>
+</span><span id="line-30"></span><span>     </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679635479"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679635488"><span class="hs-identifier hs-var">maxLearningRate</span></a></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679635485"><span class="hs-identifier hs-var">numWarmupEpochs</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679635483"><span class="hs-identifier hs-var">epoch</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679635483"><span class="hs-identifier hs-var">epoch</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679635486"><span class="hs-identifier hs-var">numEpochs</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679635484"><span class="hs-identifier hs-var">numCooldownEpochs</span></a></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-32"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679635476"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679635476"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-33"></span><span>          </span><span class="annot"><span class="annottext">Int -&gt; Double
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679635486"><span class="hs-identifier hs-var">numEpochs</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679635484"><span class="hs-identifier hs-var">numCooldownEpochs</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679635483"><span class="hs-identifier hs-var">epoch</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span>            </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">/</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Double
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679635486"><span class="hs-identifier hs-var">numEpochs</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679635484"><span class="hs-identifier hs-var">numCooldownEpochs</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679635485"><span class="hs-identifier hs-var">numWarmupEpochs</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span>     </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679635476"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679635488"><span class="hs-identifier hs-var">maxLearningRate</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679635476"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679635487"><span class="hs-identifier hs-var">finalLearningRate</span></a></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679635487"><span class="hs-identifier hs-var">finalLearningRate</span></a></span></pre></body></html>

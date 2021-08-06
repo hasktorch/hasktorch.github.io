@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DataKinds #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE DerivingStrategies #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE FlexibleInstances #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE MultiParamTypeClasses #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE RankNTypes #-}</span><span>
+</span><span id="line-7"></span><span class="hs-pragma">{-# LANGUAGE TypeFamilies #-}</span><span>
+</span><span id="line-8"></span><span class="hs-pragma">{-# LANGUAGE TypeOperators #-}</span><span>
+</span><span id="line-9"></span><span class="hs-pragma">{-# LANGUAGE UndecidableInstances #-}</span><span>
+</span><span id="line-10"></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.GraduallyTyped.NN.Loss</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Class</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier">HasForward</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasInitialize"><span class="hs-identifier">HasInitialize</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier">HasStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier">ModelSpec</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Functional.Loss.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Functional.Loss</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Functional.Loss.html#mseLoss"><span class="hs-identifier">mseLoss</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html"><span class="hs-identifier">Torch.GraduallyTyped.Prelude</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Catch"><span class="hs-identifier">Catch</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Shape.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier">Shape</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Tensor.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier">Tensor</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html"><span class="hs-identifier">Torch.GraduallyTyped.Unify</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-keyword">type</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator">(&lt;+&gt;)</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-keyword">type</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%7C%3E"><span class="hs-operator">(&lt;|&gt;)</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span id="local-6989586621679650760"><span id="local-6989586621679650761"></span></span><span class="hs-keyword">data</span><span> </span><span id="MSELoss"><span class="annot"><a href="Torch.GraduallyTyped.NN.Loss.html#MSELoss"><span class="hs-identifier hs-var">MSELoss</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MSELoss"><span class="annot"><a href="Torch.GraduallyTyped.NN.Loss.html#MSELoss"><span class="hs-identifier hs-var">MSELoss</span></a></span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679650755"><span id="local-6989586621679650757"><span class="annot"><span class="annottext">MSELoss -&gt; MSELoss -&gt; Bool
+(MSELoss -&gt; MSELoss -&gt; Bool)
+-&gt; (MSELoss -&gt; MSELoss -&gt; Bool) -&gt; Eq MSELoss
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+/= :: MSELoss -&gt; MSELoss -&gt; Bool
+$c/= :: MSELoss -&gt; MSELoss -&gt; Bool
+== :: MSELoss -&gt; MSELoss -&gt; Bool
+$c== :: MSELoss -&gt; MSELoss -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679650739"><span id="local-6989586621679650741"><span id="local-6989586621679650743"><span id="local-6989586621679650745"><span id="local-6989586621679650747"><span id="local-6989586621679650749"><span id="local-6989586621679650751"><span class="annot"><span class="annottext">Eq MSELoss
+Eq MSELoss
+-&gt; (MSELoss -&gt; MSELoss -&gt; Ordering)
+-&gt; (MSELoss -&gt; MSELoss -&gt; Bool)
+-&gt; (MSELoss -&gt; MSELoss -&gt; Bool)
+-&gt; (MSELoss -&gt; MSELoss -&gt; Bool)
+-&gt; (MSELoss -&gt; MSELoss -&gt; Bool)
+-&gt; (MSELoss -&gt; MSELoss -&gt; MSELoss)
+-&gt; (MSELoss -&gt; MSELoss -&gt; MSELoss)
+-&gt; Ord MSELoss
+MSELoss -&gt; MSELoss -&gt; Bool
+MSELoss -&gt; MSELoss -&gt; Ordering
+MSELoss -&gt; MSELoss -&gt; MSELoss
+forall a.
+Eq a
+-&gt; (a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+min :: MSELoss -&gt; MSELoss -&gt; MSELoss
+$cmin :: MSELoss -&gt; MSELoss -&gt; MSELoss
+max :: MSELoss -&gt; MSELoss -&gt; MSELoss
+$cmax :: MSELoss -&gt; MSELoss -&gt; MSELoss
+&gt;= :: MSELoss -&gt; MSELoss -&gt; Bool
+$c&gt;= :: MSELoss -&gt; MSELoss -&gt; Bool
+&gt; :: MSELoss -&gt; MSELoss -&gt; Bool
+$c&gt; :: MSELoss -&gt; MSELoss -&gt; Bool
+&lt;= :: MSELoss -&gt; MSELoss -&gt; Bool
+$c&lt;= :: MSELoss -&gt; MSELoss -&gt; Bool
+&lt; :: MSELoss -&gt; MSELoss -&gt; Bool
+$c&lt; :: MSELoss -&gt; MSELoss -&gt; Bool
+compare :: MSELoss -&gt; MSELoss -&gt; Ordering
+$ccompare :: MSELoss -&gt; MSELoss -&gt; Ordering
+$cp1Ord :: Eq MSELoss
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679650732"><span id="local-6989586621679650734"><span id="local-6989586621679650736"><span class="annot"><span class="annottext">Int -&gt; MSELoss -&gt; ShowS
+[MSELoss] -&gt; ShowS
+MSELoss -&gt; String
+(Int -&gt; MSELoss -&gt; ShowS)
+-&gt; (MSELoss -&gt; String) -&gt; ([MSELoss] -&gt; ShowS) -&gt; Show MSELoss
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+showList :: [MSELoss] -&gt; ShowS
+$cshowList :: [MSELoss] -&gt; ShowS
+show :: MSELoss -&gt; String
+$cshow :: MSELoss -&gt; String
+showsPrec :: Int -&gt; MSELoss -&gt; ShowS
+$cshowsPrec :: Int -&gt; MSELoss -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(forall x. MSELoss -&gt; Rep MSELoss x)
+-&gt; (forall x. Rep MSELoss x -&gt; MSELoss) -&gt; Generic MSELoss
+forall x. Rep MSELoss x -&gt; MSELoss
+forall x. MSELoss -&gt; Rep MSELoss x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cto :: forall x. Rep MSELoss x -&gt; MSELoss
+$cfrom :: forall x. MSELoss -&gt; Rep MSELoss x
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">type</span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="ModelSpec"><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier hs-var">ModelSpec</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Loss.html#MSELoss"><span class="hs-identifier hs-type">MSELoss</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Loss.html#MSELoss"><span class="hs-identifier hs-type">MSELoss</span></a></span><span>
+</span><span id="line-25"></span><span>
+</span><span id="line-26"></span><span id="local-6989586621679650727"><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679650725"><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasInitialize"><span class="hs-identifier hs-type">HasInitialize</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Loss.html#MSELoss"><span class="hs-identifier hs-type">MSELoss</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679650727"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Loss.html#MSELoss"><span class="hs-identifier hs-type">MSELoss</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679650727"><span class="hs-identifier hs-type">generatorDevice</span></a></span></span></span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679650720"><span id="local-6989586621679650722"><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Loss.html#MSELoss"><span class="hs-identifier hs-type">MSELoss</span></a></span></span></span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span id="local-6989586621679650707"><span id="local-6989586621679650708"><span id="local-6989586621679650709"><span id="local-6989586621679650710"><span id="local-6989586621679650711"><span id="local-6989586621679650712"><span id="local-6989586621679650713"><span id="local-6989586621679650714"><span id="local-6989586621679650715"><span id="local-6989586621679650716"><span id="local-6989586621679650717"><span id="local-6989586621679650718"><span class="hs-keyword">instance</span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Catch"><span class="hs-identifier hs-type">Catch</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679650718"><span class="hs-identifier hs-type">predShape</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679650717"><span class="hs-identifier hs-type">targetShape</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-32"></span><span>    </span><span class="annot"><a href="#local-6989586621679650716"><span class="hs-identifier hs-type">output</span></a></span><span>
+</span><span id="line-33"></span><span>      </span><span class="annot"><span class="hs-glyph hs-type">~</span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span>
+</span><span id="line-34"></span><span>          </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679650715"><span class="hs-identifier hs-type">predGradient</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%7C%3E"><span class="hs-operator hs-type">&lt;|&gt;</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679650714"><span class="hs-identifier hs-type">targetGradient</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span>          </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679650713"><span class="hs-identifier hs-type">predLayout</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679650712"><span class="hs-identifier hs-type">targetLayout</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>          </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679650711"><span class="hs-identifier hs-type">predDevice</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679650710"><span class="hs-identifier hs-type">targetDevice</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span>          </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679650709"><span class="hs-identifier hs-type">predDataType</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679650708"><span class="hs-identifier hs-type">targetDataType</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span>          </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier hs-type">Shape</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-40"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span>
+</span><span id="line-41"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Loss.html#MSELoss"><span class="hs-identifier hs-type">MSELoss</span></a></span><span>
+</span><span id="line-42"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679650715"><span class="hs-identifier hs-type">predGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679650713"><span class="hs-identifier hs-type">predLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679650711"><span class="hs-identifier hs-type">predDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679650709"><span class="hs-identifier hs-type">predDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679650718"><span class="hs-identifier hs-type">predShape</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-43"></span><span>      </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679650714"><span class="hs-identifier hs-type">targetGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679650712"><span class="hs-identifier hs-type">targetLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679650710"><span class="hs-identifier hs-type">targetDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679650708"><span class="hs-identifier hs-type">targetDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679650717"><span class="hs-identifier hs-type">targetShape</span></a></span><span>
+</span><span id="line-44"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-45"></span><span>    </span><span class="annot"><a href="#local-6989586621679650707"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span>
+</span><span id="line-46"></span><span>    </span><span class="annot"><a href="#local-6989586621679650716"><span class="hs-identifier hs-type">output</span></a></span><span>
+</span><span id="line-47"></span><span>    </span><span class="annot"><a href="#local-6989586621679650707"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-49"></span><span>  </span><span id="local-6989586621679650704"><span class="annot"><span class="annottext">forward :: MSELoss
+-&gt; (Tensor
+      predGradient predLayout predDevice predDataType predShape,
+    Tensor
+      targetGradient
+      targetLayout
+      targetDevice
+      targetDataType
+      targetShape)
+-&gt; Generator generatorDevice
+-&gt; m (output, Generator generatorDevice)
+</span><a href="Torch.GraduallyTyped.NN.Class.html#forward"><span class="hs-identifier hs-var hs-var hs-var hs-var">forward</span></a></span></span><span> </span><span class="annot"><span class="annottext">MSELoss
+</span><a href="Torch.GraduallyTyped.NN.Loss.html#MSELoss"><span class="hs-identifier hs-var">MSELoss</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679650702"><span class="annot"><span class="annottext">Tensor predGradient predLayout predDevice predDataType predShape
+</span><a href="#local-6989586621679650702"><span class="hs-identifier hs-var">prediction</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679650701"><span class="annot"><span class="annottext">Tensor
+  targetGradient targetLayout targetDevice targetDataType targetShape
+</span><a href="#local-6989586621679650701"><span class="hs-identifier hs-var">target</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679650700"><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679650700"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-50"></span><span>    </span><span id="local-6989586621679650699"><span class="annot"><span class="annottext">output
+</span><a href="#local-6989586621679650699"><span class="hs-identifier hs-var">loss</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Tensor predGradient predLayout predDevice predDataType predShape
+</span><a href="#local-6989586621679650702"><span class="hs-identifier hs-var">prediction</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor predGradient predLayout predDevice predDataType predShape
+-&gt; Tensor
+     targetGradient targetLayout targetDevice targetDataType targetShape
+-&gt; m (Tensor
+        (predGradient &lt;|&gt; targetGradient)
+        (predLayout &lt;+&gt; targetLayout)
+        (predDevice &lt;+&gt; targetDevice)
+        (predDataType &lt;+&gt; targetDataType)
+        ('Shape '[]))
+forall (m :: * -&gt; *) (gradient :: Gradient RequiresGradient)
+       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
+       (dataType :: DataType DType)
+       (shape :: Shape [Dim (Name Symbol) (Size Nat)])
+       (gradient' :: Gradient RequiresGradient)
+       (layout' :: Layout LayoutType) (device' :: Device (DeviceType Nat))
+       (dataType' :: DataType DType)
+       (shape' :: Shape [Dim (Name Symbol) (Size Nat)]).
+(MonadThrow m, Catch (shape &lt;+&gt; shape')) =&gt;
+Tensor gradient layout device dataType shape
+-&gt; Tensor gradient' layout' device' dataType' shape'
+-&gt; m (Tensor
+        (gradient &lt;|&gt; gradient')
+        (layout &lt;+&gt; layout')
+        (device &lt;+&gt; device')
+        (dataType &lt;+&gt; dataType')
+        ('Shape '[]))
+</span><a href="Torch.GraduallyTyped.NN.Functional.Loss.html#mseLoss"><span class="hs-operator hs-var">`mseLoss`</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+  targetGradient targetLayout targetDevice targetDataType targetShape
+</span><a href="#local-6989586621679650701"><span class="hs-identifier hs-var">target</span></a></span><span>
+</span><span id="line-51"></span><span>    </span><span class="annot"><span class="annottext">(output, Generator generatorDevice)
+-&gt; m (output, Generator generatorDevice)
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">output
+</span><a href="#local-6989586621679650699"><span class="hs-identifier hs-var">loss</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679650700"><span class="hs-identifier hs-var">g</span></a></span><span class="hs-special">)</span></span></span></span></span></span></span></span></span></span></span></span></span><span>
+</span><span id="line-52"></span></pre></body></html>

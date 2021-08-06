@@ -1,37 +1,38 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DataKinds #-}</span><span>
 </span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
-</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE FlexibleInstances #-}</span><span>
-</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE GADTs #-}</span><span>
-</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE KindSignatures #-}</span><span>
-</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE MultiParamTypeClasses #-}</span><span>
-</span><span id="line-7"></span><span class="hs-pragma">{-# LANGUAGE RankNTypes #-}</span><span>
-</span><span id="line-8"></span><span class="hs-pragma">{-# LANGUAGE RecordWildCards #-}</span><span>
-</span><span id="line-9"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
-</span><span id="line-10"></span><span class="hs-pragma">{-# LANGUAGE TupleSections #-}</span><span>
-</span><span id="line-11"></span><span class="hs-pragma">{-# LANGUAGE TypeApplications #-}</span><span>
-</span><span id="line-12"></span><span class="hs-pragma">{-# LANGUAGE TypeFamilies #-}</span><span>
-</span><span id="line-13"></span><span class="hs-pragma">{-# LANGUAGE UndecidableInstances #-}</span><span>
-</span><span id="line-14"></span><span class="hs-pragma">{-# OPTIONS_GHC -Wall #-}</span><span>
-</span><span id="line-15"></span><span>
-</span><span id="line-16"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.GraduallyTyped.NN.Activation</span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-17"></span><span>
-</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
-</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.TypeLits</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Nat</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Symbol</span></span><span class="hs-special">)</span><span>
-</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Class</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier">HasForward</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasInitialize"><span class="hs-identifier">HasInitialize</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier">HasStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier">ModelSpec</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Functional.Activation.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Functional.Activation</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Functional.Activation.html#gelu"><span class="hs-identifier">gelu</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Functional.Activation.html#geluNew"><span class="hs-identifier">geluNew</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Functional.Activation.html#relu"><span class="hs-identifier">relu</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Functional.NonLinearActivation.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Functional.NonLinearActivation</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Functional.NonLinearActivation.html#SoftmaxF"><span class="hs-identifier">SoftmaxF</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Functional.NonLinearActivation.html#softmax"><span class="hs-identifier">softmax</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.html"><span class="hs-identifier">Torch.GraduallyTyped.Shape</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#By"><span class="hs-identifier">By</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SSelectDim"><span class="hs-identifier">SSelectDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SelectDim"><span class="hs-identifier">SelectDim</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Pointwise.html"><span class="hs-identifier">Torch.GraduallyTyped.Tensor.MathOperations.Pointwise</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Pointwise.html#tanh"><span class="hs-identifier">tanh</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Tensor.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier">Tensor</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Prelude</span></span><span> </span><span class="hs-keyword">hiding</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">tanh</span></span><span class="hs-special">)</span><span>
-</span><span id="line-27"></span><span>
-</span><span id="line-28"></span><span id="local-6989586621679593345"><span id="local-6989586621679593346"></span></span><span class="hs-keyword">data</span><span> </span><span id="Softmax"><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Softmax"><span class="hs-identifier hs-var">Softmax</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679593344"><span class="annot"><a href="#local-6989586621679593344"><span class="hs-identifier hs-type">selectDim</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SelectDim"><span class="hs-identifier hs-type">SelectDim</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#By"><span class="hs-identifier hs-type">By</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Symbol</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-29"></span><span>  </span><span id="Softmax"><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Softmax"><span class="hs-identifier hs-var">Softmax</span></a></span></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-30"></span><span>    </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679593412"><span class="annot"><a href="#local-6989586621679593412"><span class="hs-identifier hs-type">selectDim</span></a></span></span><span class="hs-operator">.</span><span>
-</span><span id="line-31"></span><span>    </span><span class="hs-special">{</span><span id="softmaxSelectDim"><span class="annot"><span class="annottext">Softmax selectDim -&gt; SSelectDim selectDim
-</span><a href="Torch.GraduallyTyped.NN.Activation.html#softmaxSelectDim"><span class="hs-identifier hs-var hs-var">softmaxSelectDim</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SSelectDim"><span class="hs-identifier hs-type">SSelectDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593412"><span class="hs-identifier hs-type">selectDim</span></a></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-32"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Softmax"><span class="hs-identifier hs-type">Softmax</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593412"><span class="hs-identifier hs-type">selectDim</span></a></span><span>
-</span><span id="line-33"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(forall x. Softmax selectDim -&gt; Rep (Softmax selectDim) x)
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE DerivingStrategies #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE FlexibleInstances #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE GADTs #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE KindSignatures #-}</span><span>
+</span><span id="line-7"></span><span class="hs-pragma">{-# LANGUAGE MultiParamTypeClasses #-}</span><span>
+</span><span id="line-8"></span><span class="hs-pragma">{-# LANGUAGE RankNTypes #-}</span><span>
+</span><span id="line-9"></span><span class="hs-pragma">{-# LANGUAGE RecordWildCards #-}</span><span>
+</span><span id="line-10"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-11"></span><span class="hs-pragma">{-# LANGUAGE TupleSections #-}</span><span>
+</span><span id="line-12"></span><span class="hs-pragma">{-# LANGUAGE TypeApplications #-}</span><span>
+</span><span id="line-13"></span><span class="hs-pragma">{-# LANGUAGE TypeFamilies #-}</span><span>
+</span><span id="line-14"></span><span class="hs-pragma">{-# LANGUAGE UndecidableInstances #-}</span><span>
+</span><span id="line-15"></span><span class="hs-pragma">{-# OPTIONS_GHC -Wall #-}</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.GraduallyTyped.NN.Activation</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.TypeLits</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Nat</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Symbol</span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Class</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier">HasForward</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasInitialize"><span class="hs-identifier">HasInitialize</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier">HasStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier">ModelSpec</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Functional.Activation.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Functional.Activation</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Functional.Activation.html#gelu"><span class="hs-identifier">gelu</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Functional.Activation.html#geluNew"><span class="hs-identifier">geluNew</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Functional.Activation.html#relu"><span class="hs-identifier">relu</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Functional.NonLinearActivation.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Functional.NonLinearActivation</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Functional.NonLinearActivation.html#SoftmaxF"><span class="hs-identifier">SoftmaxF</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Functional.NonLinearActivation.html#softmax"><span class="hs-identifier">softmax</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.html"><span class="hs-identifier">Torch.GraduallyTyped.Shape</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#By"><span class="hs-identifier">By</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SSelectDim"><span class="hs-identifier">SSelectDim</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SelectDim"><span class="hs-identifier">SelectDim</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Pointwise.html"><span class="hs-identifier">Torch.GraduallyTyped.Tensor.MathOperations.Pointwise</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.MathOperations.Pointwise.html#tanh"><span class="hs-identifier">tanh</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Tensor.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier">Tensor</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Prelude</span></span><span> </span><span class="hs-keyword">hiding</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">tanh</span></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span id="local-6989586621679647621"><span id="local-6989586621679647622"></span></span><span class="hs-keyword">data</span><span> </span><span id="Softmax"><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Softmax"><span class="hs-identifier hs-var">Softmax</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679647620"><span class="annot"><a href="#local-6989586621679647620"><span class="hs-identifier hs-type">selectDim</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SelectDim"><span class="hs-identifier hs-type">SelectDim</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#By"><span class="hs-identifier hs-type">By</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Symbol</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nat</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-30"></span><span>  </span><span id="Softmax"><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Softmax"><span class="hs-identifier hs-var">Softmax</span></a></span></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-31"></span><span>    </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679647701"><span class="annot"><a href="#local-6989586621679647701"><span class="hs-identifier hs-type">selectDim</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-32"></span><span>    </span><span class="hs-special">{</span><span id="softmaxSelectDim"><span class="annot"><span class="annottext">Softmax selectDim -&gt; SSelectDim selectDim
+</span><a href="Torch.GraduallyTyped.NN.Activation.html#softmaxSelectDim"><span class="hs-identifier hs-var hs-var">softmaxSelectDim</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SSelectDim"><span class="hs-identifier hs-type">SSelectDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647701"><span class="hs-identifier hs-type">selectDim</span></a></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-33"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Softmax"><span class="hs-identifier hs-type">Softmax</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647701"><span class="hs-identifier hs-type">selectDim</span></a></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(forall x. Softmax selectDim -&gt; Rep (Softmax selectDim) x)
 -&gt; (forall x. Rep (Softmax selectDim) x -&gt; Softmax selectDim)
 -&gt; Generic (Softmax selectDim)
 forall x. Rep (Softmax selectDim) x -&gt; Softmax selectDim
@@ -47,21 +48,21 @@ Rep (Softmax selectDim) x -&gt; Softmax selectDim
 $cfrom :: forall (selectDim :: SelectDim (By Symbol Nat)) x.
 Softmax selectDim -&gt; Rep (Softmax selectDim) x
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></span><span class="hs-special">)</span><span>
-</span><span id="line-34"></span><span>
-</span><span id="line-35"></span><span class="hs-keyword">type</span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="ModelSpec"><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier hs-var">ModelSpec</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Softmax"><span class="hs-identifier hs-type">Softmax</span></a></span><span> </span><span id="local-6989586621679593338"><span class="annot"><a href="#local-6989586621679593338"><span class="hs-identifier hs-type hs-type">selectDim</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Softmax"><span class="hs-identifier hs-type">Softmax</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593338"><span class="hs-identifier hs-type">selectDim</span></a></span><span>
-</span><span id="line-36"></span><span>
-</span><span id="line-37"></span><span id="local-6989586621679593336"><span id="local-6989586621679593337"><span class="hs-keyword">instance</span><span>
-</span><span id="line-38"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasInitialize"><span class="hs-identifier hs-type">HasInitialize</span></a></span><span>
-</span><span id="line-39"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Softmax"><span class="hs-identifier hs-type">Softmax</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593337"><span class="hs-identifier hs-type">selectDim</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-40"></span><span>    </span><span class="annot"><a href="#local-6989586621679593336"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span>
-</span><span id="line-41"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Softmax"><span class="hs-identifier hs-type">Softmax</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593337"><span class="hs-identifier hs-type">selectDim</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-42"></span><span>    </span><span class="annot"><a href="#local-6989586621679593336"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span>
-</span><span id="line-43"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-44"></span><span>  </span><span id="local-6989586621679593333"><span class="annot"><span class="annottext">initialize :: ModelSpec (Softmax selectDim)
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span class="hs-keyword">type</span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="ModelSpec"><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier hs-var">ModelSpec</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Softmax"><span class="hs-identifier hs-type">Softmax</span></a></span><span> </span><span id="local-6989586621679647614"><span class="annot"><a href="#local-6989586621679647614"><span class="hs-identifier hs-type hs-type">selectDim</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Softmax"><span class="hs-identifier hs-type">Softmax</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647614"><span class="hs-identifier hs-type">selectDim</span></a></span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span id="local-6989586621679647612"><span id="local-6989586621679647613"><span class="hs-keyword">instance</span><span>
+</span><span id="line-39"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasInitialize"><span class="hs-identifier hs-type">HasInitialize</span></a></span><span>
+</span><span id="line-40"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Softmax"><span class="hs-identifier hs-type">Softmax</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647613"><span class="hs-identifier hs-type">selectDim</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span>    </span><span class="annot"><a href="#local-6989586621679647612"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span>
+</span><span id="line-42"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Softmax"><span class="hs-identifier hs-type">Softmax</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647613"><span class="hs-identifier hs-type">selectDim</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-43"></span><span>    </span><span class="annot"><a href="#local-6989586621679647612"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-45"></span><span>  </span><span id="local-6989586621679647609"><span class="annot"><span class="annottext">initialize :: ModelSpec (Softmax selectDim)
 -&gt; Generator generatorDevice
 -&gt; m (Softmax selectDim, Generator generatorDevice)
-</span><a href="Torch.GraduallyTyped.NN.Class.html#initialize"><span class="hs-identifier hs-var hs-var hs-var hs-var">initialize</span></a></span></span><span> </span><span id="local-6989586621679593331"><span class="annot"><span class="annottext">ModelSpec (Softmax selectDim)
-</span><a href="#local-6989586621679593331"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Softmax selectDim, Generator generatorDevice)
+</span><a href="Torch.GraduallyTyped.NN.Class.html#initialize"><span class="hs-identifier hs-var hs-var hs-var hs-var">initialize</span></a></span></span><span> </span><span id="local-6989586621679647607"><span class="annot"><span class="annottext">ModelSpec (Softmax selectDim)
+</span><a href="#local-6989586621679647607"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Softmax selectDim, Generator generatorDevice)
 -&gt; m (Softmax selectDim, Generator generatorDevice)
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">((Softmax selectDim, Generator generatorDevice)
@@ -73,44 +74,44 @@ forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span class="hs-operator hs-var">.</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ModelSpec (Softmax selectDim)
 Softmax selectDim
-</span><a href="#local-6989586621679593331"><span class="hs-identifier hs-var">spec</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span></span></span><span>
-</span><span id="line-45"></span><span>
-</span><span id="line-46"></span><span id="local-6989586621679593329"><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Softmax"><span class="hs-identifier hs-type">Softmax</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593329"><span class="hs-identifier hs-type">selectDim</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-47"></span><span>  </span><span id="local-6989586621679593325"><span class="annot"><span class="annottext">fromStateDict :: ModelSpec (Softmax selectDim)
+</span><a href="#local-6989586621679647607"><span class="hs-identifier hs-var">spec</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span></span></span><span>
+</span><span id="line-46"></span><span>
+</span><span id="line-47"></span><span id="local-6989586621679647605"><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Softmax"><span class="hs-identifier hs-type">Softmax</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647605"><span class="hs-identifier hs-type">selectDim</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-48"></span><span>  </span><span id="local-6989586621679647601"><span class="annot"><span class="annottext">fromStateDict :: ModelSpec (Softmax selectDim)
 -&gt; StateDictKey -&gt; m (Softmax selectDim)
-</span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromStateDict</span></a></span></span><span> </span><span id="local-6989586621679593323"><span class="annot"><span class="annottext">ModelSpec (Softmax selectDim)
-</span><a href="#local-6989586621679593323"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromStateDict</span></a></span></span><span> </span><span id="local-6989586621679647599"><span class="annot"><span class="annottext">ModelSpec (Softmax selectDim)
+</span><a href="#local-6989586621679647599"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Softmax selectDim -&gt; m (Softmax selectDim)
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">ModelSpec (Softmax selectDim)
 Softmax selectDim
-</span><a href="#local-6989586621679593323"><span class="hs-identifier hs-var">spec</span></a></span><span>
-</span><span id="line-48"></span><span>  </span><span id="local-6989586621679593322"><span class="annot"><span class="annottext">toStateDict :: StateDictKey -&gt; Softmax selectDim -&gt; m ()
+</span><a href="#local-6989586621679647599"><span class="hs-identifier hs-var">spec</span></a></span><span>
+</span><span id="line-49"></span><span>  </span><span id="local-6989586621679647598"><span class="annot"><span class="annottext">toStateDict :: StateDictKey -&gt; Softmax selectDim -&gt; m ()
 </span><a href="Torch.GraduallyTyped.NN.Class.html#toStateDict"><span class="hs-identifier hs-var hs-var hs-var hs-var">toStateDict</span></a></span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
 </span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Softmax selectDim
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">() -&gt; m ()
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span></span><span>
-</span><span id="line-49"></span><span>
-</span><span id="line-50"></span><span id="local-6989586621679593313"><span id="local-6989586621679593314"><span id="local-6989586621679593315"><span id="local-6989586621679593316"><span id="local-6989586621679593317"><span id="local-6989586621679593318"><span id="local-6989586621679593319"><span id="local-6989586621679593320"><span class="hs-keyword">instance</span><span>
-</span><span id="line-51"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679593320"><span class="hs-identifier hs-type">output</span></a></span><span> </span><span class="annot"><span class="hs-glyph hs-type">~</span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593319"><span class="hs-identifier hs-type">requiresGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593318"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593317"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593316"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Functional.NonLinearActivation.html#SoftmaxF"><span class="hs-identifier hs-type">SoftmaxF</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593315"><span class="hs-identifier hs-type">selectDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593314"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
-</span><span id="line-52"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span>
-</span><span id="line-53"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Softmax"><span class="hs-identifier hs-type">Softmax</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593315"><span class="hs-identifier hs-type">selectDim</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-54"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593319"><span class="hs-identifier hs-type">requiresGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593318"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593317"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593316"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593314"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-55"></span><span>    </span><span class="annot"><a href="#local-6989586621679593313"><span class="hs-identifier hs-type">generator</span></a></span><span>
-</span><span id="line-56"></span><span>    </span><span class="annot"><a href="#local-6989586621679593320"><span class="hs-identifier hs-type">output</span></a></span><span>
-</span><span id="line-57"></span><span>    </span><span class="annot"><a href="#local-6989586621679593313"><span class="hs-identifier hs-type">generator</span></a></span><span>
-</span><span id="line-58"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-59"></span><span>  </span><span id="local-6989586621679593310"><span class="annot"><span class="annottext">forward :: Softmax selectDim
+</span><span id="line-50"></span><span>
+</span><span id="line-51"></span><span id="local-6989586621679647589"><span id="local-6989586621679647590"><span id="local-6989586621679647591"><span id="local-6989586621679647592"><span id="local-6989586621679647593"><span id="local-6989586621679647594"><span id="local-6989586621679647595"><span id="local-6989586621679647596"><span class="hs-keyword">instance</span><span>
+</span><span id="line-52"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679647596"><span class="hs-identifier hs-type">output</span></a></span><span> </span><span class="annot"><span class="hs-glyph hs-type">~</span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647595"><span class="hs-identifier hs-type">requiresGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647594"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647593"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647592"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Functional.NonLinearActivation.html#SoftmaxF"><span class="hs-identifier hs-type">SoftmaxF</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647591"><span class="hs-identifier hs-type">selectDim</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647590"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-53"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span>
+</span><span id="line-54"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Softmax"><span class="hs-identifier hs-type">Softmax</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647591"><span class="hs-identifier hs-type">selectDim</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647595"><span class="hs-identifier hs-type">requiresGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647594"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647593"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647592"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647590"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-56"></span><span>    </span><span class="annot"><a href="#local-6989586621679647589"><span class="hs-identifier hs-type">generator</span></a></span><span>
+</span><span id="line-57"></span><span>    </span><span class="annot"><a href="#local-6989586621679647596"><span class="hs-identifier hs-type">output</span></a></span><span>
+</span><span id="line-58"></span><span>    </span><span class="annot"><a href="#local-6989586621679647589"><span class="hs-identifier hs-type">generator</span></a></span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-60"></span><span>  </span><span id="local-6989586621679647586"><span class="annot"><span class="annottext">forward :: Softmax selectDim
 -&gt; Tensor requiresGradient layout device dataType shape
 -&gt; Generator generator
 -&gt; m (output, Generator generator)
-</span><a href="Torch.GraduallyTyped.NN.Class.html#forward"><span class="hs-identifier hs-var hs-var hs-var hs-var">forward</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Softmax"><span class="hs-identifier hs-type">Softmax</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679593308"><span class="annot"><span class="annottext">SSelectDim selectDim
+</span><a href="Torch.GraduallyTyped.NN.Class.html#forward"><span class="hs-identifier hs-var hs-var hs-var hs-var">forward</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Softmax"><span class="hs-identifier hs-type">Softmax</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679647584"><span class="annot"><span class="annottext">SSelectDim selectDim
 softmaxSelectDim :: SSelectDim selectDim
 softmaxSelectDim :: forall (selectDim :: SelectDim (By Symbol Nat)).
 Softmax selectDim -&gt; SSelectDim selectDim
-</span><a href="#local-6989586621679593308"><span class="hs-glyph hs-var hs-var">..</span></a></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679593307"><span class="annot"><span class="annottext">Tensor requiresGradient layout device dataType shape
-</span><a href="#local-6989586621679593307"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(output, Generator generator) -&gt; m (output, Generator generator)
+</span><a href="#local-6989586621679647584"><span class="hs-glyph hs-var hs-var">..</span></a></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679647583"><span class="annot"><span class="annottext">Tensor requiresGradient layout device dataType shape
+</span><a href="#local-6989586621679647583"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(output, Generator generator) -&gt; m (output, Generator generator)
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">((output, Generator generator) -&gt; m (output, Generator generator))
 -&gt; (Generator generator -&gt; (output, Generator generator))
@@ -131,24 +132,92 @@ SSelectDim selectDim
 -&gt; Tensor
      gradient layout device dataType (SoftmaxF selectDim shape)
 </span><a href="Torch.GraduallyTyped.NN.Functional.NonLinearActivation.html#softmax"><span class="hs-identifier hs-var">softmax</span></a></span><span> </span><span class="annot"><span class="annottext">SSelectDim selectDim
-</span><a href="#local-6989586621679593308"><span class="hs-identifier hs-var">softmaxSelectDim</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor requiresGradient layout device dataType shape
-</span><a href="#local-6989586621679593307"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span></span></span></span></span></span></span></span></span><span>
-</span><span id="line-60"></span><span>
-</span><span id="line-61"></span><span class="hs-keyword">data</span><span> </span><span id="Relu"><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Relu"><span class="hs-identifier hs-var">Relu</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="Relu"><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Relu"><span class="hs-identifier hs-var">Relu</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Relu"><span class="hs-identifier hs-type">Relu</span></a></span><span>
-</span><span id="line-62"></span><span>
-</span><span id="line-63"></span><span class="hs-keyword">type</span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="ModelSpec"><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier hs-var">ModelSpec</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Relu"><span class="hs-identifier hs-type">Relu</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Relu"><span class="hs-identifier hs-type">Relu</span></a></span><span>
-</span><span id="line-64"></span><span>
-</span><span id="line-65"></span><span id="local-6989586621679593305"><span class="hs-keyword">instance</span><span>
-</span><span id="line-66"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasInitialize"><span class="hs-identifier hs-type">HasInitialize</span></a></span><span>
-</span><span id="line-67"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Relu"><span class="hs-identifier hs-type">Relu</span></a></span><span>
-</span><span id="line-68"></span><span>    </span><span class="annot"><a href="#local-6989586621679593305"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span>
-</span><span id="line-69"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Relu"><span class="hs-identifier hs-type">Relu</span></a></span><span>
-</span><span id="line-70"></span><span>    </span><span class="annot"><a href="#local-6989586621679593305"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span>
-</span><span id="line-71"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-72"></span><span>  </span><span id="local-6989586621679593303"><span class="annot"><span class="annottext">initialize :: ModelSpec Relu
+</span><a href="#local-6989586621679647584"><span class="hs-identifier hs-var">softmaxSelectDim</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor requiresGradient layout device dataType shape
+</span><a href="#local-6989586621679647583"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span></span></span></span></span></span></span></span></span><span>
+</span><span id="line-61"></span><span>
+</span><span id="line-62"></span><span id="local-6989586621679647581"><span id="local-6989586621679647582"></span></span><span class="hs-keyword">data</span><span> </span><span id="Relu"><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Relu"><span class="hs-identifier hs-var">Relu</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-63"></span><span>  </span><span id="Relu"><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Relu"><span class="hs-identifier hs-var">Relu</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Relu"><span class="hs-identifier hs-type">Relu</span></a></span><span>
+</span><span id="line-64"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679647576"><span id="local-6989586621679647578"><span class="annot"><span class="annottext">Relu -&gt; Relu -&gt; Bool
+(Relu -&gt; Relu -&gt; Bool) -&gt; (Relu -&gt; Relu -&gt; Bool) -&gt; Eq Relu
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+/= :: Relu -&gt; Relu -&gt; Bool
+$c/= :: Relu -&gt; Relu -&gt; Bool
+== :: Relu -&gt; Relu -&gt; Bool
+$c== :: Relu -&gt; Relu -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679647560"><span id="local-6989586621679647562"><span id="local-6989586621679647564"><span id="local-6989586621679647566"><span id="local-6989586621679647568"><span id="local-6989586621679647570"><span id="local-6989586621679647572"><span class="annot"><span class="annottext">Eq Relu
+Eq Relu
+-&gt; (Relu -&gt; Relu -&gt; Ordering)
+-&gt; (Relu -&gt; Relu -&gt; Bool)
+-&gt; (Relu -&gt; Relu -&gt; Bool)
+-&gt; (Relu -&gt; Relu -&gt; Bool)
+-&gt; (Relu -&gt; Relu -&gt; Bool)
+-&gt; (Relu -&gt; Relu -&gt; Relu)
+-&gt; (Relu -&gt; Relu -&gt; Relu)
+-&gt; Ord Relu
+Relu -&gt; Relu -&gt; Bool
+Relu -&gt; Relu -&gt; Ordering
+Relu -&gt; Relu -&gt; Relu
+forall a.
+Eq a
+-&gt; (a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+min :: Relu -&gt; Relu -&gt; Relu
+$cmin :: Relu -&gt; Relu -&gt; Relu
+max :: Relu -&gt; Relu -&gt; Relu
+$cmax :: Relu -&gt; Relu -&gt; Relu
+&gt;= :: Relu -&gt; Relu -&gt; Bool
+$c&gt;= :: Relu -&gt; Relu -&gt; Bool
+&gt; :: Relu -&gt; Relu -&gt; Bool
+$c&gt; :: Relu -&gt; Relu -&gt; Bool
+&lt;= :: Relu -&gt; Relu -&gt; Bool
+$c&lt;= :: Relu -&gt; Relu -&gt; Bool
+&lt; :: Relu -&gt; Relu -&gt; Bool
+$c&lt; :: Relu -&gt; Relu -&gt; Bool
+compare :: Relu -&gt; Relu -&gt; Ordering
+$ccompare :: Relu -&gt; Relu -&gt; Ordering
+$cp1Ord :: Eq Relu
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679647553"><span id="local-6989586621679647555"><span id="local-6989586621679647557"><span class="annot"><span class="annottext">Int -&gt; Relu -&gt; ShowS
+[Relu] -&gt; ShowS
+Relu -&gt; String
+(Int -&gt; Relu -&gt; ShowS)
+-&gt; (Relu -&gt; String) -&gt; ([Relu] -&gt; ShowS) -&gt; Show Relu
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+showList :: [Relu] -&gt; ShowS
+$cshowList :: [Relu] -&gt; ShowS
+show :: Relu -&gt; String
+$cshow :: Relu -&gt; String
+showsPrec :: Int -&gt; Relu -&gt; ShowS
+$cshowsPrec :: Int -&gt; Relu -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(forall x. Relu -&gt; Rep Relu x)
+-&gt; (forall x. Rep Relu x -&gt; Relu) -&gt; Generic Relu
+forall x. Rep Relu x -&gt; Relu
+forall x. Relu -&gt; Rep Relu x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cto :: forall x. Rep Relu x -&gt; Relu
+$cfrom :: forall x. Relu -&gt; Rep Relu x
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-65"></span><span>
+</span><span id="line-66"></span><span class="hs-keyword">type</span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="ModelSpec"><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier hs-var">ModelSpec</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Relu"><span class="hs-identifier hs-type">Relu</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Relu"><span class="hs-identifier hs-type">Relu</span></a></span><span>
+</span><span id="line-67"></span><span>
+</span><span id="line-68"></span><span id="local-6989586621679647549"><span class="hs-keyword">instance</span><span>
+</span><span id="line-69"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasInitialize"><span class="hs-identifier hs-type">HasInitialize</span></a></span><span>
+</span><span id="line-70"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Relu"><span class="hs-identifier hs-type">Relu</span></a></span><span>
+</span><span id="line-71"></span><span>    </span><span class="annot"><a href="#local-6989586621679647549"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span>
+</span><span id="line-72"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Relu"><span class="hs-identifier hs-type">Relu</span></a></span><span>
+</span><span id="line-73"></span><span>    </span><span class="annot"><a href="#local-6989586621679647549"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span>
+</span><span id="line-74"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-75"></span><span>  </span><span id="local-6989586621679647547"><span class="annot"><span class="annottext">initialize :: ModelSpec Relu
 -&gt; Generator generatorDevice -&gt; m (Relu, Generator generatorDevice)
-</span><a href="#local-6989586621679593303"><span class="hs-identifier hs-var hs-var hs-var hs-var">initialize</span></a></span></span><span> </span><span id="local-6989586621679593302"><span class="annot"><span class="annottext">ModelSpec Relu
-</span><a href="#local-6989586621679593302"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Relu, Generator generatorDevice)
+</span><a href="#local-6989586621679647547"><span class="hs-identifier hs-var hs-var hs-var hs-var">initialize</span></a></span></span><span> </span><span id="local-6989586621679647546"><span class="annot"><span class="annottext">ModelSpec Relu
+</span><a href="#local-6989586621679647546"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Relu, Generator generatorDevice)
 -&gt; m (Relu, Generator generatorDevice)
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">((Relu, Generator generatorDevice)
@@ -159,40 +228,40 @@ forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span class="hs-operator hs-var">.</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ModelSpec Relu
 Relu
-</span><a href="#local-6989586621679593302"><span class="hs-identifier hs-var">spec</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span></span><span>
-</span><span id="line-73"></span><span>
-</span><span id="line-74"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Relu"><span class="hs-identifier hs-type">Relu</span></a></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-75"></span><span>  </span><span id="local-6989586621679593299"><span class="annot"><span class="annottext">fromStateDict :: ModelSpec Relu -&gt; StateDictKey -&gt; m Relu
-</span><a href="#local-6989586621679593299"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromStateDict</span></a></span></span><span> </span><span id="local-6989586621679593298"><span class="annot"><span class="annottext">ModelSpec Relu
-</span><a href="#local-6989586621679593298"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679647546"><span class="hs-identifier hs-var">spec</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span></span><span>
+</span><span id="line-76"></span><span>
+</span><span id="line-77"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Relu"><span class="hs-identifier hs-type">Relu</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-78"></span><span>  </span><span id="local-6989586621679647543"><span class="annot"><span class="annottext">fromStateDict :: ModelSpec Relu -&gt; StateDictKey -&gt; m Relu
+</span><a href="#local-6989586621679647543"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromStateDict</span></a></span></span><span> </span><span id="local-6989586621679647542"><span class="annot"><span class="annottext">ModelSpec Relu
+</span><a href="#local-6989586621679647542"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Relu -&gt; m Relu
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">ModelSpec Relu
 Relu
-</span><a href="#local-6989586621679593298"><span class="hs-identifier hs-var">spec</span></a></span><span>
-</span><span id="line-76"></span><span>  </span><span id="local-6989586621679593297"><span class="annot"><span class="annottext">toStateDict :: StateDictKey -&gt; Relu -&gt; m ()
-</span><a href="#local-6989586621679593297"><span class="hs-identifier hs-var hs-var hs-var hs-var">toStateDict</span></a></span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679647542"><span class="hs-identifier hs-var">spec</span></a></span><span>
+</span><span id="line-79"></span><span>  </span><span id="local-6989586621679647541"><span class="annot"><span class="annottext">toStateDict :: StateDictKey -&gt; Relu -&gt; m ()
+</span><a href="#local-6989586621679647541"><span class="hs-identifier hs-var hs-var hs-var hs-var">toStateDict</span></a></span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
 </span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Relu
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">() -&gt; m ()
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
-</span><span id="line-77"></span><span>
-</span><span id="line-78"></span><span id="local-6989586621679593291"><span id="local-6989586621679593292"><span id="local-6989586621679593293"><span id="local-6989586621679593294"><span id="local-6989586621679593295"><span id="local-6989586621679593296"><span class="hs-keyword">instance</span><span>
-</span><span id="line-79"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span>
-</span><span id="line-80"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Relu"><span class="hs-identifier hs-type">Relu</span></a></span><span>
-</span><span id="line-81"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593296"><span class="hs-identifier hs-type">requiresGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593295"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593294"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593293"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593292"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-82"></span><span>    </span><span class="annot"><a href="#local-6989586621679593291"><span class="hs-identifier hs-type">generator</span></a></span><span>
-</span><span id="line-83"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593296"><span class="hs-identifier hs-type">requiresGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593295"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593294"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593293"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593292"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-84"></span><span>    </span><span class="annot"><a href="#local-6989586621679593291"><span class="hs-identifier hs-type">generator</span></a></span><span>
-</span><span id="line-85"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-86"></span><span>  </span><span id="local-6989586621679593289"><span class="annot"><span class="annottext">forward :: Relu
+</span><span id="line-80"></span><span>
+</span><span id="line-81"></span><span id="local-6989586621679647535"><span id="local-6989586621679647536"><span id="local-6989586621679647537"><span id="local-6989586621679647538"><span id="local-6989586621679647539"><span id="local-6989586621679647540"><span class="hs-keyword">instance</span><span>
+</span><span id="line-82"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span>
+</span><span id="line-83"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Relu"><span class="hs-identifier hs-type">Relu</span></a></span><span>
+</span><span id="line-84"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647540"><span class="hs-identifier hs-type">requiresGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647539"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647538"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647537"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647536"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-85"></span><span>    </span><span class="annot"><a href="#local-6989586621679647535"><span class="hs-identifier hs-type">generator</span></a></span><span>
+</span><span id="line-86"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647540"><span class="hs-identifier hs-type">requiresGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647539"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647538"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647537"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647536"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-87"></span><span>    </span><span class="annot"><a href="#local-6989586621679647535"><span class="hs-identifier hs-type">generator</span></a></span><span>
+</span><span id="line-88"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-89"></span><span>  </span><span id="local-6989586621679647533"><span class="annot"><span class="annottext">forward :: Relu
 -&gt; Tensor requiresGradient layout device dataType shape
 -&gt; Generator generator
 -&gt; m (Tensor requiresGradient layout device dataType shape,
       Generator generator)
-</span><a href="#local-6989586621679593289"><span class="hs-identifier hs-var hs-var hs-var hs-var">forward</span></a></span></span><span> </span><span class="annot"><span class="annottext">Relu
-</span><a href="Torch.GraduallyTyped.NN.Activation.html#Relu"><span class="hs-identifier hs-var">Relu</span></a></span><span> </span><span id="local-6989586621679593288"><span class="annot"><span class="annottext">Tensor requiresGradient layout device dataType shape
-</span><a href="#local-6989586621679593288"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Tensor requiresGradient layout device dataType shape,
+</span><a href="#local-6989586621679647533"><span class="hs-identifier hs-var hs-var hs-var hs-var">forward</span></a></span></span><span> </span><span class="annot"><span class="annottext">Relu
+</span><a href="Torch.GraduallyTyped.NN.Activation.html#Relu"><span class="hs-identifier hs-var">Relu</span></a></span><span> </span><span id="local-6989586621679647532"><span class="annot"><span class="annottext">Tensor requiresGradient layout device dataType shape
+</span><a href="#local-6989586621679647532"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Tensor requiresGradient layout device dataType shape,
  Generator generator)
 -&gt; m (Tensor requiresGradient layout device dataType shape,
       Generator generator)
@@ -217,23 +286,91 @@ forall (gradient :: Gradient RequiresGradient)
 Tensor gradient layout device dataType shape
 -&gt; Tensor gradient layout device dataType shape
 </span><a href="Torch.GraduallyTyped.NN.Functional.Activation.html#relu"><span class="hs-identifier hs-var">relu</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor requiresGradient layout device dataType shape
-</span><a href="#local-6989586621679593288"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span></span></span></span></span></span></span><span>
-</span><span id="line-87"></span><span>
-</span><span id="line-88"></span><span class="hs-keyword">data</span><span> </span><span id="Gelu"><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Gelu"><span class="hs-identifier hs-var">Gelu</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="Gelu"><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Gelu"><span class="hs-identifier hs-var">Gelu</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Gelu"><span class="hs-identifier hs-type">Gelu</span></a></span><span>
-</span><span id="line-89"></span><span>
-</span><span id="line-90"></span><span class="hs-keyword">type</span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="ModelSpec"><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier hs-var">ModelSpec</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Gelu"><span class="hs-identifier hs-type">Gelu</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Gelu"><span class="hs-identifier hs-type">Gelu</span></a></span><span>
-</span><span id="line-91"></span><span>
-</span><span id="line-92"></span><span id="local-6989586621679593286"><span class="hs-keyword">instance</span><span>
-</span><span id="line-93"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasInitialize"><span class="hs-identifier hs-type">HasInitialize</span></a></span><span>
-</span><span id="line-94"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Gelu"><span class="hs-identifier hs-type">Gelu</span></a></span><span>
-</span><span id="line-95"></span><span>    </span><span class="annot"><a href="#local-6989586621679593286"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span>
-</span><span id="line-96"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Gelu"><span class="hs-identifier hs-type">Gelu</span></a></span><span>
-</span><span id="line-97"></span><span>    </span><span class="annot"><a href="#local-6989586621679593286"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span>
-</span><span id="line-98"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-99"></span><span>  </span><span id="local-6989586621679593284"><span class="annot"><span class="annottext">initialize :: ModelSpec Gelu
+</span><a href="#local-6989586621679647532"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span></span></span></span></span></span></span><span>
+</span><span id="line-90"></span><span>
+</span><span id="line-91"></span><span id="local-6989586621679647530"><span id="local-6989586621679647531"></span></span><span class="hs-keyword">data</span><span> </span><span id="Gelu"><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Gelu"><span class="hs-identifier hs-var">Gelu</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-92"></span><span>  </span><span id="Gelu"><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Gelu"><span class="hs-identifier hs-var">Gelu</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Gelu"><span class="hs-identifier hs-type">Gelu</span></a></span><span>
+</span><span id="line-93"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679647525"><span id="local-6989586621679647527"><span class="annot"><span class="annottext">Gelu -&gt; Gelu -&gt; Bool
+(Gelu -&gt; Gelu -&gt; Bool) -&gt; (Gelu -&gt; Gelu -&gt; Bool) -&gt; Eq Gelu
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+/= :: Gelu -&gt; Gelu -&gt; Bool
+$c/= :: Gelu -&gt; Gelu -&gt; Bool
+== :: Gelu -&gt; Gelu -&gt; Bool
+$c== :: Gelu -&gt; Gelu -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679647510"><span id="local-6989586621679647512"><span id="local-6989586621679647514"><span id="local-6989586621679647516"><span id="local-6989586621679647518"><span id="local-6989586621679647520"><span id="local-6989586621679647522"><span class="annot"><span class="annottext">Eq Gelu
+Eq Gelu
+-&gt; (Gelu -&gt; Gelu -&gt; Ordering)
+-&gt; (Gelu -&gt; Gelu -&gt; Bool)
+-&gt; (Gelu -&gt; Gelu -&gt; Bool)
+-&gt; (Gelu -&gt; Gelu -&gt; Bool)
+-&gt; (Gelu -&gt; Gelu -&gt; Bool)
+-&gt; (Gelu -&gt; Gelu -&gt; Gelu)
+-&gt; (Gelu -&gt; Gelu -&gt; Gelu)
+-&gt; Ord Gelu
+Gelu -&gt; Gelu -&gt; Bool
+Gelu -&gt; Gelu -&gt; Ordering
+Gelu -&gt; Gelu -&gt; Gelu
+forall a.
+Eq a
+-&gt; (a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+min :: Gelu -&gt; Gelu -&gt; Gelu
+$cmin :: Gelu -&gt; Gelu -&gt; Gelu
+max :: Gelu -&gt; Gelu -&gt; Gelu
+$cmax :: Gelu -&gt; Gelu -&gt; Gelu
+&gt;= :: Gelu -&gt; Gelu -&gt; Bool
+$c&gt;= :: Gelu -&gt; Gelu -&gt; Bool
+&gt; :: Gelu -&gt; Gelu -&gt; Bool
+$c&gt; :: Gelu -&gt; Gelu -&gt; Bool
+&lt;= :: Gelu -&gt; Gelu -&gt; Bool
+$c&lt;= :: Gelu -&gt; Gelu -&gt; Bool
+&lt; :: Gelu -&gt; Gelu -&gt; Bool
+$c&lt; :: Gelu -&gt; Gelu -&gt; Bool
+compare :: Gelu -&gt; Gelu -&gt; Ordering
+$ccompare :: Gelu -&gt; Gelu -&gt; Ordering
+$cp1Ord :: Eq Gelu
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679647504"><span id="local-6989586621679647506"><span id="local-6989586621679647508"><span class="annot"><span class="annottext">Int -&gt; Gelu -&gt; ShowS
+[Gelu] -&gt; ShowS
+Gelu -&gt; String
+(Int -&gt; Gelu -&gt; ShowS)
+-&gt; (Gelu -&gt; String) -&gt; ([Gelu] -&gt; ShowS) -&gt; Show Gelu
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+showList :: [Gelu] -&gt; ShowS
+$cshowList :: [Gelu] -&gt; ShowS
+show :: Gelu -&gt; String
+$cshow :: Gelu -&gt; String
+showsPrec :: Int -&gt; Gelu -&gt; ShowS
+$cshowsPrec :: Int -&gt; Gelu -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(forall x. Gelu -&gt; Rep Gelu x)
+-&gt; (forall x. Rep Gelu x -&gt; Gelu) -&gt; Generic Gelu
+forall x. Rep Gelu x -&gt; Gelu
+forall x. Gelu -&gt; Rep Gelu x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cto :: forall x. Rep Gelu x -&gt; Gelu
+$cfrom :: forall x. Gelu -&gt; Rep Gelu x
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-94"></span><span>
+</span><span id="line-95"></span><span class="hs-keyword">type</span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="ModelSpec"><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier hs-var">ModelSpec</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Gelu"><span class="hs-identifier hs-type">Gelu</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Gelu"><span class="hs-identifier hs-type">Gelu</span></a></span><span>
+</span><span id="line-96"></span><span>
+</span><span id="line-97"></span><span id="local-6989586621679647501"><span class="hs-keyword">instance</span><span>
+</span><span id="line-98"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasInitialize"><span class="hs-identifier hs-type">HasInitialize</span></a></span><span>
+</span><span id="line-99"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Gelu"><span class="hs-identifier hs-type">Gelu</span></a></span><span>
+</span><span id="line-100"></span><span>    </span><span class="annot"><a href="#local-6989586621679647501"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span>
+</span><span id="line-101"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Gelu"><span class="hs-identifier hs-type">Gelu</span></a></span><span>
+</span><span id="line-102"></span><span>    </span><span class="annot"><a href="#local-6989586621679647501"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span>
+</span><span id="line-103"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-104"></span><span>  </span><span id="local-6989586621679647499"><span class="annot"><span class="annottext">initialize :: ModelSpec Gelu
 -&gt; Generator generatorDevice -&gt; m (Gelu, Generator generatorDevice)
-</span><a href="#local-6989586621679593284"><span class="hs-identifier hs-var hs-var hs-var hs-var">initialize</span></a></span></span><span> </span><span id="local-6989586621679593283"><span class="annot"><span class="annottext">ModelSpec Gelu
-</span><a href="#local-6989586621679593283"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Gelu, Generator generatorDevice)
+</span><a href="#local-6989586621679647499"><span class="hs-identifier hs-var hs-var hs-var hs-var">initialize</span></a></span></span><span> </span><span id="local-6989586621679647498"><span class="annot"><span class="annottext">ModelSpec Gelu
+</span><a href="#local-6989586621679647498"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Gelu, Generator generatorDevice)
 -&gt; m (Gelu, Generator generatorDevice)
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">((Gelu, Generator generatorDevice)
@@ -244,40 +381,40 @@ forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span class="hs-operator hs-var">.</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ModelSpec Gelu
 Gelu
-</span><a href="#local-6989586621679593283"><span class="hs-identifier hs-var">spec</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span></span><span>
-</span><span id="line-100"></span><span>
-</span><span id="line-101"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Gelu"><span class="hs-identifier hs-type">Gelu</span></a></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-102"></span><span>  </span><span id="local-6989586621679593280"><span class="annot"><span class="annottext">fromStateDict :: ModelSpec Gelu -&gt; StateDictKey -&gt; m Gelu
-</span><a href="#local-6989586621679593280"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromStateDict</span></a></span></span><span> </span><span id="local-6989586621679593279"><span class="annot"><span class="annottext">ModelSpec Gelu
-</span><a href="#local-6989586621679593279"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679647498"><span class="hs-identifier hs-var">spec</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span></span><span>
+</span><span id="line-105"></span><span>
+</span><span id="line-106"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Gelu"><span class="hs-identifier hs-type">Gelu</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-107"></span><span>  </span><span id="local-6989586621679647495"><span class="annot"><span class="annottext">fromStateDict :: ModelSpec Gelu -&gt; StateDictKey -&gt; m Gelu
+</span><a href="#local-6989586621679647495"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromStateDict</span></a></span></span><span> </span><span id="local-6989586621679647494"><span class="annot"><span class="annottext">ModelSpec Gelu
+</span><a href="#local-6989586621679647494"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Gelu -&gt; m Gelu
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">ModelSpec Gelu
 Gelu
-</span><a href="#local-6989586621679593279"><span class="hs-identifier hs-var">spec</span></a></span><span>
-</span><span id="line-103"></span><span>  </span><span id="local-6989586621679593278"><span class="annot"><span class="annottext">toStateDict :: StateDictKey -&gt; Gelu -&gt; m ()
-</span><a href="#local-6989586621679593278"><span class="hs-identifier hs-var hs-var hs-var hs-var">toStateDict</span></a></span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679647494"><span class="hs-identifier hs-var">spec</span></a></span><span>
+</span><span id="line-108"></span><span>  </span><span id="local-6989586621679647493"><span class="annot"><span class="annottext">toStateDict :: StateDictKey -&gt; Gelu -&gt; m ()
+</span><a href="#local-6989586621679647493"><span class="hs-identifier hs-var hs-var hs-var hs-var">toStateDict</span></a></span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
 </span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Gelu
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">() -&gt; m ()
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
-</span><span id="line-104"></span><span>
-</span><span id="line-105"></span><span id="local-6989586621679593272"><span id="local-6989586621679593273"><span id="local-6989586621679593274"><span id="local-6989586621679593275"><span id="local-6989586621679593276"><span id="local-6989586621679593277"><span class="hs-keyword">instance</span><span>
-</span><span id="line-106"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span>
-</span><span id="line-107"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Gelu"><span class="hs-identifier hs-type">Gelu</span></a></span><span>
-</span><span id="line-108"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593277"><span class="hs-identifier hs-type">requiresGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593276"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593275"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593274"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593273"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-109"></span><span>    </span><span class="annot"><a href="#local-6989586621679593272"><span class="hs-identifier hs-type">generator</span></a></span><span>
-</span><span id="line-110"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593277"><span class="hs-identifier hs-type">requiresGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593276"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593275"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593274"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593273"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-111"></span><span>    </span><span class="annot"><a href="#local-6989586621679593272"><span class="hs-identifier hs-type">generator</span></a></span><span>
-</span><span id="line-112"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-113"></span><span>  </span><span id="local-6989586621679593270"><span class="annot"><span class="annottext">forward :: Gelu
+</span><span id="line-109"></span><span>
+</span><span id="line-110"></span><span id="local-6989586621679647487"><span id="local-6989586621679647488"><span id="local-6989586621679647489"><span id="local-6989586621679647490"><span id="local-6989586621679647491"><span id="local-6989586621679647492"><span class="hs-keyword">instance</span><span>
+</span><span id="line-111"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span>
+</span><span id="line-112"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Gelu"><span class="hs-identifier hs-type">Gelu</span></a></span><span>
+</span><span id="line-113"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647492"><span class="hs-identifier hs-type">requiresGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647491"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647490"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647489"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647488"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-114"></span><span>    </span><span class="annot"><a href="#local-6989586621679647487"><span class="hs-identifier hs-type">generator</span></a></span><span>
+</span><span id="line-115"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647492"><span class="hs-identifier hs-type">requiresGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647491"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647490"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647489"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647488"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-116"></span><span>    </span><span class="annot"><a href="#local-6989586621679647487"><span class="hs-identifier hs-type">generator</span></a></span><span>
+</span><span id="line-117"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-118"></span><span>  </span><span id="local-6989586621679647485"><span class="annot"><span class="annottext">forward :: Gelu
 -&gt; Tensor requiresGradient layout device dataType shape
 -&gt; Generator generator
 -&gt; m (Tensor requiresGradient layout device dataType shape,
       Generator generator)
-</span><a href="#local-6989586621679593270"><span class="hs-identifier hs-var hs-var hs-var hs-var">forward</span></a></span></span><span> </span><span class="annot"><span class="annottext">Gelu
-</span><a href="Torch.GraduallyTyped.NN.Activation.html#Gelu"><span class="hs-identifier hs-var">Gelu</span></a></span><span> </span><span id="local-6989586621679593269"><span class="annot"><span class="annottext">Tensor requiresGradient layout device dataType shape
-</span><a href="#local-6989586621679593269"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Tensor requiresGradient layout device dataType shape,
+</span><a href="#local-6989586621679647485"><span class="hs-identifier hs-var hs-var hs-var hs-var">forward</span></a></span></span><span> </span><span class="annot"><span class="annottext">Gelu
+</span><a href="Torch.GraduallyTyped.NN.Activation.html#Gelu"><span class="hs-identifier hs-var">Gelu</span></a></span><span> </span><span id="local-6989586621679647484"><span class="annot"><span class="annottext">Tensor requiresGradient layout device dataType shape
+</span><a href="#local-6989586621679647484"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Tensor requiresGradient layout device dataType shape,
  Generator generator)
 -&gt; m (Tensor requiresGradient layout device dataType shape,
       Generator generator)
@@ -302,23 +439,92 @@ forall (gradient :: Gradient RequiresGradient)
 Tensor gradient layout device dataType shape
 -&gt; Tensor gradient layout device dataType shape
 </span><a href="Torch.GraduallyTyped.NN.Functional.Activation.html#gelu"><span class="hs-identifier hs-var">gelu</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor requiresGradient layout device dataType shape
-</span><a href="#local-6989586621679593269"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span></span></span></span></span></span></span><span>
-</span><span id="line-114"></span><span>
-</span><span id="line-115"></span><span class="hs-keyword">data</span><span> </span><span id="GeluNew"><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#GeluNew"><span class="hs-identifier hs-var">GeluNew</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="GeluNew"><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#GeluNew"><span class="hs-identifier hs-var">GeluNew</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#GeluNew"><span class="hs-identifier hs-type">GeluNew</span></a></span><span>
-</span><span id="line-116"></span><span>
-</span><span id="line-117"></span><span class="hs-keyword">type</span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="ModelSpec"><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier hs-var">ModelSpec</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#GeluNew"><span class="hs-identifier hs-type">GeluNew</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#GeluNew"><span class="hs-identifier hs-type">GeluNew</span></a></span><span>
-</span><span id="line-118"></span><span>
-</span><span id="line-119"></span><span id="local-6989586621679593267"><span class="hs-keyword">instance</span><span>
-</span><span id="line-120"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasInitialize"><span class="hs-identifier hs-type">HasInitialize</span></a></span><span>
-</span><span id="line-121"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#GeluNew"><span class="hs-identifier hs-type">GeluNew</span></a></span><span>
-</span><span id="line-122"></span><span>    </span><span class="annot"><a href="#local-6989586621679593267"><span class="hs-identifier hs-type">generator</span></a></span><span>
-</span><span id="line-123"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#GeluNew"><span class="hs-identifier hs-type">GeluNew</span></a></span><span>
-</span><span id="line-124"></span><span>    </span><span class="annot"><a href="#local-6989586621679593267"><span class="hs-identifier hs-type">generator</span></a></span><span>
-</span><span id="line-125"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-126"></span><span>  </span><span id="local-6989586621679593265"><span class="annot"><span class="annottext">initialize :: ModelSpec GeluNew
+</span><a href="#local-6989586621679647484"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span></span></span></span></span></span></span><span>
+</span><span id="line-119"></span><span>
+</span><span id="line-120"></span><span id="local-6989586621679647482"><span id="local-6989586621679647483"></span></span><span class="hs-keyword">data</span><span> </span><span id="GeluNew"><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#GeluNew"><span class="hs-identifier hs-var">GeluNew</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-121"></span><span>  </span><span id="GeluNew"><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#GeluNew"><span class="hs-identifier hs-var">GeluNew</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#GeluNew"><span class="hs-identifier hs-type">GeluNew</span></a></span><span>
+</span><span id="line-122"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679647477"><span id="local-6989586621679647479"><span class="annot"><span class="annottext">GeluNew -&gt; GeluNew -&gt; Bool
+(GeluNew -&gt; GeluNew -&gt; Bool)
+-&gt; (GeluNew -&gt; GeluNew -&gt; Bool) -&gt; Eq GeluNew
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+/= :: GeluNew -&gt; GeluNew -&gt; Bool
+$c/= :: GeluNew -&gt; GeluNew -&gt; Bool
+== :: GeluNew -&gt; GeluNew -&gt; Bool
+$c== :: GeluNew -&gt; GeluNew -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679647462"><span id="local-6989586621679647464"><span id="local-6989586621679647466"><span id="local-6989586621679647468"><span id="local-6989586621679647470"><span id="local-6989586621679647472"><span id="local-6989586621679647474"><span class="annot"><span class="annottext">Eq GeluNew
+Eq GeluNew
+-&gt; (GeluNew -&gt; GeluNew -&gt; Ordering)
+-&gt; (GeluNew -&gt; GeluNew -&gt; Bool)
+-&gt; (GeluNew -&gt; GeluNew -&gt; Bool)
+-&gt; (GeluNew -&gt; GeluNew -&gt; Bool)
+-&gt; (GeluNew -&gt; GeluNew -&gt; Bool)
+-&gt; (GeluNew -&gt; GeluNew -&gt; GeluNew)
+-&gt; (GeluNew -&gt; GeluNew -&gt; GeluNew)
+-&gt; Ord GeluNew
+GeluNew -&gt; GeluNew -&gt; Bool
+GeluNew -&gt; GeluNew -&gt; Ordering
+GeluNew -&gt; GeluNew -&gt; GeluNew
+forall a.
+Eq a
+-&gt; (a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+min :: GeluNew -&gt; GeluNew -&gt; GeluNew
+$cmin :: GeluNew -&gt; GeluNew -&gt; GeluNew
+max :: GeluNew -&gt; GeluNew -&gt; GeluNew
+$cmax :: GeluNew -&gt; GeluNew -&gt; GeluNew
+&gt;= :: GeluNew -&gt; GeluNew -&gt; Bool
+$c&gt;= :: GeluNew -&gt; GeluNew -&gt; Bool
+&gt; :: GeluNew -&gt; GeluNew -&gt; Bool
+$c&gt; :: GeluNew -&gt; GeluNew -&gt; Bool
+&lt;= :: GeluNew -&gt; GeluNew -&gt; Bool
+$c&lt;= :: GeluNew -&gt; GeluNew -&gt; Bool
+&lt; :: GeluNew -&gt; GeluNew -&gt; Bool
+$c&lt; :: GeluNew -&gt; GeluNew -&gt; Bool
+compare :: GeluNew -&gt; GeluNew -&gt; Ordering
+$ccompare :: GeluNew -&gt; GeluNew -&gt; Ordering
+$cp1Ord :: Eq GeluNew
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679647456"><span id="local-6989586621679647458"><span id="local-6989586621679647460"><span class="annot"><span class="annottext">Int -&gt; GeluNew -&gt; ShowS
+[GeluNew] -&gt; ShowS
+GeluNew -&gt; String
+(Int -&gt; GeluNew -&gt; ShowS)
+-&gt; (GeluNew -&gt; String) -&gt; ([GeluNew] -&gt; ShowS) -&gt; Show GeluNew
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+showList :: [GeluNew] -&gt; ShowS
+$cshowList :: [GeluNew] -&gt; ShowS
+show :: GeluNew -&gt; String
+$cshow :: GeluNew -&gt; String
+showsPrec :: Int -&gt; GeluNew -&gt; ShowS
+$cshowsPrec :: Int -&gt; GeluNew -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(forall x. GeluNew -&gt; Rep GeluNew x)
+-&gt; (forall x. Rep GeluNew x -&gt; GeluNew) -&gt; Generic GeluNew
+forall x. Rep GeluNew x -&gt; GeluNew
+forall x. GeluNew -&gt; Rep GeluNew x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cto :: forall x. Rep GeluNew x -&gt; GeluNew
+$cfrom :: forall x. GeluNew -&gt; Rep GeluNew x
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-123"></span><span>
+</span><span id="line-124"></span><span class="hs-keyword">type</span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="ModelSpec"><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier hs-var">ModelSpec</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#GeluNew"><span class="hs-identifier hs-type">GeluNew</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#GeluNew"><span class="hs-identifier hs-type">GeluNew</span></a></span><span>
+</span><span id="line-125"></span><span>
+</span><span id="line-126"></span><span id="local-6989586621679647453"><span class="hs-keyword">instance</span><span>
+</span><span id="line-127"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasInitialize"><span class="hs-identifier hs-type">HasInitialize</span></a></span><span>
+</span><span id="line-128"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#GeluNew"><span class="hs-identifier hs-type">GeluNew</span></a></span><span>
+</span><span id="line-129"></span><span>    </span><span class="annot"><a href="#local-6989586621679647453"><span class="hs-identifier hs-type">generator</span></a></span><span>
+</span><span id="line-130"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#GeluNew"><span class="hs-identifier hs-type">GeluNew</span></a></span><span>
+</span><span id="line-131"></span><span>    </span><span class="annot"><a href="#local-6989586621679647453"><span class="hs-identifier hs-type">generator</span></a></span><span>
+</span><span id="line-132"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-133"></span><span>  </span><span id="local-6989586621679647451"><span class="annot"><span class="annottext">initialize :: ModelSpec GeluNew
 -&gt; Generator generator -&gt; m (GeluNew, Generator generator)
-</span><a href="#local-6989586621679593265"><span class="hs-identifier hs-var hs-var hs-var hs-var">initialize</span></a></span></span><span> </span><span id="local-6989586621679593264"><span class="annot"><span class="annottext">ModelSpec GeluNew
-</span><a href="#local-6989586621679593264"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(GeluNew, Generator generator) -&gt; m (GeluNew, Generator generator)
+</span><a href="#local-6989586621679647451"><span class="hs-identifier hs-var hs-var hs-var hs-var">initialize</span></a></span></span><span> </span><span id="local-6989586621679647450"><span class="annot"><span class="annottext">ModelSpec GeluNew
+</span><a href="#local-6989586621679647450"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(GeluNew, Generator generator) -&gt; m (GeluNew, Generator generator)
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">((GeluNew, Generator generator)
  -&gt; m (GeluNew, Generator generator))
@@ -328,40 +534,40 @@ forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span class="hs-operator hs-var">.</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ModelSpec GeluNew
 GeluNew
-</span><a href="#local-6989586621679593264"><span class="hs-identifier hs-var">spec</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span></span><span>
-</span><span id="line-127"></span><span>
-</span><span id="line-128"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#GeluNew"><span class="hs-identifier hs-type">GeluNew</span></a></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-129"></span><span>  </span><span id="local-6989586621679593261"><span class="annot"><span class="annottext">fromStateDict :: ModelSpec GeluNew -&gt; StateDictKey -&gt; m GeluNew
-</span><a href="#local-6989586621679593261"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromStateDict</span></a></span></span><span> </span><span id="local-6989586621679593260"><span class="annot"><span class="annottext">ModelSpec GeluNew
-</span><a href="#local-6989586621679593260"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679647450"><span class="hs-identifier hs-var">spec</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span></span><span>
+</span><span id="line-134"></span><span>
+</span><span id="line-135"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#GeluNew"><span class="hs-identifier hs-type">GeluNew</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-136"></span><span>  </span><span id="local-6989586621679647447"><span class="annot"><span class="annottext">fromStateDict :: ModelSpec GeluNew -&gt; StateDictKey -&gt; m GeluNew
+</span><a href="#local-6989586621679647447"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromStateDict</span></a></span></span><span> </span><span id="local-6989586621679647446"><span class="annot"><span class="annottext">ModelSpec GeluNew
+</span><a href="#local-6989586621679647446"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">GeluNew -&gt; m GeluNew
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">ModelSpec GeluNew
 GeluNew
-</span><a href="#local-6989586621679593260"><span class="hs-identifier hs-var">spec</span></a></span><span>
-</span><span id="line-130"></span><span>  </span><span id="local-6989586621679593259"><span class="annot"><span class="annottext">toStateDict :: StateDictKey -&gt; GeluNew -&gt; m ()
-</span><a href="#local-6989586621679593259"><span class="hs-identifier hs-var hs-var hs-var hs-var">toStateDict</span></a></span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679647446"><span class="hs-identifier hs-var">spec</span></a></span><span>
+</span><span id="line-137"></span><span>  </span><span id="local-6989586621679647445"><span class="annot"><span class="annottext">toStateDict :: StateDictKey -&gt; GeluNew -&gt; m ()
+</span><a href="#local-6989586621679647445"><span class="hs-identifier hs-var hs-var hs-var hs-var">toStateDict</span></a></span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
 </span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">GeluNew
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">() -&gt; m ()
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
-</span><span id="line-131"></span><span>
-</span><span id="line-132"></span><span id="local-6989586621679593253"><span id="local-6989586621679593254"><span id="local-6989586621679593255"><span id="local-6989586621679593256"><span id="local-6989586621679593257"><span id="local-6989586621679593258"><span class="hs-keyword">instance</span><span>
-</span><span id="line-133"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span>
-</span><span id="line-134"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#GeluNew"><span class="hs-identifier hs-type">GeluNew</span></a></span><span>
-</span><span id="line-135"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593258"><span class="hs-identifier hs-type">requiresGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593257"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593256"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593255"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593254"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-136"></span><span>    </span><span class="annot"><a href="#local-6989586621679593253"><span class="hs-identifier hs-type">generator</span></a></span><span>
-</span><span id="line-137"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593258"><span class="hs-identifier hs-type">requiresGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593257"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593256"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593255"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593254"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-138"></span><span>    </span><span class="annot"><a href="#local-6989586621679593253"><span class="hs-identifier hs-type">generator</span></a></span><span>
-</span><span id="line-139"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-140"></span><span>  </span><span id="local-6989586621679593251"><span class="annot"><span class="annottext">forward :: GeluNew
+</span><span id="line-138"></span><span>
+</span><span id="line-139"></span><span id="local-6989586621679647439"><span id="local-6989586621679647440"><span id="local-6989586621679647441"><span id="local-6989586621679647442"><span id="local-6989586621679647443"><span id="local-6989586621679647444"><span class="hs-keyword">instance</span><span>
+</span><span id="line-140"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span>
+</span><span id="line-141"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#GeluNew"><span class="hs-identifier hs-type">GeluNew</span></a></span><span>
+</span><span id="line-142"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647444"><span class="hs-identifier hs-type">requiresGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647443"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647442"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647441"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647440"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-143"></span><span>    </span><span class="annot"><a href="#local-6989586621679647439"><span class="hs-identifier hs-type">generator</span></a></span><span>
+</span><span id="line-144"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647444"><span class="hs-identifier hs-type">requiresGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647443"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647442"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647441"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647440"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-145"></span><span>    </span><span class="annot"><a href="#local-6989586621679647439"><span class="hs-identifier hs-type">generator</span></a></span><span>
+</span><span id="line-146"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-147"></span><span>  </span><span id="local-6989586621679647437"><span class="annot"><span class="annottext">forward :: GeluNew
 -&gt; Tensor requiresGradient layout device dataType shape
 -&gt; Generator generator
 -&gt; m (Tensor requiresGradient layout device dataType shape,
       Generator generator)
-</span><a href="#local-6989586621679593251"><span class="hs-identifier hs-var hs-var hs-var hs-var">forward</span></a></span></span><span> </span><span class="annot"><span class="annottext">GeluNew
-</span><a href="Torch.GraduallyTyped.NN.Activation.html#GeluNew"><span class="hs-identifier hs-var">GeluNew</span></a></span><span> </span><span id="local-6989586621679593250"><span class="annot"><span class="annottext">Tensor requiresGradient layout device dataType shape
-</span><a href="#local-6989586621679593250"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Tensor requiresGradient layout device dataType shape,
+</span><a href="#local-6989586621679647437"><span class="hs-identifier hs-var hs-var hs-var hs-var">forward</span></a></span></span><span> </span><span class="annot"><span class="annottext">GeluNew
+</span><a href="Torch.GraduallyTyped.NN.Activation.html#GeluNew"><span class="hs-identifier hs-var">GeluNew</span></a></span><span> </span><span id="local-6989586621679647436"><span class="annot"><span class="annottext">Tensor requiresGradient layout device dataType shape
+</span><a href="#local-6989586621679647436"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Tensor requiresGradient layout device dataType shape,
  Generator generator)
 -&gt; m (Tensor requiresGradient layout device dataType shape,
       Generator generator)
@@ -386,23 +592,91 @@ forall (gradient :: Gradient RequiresGradient)
 Tensor gradient layout device dataType shape
 -&gt; Tensor gradient layout device dataType shape
 </span><a href="Torch.GraduallyTyped.NN.Functional.Activation.html#geluNew"><span class="hs-identifier hs-var">geluNew</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor requiresGradient layout device dataType shape
-</span><a href="#local-6989586621679593250"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span></span></span></span></span></span></span><span>
-</span><span id="line-141"></span><span>
-</span><span id="line-142"></span><span class="hs-keyword">data</span><span> </span><span id="Tanh"><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Tanh"><span class="hs-identifier hs-var">Tanh</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="Tanh"><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Tanh"><span class="hs-identifier hs-var">Tanh</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Tanh"><span class="hs-identifier hs-type">Tanh</span></a></span><span>
-</span><span id="line-143"></span><span>
-</span><span id="line-144"></span><span class="hs-keyword">type</span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="ModelSpec"><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier hs-var">ModelSpec</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Tanh"><span class="hs-identifier hs-type">Tanh</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Tanh"><span class="hs-identifier hs-type">Tanh</span></a></span><span>
-</span><span id="line-145"></span><span>
-</span><span id="line-146"></span><span id="local-6989586621679593248"><span class="hs-keyword">instance</span><span>
-</span><span id="line-147"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasInitialize"><span class="hs-identifier hs-type">HasInitialize</span></a></span><span>
-</span><span id="line-148"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Tanh"><span class="hs-identifier hs-type">Tanh</span></a></span><span>
-</span><span id="line-149"></span><span>    </span><span class="annot"><a href="#local-6989586621679593248"><span class="hs-identifier hs-type">generator</span></a></span><span>
-</span><span id="line-150"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Tanh"><span class="hs-identifier hs-type">Tanh</span></a></span><span>
-</span><span id="line-151"></span><span>    </span><span class="annot"><a href="#local-6989586621679593248"><span class="hs-identifier hs-type">generator</span></a></span><span>
-</span><span id="line-152"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-153"></span><span>  </span><span id="local-6989586621679593246"><span class="annot"><span class="annottext">initialize :: ModelSpec Tanh
+</span><a href="#local-6989586621679647436"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span></span></span></span></span></span></span><span>
+</span><span id="line-148"></span><span>
+</span><span id="line-149"></span><span id="local-6989586621679647434"><span id="local-6989586621679647435"></span></span><span class="hs-keyword">data</span><span> </span><span id="Tanh"><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Tanh"><span class="hs-identifier hs-var">Tanh</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-150"></span><span>  </span><span id="Tanh"><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Tanh"><span class="hs-identifier hs-var">Tanh</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Tanh"><span class="hs-identifier hs-type">Tanh</span></a></span><span>
+</span><span id="line-151"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679647429"><span id="local-6989586621679647431"><span class="annot"><span class="annottext">Tanh -&gt; Tanh -&gt; Bool
+(Tanh -&gt; Tanh -&gt; Bool) -&gt; (Tanh -&gt; Tanh -&gt; Bool) -&gt; Eq Tanh
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+/= :: Tanh -&gt; Tanh -&gt; Bool
+$c/= :: Tanh -&gt; Tanh -&gt; Bool
+== :: Tanh -&gt; Tanh -&gt; Bool
+$c== :: Tanh -&gt; Tanh -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679647414"><span id="local-6989586621679647416"><span id="local-6989586621679647418"><span id="local-6989586621679647420"><span id="local-6989586621679647422"><span id="local-6989586621679647424"><span id="local-6989586621679647426"><span class="annot"><span class="annottext">Eq Tanh
+Eq Tanh
+-&gt; (Tanh -&gt; Tanh -&gt; Ordering)
+-&gt; (Tanh -&gt; Tanh -&gt; Bool)
+-&gt; (Tanh -&gt; Tanh -&gt; Bool)
+-&gt; (Tanh -&gt; Tanh -&gt; Bool)
+-&gt; (Tanh -&gt; Tanh -&gt; Bool)
+-&gt; (Tanh -&gt; Tanh -&gt; Tanh)
+-&gt; (Tanh -&gt; Tanh -&gt; Tanh)
+-&gt; Ord Tanh
+Tanh -&gt; Tanh -&gt; Bool
+Tanh -&gt; Tanh -&gt; Ordering
+Tanh -&gt; Tanh -&gt; Tanh
+forall a.
+Eq a
+-&gt; (a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+min :: Tanh -&gt; Tanh -&gt; Tanh
+$cmin :: Tanh -&gt; Tanh -&gt; Tanh
+max :: Tanh -&gt; Tanh -&gt; Tanh
+$cmax :: Tanh -&gt; Tanh -&gt; Tanh
+&gt;= :: Tanh -&gt; Tanh -&gt; Bool
+$c&gt;= :: Tanh -&gt; Tanh -&gt; Bool
+&gt; :: Tanh -&gt; Tanh -&gt; Bool
+$c&gt; :: Tanh -&gt; Tanh -&gt; Bool
+&lt;= :: Tanh -&gt; Tanh -&gt; Bool
+$c&lt;= :: Tanh -&gt; Tanh -&gt; Bool
+&lt; :: Tanh -&gt; Tanh -&gt; Bool
+$c&lt; :: Tanh -&gt; Tanh -&gt; Bool
+compare :: Tanh -&gt; Tanh -&gt; Ordering
+$ccompare :: Tanh -&gt; Tanh -&gt; Ordering
+$cp1Ord :: Eq Tanh
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679647408"><span id="local-6989586621679647410"><span id="local-6989586621679647412"><span class="annot"><span class="annottext">Int -&gt; Tanh -&gt; ShowS
+[Tanh] -&gt; ShowS
+Tanh -&gt; String
+(Int -&gt; Tanh -&gt; ShowS)
+-&gt; (Tanh -&gt; String) -&gt; ([Tanh] -&gt; ShowS) -&gt; Show Tanh
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+showList :: [Tanh] -&gt; ShowS
+$cshowList :: [Tanh] -&gt; ShowS
+show :: Tanh -&gt; String
+$cshow :: Tanh -&gt; String
+showsPrec :: Int -&gt; Tanh -&gt; ShowS
+$cshowsPrec :: Int -&gt; Tanh -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(forall x. Tanh -&gt; Rep Tanh x)
+-&gt; (forall x. Rep Tanh x -&gt; Tanh) -&gt; Generic Tanh
+forall x. Rep Tanh x -&gt; Tanh
+forall x. Tanh -&gt; Rep Tanh x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cto :: forall x. Rep Tanh x -&gt; Tanh
+$cfrom :: forall x. Tanh -&gt; Rep Tanh x
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-152"></span><span>
+</span><span id="line-153"></span><span class="hs-keyword">type</span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="ModelSpec"><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier hs-var">ModelSpec</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Tanh"><span class="hs-identifier hs-type">Tanh</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Tanh"><span class="hs-identifier hs-type">Tanh</span></a></span><span>
+</span><span id="line-154"></span><span>
+</span><span id="line-155"></span><span id="local-6989586621679647405"><span class="hs-keyword">instance</span><span>
+</span><span id="line-156"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasInitialize"><span class="hs-identifier hs-type">HasInitialize</span></a></span><span>
+</span><span id="line-157"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Tanh"><span class="hs-identifier hs-type">Tanh</span></a></span><span>
+</span><span id="line-158"></span><span>    </span><span class="annot"><a href="#local-6989586621679647405"><span class="hs-identifier hs-type">generator</span></a></span><span>
+</span><span id="line-159"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Tanh"><span class="hs-identifier hs-type">Tanh</span></a></span><span>
+</span><span id="line-160"></span><span>    </span><span class="annot"><a href="#local-6989586621679647405"><span class="hs-identifier hs-type">generator</span></a></span><span>
+</span><span id="line-161"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-162"></span><span>  </span><span id="local-6989586621679647403"><span class="annot"><span class="annottext">initialize :: ModelSpec Tanh
 -&gt; Generator generator -&gt; m (Tanh, Generator generator)
-</span><a href="#local-6989586621679593246"><span class="hs-identifier hs-var hs-var hs-var hs-var">initialize</span></a></span></span><span> </span><span id="local-6989586621679593245"><span class="annot"><span class="annottext">ModelSpec Tanh
-</span><a href="#local-6989586621679593245"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Tanh, Generator generator) -&gt; m (Tanh, Generator generator)
+</span><a href="#local-6989586621679647403"><span class="hs-identifier hs-var hs-var hs-var hs-var">initialize</span></a></span></span><span> </span><span id="local-6989586621679647402"><span class="annot"><span class="annottext">ModelSpec Tanh
+</span><a href="#local-6989586621679647402"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Tanh, Generator generator) -&gt; m (Tanh, Generator generator)
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">((Tanh, Generator generator) -&gt; m (Tanh, Generator generator))
 -&gt; (Generator generator -&gt; (Tanh, Generator generator))
@@ -411,40 +685,40 @@ forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span class="hs-operator hs-var">.</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ModelSpec Tanh
 Tanh
-</span><a href="#local-6989586621679593245"><span class="hs-identifier hs-var">spec</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span></span><span>
-</span><span id="line-154"></span><span>
-</span><span id="line-155"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Tanh"><span class="hs-identifier hs-type">Tanh</span></a></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-156"></span><span>  </span><span id="local-6989586621679593242"><span class="annot"><span class="annottext">fromStateDict :: ModelSpec Tanh -&gt; StateDictKey -&gt; m Tanh
-</span><a href="#local-6989586621679593242"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromStateDict</span></a></span></span><span> </span><span id="local-6989586621679593241"><span class="annot"><span class="annottext">ModelSpec Tanh
-</span><a href="#local-6989586621679593241"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679647402"><span class="hs-identifier hs-var">spec</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span></span><span>
+</span><span id="line-163"></span><span>
+</span><span id="line-164"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Tanh"><span class="hs-identifier hs-type">Tanh</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-165"></span><span>  </span><span id="local-6989586621679647399"><span class="annot"><span class="annottext">fromStateDict :: ModelSpec Tanh -&gt; StateDictKey -&gt; m Tanh
+</span><a href="#local-6989586621679647399"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromStateDict</span></a></span></span><span> </span><span id="local-6989586621679647398"><span class="annot"><span class="annottext">ModelSpec Tanh
+</span><a href="#local-6989586621679647398"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tanh -&gt; m Tanh
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">ModelSpec Tanh
 Tanh
-</span><a href="#local-6989586621679593241"><span class="hs-identifier hs-var">spec</span></a></span><span>
-</span><span id="line-157"></span><span>  </span><span id="local-6989586621679593240"><span class="annot"><span class="annottext">toStateDict :: StateDictKey -&gt; Tanh -&gt; m ()
-</span><a href="#local-6989586621679593240"><span class="hs-identifier hs-var hs-var hs-var hs-var">toStateDict</span></a></span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679647398"><span class="hs-identifier hs-var">spec</span></a></span><span>
+</span><span id="line-166"></span><span>  </span><span id="local-6989586621679647397"><span class="annot"><span class="annottext">toStateDict :: StateDictKey -&gt; Tanh -&gt; m ()
+</span><a href="#local-6989586621679647397"><span class="hs-identifier hs-var hs-var hs-var hs-var">toStateDict</span></a></span></span><span> </span><span class="annot"><span class="annottext">StateDictKey
 </span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Tanh
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">() -&gt; m ()
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
-</span><span id="line-158"></span><span>
-</span><span id="line-159"></span><span id="local-6989586621679593234"><span id="local-6989586621679593235"><span id="local-6989586621679593236"><span id="local-6989586621679593237"><span id="local-6989586621679593238"><span id="local-6989586621679593239"><span class="hs-keyword">instance</span><span>
-</span><span id="line-160"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span>
-</span><span id="line-161"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Tanh"><span class="hs-identifier hs-type">Tanh</span></a></span><span>
-</span><span id="line-162"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593239"><span class="hs-identifier hs-type">requiresGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593238"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593237"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593236"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593235"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-163"></span><span>    </span><span class="annot"><a href="#local-6989586621679593234"><span class="hs-identifier hs-type">generator</span></a></span><span>
-</span><span id="line-164"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593239"><span class="hs-identifier hs-type">requiresGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593238"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593237"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593236"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679593235"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-165"></span><span>    </span><span class="annot"><a href="#local-6989586621679593234"><span class="hs-identifier hs-type">generator</span></a></span><span>
-</span><span id="line-166"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-167"></span><span>  </span><span id="local-6989586621679593232"><span class="annot"><span class="annottext">forward :: Tanh
+</span><span id="line-167"></span><span>
+</span><span id="line-168"></span><span id="local-6989586621679647391"><span id="local-6989586621679647392"><span id="local-6989586621679647393"><span id="local-6989586621679647394"><span id="local-6989586621679647395"><span id="local-6989586621679647396"><span class="hs-keyword">instance</span><span>
+</span><span id="line-169"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span>
+</span><span id="line-170"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Activation.html#Tanh"><span class="hs-identifier hs-type">Tanh</span></a></span><span>
+</span><span id="line-171"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647396"><span class="hs-identifier hs-type">requiresGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647395"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647394"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647393"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647392"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-172"></span><span>    </span><span class="annot"><a href="#local-6989586621679647391"><span class="hs-identifier hs-type">generator</span></a></span><span>
+</span><span id="line-173"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647396"><span class="hs-identifier hs-type">requiresGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647395"><span class="hs-identifier hs-type">layout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647394"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647393"><span class="hs-identifier hs-type">dataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679647392"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-174"></span><span>    </span><span class="annot"><a href="#local-6989586621679647391"><span class="hs-identifier hs-type">generator</span></a></span><span>
+</span><span id="line-175"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-176"></span><span>  </span><span id="local-6989586621679647389"><span class="annot"><span class="annottext">forward :: Tanh
 -&gt; Tensor requiresGradient layout device dataType shape
 -&gt; Generator generator
 -&gt; m (Tensor requiresGradient layout device dataType shape,
       Generator generator)
-</span><a href="#local-6989586621679593232"><span class="hs-identifier hs-var hs-var hs-var hs-var">forward</span></a></span></span><span> </span><span class="annot"><span class="annottext">Tanh
-</span><a href="Torch.GraduallyTyped.NN.Activation.html#Tanh"><span class="hs-identifier hs-var">Tanh</span></a></span><span> </span><span id="local-6989586621679593231"><span class="annot"><span class="annottext">Tensor requiresGradient layout device dataType shape
-</span><a href="#local-6989586621679593231"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Tensor requiresGradient layout device dataType shape,
+</span><a href="#local-6989586621679647389"><span class="hs-identifier hs-var hs-var hs-var hs-var">forward</span></a></span></span><span> </span><span class="annot"><span class="annottext">Tanh
+</span><a href="Torch.GraduallyTyped.NN.Activation.html#Tanh"><span class="hs-identifier hs-var">Tanh</span></a></span><span> </span><span id="local-6989586621679647388"><span class="annot"><span class="annottext">Tensor requiresGradient layout device dataType shape
+</span><a href="#local-6989586621679647388"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Tensor requiresGradient layout device dataType shape,
  Generator generator)
 -&gt; m (Tensor requiresGradient layout device dataType shape,
       Generator generator)
@@ -469,5 +743,5 @@ forall (gradient :: Gradient RequiresGradient)
 Tensor gradient layout device dataType shape
 -&gt; Tensor gradient layout device dataType shape
 </span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Pointwise.html#tanh"><span class="hs-identifier hs-var">tanh</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor requiresGradient layout device dataType shape
-</span><a href="#local-6989586621679593231"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span></span></span></span></span></span></span><span>
-</span><span id="line-168"></span></pre></body></html>
+</span><a href="#local-6989586621679647388"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span></span></span></span></span></span></span><span>
+</span><span id="line-177"></span></pre></body></html>

@@ -142,13 +142,23 @@ instance (GHC.Base.Alternative b, Data.Foldable.Foldable b, GHC.Base.MonadPlus b
 module Torch.GraduallyTyped.Internal.Void
 data Void
 
+module Torch.GraduallyTyped.LearningRateSchedules
+
+-- | Single-cycle learning rate schedule. See, for instance,
+--   <a>https://arxiv.org/abs/1803.09820</a>.
+--   
+--   This is a simple schedule that is a stepwise linear interpolation
+--   between the initial, maximum, and final learning rates. The initial
+--   learning rate is zero.
+singleCycleLearningRateSchedule :: Double -> Double -> Int -> Int -> Int -> Int -> Double
+
 module Torch.GraduallyTyped.NN.Type
 data HasBias
 WithBias :: HasBias
 WithoutBias :: HasBias
 type WithBiasSym0 = 'WithBias :: HasBias
 type WithoutBiasSym0 = 'WithoutBias :: HasBias
-data SHasBias z_axTt
+data SHasBias z_ay0M
 [SWithBias] :: SHasBias ('WithBias :: HasBias)
 [SWithoutBias] :: SHasBias ('WithoutBias :: HasBias)
 data HasDropout
@@ -156,7 +166,7 @@ WithDropout :: HasDropout
 WithoutDropout :: HasDropout
 type WithDropoutSym0 = 'WithDropout :: HasDropout
 type WithoutDropoutSym0 = 'WithoutDropout :: HasDropout
-data SHasDropout z_ay0Y
+data SHasDropout z_ay8h
 [SWithDropout] :: SHasDropout ('WithDropout :: HasDropout)
 [SWithoutDropout] :: SHasDropout ('WithoutDropout :: HasDropout)
 instance Data.Singletons.Internal.SingKind Torch.GraduallyTyped.NN.Type.HasDropout
@@ -315,6 +325,7 @@ type family Contains (f :: k) (a :: k') :: Bool
 --   </pre>
 type family Extract (f :: k) (a :: k') :: [k']
 type family FromMaybe (d :: k) (x :: Maybe k) :: k
+type family MaybeF (d :: k') (f :: k -> k') (x :: Maybe k) :: k'
 type family FstMaybe (t :: Maybe (k, k')) :: Maybe k
 type family SndMaybe (t :: Maybe (k, k')) :: Maybe k'
 type family PrependMaybe (h :: Maybe a) (t :: Maybe [a]) :: Maybe [a]
@@ -373,7 +384,7 @@ Dense :: LayoutType
 Sparse :: LayoutType
 type DenseSym0 = 'Dense :: LayoutType
 type SparseSym0 = 'Sparse :: LayoutType
-data SLayoutType z_aBMY
+data SLayoutType z_aBV1
 [SDense] :: SLayoutType ('Dense :: LayoutType)
 [SSparse] :: SLayoutType ('Sparse :: LayoutType)
 class KnownLayoutType (layoutType :: LayoutType)
@@ -542,7 +553,7 @@ type QInt8Sym0 = 'QInt8 :: DType
 type QUInt8Sym0 = 'QUInt8 :: DType
 type QInt32Sym0 = 'QInt32 :: DType
 type BFloat16Sym0 = 'BFloat16 :: DType
-data SDType z_aFBz
+data SDType z_aFFx
 [SBool] :: SDType ('Bool :: DType)
 [SUInt8] :: SDType ('UInt8 :: DType)
 [SInt8] :: SDType ('Int8 :: DType)
@@ -628,7 +639,7 @@ WithGradient :: RequiresGradient
 WithoutGradient :: RequiresGradient
 type WithGradientSym0 = 'WithGradient :: RequiresGradient
 type WithoutGradientSym0 = 'WithoutGradient :: RequiresGradient
-data SRequiresGradient z_aI95
+data SRequiresGradient z_aId3
 [SWithGradient] :: SRequiresGradient ('WithGradient :: RequiresGradient)
 [SWithoutGradient] :: SRequiresGradient ('WithoutGradient :: RequiresGradient)
 class KnownRequiresGradient (requiresGradient :: RequiresGradient)
@@ -693,6 +704,7 @@ data Name (name :: Type)
 data SName (name :: Name Symbol)
 [SUncheckedName] :: String -> SName 'UncheckedName
 [SName] :: forall name. KnownSymbol name => SName ('Name name)
+pattern SNoName :: SName ('Name "*")
 type family NameF (name :: Name Symbol) :: Symbol
 class KnownName (name :: Name Symbol)
 nameVal :: KnownName name => Name String
@@ -2074,8 +2086,8 @@ class HasCat (selectDim :: SelectDim (By Symbol Nat)) k (c :: k -> Type) (a :: k
 --          ('DataType 'Float)
 --          'UncheckedShape
 --   </pre>
-sCat :: HasCat selectDim k c a => SSelectDim selectDim -> c a -> CatF selectDim a c
-cat :: (HasCat selectDim k c a, SingI selectDim) => c a -> CatF selectDim a c
+sCat :: forall m. (HasCat selectDim k c a, MonadThrow m) => SSelectDim selectDim -> c a -> m (CatF selectDim a c)
+cat :: forall m. (HasCat selectDim k c a, SingI selectDim, MonadThrow m) => c a -> m (CatF selectDim a c)
 type family CatListImplF (selectDim :: SelectDim (By Symbol Nat)) (tensor :: Type) :: Maybe Type
 type CheckSpellingMessage = "Check the spelling of named dimensions, and make sure the number of dimensions is correct."
 type family CatListCheckF (selectDim :: SelectDim (By Symbol Nat)) (tensor :: Type) (result :: Maybe Type) :: Type
@@ -2251,6 +2263,9 @@ sUnsqueeze :: forall selectDim gradient layout device dataType shape shape'. sha
 
 -- | Unsqueezes a tensor with the specified dimension.
 unsqueeze :: forall selectDim gradient layout device dataType shape shape'. (shape' ~ UnsqueezeF selectDim shape, SingI selectDim) => Tensor gradient layout device dataType shape -> Tensor gradient layout device dataType shape'
+type family SqueezeAllShapeF (shape :: Shape [Dim (Name Symbol) (Size Nat)]) :: Shape [Dim (Name Symbol) (Size Nat)]
+type family SqueezeAllDimsF (dims :: [Dim (Name Symbol) (Size Nat)]) :: Maybe [Dim (Name Symbol) (Size Nat)]
+squeezeAll :: forall gradient layout device dataType shape. Tensor gradient layout device dataType shape -> Tensor gradient layout device dataType (SqueezeAllShapeF shape)
 
 -- | Expands a tensor to the specified shape.
 sExpand :: forall shape' gradient layout device dataType shape input output. (input ~ Tensor gradient layout device dataType shape, output ~ Tensor gradient layout device dataType (BroadcastShapesF shape shape')) => SShape shape' -> input -> output
@@ -2321,19 +2336,19 @@ SliceFromUpTo :: a -> a -> IndexType a
 SliceFromWithStep :: a -> a -> IndexType a
 SliceUpToWithStep :: a -> a -> IndexType a
 SliceFromUpToWithStep :: a -> a -> a -> IndexType a
-data SIndexType z_a1hKx
-[SNewAxis] :: forall (a_a1hrt :: Type). () => SIndexType ('NewAxis :: IndexType (a_a1hrt :: Type))
-[SEllipsis] :: forall (a_a1hrt :: Type). () => SIndexType ('Ellipsis :: IndexType (a_a1hrt :: Type))
-[SSliceAll] :: forall (a_a1hrt :: Type). () => SIndexType ('SliceAll :: IndexType (a_a1hrt :: Type))
-[SSliceAt] :: forall (a_a1hrt :: Type) (n_a1hJn :: a_a1hrt). () => Sing n_a1hJn -> SIndexType ('SliceAt n_a1hJn :: IndexType (a_a1hrt :: Type))
-[SSliceBool] :: forall (a_a1hrt :: Type) (n_a1hJp :: Bool). () => Sing n_a1hJp -> SIndexType ('SliceBool n_a1hJp :: IndexType (a_a1hrt :: Type))
-[SSliceFrom] :: forall (a_a1hrt :: Type) (n_a1hJr :: a_a1hrt). () => Sing n_a1hJr -> SIndexType ('SliceFrom n_a1hJr :: IndexType (a_a1hrt :: Type))
-[SSliceUpTo] :: forall (a_a1hrt :: Type) (n_a1hJt :: a_a1hrt). () => Sing n_a1hJt -> SIndexType ('SliceUpTo n_a1hJt :: IndexType (a_a1hrt :: Type))
-[SSliceWithStep] :: forall (a_a1hrt :: Type) (n_a1hJv :: a_a1hrt). () => Sing n_a1hJv -> SIndexType ('SliceWithStep n_a1hJv :: IndexType (a_a1hrt :: Type))
-[SSliceFromUpTo] :: forall (a_a1hrt :: Type) (n_a1hJx :: a_a1hrt) (n_a1hJy :: a_a1hrt). () => Sing n_a1hJx -> Sing n_a1hJy -> SIndexType ('SliceFromUpTo n_a1hJx n_a1hJy :: IndexType (a_a1hrt :: Type))
-[SSliceFromWithStep] :: forall (a_a1hrt :: Type) (n_a1hJB :: a_a1hrt) (n_a1hJC :: a_a1hrt). () => Sing n_a1hJB -> Sing n_a1hJC -> SIndexType ('SliceFromWithStep n_a1hJB n_a1hJC :: IndexType (a_a1hrt :: Type))
-[SSliceUpToWithStep] :: forall (a_a1hrt :: Type) (n_a1hJF :: a_a1hrt) (n_a1hJG :: a_a1hrt). () => Sing n_a1hJF -> Sing n_a1hJG -> SIndexType ('SliceUpToWithStep n_a1hJF n_a1hJG :: IndexType (a_a1hrt :: Type))
-[SSliceFromUpToWithStep] :: forall (a_a1hrt :: Type) (n_a1hJJ :: a_a1hrt) (n_a1hJK :: a_a1hrt) (n_a1hJL :: a_a1hrt). () => Sing n_a1hJJ -> Sing n_a1hJK -> Sing n_a1hJL -> SIndexType ('SliceFromUpToWithStep n_a1hJJ n_a1hJK n_a1hJL :: IndexType (a_a1hrt :: Type))
+data SIndexType z_a1hS5
+[SNewAxis] :: forall (a_a1hz1 :: Type). () => SIndexType ('NewAxis :: IndexType (a_a1hz1 :: Type))
+[SEllipsis] :: forall (a_a1hz1 :: Type). () => SIndexType ('Ellipsis :: IndexType (a_a1hz1 :: Type))
+[SSliceAll] :: forall (a_a1hz1 :: Type). () => SIndexType ('SliceAll :: IndexType (a_a1hz1 :: Type))
+[SSliceAt] :: forall (a_a1hz1 :: Type) (n_a1hQV :: a_a1hz1). () => Sing n_a1hQV -> SIndexType ('SliceAt n_a1hQV :: IndexType (a_a1hz1 :: Type))
+[SSliceBool] :: forall (a_a1hz1 :: Type) (n_a1hQX :: Bool). () => Sing n_a1hQX -> SIndexType ('SliceBool n_a1hQX :: IndexType (a_a1hz1 :: Type))
+[SSliceFrom] :: forall (a_a1hz1 :: Type) (n_a1hQZ :: a_a1hz1). () => Sing n_a1hQZ -> SIndexType ('SliceFrom n_a1hQZ :: IndexType (a_a1hz1 :: Type))
+[SSliceUpTo] :: forall (a_a1hz1 :: Type) (n_a1hR1 :: a_a1hz1). () => Sing n_a1hR1 -> SIndexType ('SliceUpTo n_a1hR1 :: IndexType (a_a1hz1 :: Type))
+[SSliceWithStep] :: forall (a_a1hz1 :: Type) (n_a1hR3 :: a_a1hz1). () => Sing n_a1hR3 -> SIndexType ('SliceWithStep n_a1hR3 :: IndexType (a_a1hz1 :: Type))
+[SSliceFromUpTo] :: forall (a_a1hz1 :: Type) (n_a1hR5 :: a_a1hz1) (n_a1hR6 :: a_a1hz1). () => Sing n_a1hR5 -> Sing n_a1hR6 -> SIndexType ('SliceFromUpTo n_a1hR5 n_a1hR6 :: IndexType (a_a1hz1 :: Type))
+[SSliceFromWithStep] :: forall (a_a1hz1 :: Type) (n_a1hR9 :: a_a1hz1) (n_a1hRa :: a_a1hz1). () => Sing n_a1hR9 -> Sing n_a1hRa -> SIndexType ('SliceFromWithStep n_a1hR9 n_a1hRa :: IndexType (a_a1hz1 :: Type))
+[SSliceUpToWithStep] :: forall (a_a1hz1 :: Type) (n_a1hRd :: a_a1hz1) (n_a1hRe :: a_a1hz1). () => Sing n_a1hRd -> Sing n_a1hRe -> SIndexType ('SliceUpToWithStep n_a1hRd n_a1hRe :: IndexType (a_a1hz1 :: Type))
+[SSliceFromUpToWithStep] :: forall (a_a1hz1 :: Type) (n_a1hRh :: a_a1hz1) (n_a1hRi :: a_a1hz1) (n_a1hRj :: a_a1hz1). () => Sing n_a1hRh -> Sing n_a1hRi -> Sing n_a1hRj -> SIndexType ('SliceFromUpToWithStep n_a1hRh n_a1hRi n_a1hRj :: IndexType (a_a1hz1 :: Type))
 data Indices (indexTypes :: Type)
 [UncheckedIndices] :: forall indexTypes. Indices indexTypes
 [Indices] :: forall indexTypes. indexTypes -> Indices indexTypes
@@ -2376,14 +2391,14 @@ instance Data.Singletons.Internal.SingI Torch.GraduallyTyped.Tensor.Indexing.Sli
 instance forall a (d :: a). Data.Singletons.Internal.SingI d => Data.Singletons.Internal.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym1 d)
 instance forall a (d1 :: a) (d2 :: a). (Data.Singletons.Internal.SingI d1, Data.Singletons.Internal.SingI d2) => Data.Singletons.Internal.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym2 d1 d2)
 instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym0
-instance forall a (a6989586621679316278 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym1 a6989586621679316278)
-instance forall a (a6989586621679316278 :: a) (a6989586621679316279 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym2 a6989586621679316278 a6989586621679316279)
+instance forall a (a6989586621679316746 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym1 a6989586621679316746)
+instance forall a (a6989586621679316746 :: a) (a6989586621679316747 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym2 a6989586621679316746 a6989586621679316747)
 instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStepSym0
-instance forall a (a6989586621679316275 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStepSym1 a6989586621679316275)
+instance forall a (a6989586621679316743 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStepSym1 a6989586621679316743)
 instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStepSym0
-instance forall a (a6989586621679316272 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStepSym1 a6989586621679316272)
+instance forall a (a6989586621679316740 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStepSym1 a6989586621679316740)
 instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym0
-instance forall a (a6989586621679316269 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym1 a6989586621679316269)
+instance forall a (a6989586621679316737 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym1 a6989586621679316737)
 instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceWithStepSym0
 instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceUpToSym0
 instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromSym0
@@ -3140,7 +3155,7 @@ type family MatmulF (shape :: Shape [Dim (Name Symbol) (Size Nat)]) (shape' :: S
 --             '[ 'Dim ('Name "batch") ('Size 10), 'Dim ('Name "*") ('Size 5),
 --                'Dim ('Name "*") ('Size 3), 'Dim ('Name "*") ('Size 7)])
 --   </pre>
-matmul :: forall gradient layout layout' device device' dataType dataType' shape shape'. Tensor gradient layout device dataType shape -> Tensor gradient layout' device' dataType' shape' -> Tensor gradient (layout <+> layout') (device <+> device') (dataType <+> dataType') (MatmulF shape shape')
+matmul :: forall m gradient gradient' layout layout' device device' dataType dataType' shape shape'. MonadThrow m => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> m (Tensor (gradient <|> gradient') (layout <+> layout') (device <+> device') (dataType <+> dataType') (MatmulF shape shape'))
 
 module Torch.GraduallyTyped.Tensor.MathOperations
 
@@ -3363,6 +3378,7 @@ instance Torch.GraduallyTyped.Autograd.HasGrad (Torch.GraduallyTyped.Tensor.Type
 module Torch.GraduallyTyped.NN.Class
 data NamedModel model
 NamedModel :: Text -> model -> NamedModel model
+pattern (::>) :: Text -> model -> NamedModel model
 class HasForward model input generatorDevice output generatorOutputDevice | model input generatorDevice -> output, model input generatorDevice -> generatorOutputDevice
 
 -- | <tt>forward m i g</tt> for a model <tt>m</tt>, an input <tt>i</tt>,
@@ -3372,9 +3388,27 @@ class HasForward model input generatorDevice output generatorOutputDevice | mode
 --   an exception if the input <tt>i</tt> or the generator <tt>g</tt> are
 --   not compatible with the model <tt>m</tt>.
 forward :: forall m. (HasForward model input generatorDevice output generatorOutputDevice, MonadThrow m) => model -> input -> Generator generatorDevice -> m (output, Generator generatorOutputDevice)
-type family ModelSpec model = (spec :: Type) | spec -> model
-class HasInitialize (model :: Type) (generatorDevice :: Device (DeviceType Nat)) (output :: Type) (generatorOutputDevice :: Device (DeviceType Nat)) | model generatorDevice -> output, model generatorDevice -> generatorOutputDevice
+
+-- | <tt>forward m i g</tt> for a model <tt>m</tt>, an input <tt>i</tt>,
+--   and a generator <tt>g</tt> returns the tuple <tt>(o, g')</tt> where
+--   <tt>o</tt> is the output of the model applied to the input and
+--   <tt>g'</tt> is the updated generator. <tt>forward m i g</tt> may throw
+--   an exception if the input <tt>i</tt> or the generator <tt>g</tt> are
+--   not compatible with the model <tt>m</tt>.
+forward :: forall m. (HasForward model input generatorDevice output generatorOutputDevice, MonadThrow m, Generic model, GHasForward (Rep model) input generatorDevice output generatorOutputDevice) => model -> input -> Generator generatorDevice -> m (output, Generator generatorOutputDevice)
+class GHasForward gModel input generatorDevice output generatorOutputDevice | gModel input generatorDevice -> output, gModel input generatorDevice -> generatorOutputDevice
+gForward :: forall m c. (GHasForward gModel input generatorDevice output generatorOutputDevice, MonadThrow m) => gModel c -> input -> Generator generatorDevice -> m (output, Generator generatorOutputDevice)
+newtype Wrap a
+Wrap :: a -> Wrap a
+type family ListToTuple xs = tuple | tuple -> xs
+newtype ModelStack models
+ModelStack :: ListToTuple models -> ModelStack models
+type family ModelSpec model = spec | spec -> model
+class HasInitialize model generatorDevice output generatorOutputDevice | model generatorDevice -> output, model generatorDevice -> generatorOutputDevice
 initialize :: forall m. (HasInitialize model generatorDevice output generatorOutputDevice, MonadThrow m) => ModelSpec model -> Generator generatorDevice -> m (output, Generator generatorOutputDevice)
+initialize :: forall m. (HasInitialize model generatorDevice output generatorOutputDevice, MonadThrow m, Generic (ModelSpec model), Generic output, GHasInitialize (Rep (ModelSpec model)) generatorDevice (Rep output) generatorOutputDevice) => ModelSpec model -> Generator generatorDevice -> m (output, Generator generatorOutputDevice)
+class GHasInitialize gModelSpec generatorDevice gOutput generatorOutputDevice | gModelSpec generatorDevice -> gOutput, gModelSpec generatorDevice -> generatorOutputDevice
+gInitialize :: forall m c. (GHasInitialize gModelSpec generatorDevice gOutput generatorOutputDevice, MonadThrow m) => gModelSpec c -> Generator generatorDevice -> m (gOutput c, Generator generatorOutputDevice)
 data VectorSpec (n :: Nat) (a :: Type)
 [VectorSpec] :: forall n a. SNat n -> Vector n (ModelSpec a) -> VectorSpec n a
 type StateDictKey = Text
@@ -3387,32 +3421,93 @@ ToStateDictKeyAlreadyInUseError :: StateDictKey -> ToStateDictError
 [fsdeTakenKey] :: ToStateDictError -> StateDictKey
 class HasStateDict model
 fromStateDict :: forall m. (HasStateDict model, MonadIO m, MonadThrow m, MonadState StateDict m) => ModelSpec model -> StateDictKey -> m model
+fromStateDict :: forall m. (HasStateDict model, MonadIO m, MonadThrow m, MonadState StateDict m, Generic model, Generic (ModelSpec model), GHasStateDict (Rep model) (Rep (ModelSpec model))) => ModelSpec model -> StateDictKey -> m model
 toStateDict :: forall m. (HasStateDict model, MonadThrow m, MonadState StateDict m) => StateDictKey -> model -> m ()
+toStateDict :: forall m. (HasStateDict model, MonadThrow m, MonadState StateDict m, Generic model, GHasStateDict (Rep model) (Rep (ModelSpec model))) => StateDictKey -> model -> m ()
+class GHasStateDict gModel gModelSpec | gModelSpec -> gModel, gModel -> gModelSpec
+gFromStateDict :: forall m c. (GHasStateDict gModel gModelSpec, MonadIO m, MonadThrow m, MonadState StateDict m) => gModelSpec c -> StateDictKey -> m (gModel c)
+gToStateDict :: forall m c. (GHasStateDict gModel gModelSpec, MonadThrow m, MonadState StateDict m) => StateDictKey -> gModel c -> m ()
 
 -- | Load a state dictionary from a TorchScript file.
 stateDictFromFile :: FilePath -> IO StateDict
 
 -- | Save a state dictionary to a TorchScript file.
 stateDictToFile :: StateDict -> FilePath -> IO ()
+instance GHC.Generics.Generic (Torch.GraduallyTyped.NN.Class.NamedModel model)
+instance GHC.Show.Show model => GHC.Show.Show (Torch.GraduallyTyped.NN.Class.NamedModel model)
+instance GHC.Classes.Ord model => GHC.Classes.Ord (Torch.GraduallyTyped.NN.Class.NamedModel model)
+instance GHC.Classes.Eq model => GHC.Classes.Eq (Torch.GraduallyTyped.NN.Class.NamedModel model)
+instance GHC.Generics.Generic (Torch.GraduallyTyped.NN.Class.Wrap a)
+instance GHC.Show.Show a => GHC.Show.Show (Torch.GraduallyTyped.NN.Class.Wrap a)
+instance GHC.Classes.Ord a => GHC.Classes.Ord (Torch.GraduallyTyped.NN.Class.Wrap a)
+instance GHC.Classes.Eq a => GHC.Classes.Eq (Torch.GraduallyTyped.NN.Class.Wrap a)
+instance GHC.Generics.Generic (Torch.GraduallyTyped.NN.Class.ModelStack models)
 instance GHC.Show.Show Torch.GraduallyTyped.NN.Class.FromStateDictError
 instance GHC.Show.Show Torch.GraduallyTyped.NN.Class.ToStateDictError
+instance Torch.GraduallyTyped.NN.Class.HasStateDict a => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Class.Wrap a)
+instance (Torch.GraduallyTyped.NN.Class.HasStateDict model, modelSpec GHC.Types.~ Torch.GraduallyTyped.NN.Class.ModelSpec model) => Torch.GraduallyTyped.NN.Class.GHasStateDict (GHC.Generics.K1 i model) (GHC.Generics.K1 i modelSpec)
 instance Torch.GraduallyTyped.NN.Class.HasStateDict ()
 instance Torch.GraduallyTyped.NN.Class.HasStateDict model => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Class.NamedModel model)
 instance (Torch.GraduallyTyped.NN.Class.HasStateDict a, Torch.GraduallyTyped.NN.Class.HasStateDict b) => Torch.GraduallyTyped.NN.Class.HasStateDict (a, b)
+instance (Torch.GraduallyTyped.NN.Class.HasStateDict a, Torch.GraduallyTyped.NN.Class.HasStateDict b, Torch.GraduallyTyped.NN.Class.HasStateDict c) => Torch.GraduallyTyped.NN.Class.HasStateDict (a, b, c)
+instance (Torch.GraduallyTyped.NN.Class.HasStateDict a, Torch.GraduallyTyped.NN.Class.HasStateDict b, Torch.GraduallyTyped.NN.Class.HasStateDict c, Torch.GraduallyTyped.NN.Class.HasStateDict d) => Torch.GraduallyTyped.NN.Class.HasStateDict (a, b, c, d)
+instance (Torch.GraduallyTyped.NN.Class.HasStateDict a, Torch.GraduallyTyped.NN.Class.HasStateDict b, Torch.GraduallyTyped.NN.Class.HasStateDict c, Torch.GraduallyTyped.NN.Class.HasStateDict d, Torch.GraduallyTyped.NN.Class.HasStateDict e) => Torch.GraduallyTyped.NN.Class.HasStateDict (a, b, c, d, e)
+instance (Torch.GraduallyTyped.NN.Class.HasStateDict a, Torch.GraduallyTyped.NN.Class.HasStateDict b, Torch.GraduallyTyped.NN.Class.HasStateDict c, Torch.GraduallyTyped.NN.Class.HasStateDict d, Torch.GraduallyTyped.NN.Class.HasStateDict e, Torch.GraduallyTyped.NN.Class.HasStateDict f) => Torch.GraduallyTyped.NN.Class.HasStateDict (a, b, c, d, e, f)
+instance (Torch.GraduallyTyped.NN.Class.HasStateDict a, Torch.GraduallyTyped.NN.Class.HasStateDict b, Torch.GraduallyTyped.NN.Class.HasStateDict c, Torch.GraduallyTyped.NN.Class.HasStateDict d, Torch.GraduallyTyped.NN.Class.HasStateDict e, Torch.GraduallyTyped.NN.Class.HasStateDict f, Torch.GraduallyTyped.NN.Class.HasStateDict g) => Torch.GraduallyTyped.NN.Class.HasStateDict (a, b, c, d, e, f, g)
+instance Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Class.ModelStack '[])
+instance Torch.GraduallyTyped.NN.Class.HasStateDict a => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Class.ModelStack '[a])
+instance Torch.GraduallyTyped.NN.Class.HasStateDict (a, b) => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Class.ModelStack '[a, b])
+instance Torch.GraduallyTyped.NN.Class.HasStateDict (a, b, c) => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Class.ModelStack '[a, b, c])
+instance Torch.GraduallyTyped.NN.Class.HasStateDict (a, b, c, d) => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Class.ModelStack '[a, b, c, d])
+instance Torch.GraduallyTyped.NN.Class.HasStateDict (a, b, c, d, e) => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Class.ModelStack '[a, b, c, d, e])
+instance Torch.GraduallyTyped.NN.Class.HasStateDict (a, b, c, d, e, f) => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Class.ModelStack '[a, b, c, d, e, f])
+instance Torch.GraduallyTyped.NN.Class.HasStateDict (a, b, c, d, e, f, g) => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Class.ModelStack '[a, b, c, d, e, f, g])
 instance Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout device dataType shape)
 instance Torch.GraduallyTyped.NN.Class.HasStateDict a => Torch.GraduallyTyped.NN.Class.HasStateDict (Data.Vector.Sized.Vector n a)
+instance (Torch.GraduallyTyped.NN.Class.GHasStateDict gModelA gModelSpecA, Torch.GraduallyTyped.NN.Class.GHasStateDict gModelB gModelSpecB) => Torch.GraduallyTyped.NN.Class.GHasStateDict (gModelA GHC.Generics.:*: gModelB) (gModelSpecA GHC.Generics.:*: gModelSpecB)
+instance Torch.GraduallyTyped.NN.Class.GHasStateDict gModel gModelSpec => Torch.GraduallyTyped.NN.Class.GHasStateDict (GHC.Generics.M1 i t gModel) (GHC.Generics.M1 i t gModelSpec)
+instance Torch.GraduallyTyped.NN.Class.GHasStateDict GHC.Generics.U1 GHC.Generics.U1
 instance GHC.Exception.Type.Exception Torch.GraduallyTyped.NN.Class.ToStateDictError
 instance GHC.Exception.Type.Exception Torch.GraduallyTyped.NN.Class.FromStateDictError
 instance (Torch.GraduallyTyped.NN.Class.HasInitialize a generatorDevice output generatorOutputDevice, Torch.GraduallyTyped.NN.Class.HasInitialize a generatorOutputDevice output generatorOutputDevice, n' GHC.Types.~ (n GHC.TypeNats.+ 1)) => Torch.GraduallyTyped.NN.Class.HasInitialize (Data.Vector.Sized.Vector n' a) generatorDevice (Data.Vector.Sized.Vector n' output) generatorOutputDevice
+instance Torch.GraduallyTyped.NN.Class.HasInitialize a generatorDevice a' generatorOutputDevice => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Class.Wrap a) generatorDevice (Torch.GraduallyTyped.NN.Class.Wrap a') generatorOutputDevice
+instance (Torch.GraduallyTyped.NN.Class.HasInitialize model generatorDevice output generatorOutputDevice, Torch.GraduallyTyped.NN.Class.ModelSpec model GHC.Types.~ modelSpec) => Torch.GraduallyTyped.NN.Class.GHasInitialize (GHC.Generics.K1 i modelSpec) generatorDevice (GHC.Generics.K1 i output) generatorOutputDevice
 instance Torch.GraduallyTyped.NN.Class.HasInitialize () generatorDevice () generatorDevice
 instance Torch.GraduallyTyped.NN.Class.HasInitialize model generatorDevice output generatorOutputDevice => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Class.NamedModel model) generatorDevice (Torch.GraduallyTyped.NN.Class.NamedModel output) generatorOutputDevice
-instance (Torch.GraduallyTyped.NN.Class.HasInitialize a generatorDevice aOutput aGeneratorOutputDevice, Torch.GraduallyTyped.NN.Class.HasInitialize b aGeneratorOutputDevice bOutput generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (a, b) generatorDevice (aOutput, bOutput) generatorOutputDevice
+instance (Torch.GraduallyTyped.NN.Class.HasInitialize a generatorDevice outputA generatorOutputADevice, Torch.GraduallyTyped.NN.Class.HasInitialize b generatorOutputADevice outputB generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (a, b) generatorDevice (outputA, outputB) generatorOutputDevice
+instance (Torch.GraduallyTyped.NN.Class.HasInitialize a generatorDevice outputA generatorOutputADevice, Torch.GraduallyTyped.NN.Class.HasInitialize b generatorOutputADevice outputB generatorOutputBDevice, Torch.GraduallyTyped.NN.Class.HasInitialize c generatorOutputBDevice outputC generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (a, b, c) generatorDevice (outputA, outputB, outputC) generatorOutputDevice
+instance (Torch.GraduallyTyped.NN.Class.HasInitialize a generatorDevice outputA generatorOutputADevice, Torch.GraduallyTyped.NN.Class.HasInitialize b generatorOutputADevice outputB generatorOutputBDevice, Torch.GraduallyTyped.NN.Class.HasInitialize c generatorOutputBDevice outputC generatorOutputCDevice, Torch.GraduallyTyped.NN.Class.HasInitialize d generatorOutputCDevice outputD generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (a, b, c, d) generatorDevice (outputA, outputB, outputC, outputD) generatorOutputDevice
+instance (Torch.GraduallyTyped.NN.Class.HasInitialize a generatorDevice outputA generatorOutputADevice, Torch.GraduallyTyped.NN.Class.HasInitialize b generatorOutputADevice outputB generatorOutputBDevice, Torch.GraduallyTyped.NN.Class.HasInitialize c generatorOutputBDevice outputC generatorOutputCDevice, Torch.GraduallyTyped.NN.Class.HasInitialize d generatorOutputCDevice outputD generatorOutputDDevice, Torch.GraduallyTyped.NN.Class.HasInitialize e generatorOutputDDevice outputE generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (a, b, c, d, e) generatorDevice (outputA, outputB, outputC, outputD, outputE) generatorOutputDevice
+instance (Torch.GraduallyTyped.NN.Class.HasInitialize a generatorDevice outputA generatorOutputADevice, Torch.GraduallyTyped.NN.Class.HasInitialize b generatorOutputADevice outputB generatorOutputBDevice, Torch.GraduallyTyped.NN.Class.HasInitialize c generatorOutputBDevice outputC generatorOutputCDevice, Torch.GraduallyTyped.NN.Class.HasInitialize d generatorOutputCDevice outputD generatorOutputDDevice, Torch.GraduallyTyped.NN.Class.HasInitialize e generatorOutputDDevice outputE generatorOutputEDevice, Torch.GraduallyTyped.NN.Class.HasInitialize f generatorOutputEDevice outputF generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (a, b, c, d, e, f) generatorDevice (outputA, outputB, outputC, outputD, outputE, outputF) generatorOutputDevice
+instance (Torch.GraduallyTyped.NN.Class.HasInitialize a generatorDevice outputA generatorOutputADevice, Torch.GraduallyTyped.NN.Class.HasInitialize b generatorOutputADevice outputB generatorOutputBDevice, Torch.GraduallyTyped.NN.Class.HasInitialize c generatorOutputBDevice outputC generatorOutputCDevice, Torch.GraduallyTyped.NN.Class.HasInitialize d generatorOutputCDevice outputD generatorOutputDDevice, Torch.GraduallyTyped.NN.Class.HasInitialize e generatorOutputDDevice outputE generatorOutputEDevice, Torch.GraduallyTyped.NN.Class.HasInitialize f generatorOutputEDevice outputF generatorOutputFDevice, Torch.GraduallyTyped.NN.Class.HasInitialize g generatorOutputFDevice outputG generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (a, b, c, d, e, f, g) generatorDevice (outputA, outputB, outputC, outputD, outputE, outputF, outputG) generatorOutputDevice
+instance Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Class.ModelStack '[]) generatorDevice (Torch.GraduallyTyped.NN.Class.ModelStack '[]) generatorDevice
+instance Torch.GraduallyTyped.NN.Class.HasInitialize a generatorDevice a' generatorOutputDevice => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Class.ModelStack '[a]) generatorDevice (Torch.GraduallyTyped.NN.Class.ModelStack '[a']) generatorOutputDevice
+instance Torch.GraduallyTyped.NN.Class.HasInitialize (a, b) generatorDevice (a', b') generatorOutputDevice => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Class.ModelStack '[a, b]) generatorDevice (Torch.GraduallyTyped.NN.Class.ModelStack '[a', b']) generatorOutputDevice
+instance Torch.GraduallyTyped.NN.Class.HasInitialize (a, b, c) generatorDevice (a', b', c') generatorOutputDevice => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Class.ModelStack '[a, b, c]) generatorDevice (Torch.GraduallyTyped.NN.Class.ModelStack '[a', b', c']) generatorOutputDevice
+instance Torch.GraduallyTyped.NN.Class.HasInitialize (a, b, c, d) generatorDevice (a', b', c', d') generatorOutputDevice => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Class.ModelStack '[a, b, c, d]) generatorDevice (Torch.GraduallyTyped.NN.Class.ModelStack '[a', b', c', d']) generatorOutputDevice
+instance Torch.GraduallyTyped.NN.Class.HasInitialize (a, b, c, d, e) generatorDevice (a', b', c', d', e') generatorOutputDevice => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Class.ModelStack '[a, b, c, d, e]) generatorDevice (Torch.GraduallyTyped.NN.Class.ModelStack '[a', b', c', d', e']) generatorOutputDevice
+instance Torch.GraduallyTyped.NN.Class.HasInitialize (a, b, c, d, e, f) generatorDevice (a', b', c', d', e', f') generatorOutputDevice => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Class.ModelStack '[a, b, c, d, e, f]) generatorDevice (Torch.GraduallyTyped.NN.Class.ModelStack '[a', b', c', d', e', f']) generatorOutputDevice
+instance Torch.GraduallyTyped.NN.Class.HasInitialize (a, b, c, d, e, f, g) generatorDevice (a', b', c', d', e', f', g') generatorOutputDevice => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Class.ModelStack '[a, b, c, d, e, f, g]) generatorDevice (Torch.GraduallyTyped.NN.Class.ModelStack '[a', b', c', d', e', f', g']) generatorOutputDevice
+instance (Torch.GraduallyTyped.NN.Class.GHasInitialize gModelSpecA generatorDevice gOutputA generatorOutputADevice, Torch.GraduallyTyped.NN.Class.GHasInitialize gModelSpecB generatorOutputADevice gOutputB generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.GHasInitialize (gModelSpecA GHC.Generics.:*: gModelSpecB) generatorDevice (gOutputA GHC.Generics.:*: gOutputB) generatorOutputDevice
+instance Torch.GraduallyTyped.NN.Class.GHasInitialize gModelSpec generatorDevice gOutput generatorOutputDevice => Torch.GraduallyTyped.NN.Class.GHasInitialize (GHC.Generics.M1 i t gModelSpec) generatorDevice (GHC.Generics.M1 i t gOutput) generatorOutputDevice
+instance Torch.GraduallyTyped.NN.Class.GHasInitialize GHC.Generics.U1 generatorDevice GHC.Generics.U1 generatorDevice
+instance Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Class.ListToTuple models) input generatorDevice output generatorOutputDevice => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Class.ModelStack models) input generatorDevice output generatorOutputDevice
+instance Torch.GraduallyTyped.NN.Class.HasForward a input generatorDevice output generatorOutputDevice => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Class.Wrap a) input generatorDevice output generatorOutputDevice
 instance Torch.GraduallyTyped.NN.Class.HasForward () input generatorDevice input generatorDevice
 instance Torch.GraduallyTyped.NN.Class.HasForward model input generatorDevice output generatorOutputDevice => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Class.NamedModel model) input generatorDevice output generatorOutputDevice
-instance (Torch.GraduallyTyped.NN.Class.HasForward a input generatorDevice output' generatorOutputDevice', Torch.GraduallyTyped.NN.Class.HasForward b output' generatorOutputDevice' output generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (a, b) input generatorDevice output generatorOutputDevice
+instance Torch.GraduallyTyped.NN.Class.HasForward model input generatorDevice output generatorOutputDevice => Torch.GraduallyTyped.NN.Class.GHasForward (GHC.Generics.K1 i model) input generatorDevice output generatorOutputDevice
+instance (Torch.GraduallyTyped.NN.Class.HasForward a input generatorDevice outputA generatorOutputADevice, Torch.GraduallyTyped.NN.Class.HasForward b outputA generatorOutputADevice output generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (a, b) input generatorDevice output generatorOutputDevice
+instance (Torch.GraduallyTyped.NN.Class.HasForward a input generatorDevice outputA generatorOutputADevice, Torch.GraduallyTyped.NN.Class.HasForward b outputA generatorOutputADevice outputB generatorOutputBDevice, Torch.GraduallyTyped.NN.Class.HasForward c outputB generatorOutputBDevice output generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (a, b, c) input generatorDevice output generatorOutputDevice
+instance (Torch.GraduallyTyped.NN.Class.HasForward a input generatorDevice outputA generatorOutputADevice, Torch.GraduallyTyped.NN.Class.HasForward b outputA generatorOutputADevice outputB generatorOutputBDevice, Torch.GraduallyTyped.NN.Class.HasForward c outputB generatorOutputBDevice outputC generatorOutputCDevice, Torch.GraduallyTyped.NN.Class.HasForward d outputC generatorOutputCDevice output generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (a, b, c, d) input generatorDevice output generatorOutputDevice
+instance (Torch.GraduallyTyped.NN.Class.HasForward a input generatorDevice outputA generatorOutputADevice, Torch.GraduallyTyped.NN.Class.HasForward b outputA generatorOutputADevice outputB generatorOutputBDevice, Torch.GraduallyTyped.NN.Class.HasForward c outputB generatorOutputBDevice outputC generatorOutputCDevice, Torch.GraduallyTyped.NN.Class.HasForward d outputC generatorOutputCDevice outputD generatorOutputDDevice, Torch.GraduallyTyped.NN.Class.HasForward e outputD generatorOutputDDevice output generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (a, b, c, d, e) input generatorDevice output generatorOutputDevice
+instance (Torch.GraduallyTyped.NN.Class.HasForward a input generatorDevice outputA generatorOutputADevice, Torch.GraduallyTyped.NN.Class.HasForward b outputA generatorOutputADevice outputB generatorOutputBDevice, Torch.GraduallyTyped.NN.Class.HasForward c outputB generatorOutputBDevice outputC generatorOutputCDevice, Torch.GraduallyTyped.NN.Class.HasForward d outputC generatorOutputCDevice outputD generatorOutputDDevice, Torch.GraduallyTyped.NN.Class.HasForward e outputD generatorOutputDDevice outputE generatorOutputEDevice, Torch.GraduallyTyped.NN.Class.HasForward f outputE generatorOutputEDevice output generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (a, b, c, d, e, f) input generatorDevice output generatorOutputDevice
+instance (Torch.GraduallyTyped.NN.Class.HasForward a input generatorDevice outputA generatorOutputADevice, Torch.GraduallyTyped.NN.Class.HasForward b outputA generatorOutputADevice outputB generatorOutputBDevice, Torch.GraduallyTyped.NN.Class.HasForward c outputB generatorOutputBDevice outputC generatorOutputCDevice, Torch.GraduallyTyped.NN.Class.HasForward d outputC generatorOutputCDevice outputD generatorOutputDDevice, Torch.GraduallyTyped.NN.Class.HasForward e outputD generatorOutputDDevice outputE generatorOutputEDevice, Torch.GraduallyTyped.NN.Class.HasForward f outputE generatorOutputEDevice outputF generatorOutputFDevice, Torch.GraduallyTyped.NN.Class.HasForward g outputF generatorOutputFDevice output generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (a, b, c, d, e, f, g) input generatorDevice output generatorOutputDevice
 instance Torch.GraduallyTyped.NN.Class.HasForward (Data.Vector.Sized.Vector 0 a) input generatorDevice input generatorDevice
 instance Torch.GraduallyTyped.NN.Class.HasForward a input generatorDevice output generatorOutputDevice => Torch.GraduallyTyped.NN.Class.HasForward (Data.Vector.Sized.Vector 1 a) input generatorDevice output generatorOutputDevice
 instance (Torch.GraduallyTyped.NN.Class.HasForward a input generatorDevice output generatorOutputDevice, Torch.GraduallyTyped.NN.Class.HasForward a output generatorOutputDevice output generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (Data.Vector.Sized.Vector n a) input generatorDevice output generatorOutputDevice
+instance (Torch.GraduallyTyped.NN.Class.GHasForward gModelA inputA generatorDevice outputA generatorOutputADevice, Torch.GraduallyTyped.NN.Class.GHasForward gModelB outputA generatorOutputADevice outputB generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.GHasForward (gModelA GHC.Generics.:*: gModelB) inputA generatorDevice outputB generatorOutputDevice
+instance Torch.GraduallyTyped.NN.Class.GHasForward gModel input generatorDevice output generatorOutputDevice => Torch.GraduallyTyped.NN.Class.GHasForward (GHC.Generics.M1 i t gModel) input generatorDevice output generatorOutputDevice
+instance Torch.GraduallyTyped.NN.Class.GHasForward GHC.Generics.U1 input generatorDevice input generatorDevice
 
 module Torch.GraduallyTyped.NN.Activation
 data Softmax (selectDim :: SelectDim (By Symbol Nat))
@@ -3426,6 +3521,22 @@ data GeluNew
 data Tanh
 [Tanh] :: Tanh
 instance GHC.Generics.Generic (Torch.GraduallyTyped.NN.Activation.Softmax selectDim)
+instance GHC.Generics.Generic Torch.GraduallyTyped.NN.Activation.Relu
+instance GHC.Show.Show Torch.GraduallyTyped.NN.Activation.Relu
+instance GHC.Classes.Ord Torch.GraduallyTyped.NN.Activation.Relu
+instance GHC.Classes.Eq Torch.GraduallyTyped.NN.Activation.Relu
+instance GHC.Generics.Generic Torch.GraduallyTyped.NN.Activation.Gelu
+instance GHC.Show.Show Torch.GraduallyTyped.NN.Activation.Gelu
+instance GHC.Classes.Ord Torch.GraduallyTyped.NN.Activation.Gelu
+instance GHC.Classes.Eq Torch.GraduallyTyped.NN.Activation.Gelu
+instance GHC.Generics.Generic Torch.GraduallyTyped.NN.Activation.GeluNew
+instance GHC.Show.Show Torch.GraduallyTyped.NN.Activation.GeluNew
+instance GHC.Classes.Ord Torch.GraduallyTyped.NN.Activation.GeluNew
+instance GHC.Classes.Eq Torch.GraduallyTyped.NN.Activation.GeluNew
+instance GHC.Generics.Generic Torch.GraduallyTyped.NN.Activation.Tanh
+instance GHC.Show.Show Torch.GraduallyTyped.NN.Activation.Tanh
+instance GHC.Classes.Ord Torch.GraduallyTyped.NN.Activation.Tanh
+instance GHC.Classes.Eq Torch.GraduallyTyped.NN.Activation.Tanh
 instance Torch.GraduallyTyped.NN.Class.HasInitialize Torch.GraduallyTyped.NN.Activation.Tanh generator Torch.GraduallyTyped.NN.Activation.Tanh generator
 instance Torch.GraduallyTyped.NN.Class.HasStateDict Torch.GraduallyTyped.NN.Activation.Tanh
 instance Torch.GraduallyTyped.NN.Class.HasForward Torch.GraduallyTyped.NN.Activation.Tanh (Torch.GraduallyTyped.Tensor.Type.Tensor requiresGradient layout device dataType shape) generator (Torch.GraduallyTyped.Tensor.Type.Tensor requiresGradient layout device dataType shape) generator
@@ -3441,6 +3552,49 @@ instance Torch.GraduallyTyped.NN.Class.HasForward Torch.GraduallyTyped.NN.Activa
 instance Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Activation.Softmax selectDim) generatorDevice (Torch.GraduallyTyped.NN.Activation.Softmax selectDim) generatorDevice
 instance Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Activation.Softmax selectDim)
 instance (output GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor requiresGradient layout device dataType (Torch.GraduallyTyped.NN.Functional.NonLinearActivation.SoftmaxF selectDim shape)) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Activation.Softmax selectDim) (Torch.GraduallyTyped.Tensor.Type.Tensor requiresGradient layout device dataType shape) generator output generator
+
+module Torch.GraduallyTyped.Optim
+
+-- | Options for the Adam optimizer.
+data AdamOptions
+AdamOptions :: Double -> Double -> Double -> Double -> Double -> Bool -> AdamOptions
+
+-- | learning rate
+[learningRate] :: AdamOptions -> Double
+
+-- | beta1
+[beta1] :: AdamOptions -> Double
+
+-- | beta2
+[beta2] :: AdamOptions -> Double
+
+-- | epsilon
+[epsilon] :: AdamOptions -> Double
+
+-- | weight decay
+[weightDecay] :: AdamOptions -> Double
+
+-- | use amsgrad
+[amsgrad] :: AdamOptions -> Bool
+
+-- | Default Adam options.
+defaultAdamOptions :: AdamOptions
+
+-- | Optimizer data type.
+data Optimizer model
+[UnsafeOptimizer] :: forall model. {optimizerStateDictKeys :: [StateDictKey], optimizerPtr :: ForeignPtr Optimizer} -> Optimizer model
+
+-- | Get the model state dictionary from an optimizer.
+getStateDict :: forall model. Optimizer model -> IO StateDict
+
+-- | Extract a model from an optimizer.
+getModel :: forall model. HasStateDict model => ModelSpec model -> Optimizer model -> IO model
+
+-- | Create a new Adam optimizer from a model.
+mkAdam :: forall model. HasStateDict model => AdamOptions -> model -> IO (Optimizer model)
+
+-- | Perform one step of optimization.
+stepWithGenerator :: forall model generatorDevice lossGradient lossLayout lossDataType lossDevice lossShape generatorOutputDevice. (HasStateDict model, SGetGeneratorDevice generatorDevice, SGetGeneratorDevice generatorOutputDevice, Catch (lossShape <+> 'Shape '[]), Catch (lossGradient <+> 'Gradient 'WithGradient)) => Optimizer model -> ModelSpec model -> (model -> Generator generatorDevice -> IO (Tensor lossGradient lossLayout lossDataType lossDevice lossShape, Generator generatorOutputDevice)) -> Generator generatorDevice -> IO (Tensor lossGradient lossLayout lossDataType lossDevice lossShape, Generator generatorOutputDevice)
 
 module Torch.GraduallyTyped.NN.Transformer.Type
 
@@ -3487,7 +3641,7 @@ type PegasusSym0 = 'Pegasus :: TransformerStyle
 type BERTSym0 = 'BERT :: TransformerStyle
 type RoBERTaSym0 = 'RoBERTa :: TransformerStyle
 type GPT2Sym0 = 'GPT2 :: TransformerStyle
-data STransformerStyle z_a1AAI
+data STransformerStyle z_a1Odf
 [ST5] :: STransformerStyle ('T5 :: TransformerStyle)
 [SByT5] :: STransformerStyle ('ByT5 :: TransformerStyle)
 [SBART] :: STransformerStyle ('BART :: TransformerStyle)
@@ -3503,7 +3657,7 @@ WithoutHead :: TransformerHead
 WithLMHead :: TransformerHead
 type WithoutHeadSym0 = 'WithoutHead :: TransformerHead
 type WithLMHeadSym0 = 'WithLMHead :: TransformerHead
-data STransformerHead z_a1AI3
+data STransformerHead z_a1OkA
 [SWithoutHead] :: STransformerHead ('WithoutHead :: TransformerHead)
 [SWithLMHead] :: STransformerHead ('WithLMHead :: TransformerHead)
 padded :: Integral n => n -> a -> [a] -> [a]
@@ -3630,6 +3784,14 @@ instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.NN.Transformer.Typ
 instance GHC.Classes.Eq Torch.GraduallyTyped.NN.Transformer.Type.TransformerStyle
 instance GHC.Show.Show Torch.GraduallyTyped.NN.Transformer.Type.TransformerStyle
 
+module Torch.GraduallyTyped.NN.Training
+
+-- | Train the model for one epoch.
+train :: forall m model input generatorDevice lossGradient lossLayout lossDataType lossDevice lossShape generatorOutputDevice. (MonadIO m, HasStateDict model, HasForward model input generatorDevice (Tensor lossGradient lossLayout lossDataType lossDevice lossShape) generatorOutputDevice, HasForward model input generatorOutputDevice (Tensor lossGradient lossLayout lossDataType lossDevice lossShape) generatorOutputDevice, SGetGeneratorDevice generatorDevice, SGetGeneratorDevice generatorOutputDevice, SGetGradient lossGradient, SGetShape lossShape, Catch (lossShape <+> 'Shape '[]), Catch (lossGradient <+> 'Gradient 'WithGradient)) => Optimizer model -> ModelSpec model -> ListT m input -> Generator generatorDevice -> m (Either (Generator generatorDevice) (Tensor ('Gradient 'WithoutGradient) lossLayout lossDataType lossDevice ('Shape '[]), Generator generatorOutputDevice))
+
+-- | Evaluate the model on the given examples.
+eval :: (MonadIO m, HasStateDict model, HasForward model input generatorDevice (Tensor lossGradient lossLayout lossDataType lossDevice lossShape) generatorOutputDevice, HasForward model input generatorOutputDevice (Tensor lossGradient lossLayout lossDataType lossDevice lossShape) generatorOutputDevice, SGetGradient lossGradient, SGetShape lossShape, Catch (lossShape <+> 'Shape '[]), Catch (lossGradient <+> 'Gradient 'WithoutGradient)) => model -> ListT m input -> Generator generatorDevice -> m (Either (Generator generatorDevice) (Tensor ('Gradient 'WithoutGradient) lossLayout lossDataType lossDevice ('Shape '[]), Generator generatorOutputDevice))
+
 module Torch.GraduallyTyped.NN.Initialization
 
 -- | Note: Identity = linear w/o activation
@@ -3711,6 +3873,22 @@ instance Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.No
 instance Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.NN.Normalization.LayerNorm hasBias gradient device dataType normalizedShape)
 instance (Torch.GraduallyTyped.Tensor.Type.SGetShape normalizedShape, output GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor (gradient Torch.GraduallyTyped.Unify.<|> gradient') ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense Torch.GraduallyTyped.Unify.<+> layout') (device Torch.GraduallyTyped.Unify.<+> device') (dataType Torch.GraduallyTyped.Unify.<+> dataType') (Torch.GraduallyTyped.NN.Functional.Normalization.LayerNormWithBiasF normalizedShape normalizedShape shape')) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Normalization.LayerNorm 'Torch.GraduallyTyped.NN.Type.WithBias gradient device dataType normalizedShape) (Torch.GraduallyTyped.Tensor.Type.Tensor gradient' layout' device' dataType' shape') generatorDevice output generatorDevice
 instance (Torch.GraduallyTyped.Tensor.Type.SGetShape normalizedShape, Torch.GraduallyTyped.Tensor.Type.SGetShape shape', output GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor (gradient Torch.GraduallyTyped.Unify.<|> gradient') ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense Torch.GraduallyTyped.Unify.<+> layout') (device Torch.GraduallyTyped.Unify.<+> device') (dataType Torch.GraduallyTyped.Unify.<+> dataType') (Torch.GraduallyTyped.NN.Functional.Normalization.LayerNormWithoutBiasF normalizedShape shape')) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Normalization.LayerNorm 'Torch.GraduallyTyped.NN.Type.WithoutBias gradient device dataType normalizedShape) (Torch.GraduallyTyped.Tensor.Type.Tensor gradient' layout' device' dataType' shape') generatorDevice output generatorDevice
+
+module Torch.GraduallyTyped.NN.Functional.Loss
+
+-- | Compute the mean squared error between two tensors.
+mseLoss :: forall m gradient layout device dataType shape gradient' layout' device' dataType' shape'. (MonadThrow m, Catch (shape <+> shape')) => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> m (Tensor (gradient <|> gradient') (layout <+> layout') (device <+> device') (dataType <+> dataType') ('Shape '[]))
+
+module Torch.GraduallyTyped.NN.Loss
+data MSELoss
+MSELoss :: MSELoss
+instance GHC.Generics.Generic Torch.GraduallyTyped.NN.Loss.MSELoss
+instance GHC.Show.Show Torch.GraduallyTyped.NN.Loss.MSELoss
+instance GHC.Classes.Ord Torch.GraduallyTyped.NN.Loss.MSELoss
+instance GHC.Classes.Eq Torch.GraduallyTyped.NN.Loss.MSELoss
+instance Torch.GraduallyTyped.NN.Class.HasInitialize Torch.GraduallyTyped.NN.Loss.MSELoss generatorDevice Torch.GraduallyTyped.NN.Loss.MSELoss generatorDevice
+instance Torch.GraduallyTyped.NN.Class.HasStateDict Torch.GraduallyTyped.NN.Loss.MSELoss
+instance (Torch.GraduallyTyped.Prelude.Catch (predShape Torch.GraduallyTyped.Unify.<+> targetShape), output GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor (predGradient Torch.GraduallyTyped.Unify.<|> targetGradient) (predLayout Torch.GraduallyTyped.Unify.<+> targetLayout) (predDevice Torch.GraduallyTyped.Unify.<+> targetDevice) (predDataType Torch.GraduallyTyped.Unify.<+> targetDataType) ('Torch.GraduallyTyped.Shape.Type.Shape '[])) => Torch.GraduallyTyped.NN.Class.HasForward Torch.GraduallyTyped.NN.Loss.MSELoss (Torch.GraduallyTyped.Tensor.Type.Tensor predGradient predLayout predDevice predDataType predShape, Torch.GraduallyTyped.Tensor.Type.Tensor targetGradient targetLayout targetDevice targetDataType targetShape) generatorDevice output generatorDevice
 
 module Torch.GraduallyTyped.NN.Functional.Linear
 
@@ -3805,9 +3983,14 @@ module Torch.GraduallyTyped.NN.Linear
 -- | Generic linear model with weight and optional bias.
 data GLinear (weight :: Type) (bias :: Type)
 [GLinear] :: forall weight bias. {linearWeight :: weight " Linear weight", linearBias :: bias " Linear bias"} -> GLinear weight bias
+type family GLinearF (hasBias :: HasBias) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (inputDim :: Dim (Name Symbol) (Size Nat)) (outputDim :: Dim (Name Symbol) (Size Nat)) :: Type
 type family LinearWeightF (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (inputDim :: Dim (Name Symbol) (Size Nat)) (outputDim :: Dim (Name Symbol) (Size Nat)) :: Type
 type family LinearBiasF (hasBias :: HasBias) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (outputDim :: Dim (Name Symbol) (Size Nat)) :: Type
-linearSpec :: forall hasBias gradient device dataType inputDim outputDim. SHasBias hasBias -> SGradient gradient -> SDevice device -> SDataType dataType -> SDim inputDim -> SDim outputDim -> ModelSpec (GLinear (NamedModel (LinearWeightF gradient device dataType inputDim outputDim)) (NamedModel (LinearBiasF hasBias gradient device dataType outputDim)))
+linearSpec :: forall hasBias gradient device dataType inputDim outputDim. SHasBias hasBias -> SGradient gradient -> SDevice device -> SDataType dataType -> SDim inputDim -> SDim outputDim -> ModelSpec (GLinearF hasBias gradient device dataType inputDim outputDim)
+instance GHC.Generics.Generic (Torch.GraduallyTyped.NN.Linear.GLinear weight bias)
+instance (GHC.Show.Show weight, GHC.Show.Show bias) => GHC.Show.Show (Torch.GraduallyTyped.NN.Linear.GLinear weight bias)
+instance (GHC.Classes.Ord weight, GHC.Classes.Ord bias) => GHC.Classes.Ord (Torch.GraduallyTyped.NN.Linear.GLinear weight bias)
+instance (GHC.Classes.Eq weight, GHC.Classes.Eq bias) => GHC.Classes.Eq (Torch.GraduallyTyped.NN.Linear.GLinear weight bias)
 instance (output GHC.Types.~ Torch.GraduallyTyped.NN.Linear.GLinear (Torch.GraduallyTyped.Tensor.Type.Tensor gradient ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense) (device Torch.GraduallyTyped.Unify.<+> generatorDevice) dataType ('Torch.GraduallyTyped.Shape.Type.Shape '[outputDim, inputDim])) (), generatorOutputDevice GHC.Types.~ (device Torch.GraduallyTyped.Unify.<+> generatorDevice), Torch.GraduallyTyped.Random.SGetGeneratorDevice generatorDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Linear.GLinear (Torch.GraduallyTyped.Tensor.Type.Tensor gradient ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense) device dataType ('Torch.GraduallyTyped.Shape.Type.Shape '[outputDim, inputDim])) ()) generatorDevice output generatorOutputDevice
 instance (output GHC.Types.~ Torch.GraduallyTyped.NN.Linear.GLinear (Torch.GraduallyTyped.Tensor.Type.Tensor gradient ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense) (device Torch.GraduallyTyped.Unify.<+> generatorDevice) dataType ('Torch.GraduallyTyped.Shape.Type.Shape '[outputDim, inputDim])) (Torch.GraduallyTyped.Tensor.Type.Tensor gradient ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense) (device Torch.GraduallyTyped.Unify.<+> generatorDevice) dataType ('Torch.GraduallyTyped.Shape.Type.Shape '[outputDim])), generatorOutputDevice GHC.Types.~ (device Torch.GraduallyTyped.Unify.<+> generatorDevice), Torch.GraduallyTyped.Random.SGetGeneratorDevice generatorDevice, Torch.GraduallyTyped.Random.SGetGeneratorDevice generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Linear.GLinear (Torch.GraduallyTyped.Tensor.Type.Tensor gradient ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense) device dataType ('Torch.GraduallyTyped.Shape.Type.Shape '[outputDim, inputDim])) (Torch.GraduallyTyped.Tensor.Type.Tensor gradient ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense) device dataType ('Torch.GraduallyTyped.Shape.Type.Shape '[outputDim]))) generatorDevice output generatorOutputDevice
 instance Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Linear.GLinear weight bias) generatorDevice (Torch.GraduallyTyped.NN.Linear.GLinear weight bias) generatorDevice => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Linear.GLinear (Torch.GraduallyTyped.NN.Class.NamedModel weight) (Torch.GraduallyTyped.NN.Class.NamedModel bias)) generatorDevice (Torch.GraduallyTyped.NN.Linear.GLinear (Torch.GraduallyTyped.NN.Class.NamedModel weight) (Torch.GraduallyTyped.NN.Class.NamedModel bias)) generatorDevice
@@ -3896,6 +4079,8 @@ newtype Dropout
 [Dropout] :: Double -> Dropout
 instance GHC.Generics.Generic Torch.GraduallyTyped.NN.Dropout.Dropout
 instance GHC.Show.Show Torch.GraduallyTyped.NN.Dropout.Dropout
+instance GHC.Classes.Ord Torch.GraduallyTyped.NN.Dropout.Dropout
+instance GHC.Classes.Eq Torch.GraduallyTyped.NN.Dropout.Dropout
 instance Torch.GraduallyTyped.NN.Class.HasInitialize Torch.GraduallyTyped.NN.Dropout.Dropout generatorDevice Torch.GraduallyTyped.NN.Dropout.Dropout generatorDevice
 instance Torch.GraduallyTyped.NN.Class.HasStateDict Torch.GraduallyTyped.NN.Dropout.Dropout
 instance (input GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout device dataType shape, output GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout (device Torch.GraduallyTyped.Unify.<+> generatorDevice) dataType shape, generatorOutputDevice GHC.Types.~ (device Torch.GraduallyTyped.Unify.<+> generatorDevice), Torch.GraduallyTyped.Tensor.Type.SGetDevice device, Torch.GraduallyTyped.Random.SGetGeneratorDevice generatorDevice) => Torch.GraduallyTyped.NN.Class.HasForward Torch.GraduallyTyped.NN.Dropout.Dropout input generatorDevice output generatorOutputDevice
@@ -5702,16 +5887,6 @@ module Torch.GraduallyTyped.NN.Transformer.T5
 module Torch.GraduallyTyped.NN.Transformer
 
 module Torch.GraduallyTyped.NN
-data Tanh
-[Tanh] :: Tanh
-data GeluNew
-[GeluNew] :: GeluNew
-data Gelu
-[Gelu] :: Gelu
-data Relu
-[Relu] :: Relu
-data Softmax (selectDim :: SelectDim (By Symbol Nat))
-[Softmax] :: forall selectDim. {softmaxSelectDim :: SSelectDim selectDim} -> Softmax selectDim
 
 module Torch.GraduallyTyped
 class HasGrad parameters where {
@@ -5751,89 +5926,18 @@ mkSincData :: (RandomGen g, Monad m) => Text -> Int -> StateT g m SincData
 --   product type of two layer types, <tt>fstLayer</tt> and
 --   <tt>sndLayer</tt>, an activation function, <tt>activation</tt>, and a
 --   dropout layer, <tt>dropout</tt>.
-data TwoLayerNetwork fstLayer activation dropout sndLayer
-TwoLayerNetwork :: fstLayer -> activation -> dropout -> sndLayer -> TwoLayerNetwork fstLayer activation dropout sndLayer
-[tlnFstLayer] :: TwoLayerNetwork fstLayer activation dropout sndLayer -> fstLayer
-[tlnActivation] :: TwoLayerNetwork fstLayer activation dropout sndLayer -> activation
-[tlnDropout] :: TwoLayerNetwork fstLayer activation dropout sndLayer -> dropout
-[tlnSndLayer] :: TwoLayerNetwork fstLayer activation dropout sndLayer -> sndLayer
+newtype TwoLayerNetwork fstLayer activation dropout sndLayer
+TwoLayerNetwork :: ModelStack '[fstLayer, activation, dropout, sndLayer] -> TwoLayerNetwork fstLayer activation dropout sndLayer
 
 -- | Specifies the type of the two-layer network.
-type TwoLayerNetworkF gradient hasDropout device dataType inputDim outputDim hiddenDim = NamedModel (TwoLayerNetwork (TLNFstLayerF gradient device dataType inputDim hiddenDim) TLNActivationF (TLNDropoutF hasDropout) (TLNSndLayerF gradient device dataType outputDim hiddenDim))
-
--- | Specifies the type of the first layer of the neural network.
-type TLNFstLayerF gradient device dataType inputDim hiddenDim = NamedModel (GLinear (NamedModel (LinearWeightF gradient device dataType inputDim hiddenDim)) (NamedModel (LinearBiasF 'WithBias gradient device dataType hiddenDim)))
-
--- | Specifies the type of the activation function
-type TLNActivationF = Tanh
+type TwoLayerNetworkF gradient hasDropout device dataType inputDim outputDim hiddenDim = NamedModel (TwoLayerNetwork (NamedModel (GLinearF 'WithBias gradient device dataType inputDim hiddenDim)) Tanh (TLNDropoutF hasDropout) (NamedModel (GLinearF 'WithBias gradient device dataType hiddenDim outputDim)))
 
 -- | Specifies the type of the dropout layer
 type family TLNDropoutF hasDropout
 
--- | Specifies the type of the second layer of the neural network.
-type TLNSndLayerF gradient device dataType outputDim hiddenDim = NamedModel (GLinear (NamedModel (LinearWeightF gradient device dataType hiddenDim outputDim)) (NamedModel (LinearBiasF 'WithBias gradient device dataType outputDim)))
-
 -- | Creates a value that specifies the parameters of a two-layer neural
 --   network.
 twoLayerNetworkSpec :: forall gradient hasDropout device dataType inputDim outputDim hiddenDim. SGradient gradient -> SHasDropout hasDropout -> SDevice device -> SDataType dataType -> SDim inputDim -> SDim outputDim -> SDim hiddenDim -> Double -> ModelSpec (TwoLayerNetworkF gradient hasDropout device dataType inputDim outputDim hiddenDim)
-
--- | Options for the Adam optimizer.
-data AdamOptions
-AdamOptions :: Double -> Double -> Double -> Double -> Double -> Bool -> AdamOptions
-
--- | learning rate
-[learningRate] :: AdamOptions -> Double
-
--- | beta1
-[beta1] :: AdamOptions -> Double
-
--- | beta2
-[beta2] :: AdamOptions -> Double
-
--- | epsilon
-[epsilon] :: AdamOptions -> Double
-
--- | weight decay
-[weightDecay] :: AdamOptions -> Double
-
--- | use amsgrad
-[amsgrad] :: AdamOptions -> Bool
-
--- | Default Adam options.
-defaultAdamOptions :: AdamOptions
-
--- | Optimizer data type.
-data Optimizer model
-[UnsafeOptimizer] :: forall model. {optimizerStateDictKeys :: [StateDictKey], optimizerPtr :: ForeignPtr Optimizer} -> Optimizer model
-
--- | Get the model state dictionary from an optimizer.
-getStateDict :: forall model. Optimizer model -> IO StateDict
-
--- | Extract a model from an optimizer.
-getModel :: forall model. HasStateDict model => ModelSpec model -> Optimizer model -> IO model
-
--- | Create a new Adam optimizer from a model.
-mkAdam :: forall model. HasStateDict model => AdamOptions -> model -> IO (Optimizer model)
-
--- | Compute the mean squared error between two tensors.
-mseLoss :: forall m gradient layout device dataType shape gradient' layout' device' dataType' shape'. (MonadThrow m, Catch (shape <+> shape')) => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> m (Tensor (gradient <|> gradient') (layout <+> layout') (device <+> device') (dataType <+> dataType') ('Shape '[]))
-
--- | Perform one step of optimization.
-stepWithGenerator :: (HasStateDict model, SGetGeneratorDevice generatorDevice, SGetGeneratorDevice generatorOutputDevice, Catch (lossShape <+> 'Shape '[]), Catch (lossGradient <+> 'Gradient 'WithGradient)) => Optimizer model -> ModelSpec model -> (model -> Generator generatorDevice -> IO (Tensor lossGradient lossLayout lossDataType lossDevice lossShape, Generator generatorOutputDevice)) -> Generator generatorDevice -> IO (Tensor lossGradient lossLayout lossDataType lossDevice lossShape, Generator generatorOutputDevice)
-
--- | Train the model for one epoch.
-train :: forall m model input generatorDevice lossGradient lossLayout lossDataType lossDevice lossShape generatorOutputDevice. (MonadIO m, HasStateDict model, HasForward model input generatorDevice (Tensor lossGradient lossLayout lossDataType lossDevice lossShape) generatorOutputDevice, HasForward model input generatorOutputDevice (Tensor lossGradient lossLayout lossDataType lossDevice lossShape) generatorOutputDevice, SGetGeneratorDevice generatorDevice, SGetGeneratorDevice generatorOutputDevice, SGetGradient lossGradient, SGetShape lossShape, Catch (lossShape <+> 'Shape '[]), Catch (lossGradient <+> 'Gradient 'WithGradient)) => Optimizer model -> ModelSpec model -> ListT m input -> Generator generatorDevice -> m (Either (Generator generatorDevice) (Tensor ('Gradient 'WithoutGradient) lossLayout lossDataType lossDevice ('Shape '[]), Generator generatorOutputDevice))
-
--- | Evaluate the model on the given examples.
-eval :: (MonadIO m, HasStateDict model, HasForward model input generatorDevice (Tensor lossGradient lossLayout lossDataType lossDevice lossShape) generatorOutputDevice, HasForward model input generatorOutputDevice (Tensor lossGradient lossLayout lossDataType lossDevice lossShape) generatorOutputDevice, SGetGradient lossGradient, SGetShape lossShape, Catch (lossShape <+> 'Shape '[]), Catch (lossGradient <+> 'Gradient 'WithoutGradient)) => model -> ListT m input -> Generator generatorDevice -> m (Either (Generator generatorDevice) (Tensor ('Gradient 'WithoutGradient) lossLayout lossDataType lossDevice ('Shape '[]), Generator generatorOutputDevice))
-
--- | Single-cycle learning rate schedule. See, for instance,
---   <a>https://arxiv.org/abs/1803.09820</a>.
---   
---   This is a simple schedule that is a stepwise linear interpolation
---   between the initial, maximum, and final learning rates. The initial
---   learning rate is zero.
-singleCycleLearningRateSchedule :: Double -> Double -> Int -> Int -> Int -> Int -> Double
 
 -- | Data type for monitoring the training and evaluation losses.
 data Monitor
@@ -5861,15 +5965,21 @@ monitor :: MonadIO m => Consumer Monitor m r
 --   </pre>
 --   
 --   where <tt>batchSize</tt> is the number of examples in the batch.
-collate :: SDevice device -> Int -> ListT IO (Float, Float) -> _
+collate :: forall device r input target. (input ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Float) ('Shape '[ 'Dim ('Name "*") 'UncheckedSize, 'Dim ('Name "*") ('Size 1)]), target ~ Tensor ('Gradient 'WithoutGradient) ('Layout 'Dense) device ('DataType 'Float) ('Shape '[ 'Dim ('Name "*") 'UncheckedSize, 'Dim ('Name "*") ('Size 1)])) => SDevice device -> Int -> ListT IO (Float, Float) -> ContT r IO (ListT IO (input, target))
 
 -- | Run the two-layer network training loop on a toy dataset.
 runTwoLayerNetworkExample :: IO ()
 instance GHC.Classes.Ord Torch.GraduallyTyped.Examples.TwoLayerNetwork.SincData
 instance GHC.Classes.Eq Torch.GraduallyTyped.Examples.TwoLayerNetwork.SincData
+instance GHC.Generics.Generic (Torch.GraduallyTyped.Examples.TwoLayerNetwork.TwoLayerNetwork fstLayer activation dropout sndLayer)
 instance GHC.Show.Show Torch.GraduallyTyped.Examples.TwoLayerNetwork.Monitor
-instance (Torch.GraduallyTyped.NN.Class.HasInitialize fstLayer generatorDevice fstLayer generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize activation generatorDevice activation generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize dropout generatorDevice dropout generatorDevice, Torch.GraduallyTyped.NN.Class.HasInitialize sndLayer generatorDevice sndLayer generatorDevice) => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.Examples.TwoLayerNetwork.TwoLayerNetwork fstLayer activation dropout sndLayer) generatorDevice (Torch.GraduallyTyped.Examples.TwoLayerNetwork.TwoLayerNetwork fstLayer activation dropout sndLayer) generatorDevice
+instance Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.NN.Class.ModelStack '[fstLayer, activation, dropout, sndLayer]) generatorDevice (Torch.GraduallyTyped.NN.Class.ModelStack '[fstLayer', activation', dropout', sndLayer']) generatorOutputDevice => Torch.GraduallyTyped.NN.Class.HasInitialize (Torch.GraduallyTyped.Examples.TwoLayerNetwork.TwoLayerNetwork fstLayer activation dropout sndLayer) generatorDevice (Torch.GraduallyTyped.Examples.TwoLayerNetwork.TwoLayerNetwork fstLayer' activation' dropout' sndLayer') generatorOutputDevice
 instance (Torch.GraduallyTyped.NN.Class.HasStateDict fstLayer, Torch.GraduallyTyped.NN.Class.HasStateDict activation, Torch.GraduallyTyped.NN.Class.HasStateDict dropout, Torch.GraduallyTyped.NN.Class.HasStateDict sndLayer) => Torch.GraduallyTyped.NN.Class.HasStateDict (Torch.GraduallyTyped.Examples.TwoLayerNetwork.TwoLayerNetwork fstLayer activation dropout sndLayer)
-instance (Torch.GraduallyTyped.NN.Class.HasForward fstLayer (Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout dataType device shape) generatorDevice output0 generatorDevice0, Torch.GraduallyTyped.NN.Class.HasForward activation output0 generatorDevice0 output1 generatorDevice1, Torch.GraduallyTyped.NN.Class.HasForward dropout output1 generatorDevice1 output2 generatorDevice2, Torch.GraduallyTyped.NN.Class.HasForward sndLayer output2 generatorDevice2 output generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.Examples.TwoLayerNetwork.TwoLayerNetwork fstLayer activation dropout sndLayer) (Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout dataType device shape) generatorDevice output generatorOutputDevice
-instance (Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.Examples.TwoLayerNetwork.TwoLayerNetwork fstLayer activation dropout sndLayer) input generatorDevice (Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout device dataType shape) generatorOutputDevice, Torch.GraduallyTyped.Prelude.Catch (shape Torch.GraduallyTyped.Unify.<+> shape'), output GHC.Types.~ Torch.GraduallyTyped.Tensor.Type.Tensor (gradient Torch.GraduallyTyped.Unify.<|> gradient') (layout Torch.GraduallyTyped.Unify.<+> layout') (device Torch.GraduallyTyped.Unify.<+> device') (dataType Torch.GraduallyTyped.Unify.<+> dataType') ('Torch.GraduallyTyped.Shape.Type.Shape '[])) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.Examples.TwoLayerNetwork.TwoLayerNetwork fstLayer activation dropout sndLayer) (input, Torch.GraduallyTyped.Tensor.Type.Tensor gradient' layout' device' dataType' shape') generatorDevice output generatorOutputDevice
+instance (Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Class.ModelStack '[fstLayer, activation, dropout, sndLayer]) input generatorDevice prediction generatorOutputDevice, Torch.GraduallyTyped.NN.Class.HasForward Torch.GraduallyTyped.NN.Loss.MSELoss (prediction, target) generatorOutputDevice output generatorOutputDevice) => Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.Examples.TwoLayerNetwork.TwoLayerNetwork fstLayer activation dropout sndLayer) (input, target) generatorDevice output generatorOutputDevice
 instance Torch.Data.Pipeline.Dataset GHC.Types.IO Torch.GraduallyTyped.Examples.TwoLayerNetwork.SincData GHC.Types.Int (GHC.Types.Float, GHC.Types.Float)
+
+module Torch.GraduallyTyped.Examples.LinearRegression
+model :: forall m model input (generatorDevice :: Device (DeviceType Nat)) (gradient :: Gradient RequiresGradient) (layout :: Layout LayoutType) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (shape :: Shape [Dim (Name Symbol) (Size Nat)]) (generatorOutputDevice :: Device (DeviceType Nat)). (HasForward model input generatorDevice (Tensor gradient layout device dataType shape) generatorOutputDevice, MonadThrow m) => model -> input -> Generator generatorDevice -> m (Tensor gradient layout device dataType (SqueezeAllShapeF shape), Generator generatorOutputDevice)
+groundTruth :: forall (dataType :: DataType DType) m (device :: Device (DeviceType Nat)) (layout' :: Layout LayoutType) (gradient :: Gradient RequiresGradient) (shape :: Shape [Dim (Name Symbol) (Size Nat)]). (Catch (Unify (DataType DType) dataType ('DataType 'Float)), MonadThrow m, SGetDataType dataType, SGetDevice device, SGetLayout layout') => Tensor gradient layout' device dataType shape -> m (Tensor (Or (Gradient RequiresGradient) (Or (Gradient RequiresGradient) gradient ('Gradient 'WithoutGradient)) ('Gradient 'WithoutGradient)) layout' device ('DataType 'Float) (SqueezeAllShapeF (BroadcastShapesF (MatmulF shape ('Shape '[ 'Dim ('Name "*") ('Size 3)])) ('Shape ('[] :: [Dim (Name Symbol) (Size Nat)])))))
+printParams :: (Show a1, Show a2) => GLinear a1 a2 -> IO ()
+main :: IO ()
