@@ -7,7 +7,7 @@
 </span><span id="line-7"></span><span>
 </span><span id="line-8"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.GraduallyTyped.Examples.LinearRegression</span><span> </span><span class="hs-keyword">where</span><span>
 </span><span id="line-9"></span><span>
-</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">foldM</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">when</span></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">foldM_</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">when</span></span><span class="hs-special">)</span><span>
 </span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/y93sl1ahi24xw24f0y8xsbhzkmpzqzqh-indexed-lib-indexed-0.1.3-haddock-doc/share/doc/indexed/html/src"><span class="hs-identifier">Control.Monad.Indexed</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/y93sl1ahi24xw24f0y8xsbhzkmpzqzqh-indexed-lib-indexed-0.1.3-haddock-doc/share/doc/indexed/html/src"><span class="hs-operator">(&gt;&gt;&gt;=)</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/8vjaffqxij7bih93d9mlzmc7ksanlw0i-indexed-extras-lib-indexed-extras-0.2-haddock-doc/share/doc/indexed-extras/html/src"><span class="hs-identifier">Control.Monad.Indexed.State</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/8vjaffqxij7bih93d9mlzmc7ksanlw0i-indexed-extras-lib-indexed-extras-0.2-haddock-doc/share/doc/indexed-extras/html/src"><span class="hs-identifier">IxStateT</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
 </span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/y93sl1ahi24xw24f0y8xsbhzkmpzqzqh-indexed-lib-indexed-0.1.3-haddock-doc/share/doc/indexed/html/src"><span class="hs-identifier">Control.Monad.Indexed.Trans</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/y93sl1ahi24xw24f0y8xsbhzkmpzqzqh-indexed-lib-indexed-0.1.3-haddock-doc/share/doc/indexed/html/src"><span class="hs-identifier">IxMonadTrans</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/y93sl1ahi24xw24f0y8xsbhzkmpzqzqh-indexed-lib-indexed-0.1.3-haddock-doc/share/doc/indexed/html/src"><span class="hs-identifier">ilift</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
@@ -20,10 +20,9 @@
 -&gt; m (Tensor
         gradient layout device dataType (SqueezeAllShapeF shape),
       Generator generatorOutputDevice)
-</span><a href="Torch.GraduallyTyped.Examples.LinearRegression.html#model"><span class="hs-identifier hs-var hs-var">model</span></a></span></span><span> </span><span id="local-6989586621679664594"><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679664594"><span class="hs-identifier hs-var">state</span></a></span></span><span> </span><span id="local-6989586621679664593"><span class="annot"><span class="annottext">input
-</span><a href="#local-6989586621679664593"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-18"></span><span>  </span><span class="annot"><span class="annottext">IxStateT
+</span><a href="Torch.GraduallyTyped.Examples.LinearRegression.html#model"><span class="hs-identifier hs-var hs-var">model</span></a></span></span><span> </span><span id="local-6989586621679664355"><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679664355"><span class="hs-identifier hs-var">state</span></a></span></span><span> </span><span id="local-6989586621679664354"><span class="annot"><span class="annottext">input
+</span><a href="#local-6989586621679664354"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IxStateT
   m
   (Generator generatorDevice)
   (Generator generatorOutputDevice)
@@ -52,8 +51,7 @@ forall (m :: * -&gt; *) i j a. IxStateT m i j a -&gt; i -&gt; m (a, j)
         gradient layout device dataType (SqueezeAllShapeF shape),
       Generator generatorOutputDevice)
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span>
-</span><span id="line-19"></span><span>    </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
 -&gt; Tensor gradient layout device dataType (SqueezeAllShapeF shape)
 forall (gradient :: Gradient RequiresGradient)
        (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
@@ -101,10 +99,10 @@ model
 -&gt; Generator generatorDevice
 -&gt; m (output, Generator generatorOutputDevice)
 </span><a href="Torch.GraduallyTyped.NN.Class.html#forward"><span class="hs-identifier hs-var">forward</span></a></span><span> </span><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679664594"><span class="hs-identifier hs-var">state</span></a></span><span> </span><span class="annot"><span class="annottext">input
-</span><a href="#local-6989586621679664593"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-20"></span><span>
-</span><span id="line-21"></span><span id="groundTruth"><span class="annot"><span class="annottext">groundTruth :: Tensor gradient layout' device dataType shape
+</span><a href="#local-6989586621679664355"><span class="hs-identifier hs-var">state</span></a></span><span> </span><span class="annot"><span class="annottext">input
+</span><a href="#local-6989586621679664354"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span id="groundTruth"><span class="annot"><span class="annottext">groundTruth :: Tensor gradient layout' device dataType shape
 -&gt; m (Tensor
         (Or
            (Gradient RequiresGradient)
@@ -122,18 +120,17 @@ model
         ('DataType 'Float)
         (SqueezeAllShapeF
            (BroadcastShapesF
-              (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
+              (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
               ('Shape '[]))))
-</span><a href="Torch.GraduallyTyped.Examples.LinearRegression.html#groundTruth"><span class="hs-identifier hs-var hs-var">groundTruth</span></a></span></span><span> </span><span id="local-6989586621679664587"><span class="annot"><span class="annottext">Tensor gradient layout' device dataType shape
-</span><a href="#local-6989586621679664587"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-22"></span><span>  </span><span id="local-6989586621679664586"><span class="annot"><span class="annottext">Tensor
+</span><a href="Torch.GraduallyTyped.Examples.LinearRegression.html#groundTruth"><span class="hs-identifier hs-var hs-var">groundTruth</span></a></span></span><span> </span><span id="local-6989586621679664348"><span class="annot"><span class="annottext">Tensor gradient layout' device dataType shape
+</span><a href="#local-6989586621679664348"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-20"></span><span>  </span><span id="local-6989586621679664347"><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithoutGradient)
   layout'
   device
   ('DataType 'Float)
-  ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)])
-</span><a href="#local-6989586621679664586"><span class="hs-identifier hs-var">weight</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span>
-</span><span id="line-23"></span><span>    </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithoutGradient)
+  ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+</span><a href="#local-6989586621679664347"><span class="hs-identifier hs-var">weight</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithoutGradient)
 -&gt; SLayout layout'
 -&gt; SDevice device
 -&gt; [Float]
@@ -155,89 +152,19 @@ SGradient gradient
 -&gt; m (Tensor
         gradient layout device ('DataType dType) ('Shape dims))
 </span><a href="Torch.GraduallyTyped.Tensor.Type.html#sToTensor"><span class="hs-identifier hs-var">sToTensor</span></a></span><span> </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithoutGradient)
-</span><a href="#local-6989586621679664584"><span class="hs-identifier hs-var">gradient</span></a></span><span> </span><span class="annot"><span class="annottext">SLayout layout'
-</span><a href="#local-6989586621679664583"><span class="hs-identifier hs-var">layout</span></a></span><span> </span><span class="annot"><span class="annottext">SDevice device
-</span><a href="#local-6989586621679664582"><span class="hs-identifier hs-var">device</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679664345"><span class="hs-identifier hs-var">gradient</span></a></span><span> </span><span class="annot"><span class="annottext">SLayout layout'
+</span><a href="#local-6989586621679664344"><span class="hs-identifier hs-var">layout</span></a></span><span> </span><span class="annot"><span class="annottext">SDevice device
+</span><a href="#local-6989586621679664343"><span class="hs-identifier hs-var">device</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Float
 </span><span class="hs-number">42.0</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
 </span><span class="hs-number">64.0</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
-</span><span class="hs-number">96.0</span></span><span class="hs-special">]</span><span>
-</span><span id="line-24"></span><span>      </span><span class="annot"><span class="annottext">m (Tensor
-     ('Gradient 'WithoutGradient)
-     layout'
-     device
-     ('DataType 'Float)
-     ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
--&gt; (Tensor
-      ('Gradient 'WithoutGradient)
-      layout'
-      device
-      ('DataType 'Float)
-      ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
-    -&gt; m (Tensor
-            ('Gradient 'WithoutGradient)
-            layout'
-            device
-            ('DataType 'Float)
-            ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)])))
--&gt; m (Tensor
-        ('Gradient 'WithoutGradient)
-        layout'
-        device
-        ('DataType 'Float)
-        ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
-forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
-</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="annot"><span class="annottext">SShape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)])
--&gt; Tensor
-     ('Gradient 'WithoutGradient)
-     layout'
-     device
-     ('DataType 'Float)
-     ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
--&gt; m (Tensor
-        ('Gradient 'WithoutGradient)
-        layout'
-        device
-        ('DataType 'Float)
-        ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
-forall (shape' :: Shape [Dim (Name Symbol) (Size Nat)])
-       (m :: * -&gt; *) (gradient :: Gradient RequiresGradient)
-       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
-       (dataType :: DataType DType)
-       (shape :: Shape [Dim (Name Symbol) (Size Nat)]).
-(SGetShape shape, MonadThrow m, Catch (shape &lt;+&gt; shape')) =&gt;
-SShape shape'
--&gt; Tensor gradient layout device dataType shape
--&gt; m (Tensor gradient layout device dataType shape')
-</span><a href="Torch.GraduallyTyped.Tensor.Type.html#sCheckedShape"><span class="hs-identifier hs-var">sCheckedShape</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SList '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]
--&gt; SShape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)])
-forall (dims :: [Dim (Name Symbol) (Size Nat)]).
-SList dims -&gt; SShape ('Shape dims)
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#SShape"><span class="hs-identifier hs-var">SShape</span></a></span><span> </span><span class="annot"><span class="annottext">(SList '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]
- -&gt; SShape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
--&gt; SList '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]
--&gt; SShape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)])
-forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#SNoName"><span class="hs-identifier hs-var">SNoName</span></a></span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
--&gt; SSize ('Size 3) -&gt; SDim ('Dim ('Name &quot;*&quot;) ('Size 3))
-forall (name :: Name Symbol) (size :: Size Nat).
-SName name -&gt; SSize size -&gt; SDim ('Dim name size)
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%26%3A"><span class="hs-operator hs-var">:&amp;:</span></a></span><span> </span><span class="annot"><span class="annottext">KnownNat 3 =&gt; SSize ('Size 3)
-forall (size :: Nat). KnownNat size =&gt; SSize ('Size size)
-</span><a href="Torch.GraduallyTyped.Shape.Type.html#SSize"><span class="hs-identifier hs-var">SSize</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-number">3</span></span><span> </span><span class="annot"><span class="annottext">Sing ('Dim ('Name &quot;*&quot;) ('Size 3))
--&gt; SList '[] -&gt; SList '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]
-forall a1 (a2 :: a1) (as :: [a1]).
-Sing a2 -&gt; SList as -&gt; SList (a2 : as)
-</span><a href="Torch.GraduallyTyped.Prelude.html#%3A%7C%3A"><span class="hs-operator hs-var">:|:</span></a></span><span> </span><span class="annot"><span class="annottext">SList '[]
-forall a. SList '[]
-</span><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier hs-var">SNil</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-25"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679664574"><span class="annot"><span class="annottext">dataType :: SDataType ('DataType 'Float)
-</span><a href="#local-6989586621679664574"><span class="hs-identifier hs-var hs-var">dataType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><span class="hs-number">96.0</span></span><span class="hs-special">]</span><span> </span><span class="hs-comment">-- &gt;&gt;= sCheckedShape (SShape $ SNoName :&amp;: SSize @3 :|: SNil) -- &lt;&lt;&lt; uncomment to check shape</span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679664342"><span class="annot"><span class="annottext">dataType :: SDataType ('DataType 'Float)
+</span><a href="#local-6989586621679664342"><span class="hs-identifier hs-var hs-var">dataType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithoutGradient)
   layout'
   device
   ('DataType 'Float)
-  ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)])
+  ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
 -&gt; SDataType ('DataType 'Float)
 forall (dataType :: DataType DType)
        (gradient :: Gradient RequiresGradient)
@@ -250,15 +177,15 @@ Tensor gradient layout device dataType shape -&gt; SDataType dataType
   layout'
   device
   ('DataType 'Float)
-  ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)])
-</span><a href="#local-6989586621679664586"><span class="hs-identifier hs-var">weight</span></a></span><span>
-</span><span id="line-26"></span><span>  </span><span id="local-6989586621679664572"><span class="annot"><span class="annottext">Tensor
+  ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+</span><a href="#local-6989586621679664347"><span class="hs-identifier hs-var">weight</span></a></span><span>
+</span><span id="line-22"></span><span>  </span><span id="local-6989586621679664340"><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithoutGradient)
   layout'
   device
   ('DataType 'Float)
   ('Shape '[])
-</span><a href="#local-6989586621679664572"><span class="hs-identifier hs-var">bias</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TensorSpec
+</span><a href="#local-6989586621679664340"><span class="hs-identifier hs-var">bias</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TensorSpec
   ('Gradient 'WithoutGradient)
   layout'
   device
@@ -290,17 +217,17 @@ forall (dataType :: DataType DType).
 SDataType dataType
 -&gt; TensorSpec
      ('Gradient 'WithoutGradient) layout' device dataType ('Shape '[])
-</span><a href="#local-6989586621679664570"><span class="hs-identifier hs-var">spec</span></a></span><span> </span><span class="annot"><span class="annottext">SDataType ('DataType 'Float)
-</span><a href="#local-6989586621679664574"><span class="hs-identifier hs-var">dataType</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679664338"><span class="hs-identifier hs-var">spec</span></a></span><span> </span><span class="annot"><span class="annottext">SDataType ('DataType 'Float)
+</span><a href="#local-6989586621679664342"><span class="hs-identifier hs-var">dataType</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float
 </span><span class="hs-number">3.14</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">)</span><span>
-</span><span id="line-27"></span><span>  </span><span id="local-6989586621679664569"><span class="annot"><span class="annottext">Tensor
+</span><span id="line-23"></span><span>  </span><span id="local-6989586621679664337"><span class="annot"><span class="annottext">Tensor
   (Or
      (Gradient RequiresGradient) gradient ('Gradient 'WithoutGradient))
   (Unify (Layout LayoutType) layout' layout')
   (Unify (Device (DeviceType Nat)) device device)
   ('DataType 'Float)
-  (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
-</span><a href="#local-6989586621679664569"><span class="hs-identifier hs-var">prod</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">SDataType ('DataType 'Float)
+  (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+</span><a href="#local-6989586621679664337"><span class="hs-identifier hs-var">prod</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">SDataType ('DataType 'Float)
 -&gt; Tensor gradient layout' device dataType shape
 -&gt; m (Tensor gradient layout' device ('DataType 'Float) shape)
 forall (dataType' :: DataType DType) (m :: * -&gt; *)
@@ -314,8 +241,8 @@ SDataType dataType'
 -&gt; Tensor gradient layout device dataType shape
 -&gt; m (Tensor gradient layout device dataType' shape)
 </span><a href="Torch.GraduallyTyped.Tensor.Type.html#sCheckedDataType"><span class="hs-identifier hs-var">sCheckedDataType</span></a></span><span> </span><span class="annot"><span class="annottext">SDataType ('DataType 'Float)
-</span><a href="#local-6989586621679664574"><span class="hs-identifier hs-var">dataType</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout' device dataType shape
-</span><a href="#local-6989586621679664587"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">m (Tensor gradient layout' device ('DataType 'Float) shape)
+</span><a href="#local-6989586621679664342"><span class="hs-identifier hs-var">dataType</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout' device dataType shape
+</span><a href="#local-6989586621679664348"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">m (Tensor gradient layout' device ('DataType 'Float) shape)
 -&gt; (Tensor gradient layout' device ('DataType 'Float) shape
     -&gt; m (Tensor
             (Or
@@ -323,14 +250,14 @@ SDataType dataType'
             (Unify (Layout LayoutType) layout' layout')
             (Unify (Device (DeviceType Nat)) device device)
             ('DataType 'Float)
-            (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))))
+            (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))))
 -&gt; m (Tensor
         (Or
            (Gradient RequiresGradient) gradient ('Gradient 'WithoutGradient))
         (Unify (Layout LayoutType) layout' layout')
         (Unify (Device (DeviceType Nat)) device device)
         ('DataType 'Float)
-        (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)])))
+        (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize])))
 forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
 </span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor gradient layout' device ('DataType 'Float) shape
 -&gt; Tensor
@@ -338,13 +265,13 @@ forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
      layout'
      device
      ('DataType 'Float)
-     ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)])
+     ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
 -&gt; m (Tensor
         (gradient &lt;|&gt; 'Gradient 'WithoutGradient)
         (layout' &lt;+&gt; layout')
         (device &lt;+&gt; device)
         ('DataType 'Float &lt;+&gt; 'DataType 'Float)
-        (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)])))
+        (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize])))
 forall (m :: * -&gt; *) (gradient :: Gradient RequiresGradient)
        (gradient' :: Gradient RequiresGradient)
        (layout :: Layout LayoutType) (layout' :: Layout LayoutType)
@@ -367,9 +294,9 @@ Tensor gradient layout device dataType shape
   layout'
   device
   ('DataType 'Float)
-  ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)])
-</span><a href="#local-6989586621679664586"><span class="hs-identifier hs-var">weight</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-28"></span><span>  </span><span class="annot"><span class="annottext">Tensor
+  ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize])
+</span><a href="#local-6989586621679664347"><span class="hs-identifier hs-var">weight</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span>  </span><span class="annot"><span class="annottext">Tensor
   (Or
      (Gradient RequiresGradient)
      (Or
@@ -386,7 +313,7 @@ Tensor gradient layout device dataType shape
   ('DataType 'Float)
   (SqueezeAllShapeF
      (BroadcastShapesF
-        (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
+        (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
         ('Shape '[])))
 -&gt; m (Tensor
         (Or
@@ -405,7 +332,7 @@ Tensor gradient layout device dataType shape
         ('DataType 'Float)
         (SqueezeAllShapeF
            (BroadcastShapesF
-              (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
+              (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
               ('Shape '[]))))
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Tensor
@@ -425,7 +352,7 @@ forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
    ('DataType 'Float)
    (SqueezeAllShapeF
       (BroadcastShapesF
-         (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
+         (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
          ('Shape '[])))
  -&gt; m (Tensor
          (Or
@@ -444,7 +371,7 @@ forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
          ('DataType 'Float)
          (SqueezeAllShapeF
             (BroadcastShapesF
-               (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
+               (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
                ('Shape '[])))))
 -&gt; (Tensor
       (Or
@@ -462,7 +389,7 @@ forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
          device)
       ('DataType 'Float)
       (BroadcastShapesF
-         (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
+         (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
          ('Shape '[]))
     -&gt; Tensor
          (Or
@@ -481,7 +408,7 @@ forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
          ('DataType 'Float)
          (SqueezeAllShapeF
             (BroadcastShapesF
-               (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
+               (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
                ('Shape '[]))))
 -&gt; Tensor
      (Or
@@ -499,7 +426,7 @@ forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
         device)
      ('DataType 'Float)
      (BroadcastShapesF
-        (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
+        (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
         ('Shape '[]))
 -&gt; m (Tensor
         (Or
@@ -518,7 +445,7 @@ forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
         ('DataType 'Float)
         (SqueezeAllShapeF
            (BroadcastShapesF
-              (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
+              (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
               ('Shape '[]))))
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Tensor
@@ -537,7 +464,7 @@ forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
      device)
   ('DataType 'Float)
   (BroadcastShapesF
-     (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
+     (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
      ('Shape '[]))
 -&gt; Tensor
      (Or
@@ -556,7 +483,7 @@ forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
      ('DataType 'Float)
      (SqueezeAllShapeF
         (BroadcastShapesF
-           (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
+           (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
            ('Shape '[])))
 forall (gradient :: Gradient RequiresGradient)
        (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
@@ -580,7 +507,7 @@ Tensor gradient layout device dataType shape
       device)
    ('DataType 'Float)
    (BroadcastShapesF
-      (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
+      (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
       ('Shape '[]))
  -&gt; m (Tensor
          (Or
@@ -599,7 +526,7 @@ Tensor gradient layout device dataType shape
          ('DataType 'Float)
          (SqueezeAllShapeF
             (BroadcastShapesF
-               (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
+               (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
                ('Shape '[])))))
 -&gt; Tensor
      (Or
@@ -617,7 +544,7 @@ Tensor gradient layout device dataType shape
         device)
      ('DataType 'Float)
      (BroadcastShapesF
-        (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
+        (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
         ('Shape '[]))
 -&gt; m (Tensor
         (Or
@@ -636,7 +563,7 @@ Tensor gradient layout device dataType shape
         ('DataType 'Float)
         (SqueezeAllShapeF
            (BroadcastShapesF
-              (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
+              (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
               ('Shape '[]))))
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Tensor
@@ -645,14 +572,14 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
   (Unify (Layout LayoutType) layout' layout')
   (Unify (Device (DeviceType Nat)) device device)
   ('DataType 'Float)
-  (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
-</span><a href="#local-6989586621679664569"><span class="hs-identifier hs-var">prod</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+  (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
+</span><a href="#local-6989586621679664337"><span class="hs-identifier hs-var">prod</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
   (Or
      (Gradient RequiresGradient) gradient ('Gradient 'WithoutGradient))
   (Unify (Layout LayoutType) layout' layout')
   (Unify (Device (DeviceType Nat)) device device)
   ('DataType 'Float)
-  (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
+  (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
 -&gt; Tensor
      ('Gradient 'WithoutGradient)
      layout'
@@ -667,7 +594,7 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
      (Unify (Device (DeviceType Nat)) device device &lt;+&gt; device)
      ('DataType 'Float &lt;+&gt; 'DataType 'Float)
      (BroadcastShapesF
-        (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
+        (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
         ('Shape '[]))
 forall (gradient :: Gradient RequiresGradient)
        (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
@@ -691,18 +618,18 @@ Tensor gradient layout device dataType shape
   device
   ('DataType 'Float)
   ('Shape '[])
-</span><a href="#local-6989586621679664572"><span class="hs-identifier hs-var">bias</span></a></span><span>
-</span><span id="line-29"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-30"></span><span>    </span><span id="local-6989586621679664584"><span class="annot"><span class="annottext">gradient :: SGradient ('Gradient 'WithoutGradient)
-</span><a href="#local-6989586621679664584"><span class="hs-identifier hs-var hs-var">gradient</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
+</span><a href="#local-6989586621679664340"><span class="hs-identifier hs-var">bias</span></a></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-26"></span><span>    </span><span id="local-6989586621679664345"><span class="annot"><span class="annottext">gradient :: SGradient ('Gradient 'WithoutGradient)
+</span><a href="#local-6989586621679664345"><span class="hs-identifier hs-var hs-var">gradient</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
 -&gt; SGradient ('Gradient 'WithoutGradient)
 forall (requiresGradient :: RequiresGradient).
 SRequiresGradient requiresGradient
 -&gt; SGradient ('Gradient requiresGradient)
 </span><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-var">SGradient</span></a></span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
 </span><a href="Torch.GraduallyTyped.RequiresGradient.html#SWithoutGradient"><span class="hs-identifier hs-var">SWithoutGradient</span></a></span><span>
-</span><span id="line-31"></span><span>    </span><span id="local-6989586621679664583"><span class="annot"><span class="annottext">layout :: SLayout layout'
-</span><a href="#local-6989586621679664583"><span class="hs-identifier hs-var hs-var">layout</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout' device dataType shape -&gt; SLayout layout'
+</span><span id="line-27"></span><span>    </span><span id="local-6989586621679664344"><span class="annot"><span class="annottext">layout :: SLayout layout'
+</span><a href="#local-6989586621679664344"><span class="hs-identifier hs-var hs-var">layout</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout' device dataType shape -&gt; SLayout layout'
 forall (layout :: Layout LayoutType)
        (gradient :: Gradient RequiresGradient)
        (device :: Device (DeviceType Nat)) (dataType :: DataType DType)
@@ -710,9 +637,9 @@ forall (layout :: Layout LayoutType)
 SGetLayout layout =&gt;
 Tensor gradient layout device dataType shape -&gt; SLayout layout
 </span><a href="Torch.GraduallyTyped.Tensor.Type.html#sGetLayout"><span class="hs-identifier hs-var">sGetLayout</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout' device dataType shape
-</span><a href="#local-6989586621679664587"><span class="hs-identifier hs-var">t</span></a></span><span>
-</span><span id="line-32"></span><span>    </span><span id="local-6989586621679664582"><span class="annot"><span class="annottext">device :: SDevice device
-</span><a href="#local-6989586621679664582"><span class="hs-identifier hs-var hs-var">device</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout' device dataType shape -&gt; SDevice device
+</span><a href="#local-6989586621679664348"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-28"></span><span>    </span><span id="local-6989586621679664343"><span class="annot"><span class="annottext">device :: SDevice device
+</span><a href="#local-6989586621679664343"><span class="hs-identifier hs-var hs-var">device</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout' device dataType shape -&gt; SDevice device
 forall (device :: Device (DeviceType Nat))
        (gradient :: Gradient RequiresGradient)
        (layout :: Layout LayoutType) (dataType :: DataType DType)
@@ -720,12 +647,12 @@ forall (device :: Device (DeviceType Nat))
 SGetDevice device =&gt;
 Tensor gradient layout device dataType shape -&gt; SDevice device
 </span><a href="Torch.GraduallyTyped.Tensor.Type.html#sGetDevice"><span class="hs-identifier hs-var">sGetDevice</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout' device dataType shape
-</span><a href="#local-6989586621679664587"><span class="hs-identifier hs-var">t</span></a></span><span>
-</span><span id="line-33"></span><span>    </span><span id="local-6989586621679664570"><span class="annot"><span class="annottext">spec :: SDataType dataType
+</span><a href="#local-6989586621679664348"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-29"></span><span>    </span><span id="local-6989586621679664338"><span class="annot"><span class="annottext">spec :: SDataType dataType
 -&gt; TensorSpec
      ('Gradient 'WithoutGradient) layout' device dataType ('Shape '[])
-</span><a href="#local-6989586621679664570"><span class="hs-identifier hs-var hs-var">spec</span></a></span></span><span> </span><span id="local-6989586621679664560"><span class="annot"><span class="annottext">SDataType dataType
-</span><a href="#local-6989586621679664560"><span class="hs-identifier hs-var">dataType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithoutGradient)
+</span><a href="#local-6989586621679664338"><span class="hs-identifier hs-var hs-var">spec</span></a></span></span><span> </span><span id="local-6989586621679664328"><span class="annot"><span class="annottext">SDataType dataType
+</span><a href="#local-6989586621679664328"><span class="hs-identifier hs-var">dataType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithoutGradient)
 -&gt; SLayout layout'
 -&gt; SDevice device
 -&gt; SDataType dataType
@@ -743,25 +670,25 @@ SGradient gradient
 -&gt; SShape shape
 -&gt; TensorSpec gradient layout device dataType shape
 </span><a href="Torch.GraduallyTyped.Tensor.Type.html#TensorSpec"><span class="hs-identifier hs-var">TensorSpec</span></a></span><span> </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithoutGradient)
-</span><a href="#local-6989586621679664584"><span class="hs-identifier hs-var">gradient</span></a></span><span> </span><span class="annot"><span class="annottext">SLayout layout'
-</span><a href="#local-6989586621679664583"><span class="hs-identifier hs-var">layout</span></a></span><span> </span><span class="annot"><span class="annottext">SDevice device
-</span><a href="#local-6989586621679664582"><span class="hs-identifier hs-var">device</span></a></span><span> </span><span class="annot"><span class="annottext">SDataType dataType
-</span><a href="#local-6989586621679664560"><span class="hs-identifier hs-var">dataType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SList '[] -&gt; SShape ('Shape '[])
+</span><a href="#local-6989586621679664345"><span class="hs-identifier hs-var">gradient</span></a></span><span> </span><span class="annot"><span class="annottext">SLayout layout'
+</span><a href="#local-6989586621679664344"><span class="hs-identifier hs-var">layout</span></a></span><span> </span><span class="annot"><span class="annottext">SDevice device
+</span><a href="#local-6989586621679664343"><span class="hs-identifier hs-var">device</span></a></span><span> </span><span class="annot"><span class="annottext">SDataType dataType
+</span><a href="#local-6989586621679664328"><span class="hs-identifier hs-var">dataType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SList '[] -&gt; SShape ('Shape '[])
 forall (dims :: [Dim (Name Symbol) (Size Nat)]).
 SList dims -&gt; SShape ('Shape dims)
 </span><a href="Torch.GraduallyTyped.Shape.Type.html#SShape"><span class="hs-identifier hs-var">SShape</span></a></span><span> </span><span class="annot"><span class="annottext">SList '[]
 forall a. SList '[]
 </span><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier hs-var">SNil</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-34"></span><span>
-</span><span id="line-35"></span><span id="printParams"><span class="annot"><span class="annottext">printParams :: GLinear a a -&gt; IO ()
-</span><a href="Torch.GraduallyTyped.Examples.LinearRegression.html#printParams"><span class="hs-identifier hs-var hs-var">printParams</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Linear.html#GLinear"><span class="hs-identifier hs-type">GLinear</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679664555"><span id="local-6989586621679664556"><span class="annot"><span class="annottext">a
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span id="printParams"><span class="annot"><span class="annottext">printParams :: GLinear a a -&gt; IO ()
+</span><a href="Torch.GraduallyTyped.Examples.LinearRegression.html#printParams"><span class="hs-identifier hs-var hs-var">printParams</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Linear.html#GLinear"><span class="hs-identifier hs-type">GLinear</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679664321"><span id="local-6989586621679664322"><span class="annot"><span class="annottext">a
 a
 linearBias :: forall weight bias. GLinear weight bias -&gt; bias
 linearWeight :: forall weight bias. GLinear weight bias -&gt; weight
 linearBias :: a
 linearWeight :: a
 </span><a href="Torch.GraduallyTyped.NN.Linear.html#linearBias"><span class="hs-glyph hs-var hs-var hs-var hs-var">..</span></a></span></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-36"></span><span>  </span><span class="annot"><span class="annottext">String -&gt; IO ()
+</span><span id="line-32"></span><span>  </span><span class="annot"><span class="annottext">String -&gt; IO ()
 </span><span class="hs-identifier hs-var">putStrLn</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; IO ()) -&gt; String -&gt; IO ()
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String
@@ -770,8 +697,8 @@ forall a. [a] -&gt; [a] -&gt; [a]
 </span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; String
 forall a. Show a =&gt; a -&gt; String
 </span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679664556"><span class="hs-identifier hs-var">linearWeight</span></a></span><span>
-</span><span id="line-37"></span><span>  </span><span class="annot"><span class="annottext">String -&gt; IO ()
+</span><a href="#local-6989586621679664322"><span class="hs-identifier hs-var">linearWeight</span></a></span><span>
+</span><span id="line-33"></span><span>  </span><span class="annot"><span class="annottext">String -&gt; IO ()
 </span><span class="hs-identifier hs-var">putStrLn</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; IO ()) -&gt; String -&gt; IO ()
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String
@@ -780,16 +707,15 @@ forall a. [a] -&gt; [a] -&gt; [a]
 </span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; String
 forall a. Show a =&gt; a -&gt; String
 </span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679664555"><span class="hs-identifier hs-var">linearBias</span></a></span><span>
-</span><span id="line-38"></span><span>
-</span><span id="line-39"></span><span class="annot"><a href="Torch.GraduallyTyped.Examples.LinearRegression.html#main"><span class="hs-identifier hs-type">main</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
-</span><span id="line-40"></span><span id="main"><span class="annot"><span class="annottext">main :: IO ()
+</span><a href="#local-6989586621679664321"><span class="hs-identifier hs-var">linearBias</span></a></span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="annot"><a href="Torch.GraduallyTyped.Examples.LinearRegression.html#main"><span class="hs-identifier hs-type">main</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span id="main"><span class="annot"><span class="annottext">main :: IO ()
 </span><a href="Torch.GraduallyTyped.Examples.LinearRegression.html#main"><span class="hs-identifier hs-var hs-var">main</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-41"></span><span>  </span><span id="local-6989586621679664549"><span class="annot"><span class="annottext">Generator ('Device 'CPU)
-</span><a href="#local-6989586621679664549"><span class="hs-identifier hs-var">g0</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO (Generator ('Device 'CPU))
-</span><a href="#local-6989586621679664548"><span class="hs-identifier hs-var">defaultRNG</span></a></span><span>
-</span><span id="line-42"></span><span>
-</span><span id="line-43"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679664547"><span class="annot"><span class="annottext">spec :: ModelSpec
+</span><span id="line-37"></span><span>  </span><span id="local-6989586621679664315"><span class="annot"><span class="annottext">Generator ('Device 'CPU)
+</span><a href="#local-6989586621679664315"><span class="hs-identifier hs-var">g0</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO (Generator ('Device 'CPU))
+</span><a href="#local-6989586621679664314"><span class="hs-identifier hs-var">defaultRNG</span></a></span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679664313"><span class="annot"><span class="annottext">modelSpec :: ModelSpec
   (GLinearF
      'WithBias
      ('Gradient 'WithGradient)
@@ -797,7 +723,7 @@ forall a. Show a =&gt; a -&gt; String
      ('DataType 'Float)
      ('Dim ('Name &quot;*&quot;) ('Size 3))
      ('Dim ('Name &quot;*&quot;) ('Size 1)))
-</span><a href="#local-6989586621679664547"><span class="hs-identifier hs-var hs-var">spec</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SHasBias 'WithBias
+</span><a href="#local-6989586621679664313"><span class="hs-identifier hs-var hs-var">modelSpec</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SHasBias 'WithBias
 -&gt; SGradient ('Gradient 'WithGradient)
 -&gt; SDevice ('Device 'CPU)
 -&gt; SDataType ('DataType 'Float)
@@ -824,13 +750,18 @@ SHasBias hasBias
 -&gt; ModelSpec
      (GLinearF hasBias gradient device dataType inputDim outputDim)
 </span><a href="Torch.GraduallyTyped.NN.Linear.html#linearSpec"><span class="hs-identifier hs-var">linearSpec</span></a></span><span> </span><span class="annot"><span class="annottext">SHasBias 'WithBias
-</span><a href="#local-6989586621679664545"><span class="hs-identifier hs-var">hasBias</span></a></span><span> </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithGradient)
-</span><a href="#local-6989586621679664544"><span class="hs-identifier hs-var">gradient</span></a></span><span> </span><span class="annot"><span class="annottext">SDevice ('Device 'CPU)
-</span><a href="#local-6989586621679664543"><span class="hs-identifier hs-var">device</span></a></span><span> </span><span class="annot"><span class="annottext">SDataType ('DataType 'Float)
-</span><a href="#local-6989586621679664542"><span class="hs-identifier hs-var">dataType</span></a></span><span> </span><span class="annot"><span class="annottext">SDim ('Dim ('Name &quot;*&quot;) ('Size 3))
-</span><a href="#local-6989586621679664541"><span class="hs-identifier hs-var">inputDim</span></a></span><span> </span><span class="annot"><span class="annottext">SDim ('Dim ('Name &quot;*&quot;) ('Size 1))
-</span><a href="#local-6989586621679664540"><span class="hs-identifier hs-var">outputDim</span></a></span><span>
-</span><span id="line-44"></span><span>  </span><span class="hs-special">(</span><span id="local-6989586621679664539"><span class="annot"><span class="annottext">GLinear
+</span><a href="Torch.GraduallyTyped.NN.Type.html#SWithBias"><span class="hs-identifier hs-var">SWithBias</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SRequiresGradient 'WithGradient
+-&gt; SGradient ('Gradient 'WithGradient)
+forall (requiresGradient :: RequiresGradient).
+SRequiresGradient requiresGradient
+-&gt; SGradient ('Gradient requiresGradient)
+</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-var">SGradient</span></a></span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithGradient
+</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SWithGradient"><span class="hs-identifier hs-var">SWithGradient</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">SDevice ('Device 'CPU)
+</span><a href="#local-6989586621679664309"><span class="hs-identifier hs-var">device</span></a></span><span> </span><span class="annot"><span class="annottext">SDataType ('DataType 'Float)
+</span><a href="#local-6989586621679664308"><span class="hs-identifier hs-var">dataType</span></a></span><span> </span><span class="annot"><span class="annottext">SDim ('Dim ('Name &quot;*&quot;) ('Size 3))
+</span><a href="#local-6989586621679664307"><span class="hs-identifier hs-var">inputDim</span></a></span><span> </span><span class="annot"><span class="annottext">SDim ('Dim ('Name &quot;*&quot;) ('Size 1))
+</span><a href="#local-6989586621679664306"><span class="hs-identifier hs-var">outputDim</span></a></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-special">(</span><span id="local-6989586621679664305"><span class="annot"><span class="annottext">GLinear
   (NamedModel
      (Tensor
         ('Gradient 'WithGradient)
@@ -846,8 +777,8 @@ SHasBias hasBias
         ('Device 'CPU)
         ('DataType 'Float)
         ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1)])))
-</span><a href="#local-6989586621679664539"><span class="hs-identifier hs-var">initial</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679664538"><span class="annot"><span class="annottext">Generator ('Device 'CPU)
-</span><a href="#local-6989586621679664538"><span class="hs-identifier hs-var">g1</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ModelSpec
+</span><a href="#local-6989586621679664305"><span class="hs-identifier hs-var">initial</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679664304"><span class="annot"><span class="annottext">Generator ('Device 'CPU)
+</span><a href="#local-6989586621679664304"><span class="hs-identifier hs-var">g1</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ModelSpec
   (GLinear
      (NamedModel
         (Tensor
@@ -923,10 +854,9 @@ GLinear
         ('Device 'CPU)
         ('DataType 'Float)
         ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1)])))
-</span><a href="#local-6989586621679664547"><span class="hs-identifier hs-var">spec</span></a></span><span> </span><span class="annot"><span class="annottext">Generator ('Device 'CPU)
-</span><a href="#local-6989586621679664549"><span class="hs-identifier hs-var">g0</span></a></span><span>
-</span><span id="line-45"></span><span>
-</span><span id="line-46"></span><span>  </span><span class="annot"><span class="annottext">GLinear
+</span><a href="#local-6989586621679664313"><span class="hs-identifier hs-var">modelSpec</span></a></span><span> </span><span class="annot"><span class="annottext">Generator ('Device 'CPU)
+</span><a href="#local-6989586621679664315"><span class="hs-identifier hs-var">g0</span></a></span><span>
+</span><span id="line-40"></span><span>  </span><span class="annot"><span class="annottext">GLinear
   (NamedModel
      (Tensor
         ('Gradient 'WithGradient)
@@ -960,9 +890,8 @@ forall a a. (Show a, Show a) =&gt; GLinear a a -&gt; IO ()
         ('Device 'CPU)
         ('DataType 'Float)
         ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1)])))
-</span><a href="#local-6989586621679664539"><span class="hs-identifier hs-var">initial</span></a></span><span>
-</span><span id="line-47"></span><span>
-</span><span id="line-48"></span><span>  </span><span id="local-6989586621679664536"><span class="annot"><span class="annottext">Optimizer
+</span><a href="#local-6989586621679664305"><span class="hs-identifier hs-var">initial</span></a></span><span>
+</span><span id="line-41"></span><span>  </span><span id="local-6989586621679664302"><span class="annot"><span class="annottext">Optimizer
   (GLinear
      (NamedModel
         (Tensor
@@ -979,7 +908,7 @@ forall a a. (Show a, Show a) =&gt; GLinear a a -&gt; IO ()
            ('Device 'CPU)
            ('DataType 'Float)
            ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1)]))))
-</span><a href="#local-6989586621679664536"><span class="hs-identifier hs-var">optim</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">GLinear
+</span><a href="#local-6989586621679664302"><span class="hs-identifier hs-var">optim</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">GLinear
   (NamedModel
      (Tensor
         ('Gradient 'WithGradient)
@@ -1013,7 +942,7 @@ forall a a. (Show a, Show a) =&gt; GLinear a a -&gt; IO ()
                  ('Device 'CPU)
                  ('DataType 'Float)
                  ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1)])))))
-</span><a href="#local-6989586621679664535"><span class="hs-identifier hs-var">optimizer</span></a></span><span> </span><span class="annot"><span class="annottext">GLinear
+</span><a href="#local-6989586621679664301"><span class="hs-identifier hs-var">mkOptim</span></a></span><span> </span><span class="annot"><span class="annottext">GLinear
   (NamedModel
      (Tensor
         ('Gradient 'WithGradient)
@@ -1029,37 +958,26 @@ forall a a. (Show a, Show a) =&gt; GLinear a a -&gt; IO ()
         ('Device 'CPU)
         ('DataType 'Float)
         ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1)])))
-</span><a href="#local-6989586621679664539"><span class="hs-identifier hs-var">initial</span></a></span><span>
-</span><span id="line-49"></span><span>
-</span><span id="line-50"></span><span>  </span><span class="annot"><span class="annottext">Generator ('Device 'CPU)
-</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Generator ('Device 'CPU)
--&gt; Int
--&gt; (Generator ('Device 'CPU)
-    -&gt; Int -&gt; IO (Generator ('Device 'CPU)))
--&gt; IO (Generator ('Device 'CPU))
-forall (m :: * -&gt; *) b.
-Monad m =&gt;
-b -&gt; Int -&gt; (b -&gt; Int -&gt; m b) -&gt; m b
-</span><a href="#local-6989586621679664534"><span class="hs-identifier hs-var">foldLoop</span></a></span><span> </span><span class="annot"><span class="annottext">Generator ('Device 'CPU)
-</span><a href="#local-6989586621679664538"><span class="hs-identifier hs-var">g1</span></a></span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679664533"><span class="hs-identifier hs-var">numIters</span></a></span><span> </span><span class="annot"><span class="annottext">((Generator ('Device 'CPU) -&gt; Int -&gt; IO (Generator ('Device 'CPU)))
- -&gt; IO (Generator ('Device 'CPU)))
--&gt; (Generator ('Device 'CPU)
-    -&gt; Int -&gt; IO (Generator ('Device 'CPU)))
--&gt; IO (Generator ('Device 'CPU))
-forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679664532"><span class="annot"><span class="annottext">Generator ('Device 'CPU)
-</span><a href="#local-6989586621679664532"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span id="local-6989586621679664531"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679664531"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-51"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679664530"><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithGradient)
+</span><a href="#local-6989586621679664305"><span class="hs-identifier hs-var">initial</span></a></span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span>  </span><span class="annot"><span class="annottext">(Generator ('Device 'CPU) -&gt; Int -&gt; IO (Generator ('Device 'CPU)))
+-&gt; Generator ('Device 'CPU) -&gt; [Int] -&gt; IO ()
+forall (t :: * -&gt; *) (m :: * -&gt; *) b a.
+(Foldable t, Monad m) =&gt;
+(b -&gt; a -&gt; m b) -&gt; b -&gt; t a -&gt; m ()
+</span><span class="hs-identifier hs-var">foldM_</span></span><span>
+</span><span id="line-44"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679664300"><span class="annot"><span class="annottext">Generator ('Device 'CPU)
+</span><a href="#local-6989586621679664300"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span id="local-6989586621679664299"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679664299"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-45"></span><span>        </span><span class="hs-special">(</span><span id="local-6989586621679664298"><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
   ('Layout 'Dense)
   ('Device 'CPU)
   ('DataType 'Float)
   ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 4), 'Dim ('Name &quot;*&quot;) ('Size 3)])
-</span><a href="#local-6989586621679664530"><span class="hs-identifier hs-var">input</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679664529"><span class="annot"><span class="annottext">Generator ('Device 'CPU)
-</span><a href="#local-6989586621679664529"><span class="hs-identifier hs-var">g'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TensorSpec
-  ('Gradient 'WithGradient)
+</span><a href="#local-6989586621679664298"><span class="hs-identifier hs-var">input</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679664297"><span class="annot"><span class="annottext">Generator ('Device 'CPU)
+</span><a href="#local-6989586621679664297"><span class="hs-identifier hs-var">g'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TensorSpec
+  ('Gradient 'WithoutGradient)
   ('Layout 'Dense)
   ('Device 'CPU)
   ('DataType 'Float)
@@ -1067,7 +985,7 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 -&gt; Generator ('Device 'CPU)
 -&gt; IO
      (Tensor
-        ('Gradient 'WithGradient)
+        ('Gradient 'WithoutGradient)
         ('Layout 'Dense)
         ('Device 'CPU &lt;+&gt; 'Device 'CPU)
         ('DataType 'Float)
@@ -1086,21 +1004,21 @@ TensorSpec gradient layout device dataType shape
         gradient layout (device &lt;+&gt; generatorDevice) dataType shape,
       Generator (device &lt;+&gt; generatorDevice))
 </span><a href="Torch.GraduallyTyped.Tensor.Creation.html#sRandn"><span class="hs-identifier hs-var">sRandn</span></a></span><span> </span><span class="annot"><span class="annottext">TensorSpec
-  ('Gradient 'WithGradient)
+  ('Gradient 'WithoutGradient)
   ('Layout 'Dense)
   ('Device 'CPU)
   ('DataType 'Float)
   ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 4), 'Dim ('Name &quot;*&quot;) ('Size 3)])
-</span><a href="#local-6989586621679664527"><span class="hs-identifier hs-var">tensorSpec</span></a></span><span> </span><span class="annot"><span class="annottext">Generator ('Device 'CPU)
-</span><a href="#local-6989586621679664532"><span class="hs-identifier hs-var">g</span></a></span><span>
-</span><span id="line-52"></span><span>    </span><span id="local-6989586621679664526"><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithGradient)
+</span><a href="#local-6989586621679664295"><span class="hs-identifier hs-var">randSpec</span></a></span><span> </span><span class="annot"><span class="annottext">Generator ('Device 'CPU)
+</span><a href="#local-6989586621679664300"><span class="hs-identifier hs-var">g</span></a></span><span>
+</span><span id="line-46"></span><span>        </span><span id="local-6989586621679664294"><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
   ('Layout 'Dense)
   ('Device 'CPU)
   ('DataType 'Float)
   ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 4)])
-</span><a href="#local-6989586621679664526"><span class="hs-identifier hs-var">y</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithGradient)
+</span><a href="#local-6989586621679664294"><span class="hs-identifier hs-var">target</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
   ('Layout 'Dense)
   ('Device 'CPU)
   ('DataType 'Float)
@@ -1111,7 +1029,7 @@ TensorSpec gradient layout device dataType shape
            (Gradient RequiresGradient)
            (Or
               (Gradient RequiresGradient)
-              ('Gradient 'WithGradient)
+              ('Gradient 'WithoutGradient)
               ('Gradient 'WithoutGradient))
            ('Gradient 'WithoutGradient))
         ('Layout 'Dense)
@@ -1121,7 +1039,7 @@ TensorSpec gradient layout device dataType shape
            (BroadcastShapesF
               (MatmulF
                  ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 4), 'Dim ('Name &quot;*&quot;) ('Size 3)])
-                 ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
+                 ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
               ('Shape '[]))))
 forall (dataType :: DataType DType) (m :: * -&gt; *)
        (device :: Device (DeviceType Nat)) (layout' :: Layout LayoutType)
@@ -1142,24 +1060,24 @@ Tensor gradient layout' device dataType shape
         ('DataType 'Float)
         (SqueezeAllShapeF
            (BroadcastShapesF
-              (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
+              (MatmulF shape ('Shape '[ 'Dim ('Name &quot;*&quot;) 'UncheckedSize]))
               ('Shape '[]))))
 </span><a href="Torch.GraduallyTyped.Examples.LinearRegression.html#groundTruth"><span class="hs-identifier hs-var">groundTruth</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithGradient)
+  ('Gradient 'WithoutGradient)
   ('Layout 'Dense)
   ('Device 'CPU)
   ('DataType 'Float)
   ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 4), 'Dim ('Name &quot;*&quot;) ('Size 3)])
-</span><a href="#local-6989586621679664530"><span class="hs-identifier hs-var">input</span></a></span><span>
-</span><span id="line-53"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679664525"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679664298"><span class="hs-identifier hs-var">input</span></a></span><span>
+</span><span id="line-47"></span><span>        </span><span class="hs-special">(</span><span id="local-6989586621679664293"><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithGradient)
   ('Layout 'Dense)
   ('Device 'CPU)
   ('DataType 'Float)
   ('Shape '[])
-</span><a href="#local-6989586621679664525"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679664524"><span class="annot"><span class="annottext">Generator ('Device 'CPU)
-</span><a href="#local-6989586621679664524"><span class="hs-identifier hs-var">g''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span>
-</span><span id="line-54"></span><span>      </span><span class="annot"><span class="annottext">Optimizer
+</span><a href="#local-6989586621679664293"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679664292"><span class="annot"><span class="annottext">Generator ('Device 'CPU)
+</span><a href="#local-6989586621679664292"><span class="hs-identifier hs-var">g''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span>
+</span><span id="line-48"></span><span>          </span><span class="annot"><span class="annottext">Optimizer
   (GLinear
      (NamedModel
         (Tensor
@@ -1250,7 +1168,7 @@ Optimizer model
      (Tensor lossGradient lossLayout lossDataType lossDevice lossShape,
       Generator generatorOutputDevice)
 </span><a href="Torch.GraduallyTyped.Optim.html#stepWithGenerator"><span class="hs-identifier hs-var">stepWithGenerator</span></a></span><span>
-</span><span id="line-55"></span><span>        </span><span class="annot"><span class="annottext">Optimizer
+</span><span id="line-49"></span><span>            </span><span class="annot"><span class="annottext">Optimizer
   (GLinear
      (NamedModel
         (Tensor
@@ -1267,8 +1185,8 @@ Optimizer model
            ('Device 'CPU)
            ('DataType 'Float)
            ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1)]))))
-</span><a href="#local-6989586621679664536"><span class="hs-identifier hs-var">optim</span></a></span><span>
-</span><span id="line-56"></span><span>        </span><span class="annot"><span class="annottext">ModelSpec
+</span><a href="#local-6989586621679664302"><span class="hs-identifier hs-var">optim</span></a></span><span>
+</span><span id="line-50"></span><span>            </span><span class="annot"><span class="annottext">ModelSpec
   (GLinear
      (NamedModel
         (Tensor
@@ -1301,8 +1219,8 @@ GLinear
         ('Device 'CPU)
         ('DataType 'Float)
         ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1)])))
-</span><a href="#local-6989586621679664547"><span class="hs-identifier hs-var">spec</span></a></span><span>
-</span><span id="line-57"></span><span>        </span><span class="hs-special">(</span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679664522"><span class="annot"><span class="annottext">GLinear
+</span><a href="#local-6989586621679664313"><span class="hs-identifier hs-var">modelSpec</span></a></span><span>
+</span><span id="line-51"></span><span>            </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679664290"><span class="annot"><span class="annottext">GLinear
   (NamedModel
      (Tensor
         ('Gradient 'WithGradient)
@@ -1318,8 +1236,7 @@ GLinear
         ('Device 'CPU)
         ('DataType 'Float)
         ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1)])))
-</span><a href="#local-6989586621679664522"><span class="hs-identifier hs-var">state</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-58"></span><span>            </span><span class="annot"><span class="annottext">IxStateT
+</span><a href="#local-6989586621679664290"><span class="hs-identifier hs-var">state</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">IxStateT
   IO
   (Generator ('Device 'CPU))
   (Generator ('Device 'CPU))
@@ -1378,8 +1295,7 @@ forall (m :: * -&gt; *) i j a. IxStateT m i j a -&gt; i -&gt; m (a, j)
         ('Shape '[]),
       Generator ('Device 'CPU))
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span>
-</span><span id="line-59"></span><span>              </span><span class="annot"><span class="annottext">(Generator ('Device 'CPU)
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(Generator ('Device 'CPU)
  -&gt; IO
       (Tensor
          ('Gradient 'WithGradient)
@@ -1416,7 +1332,7 @@ forall (m :: * -&gt; *) i j a. (i -&gt; m (a, j)) -&gt; IxStateT m i j a
         ('DataType 'Float)
         ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1)])))
 -&gt; Tensor
-     ('Gradient 'WithGradient)
+     ('Gradient 'WithoutGradient)
      ('Layout 'Dense)
      ('Device 'CPU)
      ('DataType 'Float)
@@ -1468,14 +1384,13 @@ model
         ('Device 'CPU)
         ('DataType 'Float)
         ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1)])))
-</span><a href="#local-6989586621679664522"><span class="hs-identifier hs-var">state</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithGradient)
+</span><a href="#local-6989586621679664290"><span class="hs-identifier hs-var">state</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
   ('Layout 'Dense)
   ('Device 'CPU)
   ('DataType 'Float)
   ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 4), 'Dim ('Name &quot;*&quot;) ('Size 3)])
-</span><a href="#local-6989586621679664530"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-60"></span><span>                </span><span class="annot"><span class="annottext">IxStateT
+</span><a href="#local-6989586621679664298"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">IxStateT
   IO
   (Generator ('Device 'CPU))
   (Generator ('Device 'CPU))
@@ -1583,20 +1498,14 @@ m a -&gt; t m i i a
         ('DataType 'Float)
         ('Shape '[]))
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
-</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679664521"><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithGradient)
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
   ('Layout 'Dense)
   ('Device 'CPU)
   ('DataType 'Float)
   ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 4)])
-</span><a href="#local-6989586621679664521"><span class="hs-identifier hs-var">y'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  ('DataType 'Float)
-  ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 4)])
-</span><a href="#local-6989586621679664526"><span class="hs-identifier hs-var">y</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithGradient)
+</span><a href="#local-6989586621679664294"><span class="hs-identifier hs-var">target</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+  ('Gradient 'WithoutGradient)
   ('Layout 'Dense)
   ('Device 'CPU)
   ('DataType 'Float)
@@ -1609,7 +1518,7 @@ forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
      ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 4)])
 -&gt; IO
      (Tensor
-        ('Gradient 'WithGradient &lt;|&gt; 'Gradient 'WithGradient)
+        ('Gradient 'WithoutGradient &lt;|&gt; 'Gradient 'WithGradient)
         ('Layout 'Dense &lt;+&gt; 'Layout 'Dense)
         ('Device 'CPU &lt;+&gt; 'Device 'CPU)
         ('DataType 'Float &lt;+&gt; 'DataType 'Float)
@@ -1631,20 +1540,13 @@ Tensor gradient layout device dataType shape
         (device &lt;+&gt; device')
         (dataType &lt;+&gt; dataType')
         ('Shape '[]))
-</span><a href="Torch.GraduallyTyped.NN.Functional.Loss.html#mseLoss"><span class="hs-operator hs-var">`mseLoss`</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
-  ('Gradient 'WithGradient)
-  ('Layout 'Dense)
-  ('Device 'CPU)
-  ('DataType 'Float)
-  ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 4)])
-</span><a href="#local-6989586621679664521"><span class="hs-identifier hs-var">y'</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-61"></span><span>        </span><span class="hs-special">)</span><span>
-</span><span id="line-62"></span><span>        </span><span class="annot"><span class="annottext">Generator ('Device 'CPU)
-</span><a href="#local-6989586621679664529"><span class="hs-identifier hs-var">g'</span></a></span><span>
-</span><span id="line-63"></span><span>    </span><span class="annot"><span class="annottext">Bool -&gt; IO () -&gt; IO ()
+</span><a href="Torch.GraduallyTyped.NN.Functional.Loss.html#mseLoss"><span class="hs-operator hs-var">`mseLoss`</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-52"></span><span>            </span><span class="annot"><span class="annottext">Generator ('Device 'CPU)
+</span><a href="#local-6989586621679664297"><span class="hs-identifier hs-var">g'</span></a></span><span>
+</span><span id="line-53"></span><span>        </span><span class="annot"><span class="annottext">Bool -&gt; IO () -&gt; IO ()
 forall (f :: * -&gt; *). Applicative f =&gt; Bool -&gt; f () -&gt; f ()
 </span><span class="hs-identifier hs-var">when</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679664531"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+</span><a href="#local-6989586621679664299"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
 forall a. Integral a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">`mod`</span></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">100</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
@@ -1652,8 +1554,8 @@ forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">0</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(IO () -&gt; IO ()) -&gt; IO () -&gt; IO ()
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-64"></span><span>      </span><span class="annot"><span class="annottext">String -&gt; IO ()
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-54"></span><span>          </span><span class="annot"><span class="annottext">String -&gt; IO ()
 </span><span class="hs-identifier hs-var">putStrLn</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; IO ()) -&gt; String -&gt; IO ()
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String
@@ -1662,7 +1564,7 @@ forall a. [a] -&gt; [a] -&gt; [a]
 </span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; String
 forall a. Show a =&gt; a -&gt; String
 </span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679664531"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
+</span><a href="#local-6989586621679664299"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
 forall a. [a] -&gt; [a] -&gt; [a]
 </span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot; | Loss: &quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
@@ -1681,13 +1583,19 @@ forall a. Show a =&gt; a -&gt; String
   ('Device 'CPU)
   ('DataType 'Float)
   ('Shape '[])
-</span><a href="#local-6989586621679664525"><span class="hs-identifier hs-var">loss</span></a></span><span>
-</span><span id="line-65"></span><span>    </span><span class="annot"><span class="annottext">Generator ('Device 'CPU) -&gt; IO (Generator ('Device 'CPU))
+</span><a href="#local-6989586621679664293"><span class="hs-identifier hs-var">loss</span></a></span><span>
+</span><span id="line-55"></span><span>        </span><span class="annot"><span class="annottext">Generator ('Device 'CPU) -&gt; IO (Generator ('Device 'CPU))
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Generator ('Device 'CPU)
-</span><a href="#local-6989586621679664524"><span class="hs-identifier hs-var">g''</span></a></span><span>
-</span><span id="line-66"></span><span>
-</span><span id="line-67"></span><span>  </span><span id="local-6989586621679664518"><span class="annot"><span class="annottext">GLinear
+</span><a href="#local-6989586621679664292"><span class="hs-identifier hs-var">g''</span></a></span><span>
+</span><span id="line-56"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-57"></span><span>    </span><span class="annot"><span class="annottext">Generator ('Device 'CPU)
+</span><a href="#local-6989586621679664304"><span class="hs-identifier hs-var">g1</span></a></span><span>
+</span><span id="line-58"></span><span>    </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">..</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679664287"><span class="hs-identifier hs-var">numIters</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-59"></span><span>
+</span><span id="line-60"></span><span>  </span><span id="local-6989586621679664286"><span class="annot"><span class="annottext">GLinear
   (NamedModel
      (Tensor
         ('Gradient 'WithGradient)
@@ -1703,7 +1611,7 @@ forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
         ('Device 'CPU)
         ('DataType 'Float)
         ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1)])))
-</span><a href="#local-6989586621679664518"><span class="hs-identifier hs-var">trained</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ModelSpec
+</span><a href="#local-6989586621679664286"><span class="hs-identifier hs-var">trained</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ModelSpec
   (GLinear
      (NamedModel
         (Tensor
@@ -1790,7 +1698,7 @@ GLinear
         ('Device 'CPU)
         ('DataType 'Float)
         ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1)])))
-</span><a href="#local-6989586621679664547"><span class="hs-identifier hs-var">spec</span></a></span><span> </span><span class="annot"><span class="annottext">Optimizer
+</span><a href="#local-6989586621679664313"><span class="hs-identifier hs-var">modelSpec</span></a></span><span> </span><span class="annot"><span class="annottext">Optimizer
   (GLinear
      (NamedModel
         (Tensor
@@ -1807,9 +1715,8 @@ GLinear
            ('Device 'CPU)
            ('DataType 'Float)
            ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1)]))))
-</span><a href="#local-6989586621679664536"><span class="hs-identifier hs-var">optim</span></a></span><span>
-</span><span id="line-68"></span><span>
-</span><span id="line-69"></span><span>  </span><span class="annot"><span class="annottext">GLinear
+</span><a href="#local-6989586621679664302"><span class="hs-identifier hs-var">optim</span></a></span><span>
+</span><span id="line-61"></span><span>  </span><span class="annot"><span class="annottext">GLinear
   (NamedModel
      (Tensor
         ('Gradient 'WithGradient)
@@ -1843,9 +1750,9 @@ forall a a. (Show a, Show a) =&gt; GLinear a a -&gt; IO ()
         ('Device 'CPU)
         ('DataType 'Float)
         ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1)])))
-</span><a href="#local-6989586621679664518"><span class="hs-identifier hs-var">trained</span></a></span><span>
-</span><span id="line-70"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-71"></span><span>    </span><span id="local-6989586621679664535"><span class="annot"><span class="annottext">optimizer :: GLinear
+</span><a href="#local-6989586621679664286"><span class="hs-identifier hs-var">trained</span></a></span><span>
+</span><span id="line-62"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-63"></span><span>    </span><span id="local-6989586621679664301"><span class="annot"><span class="annottext">mkOptim :: GLinear
   (NamedModel
      (Tensor
         ('Gradient 'WithGradient)
@@ -1879,7 +1786,7 @@ forall a a. (Show a, Show a) =&gt; GLinear a a -&gt; IO ()
                  ('Device 'CPU)
                  ('DataType 'Float)
                  ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 1)])))))
-</span><a href="#local-6989586621679664535"><span class="hs-identifier hs-var hs-var">optimizer</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AdamOptions
+</span><a href="#local-6989586621679664301"><span class="hs-identifier hs-var hs-var">mkOptim</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AdamOptions
 -&gt; GLinear
      (NamedModel
         (Tensor
@@ -1919,21 +1826,21 @@ HasStateDict model =&gt;
 AdamOptions -&gt; model -&gt; IO (Optimizer model)
 </span><a href="Torch.GraduallyTyped.Optim.html#mkAdam"><span class="hs-identifier hs-var">mkAdam</span></a></span><span> </span><span class="annot"><span class="annottext">AdamOptions
 </span><a href="Torch.GraduallyTyped.Optim.html#defaultAdamOptions"><span class="hs-identifier hs-var">defaultAdamOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="annottext">learningRate :: Double
-</span><a href="#local-6989586621679664514"><span class="hs-identifier hs-var">learningRate</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679664282"><span class="hs-identifier hs-var">learningRate</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
 </span><span class="hs-number">1e0</span></span><span class="hs-special">}</span><span>
-</span><span id="line-72"></span><span>    </span><span id="local-6989586621679664548"><span class="annot"><span class="annottext">defaultRNG :: IO (Generator ('Device 'CPU))
-</span><a href="#local-6989586621679664548"><span class="hs-identifier hs-var hs-var">defaultRNG</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SDevice ('Device 'CPU) -&gt; Word64 -&gt; IO (Generator ('Device 'CPU))
+</span><span id="line-64"></span><span>    </span><span id="local-6989586621679664314"><span class="annot"><span class="annottext">defaultRNG :: IO (Generator ('Device 'CPU))
+</span><a href="#local-6989586621679664314"><span class="hs-identifier hs-var hs-var">defaultRNG</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SDevice ('Device 'CPU) -&gt; Word64 -&gt; IO (Generator ('Device 'CPU))
 forall (m :: * -&gt; *) (device :: Device (DeviceType Nat)).
 MonadThrow m =&gt;
 SDevice device -&gt; Word64 -&gt; m (Generator device)
 </span><a href="Torch.GraduallyTyped.Random.html#sMkGenerator"><span class="hs-identifier hs-var">sMkGenerator</span></a></span><span> </span><span class="annot"><span class="annottext">SDevice ('Device 'CPU)
-</span><a href="#local-6989586621679664543"><span class="hs-identifier hs-var">device</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679664309"><span class="hs-identifier hs-var">device</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
 </span><span class="hs-number">31415</span></span><span>
-</span><span id="line-73"></span><span>    </span><span id="local-6989586621679664533"><span class="annot"><span class="annottext">numIters :: Int
-</span><a href="#local-6989586621679664533"><span class="hs-identifier hs-var hs-var">numIters</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span id="line-65"></span><span>    </span><span id="local-6989586621679664287"><span class="annot"><span class="annottext">numIters :: Int
+</span><a href="#local-6989586621679664287"><span class="hs-identifier hs-var hs-var">numIters</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">2000</span></span><span>
-</span><span id="line-74"></span><span>    </span><span id="local-6989586621679664512"><span class="annot"><span class="annottext">batchDim :: SDim ('Dim ('Name &quot;*&quot;) ('Size 4))
-</span><a href="#local-6989586621679664512"><span class="hs-identifier hs-var hs-var">batchDim</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
+</span><span id="line-66"></span><span>    </span><span id="local-6989586621679664280"><span class="annot"><span class="annottext">batchDim :: SDim ('Dim ('Name &quot;*&quot;) ('Size 4))
+</span><a href="#local-6989586621679664280"><span class="hs-identifier hs-var hs-var">batchDim</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
 </span><a href="Torch.GraduallyTyped.Shape.Type.html#SNoName"><span class="hs-identifier hs-var">SNoName</span></a></span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
 -&gt; SSize ('Size 4) -&gt; SDim ('Dim ('Name &quot;*&quot;) ('Size 4))
 forall (name :: Name Symbol) (size :: Size Nat).
@@ -1941,8 +1848,8 @@ SName name -&gt; SSize size -&gt; SDim ('Dim name size)
 </span><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%26%3A"><span class="hs-operator hs-var">:&amp;:</span></a></span><span> </span><span class="annot"><span class="annottext">KnownNat 4 =&gt; SSize ('Size 4)
 forall (size :: Nat). KnownNat size =&gt; SSize ('Size size)
 </span><a href="Torch.GraduallyTyped.Shape.Type.html#SSize"><span class="hs-identifier hs-var">SSize</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-number">4</span></span><span>
-</span><span id="line-75"></span><span>    </span><span id="local-6989586621679664541"><span class="annot"><span class="annottext">inputDim :: SDim ('Dim ('Name &quot;*&quot;) ('Size 3))
-</span><a href="#local-6989586621679664541"><span class="hs-identifier hs-var hs-var">inputDim</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
+</span><span id="line-67"></span><span>    </span><span id="local-6989586621679664307"><span class="annot"><span class="annottext">inputDim :: SDim ('Dim ('Name &quot;*&quot;) ('Size 3))
+</span><a href="#local-6989586621679664307"><span class="hs-identifier hs-var hs-var">inputDim</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
 </span><a href="Torch.GraduallyTyped.Shape.Type.html#SNoName"><span class="hs-identifier hs-var">SNoName</span></a></span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
 -&gt; SSize ('Size 3) -&gt; SDim ('Dim ('Name &quot;*&quot;) ('Size 3))
 forall (name :: Name Symbol) (size :: Size Nat).
@@ -1950,8 +1857,8 @@ SName name -&gt; SSize size -&gt; SDim ('Dim name size)
 </span><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%26%3A"><span class="hs-operator hs-var">:&amp;:</span></a></span><span> </span><span class="annot"><span class="annottext">KnownNat 3 =&gt; SSize ('Size 3)
 forall (size :: Nat). KnownNat size =&gt; SSize ('Size size)
 </span><a href="Torch.GraduallyTyped.Shape.Type.html#SSize"><span class="hs-identifier hs-var">SSize</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-number">3</span></span><span>
-</span><span id="line-76"></span><span>    </span><span id="local-6989586621679664540"><span class="annot"><span class="annottext">outputDim :: SDim ('Dim ('Name &quot;*&quot;) ('Size 1))
-</span><a href="#local-6989586621679664540"><span class="hs-identifier hs-var hs-var">outputDim</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
+</span><span id="line-68"></span><span>    </span><span id="local-6989586621679664306"><span class="annot"><span class="annottext">outputDim :: SDim ('Dim ('Name &quot;*&quot;) ('Size 1))
+</span><a href="#local-6989586621679664306"><span class="hs-identifier hs-var hs-var">outputDim</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
 </span><a href="Torch.GraduallyTyped.Shape.Type.html#SNoName"><span class="hs-identifier hs-var">SNoName</span></a></span><span> </span><span class="annot"><span class="annottext">SName ('Name &quot;*&quot;)
 -&gt; SSize ('Size 1) -&gt; SDim ('Dim ('Name &quot;*&quot;) ('Size 1))
 forall (name :: Name Symbol) (size :: Size Nat).
@@ -1959,58 +1866,32 @@ SName name -&gt; SSize size -&gt; SDim ('Dim name size)
 </span><a href="Torch.GraduallyTyped.Shape.Type.html#%3A%26%3A"><span class="hs-operator hs-var">:&amp;:</span></a></span><span> </span><span class="annot"><span class="annottext">KnownNat 1 =&gt; SSize ('Size 1)
 forall (size :: Nat). KnownNat size =&gt; SSize ('Size size)
 </span><a href="Torch.GraduallyTyped.Shape.Type.html#SSize"><span class="hs-identifier hs-var">SSize</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-number">1</span></span><span>
-</span><span id="line-77"></span><span>
-</span><span id="line-78"></span><span>    </span><span id="local-6989586621679664534"><span class="annot"><span class="annottext">foldLoop :: b -&gt; Int -&gt; (b -&gt; Int -&gt; m b) -&gt; m b
-</span><a href="#local-6989586621679664534"><span class="hs-identifier hs-var hs-var">foldLoop</span></a></span></span><span> </span><span id="local-6989586621679664511"><span class="annot"><span class="annottext">b
-</span><a href="#local-6989586621679664511"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span id="local-6989586621679664510"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679664510"><span class="hs-identifier hs-var">count</span></a></span></span><span> </span><span id="local-6989586621679664509"><span class="annot"><span class="annottext">b -&gt; Int -&gt; m b
-</span><a href="#local-6989586621679664509"><span class="hs-identifier hs-var">block</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(b -&gt; Int -&gt; m b) -&gt; b -&gt; [Int] -&gt; m b
-forall (t :: * -&gt; *) (m :: * -&gt; *) b a.
-(Foldable t, Monad m) =&gt;
-(b -&gt; a -&gt; m b) -&gt; b -&gt; t a -&gt; m b
-</span><span class="hs-identifier hs-var">foldM</span></span><span> </span><span class="annot"><span class="annottext">b -&gt; Int -&gt; m b
-</span><a href="#local-6989586621679664509"><span class="hs-identifier hs-var">block</span></a></span><span> </span><span class="annot"><span class="annottext">b
-</span><a href="#local-6989586621679664511"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">1</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">..</span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679664510"><span class="hs-identifier hs-var">count</span></a></span><span class="hs-special">]</span><span>
-</span><span id="line-79"></span><span>
-</span><span id="line-80"></span><span>    </span><span id="local-6989586621679664545"><span class="annot"><span class="annottext">hasBias :: SHasBias 'WithBias
-</span><a href="#local-6989586621679664545"><span class="hs-identifier hs-var hs-var">hasBias</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SHasBias 'WithBias
-</span><a href="Torch.GraduallyTyped.NN.Type.html#SWithBias"><span class="hs-identifier hs-var">SWithBias</span></a></span><span>
-</span><span id="line-81"></span><span>    </span><span id="local-6989586621679664544"><span class="annot"><span class="annottext">gradient :: SGradient ('Gradient 'WithGradient)
-</span><a href="#local-6989586621679664544"><span class="hs-identifier hs-var hs-var">gradient</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithGradient
--&gt; SGradient ('Gradient 'WithGradient)
-forall (requiresGradient :: RequiresGradient).
-SRequiresGradient requiresGradient
--&gt; SGradient ('Gradient requiresGradient)
-</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-var">SGradient</span></a></span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithGradient
-</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SWithGradient"><span class="hs-identifier hs-var">SWithGradient</span></a></span><span>
-</span><span id="line-82"></span><span>    </span><span id="local-6989586621679664543"><span class="annot"><span class="annottext">device :: SDevice ('Device 'CPU)
-</span><a href="#local-6989586621679664543"><span class="hs-identifier hs-var hs-var">device</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SDeviceType 'CPU -&gt; SDevice ('Device 'CPU)
+</span><span id="line-69"></span><span>    </span><span id="local-6989586621679664309"><span class="annot"><span class="annottext">device :: SDevice ('Device 'CPU)
+</span><a href="#local-6989586621679664309"><span class="hs-identifier hs-var hs-var">device</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SDeviceType 'CPU -&gt; SDevice ('Device 'CPU)
 forall (deviceType :: DeviceType Nat).
 SDeviceType deviceType -&gt; SDevice ('Device deviceType)
 </span><a href="Torch.GraduallyTyped.Device.html#SDevice"><span class="hs-identifier hs-var">SDevice</span></a></span><span> </span><span class="annot"><span class="annottext">SDeviceType 'CPU
 </span><a href="Torch.GraduallyTyped.Device.html#SCPU"><span class="hs-identifier hs-var">SCPU</span></a></span><span>
-</span><span id="line-83"></span><span>    </span><span id="local-6989586621679664542"><span class="annot"><span class="annottext">dataType :: SDataType ('DataType 'Float)
-</span><a href="#local-6989586621679664542"><span class="hs-identifier hs-var hs-var">dataType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SDType 'Float -&gt; SDataType ('DataType 'Float)
+</span><span id="line-70"></span><span>    </span><span id="local-6989586621679664308"><span class="annot"><span class="annottext">dataType :: SDataType ('DataType 'Float)
+</span><a href="#local-6989586621679664308"><span class="hs-identifier hs-var hs-var">dataType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SDType 'Float -&gt; SDataType ('DataType 'Float)
 forall (dType :: DType).
 SDType dType -&gt; SDataType ('DataType dType)
 </span><a href="Torch.GraduallyTyped.DType.html#SDataType"><span class="hs-identifier hs-var">SDataType</span></a></span><span> </span><span class="annot"><span class="annottext">SDType 'Float
 </span><a href="Torch.GraduallyTyped.DType.html#SFloat"><span class="hs-identifier hs-var">SFloat</span></a></span><span>
-</span><span id="line-84"></span><span>    </span><span id="local-6989586621679664527"><span class="annot"><span class="annottext">tensorSpec :: TensorSpec
-  ('Gradient 'WithGradient)
+</span><span id="line-71"></span><span>    </span><span id="local-6989586621679664295"><span class="annot"><span class="annottext">randSpec :: TensorSpec
+  ('Gradient 'WithoutGradient)
   ('Layout 'Dense)
   ('Device 'CPU)
   ('DataType 'Float)
   ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 4), 'Dim ('Name &quot;*&quot;) ('Size 3)])
-</span><a href="#local-6989586621679664527"><span class="hs-identifier hs-var hs-var">tensorSpec</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithGradient)
+</span><a href="#local-6989586621679664295"><span class="hs-identifier hs-var hs-var">randSpec</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithoutGradient)
 -&gt; SLayout ('Layout 'Dense)
 -&gt; SDevice ('Device 'CPU)
 -&gt; SDataType ('DataType 'Float)
 -&gt; SShape
      ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 4), 'Dim ('Name &quot;*&quot;) ('Size 3)])
 -&gt; TensorSpec
-     ('Gradient 'WithGradient)
+     ('Gradient 'WithoutGradient)
      ('Layout 'Dense)
      ('Device 'CPU)
      ('DataType 'Float)
@@ -2025,14 +1906,19 @@ SGradient gradient
 -&gt; SDataType dataType
 -&gt; SShape shape
 -&gt; TensorSpec gradient layout device dataType shape
-</span><a href="Torch.GraduallyTyped.Tensor.Type.html#TensorSpec"><span class="hs-identifier hs-var">TensorSpec</span></a></span><span> </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithGradient)
-</span><a href="#local-6989586621679664544"><span class="hs-identifier hs-var">gradient</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SLayoutType 'Dense -&gt; SLayout ('Layout 'Dense)
+</span><a href="Torch.GraduallyTyped.Tensor.Type.html#TensorSpec"><span class="hs-identifier hs-var">TensorSpec</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
+-&gt; SGradient ('Gradient 'WithoutGradient)
+forall (requiresGradient :: RequiresGradient).
+SRequiresGradient requiresGradient
+-&gt; SGradient ('Gradient requiresGradient)
+</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-var">SGradient</span></a></span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
+</span><a href="Torch.GraduallyTyped.RequiresGradient.html#SWithoutGradient"><span class="hs-identifier hs-var">SWithoutGradient</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SLayoutType 'Dense -&gt; SLayout ('Layout 'Dense)
 forall (layoutType :: LayoutType).
 SLayoutType layoutType -&gt; SLayout ('Layout layoutType)
 </span><a href="Torch.GraduallyTyped.Layout.html#SLayout"><span class="hs-identifier hs-var">SLayout</span></a></span><span> </span><span class="annot"><span class="annottext">SLayoutType 'Dense
 </span><a href="Torch.GraduallyTyped.Layout.html#SDense"><span class="hs-identifier hs-var">SDense</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">SDevice ('Device 'CPU)
-</span><a href="#local-6989586621679664543"><span class="hs-identifier hs-var">device</span></a></span><span> </span><span class="annot"><span class="annottext">SDataType ('DataType 'Float)
-</span><a href="#local-6989586621679664542"><span class="hs-identifier hs-var">dataType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SList '[ 'Dim ('Name &quot;*&quot;) ('Size 4), 'Dim ('Name &quot;*&quot;) ('Size 3)]
+</span><a href="#local-6989586621679664309"><span class="hs-identifier hs-var">device</span></a></span><span> </span><span class="annot"><span class="annottext">SDataType ('DataType 'Float)
+</span><a href="#local-6989586621679664308"><span class="hs-identifier hs-var">dataType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SList '[ 'Dim ('Name &quot;*&quot;) ('Size 4), 'Dim ('Name &quot;*&quot;) ('Size 3)]
 -&gt; SShape
      ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 4), 'Dim ('Name &quot;*&quot;) ('Size 3)])
 forall (dims :: [Dim (Name Symbol) (Size Nat)]).
@@ -2047,18 +1933,17 @@ SList dims -&gt; SShape ('Shape dims)
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Sing ('Dim ('Name &quot;*&quot;) ('Size 4))
 SDim ('Dim ('Name &quot;*&quot;) ('Size 4))
-</span><a href="#local-6989586621679664512"><span class="hs-identifier hs-var">batchDim</span></a></span><span> </span><span class="annot"><span class="annottext">Sing ('Dim ('Name &quot;*&quot;) ('Size 4))
+</span><a href="#local-6989586621679664280"><span class="hs-identifier hs-var">batchDim</span></a></span><span> </span><span class="annot"><span class="annottext">Sing ('Dim ('Name &quot;*&quot;) ('Size 4))
 -&gt; SList '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]
 -&gt; SList '[ 'Dim ('Name &quot;*&quot;) ('Size 4), 'Dim ('Name &quot;*&quot;) ('Size 3)]
 forall a1 (a2 :: a1) (as :: [a1]).
 Sing a2 -&gt; SList as -&gt; SList (a2 : as)
 </span><a href="Torch.GraduallyTyped.Prelude.html#%3A%7C%3A"><span class="hs-operator hs-var">:|:</span></a></span><span> </span><span class="annot"><span class="annottext">Sing ('Dim ('Name &quot;*&quot;) ('Size 3))
 SDim ('Dim ('Name &quot;*&quot;) ('Size 3))
-</span><a href="#local-6989586621679664541"><span class="hs-identifier hs-var">inputDim</span></a></span><span> </span><span class="annot"><span class="annottext">Sing ('Dim ('Name &quot;*&quot;) ('Size 3))
+</span><a href="#local-6989586621679664307"><span class="hs-identifier hs-var">inputDim</span></a></span><span> </span><span class="annot"><span class="annottext">Sing ('Dim ('Name &quot;*&quot;) ('Size 3))
 -&gt; SList '[] -&gt; SList '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]
 forall a1 (a2 :: a1) (as :: [a1]).
 Sing a2 -&gt; SList as -&gt; SList (a2 : as)
 </span><a href="Torch.GraduallyTyped.Prelude.html#%3A%7C%3A"><span class="hs-operator hs-var">:|:</span></a></span><span> </span><span class="annot"><span class="annottext">SList '[]
 forall a. SList '[]
-</span><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier hs-var">SNil</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-85"></span></pre></body></html>
+</span><a href="../file:///nix/store/lnxln0gj8camy4zp976hwp5qw721jzi5-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier hs-var">SNil</span></a></span><span class="hs-special">)</span></pre></body></html>
