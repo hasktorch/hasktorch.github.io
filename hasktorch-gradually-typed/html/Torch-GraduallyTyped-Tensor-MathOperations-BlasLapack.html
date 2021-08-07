@@ -7,23 +7,26 @@
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>result = tensor1 `matmul` tensor2
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>:type result
 </code></strong>result
-  :: Tensor
-       ('Gradient 'WithGradient)
-       ('Layout 'Dense)
-       ('Device 'CPU)
-       ('DataType 'Float)
-       ('Shape '[])
+  :: MonadThrow m =&gt;
+     m (Tensor
+          ('Gradient 'WithGradient)
+          ('Layout 'Dense)
+          ('Device 'CPU)
+          ('DataType 'Float)
+          ('Shape '[]))
 </pre></li><li><p>If both arguments are 2-dimensional, the matrix-matrix product is returned:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>(tensor1, g') &lt;- sRandn' (SShape $ SName @&quot;*&quot; :&amp;: SSize @3 :|: SName @&quot;*&quot; :&amp;: SSize @4 :|: SNil) g
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>(tensor2, g'') &lt;- sRandn' (SShape $ SName @&quot;*&quot; :&amp;: SSize @4 :|: SName @&quot;*&quot; :&amp;: SSize @7 :|: SNil) g'
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>result = tensor1 `matmul` tensor2
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>:type result
 </code></strong>result
-  :: Tensor
-       ('Gradient 'WithGradient)
-       ('Layout 'Dense)
-       ('Device 'CPU)
-       ('DataType 'Float)
-       ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3), 'Dim ('Name &quot;*&quot;) ('Size 7)])
+  :: MonadThrow m =&gt;
+     m (Tensor
+          ('Gradient 'WithGradient)
+          ('Layout 'Dense)
+          ('Device 'CPU)
+          ('DataType 'Float)
+          ('Shape
+             '[ 'Dim ('Name &quot;*&quot;) ('Size 3), 'Dim ('Name &quot;*&quot;) ('Size 7)]))
 </pre></li><li><p>If the first argument is 1-dimensional and the second argument is 2-dimensional,
      a 1 is prepended to its dimension for the purpose of the matrix multiply.
      After the matrix multiply, the prepended dimension is removed:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>(tensor1, g') &lt;- sRandn' (SShape $ SName @&quot;*&quot; :&amp;: SSize @4 :|: SNil) g
@@ -31,64 +34,69 @@
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>result = tensor1 `matmul` tensor2
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>:type result
 </code></strong>result
-  :: Tensor
-       ('Gradient 'WithGradient)
-       ('Layout 'Dense)
-       ('Device 'CPU)
-       ('DataType 'Float)
-       ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 7)])
+  :: MonadThrow m =&gt;
+     m (Tensor
+          ('Gradient 'WithGradient)
+          ('Layout 'Dense)
+          ('Device 'CPU)
+          ('DataType 'Float)
+          ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 7)]))
 </pre></li><li><p>If the first argument is 2-dimensional and the second argument is 1-dimensional,
      the matrix-vector product is returned:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>(tensor1, g') &lt;- sRandn' (SShape $ SName @&quot;*&quot; :&amp;: SSize @3 :|: SName @&quot;*&quot; :&amp;: SSize @4 :|: SNil) g
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>(tensor2, g'') &lt;- sRandn' (SShape $ SName @&quot;*&quot; :&amp;: SSize @4 :|: SNil) g'
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>result = tensor1 `matmul` tensor2
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>:type result
 </code></strong>result
-  :: Tensor
-       ('Gradient 'WithGradient)
-       ('Layout 'Dense)
-       ('Device 'CPU)
-       ('DataType 'Float)
-       ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)])
+  :: MonadThrow m =&gt;
+     m (Tensor
+          ('Gradient 'WithGradient)
+          ('Layout 'Dense)
+          ('Device 'CPU)
+          ('DataType 'Float)
+          ('Shape '[ 'Dim ('Name &quot;*&quot;) ('Size 3)]))
 </pre></li><li>If both arguments are at least 1-dimensional and at least one argument is <span class="mathjax">\(n\)</span>-dimensional (where <span class="mathjax">\(n &gt; 2\)</span>),
      then a batched matrix multiply is returned.</li></ol><p>The following is an example of a batched matrix multiplication:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>(tensor1, g') &lt;- sRandn' (SShape $ SName @&quot;batch&quot; :&amp;: SSize @10 :|: SName @&quot;*&quot; :&amp;: SSize @3 :|: SName @&quot;*&quot; :&amp;: SSize @4 :|: SNil) g
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>(tensor2, g'') &lt;- sRandn' (SShape $ SName @&quot;batch&quot; :&amp;: SSize @10 :|: SName @&quot;*&quot; :&amp;: SSize @4 :|: SName @&quot;*&quot; :&amp;: SSize @7 :|: SNil) g'
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>result = tensor1 `matmul` tensor2
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>:type result
 </code></strong>result
-  :: Tensor
-       ('Gradient 'WithGradient)
-       ('Layout 'Dense)
-       ('Device 'CPU)
-       ('DataType 'Float)
-       ('Shape
-          '[ 'Dim ('Name &quot;batch&quot;) ('Size 10), 'Dim ('Name &quot;*&quot;) ('Size 3),
-             'Dim ('Name &quot;*&quot;) ('Size 7)])
+  :: MonadThrow m =&gt;
+     m (Tensor
+          ('Gradient 'WithGradient)
+          ('Layout 'Dense)
+          ('Device 'CPU)
+          ('DataType 'Float)
+          ('Shape
+             '[ 'Dim ('Name &quot;batch&quot;) ('Size 10), 'Dim ('Name &quot;*&quot;) ('Size 3),
+                'Dim ('Name &quot;*&quot;) ('Size 7)]))
 </pre><p>If the first argument is 1-dimensional,
      a 1 is prepended to its dimension for the purpose of the batched matrix multiply and removed after:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>(tensor1, g') &lt;- sRandn' (SShape $ SName @&quot;*&quot; :&amp;: SSize @4 :|: SNil) g
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>(tensor2, g'') &lt;- sRandn' (SShape $ SName @&quot;batch&quot; :&amp;: SSize @10 :|: SName @&quot;*&quot; :&amp;: SSize @4 :|: SName @&quot;*&quot; :&amp;: SSize @7 :|: SNil) g'
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>result = tensor1 `matmul` tensor2
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>:type result
 </code></strong>result
-  :: Tensor
-       ('Gradient 'WithGradient)
-       ('Layout 'Dense)
-       ('Device 'CPU)
-       ('DataType 'Float)
-       ('Shape
-          '[ 'Dim ('Name &quot;batch&quot;) ('Size 10), 'Dim ('Name &quot;*&quot;) ('Size 7)])
+  :: MonadThrow m =&gt;
+     m (Tensor
+          ('Gradient 'WithGradient)
+          ('Layout 'Dense)
+          ('Device 'CPU)
+          ('DataType 'Float)
+          ('Shape
+             '[ 'Dim ('Name &quot;batch&quot;) ('Size 10), 'Dim ('Name &quot;*&quot;) ('Size 7)]))
 </pre><p>If the second argument is 1-dimensional,
      a 1 is appended to its dimension for the purpose of the batched matrix multiply and removed after:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>(tensor1, g') &lt;- sRandn' (SShape $ SName @&quot;batch&quot; :&amp;: SSize @10 :|: SName @&quot;*&quot; :&amp;: SSize @3 :|: SName @&quot;*&quot; :&amp;: SSize @4 :|: SNil) g
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>(tensor2, g'') &lt;- sRandn' (SShape $ SName @&quot;*&quot; :&amp;: SSize @4 :|: SNil) g'
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>result = tensor1 `matmul` tensor2
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>:type result
 </code></strong>result
-  :: Tensor
-       ('Gradient 'WithGradient)
-       ('Layout 'Dense)
-       ('Device 'CPU)
-       ('DataType 'Float)
-       ('Shape
-          '[ 'Dim ('Name &quot;batch&quot;) ('Size 10), 'Dim ('Name &quot;*&quot;) ('Size 3)])
+  :: MonadThrow m =&gt;
+     m (Tensor
+          ('Gradient 'WithGradient)
+          ('Layout 'Dense)
+          ('Device 'CPU)
+          ('DataType 'Float)
+          ('Shape
+             '[ 'Dim ('Name &quot;batch&quot;) ('Size 10), 'Dim ('Name &quot;*&quot;) ('Size 3)]))
 </pre><p>The non-matrix (i.e. batch) dimensions are broadcasted (and thus must be broadcastable).
      For example, if <code>input</code> is a <span class="mathjax">\(j \times 1 \times n \times m\)</span> tensor and
      <code>other</code> is a <span class="mathjax">\(k \times m \times p\)</span> tensor, <code>output</code> will be a <span class="mathjax">\(j \times k \times n \times p\)</span> tensor:</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>(tensor1, g') &lt;- sRandn' (SShape $ SName @&quot;batch&quot; :&amp;: SSize @10 :|: SName @&quot;*&quot; :&amp;: SSize @1 :|: SName @&quot;*&quot; :&amp;: SSize @3 :|: SName @&quot;*&quot; :&amp;: SSize @4 :|: SNil) g
@@ -96,12 +104,13 @@
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>result = tensor1 `matmul` tensor2
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>:type result
 </code></strong>result
-  :: Tensor
-       ('Gradient 'WithGradient)
-       ('Layout 'Dense)
-       ('Device 'CPU)
-       ('DataType 'Float)
-       ('Shape
-          '[ 'Dim ('Name &quot;batch&quot;) ('Size 10), 'Dim ('Name &quot;*&quot;) ('Size 5),
-             'Dim ('Name &quot;*&quot;) ('Size 3), 'Dim ('Name &quot;*&quot;) ('Size 7)])
+  :: MonadThrow m =&gt;
+     m (Tensor
+          ('Gradient 'WithGradient)
+          ('Layout 'Dense)
+          ('Device 'CPU)
+          ('DataType 'Float)
+          ('Shape
+             '[ 'Dim ('Name &quot;batch&quot;) ('Size 10), 'Dim ('Name &quot;*&quot;) ('Size 5),
+                'Dim ('Name &quot;*&quot;) ('Size 3), 'Dim ('Name &quot;*&quot;) ('Size 7)]))
 </pre></div></div></div></div><div id="footer"><p>Produced by <a href="http://www.haskell.org/haddock/">Haddock</a> version 2.24.0</p></div></body></html>

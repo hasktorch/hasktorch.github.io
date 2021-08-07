@@ -134,10 +134,13 @@ isString :: (Traversable t, MonadPlus b, Eq i) => t i -> Parser b i (t i)
 string :: MonadPlus b => Parser b i [i]
 intP :: (CharParsing m, Monad m) => m Int
 doubleP :: (CharParsing m, Monad m) => m Double
-instance (GHC.Base.Applicative f, Control.Monad.Logic.Class.MonadLogic b) => Control.Monad.Logic.Class.MonadLogic (Control.Monad.Trans.Free.FreeT f b)
+instance (GHC.Base.Applicative f, Control.Monad.Logic.Class.MonadLogic b, GHC.Base.MonadPlus b) => Control.Monad.Logic.Class.MonadLogic (Control.Monad.Trans.Free.FreeT f b)
 instance (GHC.Base.Alternative b, Data.Foldable.Foldable b, GHC.Base.MonadPlus b) => Text.Parser.Combinators.Parsing (Control.Monad.Trans.Free.FreeT ((->) i) (Control.Monad.Trans.State.Lazy.StateT [i] b))
 instance (GHC.Base.Alternative b, Data.Foldable.Foldable b, GHC.Base.MonadPlus b) => Text.Parser.Char.CharParsing (Control.Monad.Trans.Free.FreeT ((->) GHC.Types.Char) (Control.Monad.Trans.State.Lazy.StateT [GHC.Types.Char] b))
 instance (GHC.Base.Alternative b, Data.Foldable.Foldable b, GHC.Base.MonadPlus b) => Text.Parser.Token.TokenParsing (Control.Monad.Trans.Free.FreeT ((->) GHC.Types.Char) (Control.Monad.Trans.State.Lazy.StateT [GHC.Types.Char] b))
+
+module Torch.GraduallyTyped.Internal.Vector
+uncons :: Vector a -> Maybe (a, Vector a)
 
 module Torch.GraduallyTyped.Internal.Void
 data Void
@@ -158,7 +161,7 @@ WithBias :: HasBias
 WithoutBias :: HasBias
 type WithBiasSym0 = 'WithBias :: HasBias
 type WithoutBiasSym0 = 'WithoutBias :: HasBias
-data SHasBias z_ay0M
+data SHasBias z_ay1D
 [SWithBias] :: SHasBias ('WithBias :: HasBias)
 [SWithoutBias] :: SHasBias ('WithoutBias :: HasBias)
 data HasDropout
@@ -166,7 +169,7 @@ WithDropout :: HasDropout
 WithoutDropout :: HasDropout
 type WithDropoutSym0 = 'WithDropout :: HasDropout
 type WithoutDropoutSym0 = 'WithoutDropout :: HasDropout
-data SHasDropout z_ay8h
+data SHasDropout z_ay98
 [SWithDropout] :: SHasDropout ('WithDropout :: HasDropout)
 [SWithoutDropout] :: SHasDropout ('WithoutDropout :: HasDropout)
 instance Data.Singletons.Internal.SingKind Torch.GraduallyTyped.NN.Type.HasDropout
@@ -384,7 +387,7 @@ Dense :: LayoutType
 Sparse :: LayoutType
 type DenseSym0 = 'Dense :: LayoutType
 type SparseSym0 = 'Sparse :: LayoutType
-data SLayoutType z_aBV1
+data SLayoutType z_aBVR
 [SDense] :: SLayoutType ('Dense :: LayoutType)
 [SSparse] :: SLayoutType ('Sparse :: LayoutType)
 class KnownLayoutType (layoutType :: LayoutType)
@@ -553,7 +556,7 @@ type QInt8Sym0 = 'QInt8 :: DType
 type QUInt8Sym0 = 'QUInt8 :: DType
 type QInt32Sym0 = 'QInt32 :: DType
 type BFloat16Sym0 = 'BFloat16 :: DType
-data SDType z_aFFx
+data SDType z_aFGn
 [SBool] :: SDType ('Bool :: DType)
 [SUInt8] :: SDType ('UInt8 :: DType)
 [SInt8] :: SDType ('Int8 :: DType)
@@ -639,7 +642,7 @@ WithGradient :: RequiresGradient
 WithoutGradient :: RequiresGradient
 type WithGradientSym0 = 'WithGradient :: RequiresGradient
 type WithoutGradientSym0 = 'WithoutGradient :: RequiresGradient
-data SRequiresGradient z_aId3
+data SRequiresGradient z_aIdT
 [SWithGradient] :: SRequiresGradient ('WithGradient :: RequiresGradient)
 [SWithoutGradient] :: SRequiresGradient ('WithoutGradient :: RequiresGradient)
 class KnownRequiresGradient (requiresGradient :: RequiresGradient)
@@ -2057,34 +2060,37 @@ class HasCat (selectDim :: SelectDim (By Symbol Nat)) k (c :: k -> Type) (a :: k
 --   
 --   &gt;&gt;&gt; :type cat @('SelectDim ('ByName "feature")) [t]
 --   cat @('SelectDim ('ByName "feature")) [t]
---     :: Tensor
---          ('Gradient 'WithGradient)
---          ('Layout 'Dense)
---          ('Device 'CPU)
---          ('DataType 'Float)
---          ('Shape
---             '[ 'Dim ('Name "batch") ('Size 32),
---                'Dim 'UncheckedName 'UncheckedSize])
+--     :: MonadThrow m =&gt;
+--        m (Tensor
+--             ('Gradient 'WithGradient)
+--             ('Layout 'Dense)
+--             ('Device 'CPU)
+--             ('DataType 'Float)
+--             ('Shape
+--                '[ 'Dim ('Name "batch") ('Size 32),
+--                   'Dim 'UncheckedName 'UncheckedSize]))
 --   
 --   &gt;&gt;&gt; :type cat @('SelectDim ( 'ByIndex 0)) [t]
 --   cat @('SelectDim ( 'ByIndex 0)) [t]
---     :: Tensor
---          ('Gradient 'WithGradient)
---          ('Layout 'Dense)
---          ('Device 'CPU)
---          ('DataType 'Float)
---          ('Shape
---             '[ 'Dim 'UncheckedName 'UncheckedSize,
---                'Dim ('Name "feature") ('Size 8)])
+--     :: MonadThrow m =&gt;
+--        m (Tensor
+--             ('Gradient 'WithGradient)
+--             ('Layout 'Dense)
+--             ('Device 'CPU)
+--             ('DataType 'Float)
+--             ('Shape
+--                '[ 'Dim 'UncheckedName 'UncheckedSize,
+--                   'Dim ('Name "feature") ('Size 8)]))
 --   
 --   &gt;&gt;&gt; :type sCat (SUncheckedSelectDim (ByIndex 0)) [t]
 --   sCat (SUncheckedSelectDim (ByIndex 0)) [t]
---     :: Tensor
---          ('Gradient 'WithGradient)
---          ('Layout 'Dense)
---          ('Device 'CPU)
---          ('DataType 'Float)
---          'UncheckedShape
+--     :: MonadThrow m =&gt;
+--        m (Tensor
+--             ('Gradient 'WithGradient)
+--             ('Layout 'Dense)
+--             ('Device 'CPU)
+--             ('DataType 'Float)
+--             'UncheckedShape)
 --   </pre>
 sCat :: forall m. (HasCat selectDim k c a, MonadThrow m) => SSelectDim selectDim -> c a -> m (CatF selectDim a c)
 cat :: forall m. (HasCat selectDim k c a, SingI selectDim, MonadThrow m) => c a -> m (CatF selectDim a c)
@@ -2336,19 +2342,19 @@ SliceFromUpTo :: a -> a -> IndexType a
 SliceFromWithStep :: a -> a -> IndexType a
 SliceUpToWithStep :: a -> a -> IndexType a
 SliceFromUpToWithStep :: a -> a -> a -> IndexType a
-data SIndexType z_a1hS5
-[SNewAxis] :: forall (a_a1hz1 :: Type). () => SIndexType ('NewAxis :: IndexType (a_a1hz1 :: Type))
-[SEllipsis] :: forall (a_a1hz1 :: Type). () => SIndexType ('Ellipsis :: IndexType (a_a1hz1 :: Type))
-[SSliceAll] :: forall (a_a1hz1 :: Type). () => SIndexType ('SliceAll :: IndexType (a_a1hz1 :: Type))
-[SSliceAt] :: forall (a_a1hz1 :: Type) (n_a1hQV :: a_a1hz1). () => Sing n_a1hQV -> SIndexType ('SliceAt n_a1hQV :: IndexType (a_a1hz1 :: Type))
-[SSliceBool] :: forall (a_a1hz1 :: Type) (n_a1hQX :: Bool). () => Sing n_a1hQX -> SIndexType ('SliceBool n_a1hQX :: IndexType (a_a1hz1 :: Type))
-[SSliceFrom] :: forall (a_a1hz1 :: Type) (n_a1hQZ :: a_a1hz1). () => Sing n_a1hQZ -> SIndexType ('SliceFrom n_a1hQZ :: IndexType (a_a1hz1 :: Type))
-[SSliceUpTo] :: forall (a_a1hz1 :: Type) (n_a1hR1 :: a_a1hz1). () => Sing n_a1hR1 -> SIndexType ('SliceUpTo n_a1hR1 :: IndexType (a_a1hz1 :: Type))
-[SSliceWithStep] :: forall (a_a1hz1 :: Type) (n_a1hR3 :: a_a1hz1). () => Sing n_a1hR3 -> SIndexType ('SliceWithStep n_a1hR3 :: IndexType (a_a1hz1 :: Type))
-[SSliceFromUpTo] :: forall (a_a1hz1 :: Type) (n_a1hR5 :: a_a1hz1) (n_a1hR6 :: a_a1hz1). () => Sing n_a1hR5 -> Sing n_a1hR6 -> SIndexType ('SliceFromUpTo n_a1hR5 n_a1hR6 :: IndexType (a_a1hz1 :: Type))
-[SSliceFromWithStep] :: forall (a_a1hz1 :: Type) (n_a1hR9 :: a_a1hz1) (n_a1hRa :: a_a1hz1). () => Sing n_a1hR9 -> Sing n_a1hRa -> SIndexType ('SliceFromWithStep n_a1hR9 n_a1hRa :: IndexType (a_a1hz1 :: Type))
-[SSliceUpToWithStep] :: forall (a_a1hz1 :: Type) (n_a1hRd :: a_a1hz1) (n_a1hRe :: a_a1hz1). () => Sing n_a1hRd -> Sing n_a1hRe -> SIndexType ('SliceUpToWithStep n_a1hRd n_a1hRe :: IndexType (a_a1hz1 :: Type))
-[SSliceFromUpToWithStep] :: forall (a_a1hz1 :: Type) (n_a1hRh :: a_a1hz1) (n_a1hRi :: a_a1hz1) (n_a1hRj :: a_a1hz1). () => Sing n_a1hRh -> Sing n_a1hRi -> Sing n_a1hRj -> SIndexType ('SliceFromUpToWithStep n_a1hRh n_a1hRi n_a1hRj :: IndexType (a_a1hz1 :: Type))
+data SIndexType z_a1hSU
+[SNewAxis] :: forall (a_a1hzQ :: Type). () => SIndexType ('NewAxis :: IndexType (a_a1hzQ :: Type))
+[SEllipsis] :: forall (a_a1hzQ :: Type). () => SIndexType ('Ellipsis :: IndexType (a_a1hzQ :: Type))
+[SSliceAll] :: forall (a_a1hzQ :: Type). () => SIndexType ('SliceAll :: IndexType (a_a1hzQ :: Type))
+[SSliceAt] :: forall (a_a1hzQ :: Type) (n_a1hRK :: a_a1hzQ). () => Sing n_a1hRK -> SIndexType ('SliceAt n_a1hRK :: IndexType (a_a1hzQ :: Type))
+[SSliceBool] :: forall (a_a1hzQ :: Type) (n_a1hRM :: Bool). () => Sing n_a1hRM -> SIndexType ('SliceBool n_a1hRM :: IndexType (a_a1hzQ :: Type))
+[SSliceFrom] :: forall (a_a1hzQ :: Type) (n_a1hRO :: a_a1hzQ). () => Sing n_a1hRO -> SIndexType ('SliceFrom n_a1hRO :: IndexType (a_a1hzQ :: Type))
+[SSliceUpTo] :: forall (a_a1hzQ :: Type) (n_a1hRQ :: a_a1hzQ). () => Sing n_a1hRQ -> SIndexType ('SliceUpTo n_a1hRQ :: IndexType (a_a1hzQ :: Type))
+[SSliceWithStep] :: forall (a_a1hzQ :: Type) (n_a1hRS :: a_a1hzQ). () => Sing n_a1hRS -> SIndexType ('SliceWithStep n_a1hRS :: IndexType (a_a1hzQ :: Type))
+[SSliceFromUpTo] :: forall (a_a1hzQ :: Type) (n_a1hRU :: a_a1hzQ) (n_a1hRV :: a_a1hzQ). () => Sing n_a1hRU -> Sing n_a1hRV -> SIndexType ('SliceFromUpTo n_a1hRU n_a1hRV :: IndexType (a_a1hzQ :: Type))
+[SSliceFromWithStep] :: forall (a_a1hzQ :: Type) (n_a1hRY :: a_a1hzQ) (n_a1hRZ :: a_a1hzQ). () => Sing n_a1hRY -> Sing n_a1hRZ -> SIndexType ('SliceFromWithStep n_a1hRY n_a1hRZ :: IndexType (a_a1hzQ :: Type))
+[SSliceUpToWithStep] :: forall (a_a1hzQ :: Type) (n_a1hS2 :: a_a1hzQ) (n_a1hS3 :: a_a1hzQ). () => Sing n_a1hS2 -> Sing n_a1hS3 -> SIndexType ('SliceUpToWithStep n_a1hS2 n_a1hS3 :: IndexType (a_a1hzQ :: Type))
+[SSliceFromUpToWithStep] :: forall (a_a1hzQ :: Type) (n_a1hS6 :: a_a1hzQ) (n_a1hS7 :: a_a1hzQ) (n_a1hS8 :: a_a1hzQ). () => Sing n_a1hS6 -> Sing n_a1hS7 -> Sing n_a1hS8 -> SIndexType ('SliceFromUpToWithStep n_a1hS6 n_a1hS7 n_a1hS8 :: IndexType (a_a1hzQ :: Type))
 data Indices (indexTypes :: Type)
 [UncheckedIndices] :: forall indexTypes. Indices indexTypes
 [Indices] :: forall indexTypes. indexTypes -> Indices indexTypes
@@ -2391,14 +2397,14 @@ instance Data.Singletons.Internal.SingI Torch.GraduallyTyped.Tensor.Indexing.Sli
 instance forall a (d :: a). Data.Singletons.Internal.SingI d => Data.Singletons.Internal.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym1 d)
 instance forall a (d1 :: a) (d2 :: a). (Data.Singletons.Internal.SingI d1, Data.Singletons.Internal.SingI d2) => Data.Singletons.Internal.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym2 d1 d2)
 instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym0
-instance forall a (a6989586621679316746 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym1 a6989586621679316746)
-instance forall a (a6989586621679316746 :: a) (a6989586621679316747 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym2 a6989586621679316746 a6989586621679316747)
+instance forall a (a6989586621679316797 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym1 a6989586621679316797)
+instance forall a (a6989586621679316797 :: a) (a6989586621679316798 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym2 a6989586621679316797 a6989586621679316798)
 instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStepSym0
-instance forall a (a6989586621679316743 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStepSym1 a6989586621679316743)
+instance forall a (a6989586621679316794 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStepSym1 a6989586621679316794)
 instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStepSym0
-instance forall a (a6989586621679316740 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStepSym1 a6989586621679316740)
+instance forall a (a6989586621679316791 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStepSym1 a6989586621679316791)
 instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym0
-instance forall a (a6989586621679316737 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym1 a6989586621679316737)
+instance forall a (a6989586621679316788 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym1 a6989586621679316788)
 instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceWithStepSym0
 instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceUpToSym0
 instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromSym0
@@ -3032,17 +3038,18 @@ type family MatmulF (shape :: Shape [Dim (Name Symbol) (Size Nat)]) (shape' :: S
 --   @"*" :&amp;: SSize @3 :|: SNil) g &gt;&gt;&gt; (tensor2, g'') &lt;-
 --   sRandn' (SShape $ SName @"*" :&amp;: SSize @3 :|: SNil) g'
 --   &gt;&gt;&gt; result = tensor1 `matmul` tensor2 &gt;&gt;&gt; :type
---   result result :: Tensor ('Gradient 'WithGradient) ('Layout 'Dense)
---   ('Device 'CPU) ('DataType 'Float) ('Shape '[]) </pre></li>
+--   result result :: MonadThrow m =&gt; m (Tensor ('Gradient
+--   'WithGradient) ('Layout 'Dense) ('Device 'CPU) ('DataType 'Float)
+--   ('Shape '[])) </pre></li>
 --   <li>If both arguments are 2-dimensional, the matrix-matrix product is
 --   returned:<pre>&gt;&gt;&gt; (tensor1, g') &lt;- sRandn' (SShape $ SName
 --   @"*" :&amp;: SSize @3 :|: SName @"*" :&amp;: SSize @4 :|: SNil) g
 --   &gt;&gt;&gt; (tensor2, g'') &lt;- sRandn' (SShape $ SName @"*" :&amp;:
 --   SSize @4 :|: SName @"*" :&amp;: SSize @7 :|: SNil) g' &gt;&gt;&gt;
 --   result = tensor1 `matmul` tensor2 &gt;&gt;&gt; :type result result ::
---   Tensor ('Gradient 'WithGradient) ('Layout 'Dense) ('Device 'CPU)
---   ('DataType 'Float) ('Shape '[ 'Dim ('Name "*") ('Size 3), 'Dim ('Name
---   "*") ('Size 7)]) </pre></li>
+--   MonadThrow m =&gt; m (Tensor ('Gradient 'WithGradient) ('Layout
+--   'Dense) ('Device 'CPU) ('DataType 'Float) ('Shape '[ 'Dim ('Name "*")
+--   ('Size 3), 'Dim ('Name "*") ('Size 7)])) </pre></li>
 --   <li>If the first argument is 1-dimensional and the second argument is
 --   2-dimensional, a 1 is prepended to its dimension for the purpose of
 --   the matrix multiply. After the matrix multiply, the prepended
@@ -3050,18 +3057,19 @@ type family MatmulF (shape :: Shape [Dim (Name Symbol) (Size Nat)]) (shape' :: S
 --   (SShape $ SName @"*" :&amp;: SSize @4 :|: SNil) g &gt;&gt;&gt;
 --   (tensor2, g'') &lt;- sRandn' (SShape $ SName @"*" :&amp;: SSize @4 :|:
 --   SName @"*" :&amp;: SSize @7 :|: SNil) g' &gt;&gt;&gt; result = tensor1
---   `matmul` tensor2 &gt;&gt;&gt; :type result result :: Tensor ('Gradient
---   'WithGradient) ('Layout 'Dense) ('Device 'CPU) ('DataType 'Float)
---   ('Shape '[ 'Dim ('Name "*") ('Size 7)]) </pre></li>
+--   `matmul` tensor2 &gt;&gt;&gt; :type result result :: MonadThrow m
+--   =&gt; m (Tensor ('Gradient 'WithGradient) ('Layout 'Dense) ('Device
+--   'CPU) ('DataType 'Float) ('Shape '[ 'Dim ('Name "*") ('Size 7)]))
+--   </pre></li>
 --   <li>If the first argument is 2-dimensional and the second argument is
 --   1-dimensional, the matrix-vector product is returned:<pre>&gt;&gt;&gt;
 --   (tensor1, g') &lt;- sRandn' (SShape $ SName @"*" :&amp;: SSize @3 :|:
 --   SName @"*" :&amp;: SSize @4 :|: SNil) g &gt;&gt;&gt; (tensor2, g'')
 --   &lt;- sRandn' (SShape $ SName @"*" :&amp;: SSize @4 :|: SNil) g'
 --   &gt;&gt;&gt; result = tensor1 `matmul` tensor2 &gt;&gt;&gt; :type
---   result result :: Tensor ('Gradient 'WithGradient) ('Layout 'Dense)
---   ('Device 'CPU) ('DataType 'Float) ('Shape '[ 'Dim ('Name "*") ('Size
---   3)]) </pre></li>
+--   result result :: MonadThrow m =&gt; m (Tensor ('Gradient
+--   'WithGradient) ('Layout 'Dense) ('Device 'CPU) ('DataType 'Float)
+--   ('Shape '[ 'Dim ('Name "*") ('Size 3)])) </pre></li>
 --   <li>If both arguments are at least 1-dimensional and at least one
 --   argument is &lt;math&gt;-dimensional (where &lt;math&gt;), then a
 --   batched matrix multiply is returned.</li>
@@ -3078,14 +3086,15 @@ type family MatmulF (shape :: Shape [Dim (Name Symbol) (Size Nat)]) (shape' :: S
 --   
 --   &gt;&gt;&gt; :type result
 --   result
---     :: Tensor
---          ('Gradient 'WithGradient)
---          ('Layout 'Dense)
---          ('Device 'CPU)
---          ('DataType 'Float)
---          ('Shape
---             '[ 'Dim ('Name "batch") ('Size 10), 'Dim ('Name "*") ('Size 3),
---                'Dim ('Name "*") ('Size 7)])
+--     :: MonadThrow m =&gt;
+--        m (Tensor
+--             ('Gradient 'WithGradient)
+--             ('Layout 'Dense)
+--             ('Device 'CPU)
+--             ('DataType 'Float)
+--             ('Shape
+--                '[ 'Dim ('Name "batch") ('Size 10), 'Dim ('Name "*") ('Size 3),
+--                   'Dim ('Name "*") ('Size 7)]))
 --   </pre>
 --   
 --   If the first argument is 1-dimensional, a 1 is prepended to its
@@ -3101,13 +3110,14 @@ type family MatmulF (shape :: Shape [Dim (Name Symbol) (Size Nat)]) (shape' :: S
 --   
 --   &gt;&gt;&gt; :type result
 --   result
---     :: Tensor
---          ('Gradient 'WithGradient)
---          ('Layout 'Dense)
---          ('Device 'CPU)
---          ('DataType 'Float)
---          ('Shape
---             '[ 'Dim ('Name "batch") ('Size 10), 'Dim ('Name "*") ('Size 7)])
+--     :: MonadThrow m =&gt;
+--        m (Tensor
+--             ('Gradient 'WithGradient)
+--             ('Layout 'Dense)
+--             ('Device 'CPU)
+--             ('DataType 'Float)
+--             ('Shape
+--                '[ 'Dim ('Name "batch") ('Size 10), 'Dim ('Name "*") ('Size 7)]))
 --   </pre>
 --   
 --   If the second argument is 1-dimensional, a 1 is appended to its
@@ -3123,13 +3133,14 @@ type family MatmulF (shape :: Shape [Dim (Name Symbol) (Size Nat)]) (shape' :: S
 --   
 --   &gt;&gt;&gt; :type result
 --   result
---     :: Tensor
---          ('Gradient 'WithGradient)
---          ('Layout 'Dense)
---          ('Device 'CPU)
---          ('DataType 'Float)
---          ('Shape
---             '[ 'Dim ('Name "batch") ('Size 10), 'Dim ('Name "*") ('Size 3)])
+--     :: MonadThrow m =&gt;
+--        m (Tensor
+--             ('Gradient 'WithGradient)
+--             ('Layout 'Dense)
+--             ('Device 'CPU)
+--             ('DataType 'Float)
+--             ('Shape
+--                '[ 'Dim ('Name "batch") ('Size 10), 'Dim ('Name "*") ('Size 3)]))
 --   </pre>
 --   
 --   The non-matrix (i.e. batch) dimensions are broadcasted (and thus must
@@ -3146,14 +3157,15 @@ type family MatmulF (shape :: Shape [Dim (Name Symbol) (Size Nat)]) (shape' :: S
 --   
 --   &gt;&gt;&gt; :type result
 --   result
---     :: Tensor
---          ('Gradient 'WithGradient)
---          ('Layout 'Dense)
---          ('Device 'CPU)
---          ('DataType 'Float)
---          ('Shape
---             '[ 'Dim ('Name "batch") ('Size 10), 'Dim ('Name "*") ('Size 5),
---                'Dim ('Name "*") ('Size 3), 'Dim ('Name "*") ('Size 7)])
+--     :: MonadThrow m =&gt;
+--        m (Tensor
+--             ('Gradient 'WithGradient)
+--             ('Layout 'Dense)
+--             ('Device 'CPU)
+--             ('DataType 'Float)
+--             ('Shape
+--                '[ 'Dim ('Name "batch") ('Size 10), 'Dim ('Name "*") ('Size 5),
+--                   'Dim ('Name "*") ('Size 3), 'Dim ('Name "*") ('Size 7)]))
 --   </pre>
 matmul :: forall m gradient gradient' layout layout' device device' dataType dataType' shape shape'. MonadThrow m => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> m (Tensor (gradient <|> gradient') (layout <+> layout') (device <+> device') (dataType <+> dataType') (MatmulF shape shape'))
 
@@ -3641,7 +3653,7 @@ type PegasusSym0 = 'Pegasus :: TransformerStyle
 type BERTSym0 = 'BERT :: TransformerStyle
 type RoBERTaSym0 = 'RoBERTa :: TransformerStyle
 type GPT2Sym0 = 'GPT2 :: TransformerStyle
-data STransformerStyle z_a1Odf
+data STransformerStyle z_a1Oe4
 [ST5] :: STransformerStyle ('T5 :: TransformerStyle)
 [SByT5] :: STransformerStyle ('ByT5 :: TransformerStyle)
 [SBART] :: STransformerStyle ('BART :: TransformerStyle)
@@ -3657,7 +3669,7 @@ WithoutHead :: TransformerHead
 WithLMHead :: TransformerHead
 type WithoutHeadSym0 = 'WithoutHead :: TransformerHead
 type WithLMHeadSym0 = 'WithLMHead :: TransformerHead
-data STransformerHead z_a1OkA
+data STransformerHead z_a1Olp
 [SWithoutHead] :: STransformerHead ('WithoutHead :: TransformerHead)
 [SWithLMHead] :: STransformerHead ('WithLMHead :: TransformerHead)
 padded :: Integral n => n -> a -> [a] -> [a]
