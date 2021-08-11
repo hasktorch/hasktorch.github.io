@@ -1,0 +1,819 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DeriveFunctor #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE FlexibleInstances #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE FunctionalDependencies #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE MultiParamTypeClasses #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE RankNTypes #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-7"></span><span class="hs-pragma">{-# LANGUAGE TypeFamilies #-}</span><span>
+</span><span id="line-8"></span><span class="hs-pragma">{-# LANGUAGE UndecidableInstances #-}</span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Control.Monad.Fresh</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.Cont</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">ContT</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">MonadCont</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.Except</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">ExceptT</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">MonadError</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.Fix</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">MonadFix</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.IO.Class</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">MonadIO</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.Identity</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Identity</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">IdentityT</span></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/5kfpmh3c36d8hypydncrf0k68dh3zc38-mmorph-lib-mmorph-1.1.5-haddock-doc/share/doc/mmorph/html/src"><span class="hs-identifier">Control.Monad.Morph</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/5kfpmh3c36d8hypydncrf0k68dh3zc38-mmorph-lib-mmorph-1.1.5-haddock-doc/share/doc/mmorph/html/src"><span class="hs-identifier">MFunctor</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.RWS</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">RWST</span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.Reader</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">MonadReader</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ReaderT</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">asks</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">runReaderT</span></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.State</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">MonadState</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">StateT</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">evalStateT</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">modify</span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.Trans</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">MonadTrans</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.Trans.Maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">MaybeT</span></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.Writer</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">MonadWriter</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">WriterT</span></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Base</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Alternative</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">MonadPlus</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/yfw29a1vc0myh0ffv2m947hi5bhyzazm-hedgehog-lib-hedgehog-1.0.5-haddock-doc/share/doc/hedgehog/html/src"><span class="hs-identifier">Hedgehog</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/yfw29a1vc0myh0ffv2m947hi5bhyzazm-hedgehog-lib-hedgehog-1.0.5-haddock-doc/share/doc/hedgehog/html/src"><span class="hs-identifier">MonadGen</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/yfw29a1vc0myh0ffv2m947hi5bhyzazm-hedgehog-lib-hedgehog-1.0.5-haddock-doc/share/doc/hedgehog/html/src"><span class="hs-identifier">distributeT</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">newtype</span><span> </span><span id="Successor"><span class="annot"><a href="Control.Monad.Fresh.html#Successor"><span class="hs-identifier hs-var">Successor</span></a></span></span><span> </span><span id="local-6989586621679665708"><span class="annot"><a href="#local-6989586621679665708"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Successor"><span class="annot"><a href="Control.Monad.Fresh.html#Successor"><span class="hs-identifier hs-var">Successor</span></a></span></span><span> </span><span class="hs-special">{</span><span id="suc"><span class="annot"><span class="annottext">Successor a -&gt; a -&gt; a
+</span><a href="Control.Monad.Fresh.html#suc"><span class="hs-identifier hs-var hs-var">suc</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679665708"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679665708"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="hs-comment">-- | The monad transformer for generating fresh values.</span><span>
+</span><span id="line-30"></span><span class="hs-keyword">newtype</span><span> </span><span id="FreshT"><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span></span><span> </span><span id="local-6989586621679665721"><span class="annot"><a href="#local-6989586621679665721"><span class="hs-identifier hs-type">e</span></a></span></span><span> </span><span id="local-6989586621679665720"><span class="annot"><a href="#local-6989586621679665720"><span class="hs-identifier hs-type">m</span></a></span></span><span> </span><span id="local-6989586621679665719"><span class="annot"><a href="#local-6989586621679665719"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="FreshT"><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span></span><span> </span><span class="hs-special">{</span><span id="unFreshT"><span class="annot"><span class="annottext">FreshT e m a -&gt; ReaderT (Successor e) (StateT e m) a
+</span><a href="Control.Monad.Fresh.html#unFreshT"><span class="hs-identifier hs-var hs-var">unFreshT</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReaderT</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#Successor"><span class="hs-identifier hs-type">Successor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665721"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">StateT</span></span><span> </span><span class="annot"><a href="#local-6989586621679665721"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665720"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679665719"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679665474"><span id="local-6989586621679665476"><span class="annot"><span class="annottext">a -&gt; FreshT e m b -&gt; FreshT e m a
+(a -&gt; b) -&gt; FreshT e m a -&gt; FreshT e m b
+(forall a b. (a -&gt; b) -&gt; FreshT e m a -&gt; FreshT e m b)
+-&gt; (forall a b. a -&gt; FreshT e m b -&gt; FreshT e m a)
+-&gt; Functor (FreshT e m)
+forall a b. a -&gt; FreshT e m b -&gt; FreshT e m a
+forall a b. (a -&gt; b) -&gt; FreshT e m a -&gt; FreshT e m b
+forall e (m :: * -&gt; *) a b.
+Functor m =&gt;
+a -&gt; FreshT e m b -&gt; FreshT e m a
+forall e (m :: * -&gt; *) a b.
+Functor m =&gt;
+(a -&gt; b) -&gt; FreshT e m a -&gt; FreshT e m b
+forall (f :: * -&gt; *).
+(forall a b. (a -&gt; b) -&gt; f a -&gt; f b)
+-&gt; (forall a b. a -&gt; f b -&gt; f a) -&gt; Functor f
+&lt;$ :: a -&gt; FreshT e m b -&gt; FreshT e m a
+$c&lt;$ :: forall e (m :: * -&gt; *) a b.
+Functor m =&gt;
+a -&gt; FreshT e m b -&gt; FreshT e m a
+fmap :: (a -&gt; b) -&gt; FreshT e m a -&gt; FreshT e m b
+$cfmap :: forall e (m :: * -&gt; *) a b.
+Functor m =&gt;
+(a -&gt; b) -&gt; FreshT e m a -&gt; FreshT e m b
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Functor</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span id="local-6989586621679665471"><span id="local-6989586621679665472"><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="annot"><a href="#local-6989586621679665472"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#MonadFresh"><span class="hs-identifier hs-type">MonadFresh</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665471"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665471"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665472"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-34"></span><span>  </span><span id="local-6989586621679665467"><span class="annot"><span class="annottext">fresh :: FreshT e m e
+</span><a href="Control.Monad.Fresh.html#fresh"><span class="hs-identifier hs-var hs-var hs-var hs-var">fresh</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) e -&gt; FreshT e m e
+forall e (m :: * -&gt; *) a.
+ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+</span><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (StateT e m) e -&gt; FreshT e m e)
+-&gt; ReaderT (Successor e) (StateT e m) e -&gt; FreshT e m e
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-35"></span><span>    </span><span id="local-6989586621679665465"><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621679665465"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) e
+forall s (m :: * -&gt; *). MonadState s m =&gt; m s
+</span><span class="hs-identifier hs-var">get</span></span><span>
+</span><span id="line-36"></span><span>    </span><span id="local-6989586621679665463"><span class="annot"><span class="annottext">e -&gt; e
+</span><a href="#local-6989586621679665463"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Successor e -&gt; e -&gt; e)
+-&gt; ReaderT (Successor e) (StateT e m) (e -&gt; e)
+forall r (m :: * -&gt; *) a. MonadReader r m =&gt; (r -&gt; a) -&gt; m a
+</span><span class="hs-identifier hs-var">asks</span></span><span> </span><span class="annot"><span class="annottext">Successor e -&gt; e -&gt; e
+forall a. Successor a -&gt; a -&gt; a
+</span><a href="Control.Monad.Fresh.html#suc"><span class="hs-identifier hs-var hs-var">suc</span></a></span><span>
+</span><span id="line-37"></span><span>    </span><span class="annot"><span class="annottext">(e -&gt; e) -&gt; ReaderT (Successor e) (StateT e m) ()
+forall s (m :: * -&gt; *). MonadState s m =&gt; (s -&gt; s) -&gt; m ()
+</span><span class="hs-identifier hs-var">modify</span></span><span> </span><span class="annot"><span class="annottext">e -&gt; e
+</span><a href="#local-6989586621679665463"><span class="hs-identifier hs-var">s</span></a></span><span>
+</span><span id="line-38"></span><span>    </span><span class="annot"><span class="annottext">e -&gt; ReaderT (Successor e) (StateT e m) e
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621679665465"><span class="hs-identifier hs-var">e</span></a></span></span></span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span id="local-6989586621679665461"><span id="local-6989586621679665462"><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679665457"><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="annot"><a href="#local-6989586621679665462"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665461"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665462"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-41"></span><span>  </span><span id="local-6989586621679665454"><span class="annot"><span class="annottext">return :: a -&gt; FreshT e m a
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">return</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+forall e (m :: * -&gt; *) a.
+ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+</span><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a)
+-&gt; (a -&gt; ReaderT (Successor e) (StateT e m) a) -&gt; a -&gt; FreshT e m a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; ReaderT (Successor e) (StateT e m) a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span id="local-6989586621679665452"><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) a
+</span><a href="#local-6989586621679665452"><span class="hs-identifier hs-var">m</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679665451"><span class="annot"><span class="annottext">&gt;&gt;= :: FreshT e m a -&gt; (a -&gt; FreshT e m b) -&gt; FreshT e m b
+</span><span class="hs-operator hs-var hs-var hs-var hs-var">&gt;&gt;=</span></span></span><span> </span><span id="local-6989586621679665450"><span class="annot"><span class="annottext">a -&gt; FreshT e m b
+</span><a href="#local-6989586621679665450"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) b -&gt; FreshT e m b
+forall e (m :: * -&gt; *) a.
+ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+</span><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (StateT e m) b -&gt; FreshT e m b)
+-&gt; ReaderT (Successor e) (StateT e m) b -&gt; FreshT e m b
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) a
+</span><a href="#local-6989586621679665452"><span class="hs-identifier hs-var">m</span></a></span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) a
+-&gt; (a -&gt; ReaderT (Successor e) (StateT e m) b)
+-&gt; ReaderT (Successor e) (StateT e m) b
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
+</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="annot"><span class="annottext">FreshT e m b -&gt; ReaderT (Successor e) (StateT e m) b
+forall e (m :: * -&gt; *) a.
+FreshT e m a -&gt; ReaderT (Successor e) (StateT e m) a
+</span><a href="Control.Monad.Fresh.html#unFreshT"><span class="hs-identifier hs-var hs-var">unFreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(FreshT e m b -&gt; ReaderT (Successor e) (StateT e m) b)
+-&gt; (a -&gt; FreshT e m b) -&gt; a -&gt; ReaderT (Successor e) (StateT e m) b
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; FreshT e m b
+</span><a href="#local-6989586621679665450"><span class="hs-identifier hs-var">f</span></a></span></span></span><span>
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span id="local-6989586621679665448"><span id="local-6989586621679665449"><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadPlus</span></span><span> </span><span class="annot"><a href="#local-6989586621679665449"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadPlus</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665448"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665449"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-45"></span><span>  </span><span id="local-6989586621679665442"><span class="annot"><span class="annottext">mzero :: FreshT e m a
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">mzero</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+forall e (m :: * -&gt; *) a.
+ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+</span><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) a
+forall (m :: * -&gt; *) a. MonadPlus m =&gt; m a
+</span><span class="hs-identifier hs-var">mzero</span></span><span>
+</span><span id="line-46"></span><span>  </span><span id="local-6989586621679665440"><span class="annot"><span class="annottext">mplus :: FreshT e m a -&gt; FreshT e m a -&gt; FreshT e m a
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">mplus</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span id="local-6989586621679665438"><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) a
+</span><a href="#local-6989586621679665438"><span class="hs-identifier hs-var">m</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span id="local-6989586621679665437"><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) a
+</span><a href="#local-6989586621679665437"><span class="hs-identifier hs-var">m'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+forall e (m :: * -&gt; *) a.
+ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+</span><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a)
+-&gt; ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) a
+-&gt; ReaderT (Successor e) (StateT e m) a
+-&gt; ReaderT (Successor e) (StateT e m) a
+forall (m :: * -&gt; *) a. MonadPlus m =&gt; m a -&gt; m a -&gt; m a
+</span><span class="hs-identifier hs-var">mplus</span></span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) a
+</span><a href="#local-6989586621679665438"><span class="hs-identifier hs-var">m</span></a></span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) a
+</span><a href="#local-6989586621679665437"><span class="hs-identifier hs-var">m'</span></a></span></span></span><span>
+</span><span id="line-47"></span><span>
+</span><span id="line-48"></span><span id="local-6989586621679665435"><span id="local-6989586621679665436"><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679665426"><span id="local-6989586621679665428"><span id="local-6989586621679665430"><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Functor</span></span><span> </span><span class="annot"><a href="#local-6989586621679665436"><span class="hs-identifier hs-type">f</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="annot"><a href="#local-6989586621679665436"><span class="hs-identifier hs-type">f</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Applicative</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665435"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665436"><span class="hs-identifier hs-type">f</span></a></span><span class="hs-special">)</span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-49"></span><span>  </span><span id="local-6989586621679665424"><span class="annot"><span class="annottext">pure :: a -&gt; FreshT e f a
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">pure</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e f) a -&gt; FreshT e f a
+forall e (m :: * -&gt; *) a.
+ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+</span><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (StateT e f) a -&gt; FreshT e f a)
+-&gt; (a -&gt; ReaderT (Successor e) (StateT e f) a) -&gt; a -&gt; FreshT e f a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; ReaderT (Successor e) (StateT e f) a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span id="local-6989586621679665423"><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e f) (a -&gt; b)
+</span><a href="#local-6989586621679665423"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679665422"><span class="annot"><span class="annottext">&lt;*&gt; :: FreshT e f (a -&gt; b) -&gt; FreshT e f a -&gt; FreshT e f b
+</span><span class="hs-operator hs-var hs-var hs-var hs-var">&lt;*&gt;</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span id="local-6989586621679665421"><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e f) a
+</span><a href="#local-6989586621679665421"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e f) b -&gt; FreshT e f b
+forall e (m :: * -&gt; *) a.
+ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+</span><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (StateT e f) b -&gt; FreshT e f b)
+-&gt; ReaderT (Successor e) (StateT e f) b -&gt; FreshT e f b
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e f) (a -&gt; b)
+</span><a href="#local-6989586621679665423"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e f) (a -&gt; b)
+-&gt; ReaderT (Successor e) (StateT e f) a
+-&gt; ReaderT (Successor e) (StateT e f) b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e f) a
+</span><a href="#local-6989586621679665421"><span class="hs-identifier hs-var">a</span></a></span></span></span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span id="local-6989586621679665419"><span id="local-6989586621679665420"><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679665412"><span id="local-6989586621679665414"><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="annot"><a href="#local-6989586621679665420"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Functor</span></span><span> </span><span class="annot"><a href="#local-6989586621679665420"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadPlus</span></span><span> </span><span class="annot"><a href="#local-6989586621679665420"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Alternative</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665419"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665420"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-53"></span><span>  </span><span id="local-6989586621679665410"><span class="annot"><span class="annottext">empty :: FreshT e m a
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">empty</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FreshT e m a
+forall (m :: * -&gt; *) a. MonadPlus m =&gt; m a
+</span><span class="hs-identifier hs-var">mzero</span></span><span>
+</span><span id="line-54"></span><span>  </span><span id="local-6989586621679665408"><span class="annot"><span class="annottext">&lt;|&gt; :: FreshT e m a -&gt; FreshT e m a -&gt; FreshT e m a
+</span><span class="hs-operator hs-var hs-var hs-var hs-var">(&lt;|&gt;)</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FreshT e m a -&gt; FreshT e m a -&gt; FreshT e m a
+forall (m :: * -&gt; *) a. MonadPlus m =&gt; m a -&gt; m a -&gt; m a
+</span><span class="hs-identifier hs-var">mplus</span></span></span></span><span>
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span class="hs-keyword">type</span><span> </span><span id="Fresh"><span class="annot"><a href="Control.Monad.Fresh.html#Fresh"><span class="hs-identifier hs-var">Fresh</span></a></span></span><span> </span><span id="local-6989586621679665406"><span class="annot"><a href="#local-6989586621679665406"><span class="hs-identifier hs-type">e</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665406"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Identity</span></span><span>
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span id="local-6989586621679665405"><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadTrans</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665405"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-59"></span><span>  </span><span id="local-6989586621679665402"><span class="annot"><span class="annottext">lift :: m a -&gt; FreshT e m a
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">lift</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+forall e (m :: * -&gt; *) a.
+ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+</span><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a)
+-&gt; (m a -&gt; ReaderT (Successor e) (StateT e m) a)
+-&gt; m a
+-&gt; FreshT e m a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">StateT e m a -&gt; ReaderT (Successor e) (StateT e m) a
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">(StateT e m a -&gt; ReaderT (Successor e) (StateT e m) a)
+-&gt; (m a -&gt; StateT e m a)
+-&gt; m a
+-&gt; ReaderT (Successor e) (StateT e m) a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">m a -&gt; StateT e m a
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span></span><span>
+</span><span id="line-60"></span><span>
+</span><span id="line-61"></span><span id="local-6989586621679665398"><span id="local-6989586621679665399"><span id="local-6989586621679665400"><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679665393"><span class="annot"><span class="hs-identifier hs-type">MonadReader</span></span><span> </span><span class="annot"><a href="#local-6989586621679665400"><span class="hs-identifier hs-type">r</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665399"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadReader</span></span><span> </span><span class="annot"><a href="#local-6989586621679665400"><span class="hs-identifier hs-type">r</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665398"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665399"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-62"></span><span>  </span><span id="local-6989586621679665391"><span class="annot"><span class="annottext">local :: (r -&gt; r) -&gt; FreshT e m a -&gt; FreshT e m a
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">local</span></span></span><span> </span><span id="local-6989586621679665389"><span class="annot"><span class="annottext">r -&gt; r
+</span><a href="#local-6989586621679665389"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679665388"><span class="annot"><span class="annottext">FreshT e m a
+</span><a href="#local-6989586621679665388"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+forall e (m :: * -&gt; *) a.
+ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+</span><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a)
+-&gt; ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) (Successor e)
+forall r (m :: * -&gt; *). MonadReader r m =&gt; m r
+</span><span class="hs-identifier hs-var">ask</span></span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) (Successor e)
+-&gt; (Successor e -&gt; ReaderT (Successor e) (StateT e m) a)
+-&gt; ReaderT (Successor e) (StateT e m) a
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
+</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="annot"><span class="annottext">StateT e m a -&gt; ReaderT (Successor e) (StateT e m) a
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">(StateT e m a -&gt; ReaderT (Successor e) (StateT e m) a)
+-&gt; (Successor e -&gt; StateT e m a)
+-&gt; Successor e
+-&gt; ReaderT (Successor e) (StateT e m) a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(r -&gt; r) -&gt; StateT e m a -&gt; StateT e m a
+forall r (m :: * -&gt; *) a. MonadReader r m =&gt; (r -&gt; r) -&gt; m a -&gt; m a
+</span><span class="hs-identifier hs-var">local</span></span><span> </span><span class="annot"><span class="annottext">r -&gt; r
+</span><a href="#local-6989586621679665389"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">(StateT e m a -&gt; StateT e m a)
+-&gt; (Successor e -&gt; StateT e m a) -&gt; Successor e -&gt; StateT e m a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) a -&gt; Successor e -&gt; StateT e m a
+forall r (m :: * -&gt; *) a. ReaderT r m a -&gt; r -&gt; m a
+</span><span class="hs-identifier hs-var hs-var">runReaderT</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">FreshT e m a -&gt; ReaderT (Successor e) (StateT e m) a
+forall e (m :: * -&gt; *) a.
+FreshT e m a -&gt; ReaderT (Successor e) (StateT e m) a
+</span><a href="Control.Monad.Fresh.html#unFreshT"><span class="hs-identifier hs-var hs-var">unFreshT</span></a></span><span> </span><span class="annot"><span class="annottext">FreshT e m a
+</span><a href="#local-6989586621679665388"><span class="hs-identifier hs-var">m</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-63"></span><span>  </span><span id="local-6989586621679665386"><span class="annot"><span class="annottext">ask :: FreshT e m r
+</span><a href="#local-6989586621679665386"><span class="hs-identifier hs-var hs-var hs-var hs-var">ask</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) r -&gt; FreshT e m r
+forall e (m :: * -&gt; *) a.
+ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+</span><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">StateT e m r -&gt; ReaderT (Successor e) (StateT e m) r
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">StateT e m r
+forall r (m :: * -&gt; *). MonadReader r m =&gt; m r
+</span><span class="hs-identifier hs-var">ask</span></span><span class="hs-special">)</span></span></span></span><span>
+</span><span id="line-64"></span><span>
+</span><span id="line-65"></span><span id="local-6989586621679665383"><span id="local-6989586621679665384"><span id="local-6989586621679665385"><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679665378"><span class="annot"><span class="hs-identifier hs-type">MonadState</span></span><span> </span><span class="annot"><a href="#local-6989586621679665385"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665384"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadState</span></span><span> </span><span class="annot"><a href="#local-6989586621679665385"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665383"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665384"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-66"></span><span>  </span><span id="local-6989586621679665376"><span class="annot"><span class="annottext">get :: FreshT e m s
+</span><a href="#local-6989586621679665376"><span class="hs-identifier hs-var hs-var hs-var hs-var">get</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) s -&gt; FreshT e m s
+forall e (m :: * -&gt; *) a.
+ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+</span><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (StateT e m) s -&gt; FreshT e m s)
+-&gt; ReaderT (Successor e) (StateT e m) s -&gt; FreshT e m s
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">StateT e m s -&gt; ReaderT (Successor e) (StateT e m) s
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">(StateT e m s -&gt; ReaderT (Successor e) (StateT e m) s)
+-&gt; (m s -&gt; StateT e m s)
+-&gt; m s
+-&gt; ReaderT (Successor e) (StateT e m) s
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">m s -&gt; StateT e m s
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">m s
+forall s (m :: * -&gt; *). MonadState s m =&gt; m s
+</span><span class="hs-identifier hs-var">get</span></span><span>
+</span><span id="line-67"></span><span>  </span><span id="local-6989586621679665375"><span class="annot"><span class="annottext">put :: s -&gt; FreshT e m ()
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">put</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) () -&gt; FreshT e m ()
+forall e (m :: * -&gt; *) a.
+ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+</span><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (StateT e m) () -&gt; FreshT e m ())
+-&gt; (s -&gt; ReaderT (Successor e) (StateT e m) ())
+-&gt; s
+-&gt; FreshT e m ()
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">StateT e m () -&gt; ReaderT (Successor e) (StateT e m) ()
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">(StateT e m () -&gt; ReaderT (Successor e) (StateT e m) ())
+-&gt; (s -&gt; StateT e m ())
+-&gt; s
+-&gt; ReaderT (Successor e) (StateT e m) ()
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">m () -&gt; StateT e m ()
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">(m () -&gt; StateT e m ()) -&gt; (s -&gt; m ()) -&gt; s -&gt; StateT e m ()
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">s -&gt; m ()
+forall s (m :: * -&gt; *). MonadState s m =&gt; s -&gt; m ()
+</span><span class="hs-identifier hs-var">put</span></span></span></span></span><span>
+</span><span id="line-68"></span><span>
+</span><span id="line-69"></span><span id="local-6989586621679665371"><span id="local-6989586621679665372"><span id="local-6989586621679665373"><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679665367"><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">MonadWriter</span></span><span> </span><span class="annot"><a href="#local-6989586621679665373"><span class="hs-identifier hs-type">w</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665372"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadWriter</span></span><span> </span><span class="annot"><a href="#local-6989586621679665373"><span class="hs-identifier hs-type">w</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665371"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665372"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-70"></span><span>  </span><span id="local-6989586621679665362"><span class="annot"><span class="annottext">tell :: w -&gt; FreshT e m ()
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">tell</span></span></span><span> </span><span id="local-6989586621679665360"><span class="annot"><span class="annottext">w
+</span><a href="#local-6989586621679665360"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">m () -&gt; FreshT e m ()
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">(m () -&gt; FreshT e m ()) -&gt; m () -&gt; FreshT e m ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">w -&gt; m ()
+forall w (m :: * -&gt; *). MonadWriter w m =&gt; w -&gt; m ()
+</span><span class="hs-identifier hs-var">tell</span></span><span> </span><span class="annot"><span class="annottext">w
+</span><a href="#local-6989586621679665360"><span class="hs-identifier hs-var">m</span></a></span><span>
+</span><span id="line-71"></span><span>  </span><span id="local-6989586621679665359"><span class="annot"><span class="annottext">listen :: FreshT e m a -&gt; FreshT e m (a, w)
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">listen</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) (a, w) -&gt; FreshT e m (a, w)
+forall e (m :: * -&gt; *) a.
+ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+</span><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (StateT e m) (a, w) -&gt; FreshT e m (a, w))
+-&gt; (FreshT e m a -&gt; ReaderT (Successor e) (StateT e m) (a, w))
+-&gt; FreshT e m a
+-&gt; FreshT e m (a, w)
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) a
+-&gt; ReaderT (Successor e) (StateT e m) (a, w)
+forall w (m :: * -&gt; *) a. MonadWriter w m =&gt; m a -&gt; m (a, w)
+</span><span class="hs-identifier hs-var">listen</span></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (StateT e m) a
+ -&gt; ReaderT (Successor e) (StateT e m) (a, w))
+-&gt; (FreshT e m a -&gt; ReaderT (Successor e) (StateT e m) a)
+-&gt; FreshT e m a
+-&gt; ReaderT (Successor e) (StateT e m) (a, w)
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">FreshT e m a -&gt; ReaderT (Successor e) (StateT e m) a
+forall e (m :: * -&gt; *) a.
+FreshT e m a -&gt; ReaderT (Successor e) (StateT e m) a
+</span><a href="Control.Monad.Fresh.html#unFreshT"><span class="hs-identifier hs-var hs-var">unFreshT</span></a></span><span>
+</span><span id="line-72"></span><span>  </span><span id="local-6989586621679665357"><span class="annot"><span class="annottext">pass :: FreshT e m (a, w -&gt; w) -&gt; FreshT e m a
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">pass</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+forall e (m :: * -&gt; *) a.
+ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+</span><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a)
+-&gt; (FreshT e m (a, w -&gt; w) -&gt; ReaderT (Successor e) (StateT e m) a)
+-&gt; FreshT e m (a, w -&gt; w)
+-&gt; FreshT e m a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) (a, w -&gt; w)
+-&gt; ReaderT (Successor e) (StateT e m) a
+forall w (m :: * -&gt; *) a. MonadWriter w m =&gt; m (a, w -&gt; w) -&gt; m a
+</span><span class="hs-identifier hs-var">pass</span></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (StateT e m) (a, w -&gt; w)
+ -&gt; ReaderT (Successor e) (StateT e m) a)
+-&gt; (FreshT e m (a, w -&gt; w)
+    -&gt; ReaderT (Successor e) (StateT e m) (a, w -&gt; w))
+-&gt; FreshT e m (a, w -&gt; w)
+-&gt; ReaderT (Successor e) (StateT e m) a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">FreshT e m (a, w -&gt; w)
+-&gt; ReaderT (Successor e) (StateT e m) (a, w -&gt; w)
+forall e (m :: * -&gt; *) a.
+FreshT e m a -&gt; ReaderT (Successor e) (StateT e m) a
+</span><a href="Control.Monad.Fresh.html#unFreshT"><span class="hs-identifier hs-var hs-var">unFreshT</span></a></span></span></span></span><span>
+</span><span id="line-73"></span><span>
+</span><span id="line-74"></span><span id="local-6989586621679665354"><span id="local-6989586621679665355"><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadFix</span></span><span> </span><span class="annot"><a href="#local-6989586621679665355"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadFix</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665354"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665355"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-75"></span><span>  </span><span id="local-6989586621679665350"><span class="annot"><span class="annottext">mfix :: (a -&gt; FreshT e m a) -&gt; FreshT e m a
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">mfix</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+forall e (m :: * -&gt; *) a.
+ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+</span><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a)
+-&gt; ((a -&gt; FreshT e m a) -&gt; ReaderT (Successor e) (StateT e m) a)
+-&gt; (a -&gt; FreshT e m a)
+-&gt; FreshT e m a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(a -&gt; ReaderT (Successor e) (StateT e m) a)
+-&gt; ReaderT (Successor e) (StateT e m) a
+forall (m :: * -&gt; *) a. MonadFix m =&gt; (a -&gt; m a) -&gt; m a
+</span><span class="hs-identifier hs-var">mfix</span></span><span> </span><span class="annot"><span class="annottext">((a -&gt; ReaderT (Successor e) (StateT e m) a)
+ -&gt; ReaderT (Successor e) (StateT e m) a)
+-&gt; ((a -&gt; FreshT e m a)
+    -&gt; a -&gt; ReaderT (Successor e) (StateT e m) a)
+-&gt; (a -&gt; FreshT e m a)
+-&gt; ReaderT (Successor e) (StateT e m) a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">FreshT e m a -&gt; ReaderT (Successor e) (StateT e m) a
+forall e (m :: * -&gt; *) a.
+FreshT e m a -&gt; ReaderT (Successor e) (StateT e m) a
+</span><a href="Control.Monad.Fresh.html#unFreshT"><span class="hs-identifier hs-var hs-var">unFreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(FreshT e m a -&gt; ReaderT (Successor e) (StateT e m) a)
+-&gt; (a -&gt; FreshT e m a) -&gt; a -&gt; ReaderT (Successor e) (StateT e m) a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span class="hs-special">)</span></span></span><span>
+</span><span id="line-76"></span><span>
+</span><span id="line-77"></span><span id="local-6989586621679665348"><span id="local-6989586621679665349"><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadIO</span></span><span> </span><span class="annot"><a href="#local-6989586621679665349"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665348"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665349"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-78"></span><span>  </span><span id="local-6989586621679665344"><span class="annot"><span class="annottext">liftIO :: IO a -&gt; FreshT e m a
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">liftIO</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+forall e (m :: * -&gt; *) a.
+ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+</span><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a)
+-&gt; (IO a -&gt; ReaderT (Successor e) (StateT e m) a)
+-&gt; IO a
+-&gt; FreshT e m a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">IO a -&gt; ReaderT (Successor e) (StateT e m) a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><span class="hs-identifier hs-var">liftIO</span></span></span></span><span>
+</span><span id="line-79"></span><span>
+</span><span id="line-80"></span><span id="local-6989586621679665341"><span id="local-6989586621679665342"><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadCont</span></span><span> </span><span class="annot"><a href="#local-6989586621679665342"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadCont</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665341"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665342"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-81"></span><span>  </span><span id="local-6989586621679665337"><span class="annot"><span class="annottext">callCC :: ((a -&gt; FreshT e m b) -&gt; FreshT e m a) -&gt; FreshT e m a
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">callCC</span></span></span><span> </span><span id="local-6989586621679665335"><span class="annot"><span class="annottext">(a -&gt; FreshT e m b) -&gt; FreshT e m a
+</span><a href="#local-6989586621679665335"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+forall e (m :: * -&gt; *) a.
+ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+</span><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a)
+-&gt; ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">((a -&gt; ReaderT (Successor e) (StateT e m) b)
+ -&gt; ReaderT (Successor e) (StateT e m) a)
+-&gt; ReaderT (Successor e) (StateT e m) a
+forall (m :: * -&gt; *) a b. MonadCont m =&gt; ((a -&gt; m b) -&gt; m a) -&gt; m a
+</span><span class="hs-identifier hs-var">callCC</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">FreshT e m a -&gt; ReaderT (Successor e) (StateT e m) a
+forall e (m :: * -&gt; *) a.
+FreshT e m a -&gt; ReaderT (Successor e) (StateT e m) a
+</span><a href="Control.Monad.Fresh.html#unFreshT"><span class="hs-identifier hs-var hs-var">unFreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(FreshT e m a -&gt; ReaderT (Successor e) (StateT e m) a)
+-&gt; ((a -&gt; ReaderT (Successor e) (StateT e m) b) -&gt; FreshT e m a)
+-&gt; (a -&gt; ReaderT (Successor e) (StateT e m) b)
+-&gt; ReaderT (Successor e) (StateT e m) a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(a -&gt; FreshT e m b) -&gt; FreshT e m a
+</span><a href="#local-6989586621679665335"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">((a -&gt; FreshT e m b) -&gt; FreshT e m a)
+-&gt; ((a -&gt; ReaderT (Successor e) (StateT e m) b)
+    -&gt; a -&gt; FreshT e m b)
+-&gt; (a -&gt; ReaderT (Successor e) (StateT e m) b)
+-&gt; FreshT e m a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) b -&gt; FreshT e m b
+forall e (m :: * -&gt; *) a.
+ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+</span><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (StateT e m) b -&gt; FreshT e m b)
+-&gt; (a -&gt; ReaderT (Successor e) (StateT e m) b) -&gt; a -&gt; FreshT e m b
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span class="hs-special">)</span><span class="hs-special">)</span></span></span><span>
+</span><span id="line-82"></span><span>
+</span><span id="line-83"></span><span id="local-6989586621679665332"><span id="local-6989586621679665333"><span id="local-6989586621679665334"><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadError</span></span><span> </span><span class="annot"><a href="#local-6989586621679665334"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665333"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadError</span></span><span> </span><span class="annot"><a href="#local-6989586621679665334"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665332"><span class="hs-identifier hs-type">e'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665333"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-84"></span><span>  </span><span id="local-6989586621679665327"><span class="annot"><span class="annottext">throwError :: e -&gt; FreshT e' m a
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">throwError</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e') (StateT e' m) a -&gt; FreshT e' m a
+forall e (m :: * -&gt; *) a.
+ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+</span><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e') (StateT e' m) a -&gt; FreshT e' m a)
+-&gt; (e -&gt; ReaderT (Successor e') (StateT e' m) a)
+-&gt; e
+-&gt; FreshT e' m a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">e -&gt; ReaderT (Successor e') (StateT e' m) a
+forall e (m :: * -&gt; *) a. MonadError e m =&gt; e -&gt; m a
+</span><span class="hs-identifier hs-var">throwError</span></span><span>
+</span><span id="line-85"></span><span>  </span><span id="local-6989586621679665325"><span class="annot"><span class="annottext">catchError :: FreshT e' m a -&gt; (e -&gt; FreshT e' m a) -&gt; FreshT e' m a
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">catchError</span></span></span><span> </span><span id="local-6989586621679665323"><span class="annot"><span class="annottext">FreshT e' m a
+</span><a href="#local-6989586621679665323"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span id="local-6989586621679665322"><span class="annot"><span class="annottext">e -&gt; FreshT e' m a
+</span><a href="#local-6989586621679665322"><span class="hs-identifier hs-var">h</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e') (StateT e' m) a -&gt; FreshT e' m a
+forall e (m :: * -&gt; *) a.
+ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+</span><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e') (StateT e' m) a -&gt; FreshT e' m a)
+-&gt; ReaderT (Successor e') (StateT e' m) a -&gt; FreshT e' m a
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e') (StateT e' m) a
+-&gt; (e -&gt; ReaderT (Successor e') (StateT e' m) a)
+-&gt; ReaderT (Successor e') (StateT e' m) a
+forall e (m :: * -&gt; *) a.
+MonadError e m =&gt;
+m a -&gt; (e -&gt; m a) -&gt; m a
+</span><span class="hs-identifier hs-var">catchError</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">FreshT e' m a -&gt; ReaderT (Successor e') (StateT e' m) a
+forall e (m :: * -&gt; *) a.
+FreshT e m a -&gt; ReaderT (Successor e) (StateT e m) a
+</span><a href="Control.Monad.Fresh.html#unFreshT"><span class="hs-identifier hs-var hs-var">unFreshT</span></a></span><span> </span><span class="annot"><span class="annottext">FreshT e' m a
+</span><a href="#local-6989586621679665323"><span class="hs-identifier hs-var">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">FreshT e' m a -&gt; ReaderT (Successor e') (StateT e' m) a
+forall e (m :: * -&gt; *) a.
+FreshT e m a -&gt; ReaderT (Successor e) (StateT e m) a
+</span><a href="Control.Monad.Fresh.html#unFreshT"><span class="hs-identifier hs-var hs-var">unFreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(FreshT e' m a -&gt; ReaderT (Successor e') (StateT e' m) a)
+-&gt; (e -&gt; FreshT e' m a)
+-&gt; e
+-&gt; ReaderT (Successor e') (StateT e' m) a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">e -&gt; FreshT e' m a
+</span><a href="#local-6989586621679665322"><span class="hs-identifier hs-var">h</span></a></span><span class="hs-special">)</span></span></span></span><span>
+</span><span id="line-86"></span><span>
+</span><span id="line-87"></span><span id="local-6989586621679665321"><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="../file:///nix/store/5kfpmh3c36d8hypydncrf0k68dh3zc38-mmorph-lib-mmorph-1.1.5-haddock-doc/share/doc/mmorph/html/src"><span class="hs-identifier hs-type">MFunctor</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665321"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-88"></span><span>  </span><span id="local-6989586621679665318"><span class="annot"><span class="annottext">hoist :: (forall a. m a -&gt; n a) -&gt; FreshT e m b -&gt; FreshT e n b
+</span><a href="../file:///nix/store/5kfpmh3c36d8hypydncrf0k68dh3zc38-mmorph-lib-mmorph-1.1.5-haddock-doc/share/doc/mmorph/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">hoist</span></a></span></span><span> </span><span id="local-6989586621679665316"><span class="annot"><span class="annottext">forall a. m a -&gt; n a
+</span><a href="#local-6989586621679665316"><span class="hs-identifier hs-var">nat</span></a></span></span><span> </span><span id="local-6989586621679665315"><span class="annot"><span class="annottext">FreshT e m b
+</span><a href="#local-6989586621679665315"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e n) b -&gt; FreshT e n b
+forall e (m :: * -&gt; *) a.
+ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+</span><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (StateT e n) b -&gt; FreshT e n b)
+-&gt; ReaderT (Successor e) (StateT e n) b -&gt; FreshT e n b
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(forall a. StateT e m a -&gt; StateT e n a)
+-&gt; ReaderT (Successor e) (StateT e m) b
+-&gt; ReaderT (Successor e) (StateT e n) b
+forall k (t :: (* -&gt; *) -&gt; k -&gt; *) (m :: * -&gt; *) (n :: * -&gt; *)
+       (b :: k).
+(MFunctor t, Monad m) =&gt;
+(forall a. m a -&gt; n a) -&gt; t m b -&gt; t n b
+</span><a href="../file:///nix/store/5kfpmh3c36d8hypydncrf0k68dh3zc38-mmorph-lib-mmorph-1.1.5-haddock-doc/share/doc/mmorph/html/src"><span class="hs-identifier hs-var">hoist</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(forall a. m a -&gt; n a) -&gt; StateT e m a -&gt; StateT e n a
+forall k (t :: (* -&gt; *) -&gt; k -&gt; *) (m :: * -&gt; *) (n :: * -&gt; *)
+       (b :: k).
+(MFunctor t, Monad m) =&gt;
+(forall a. m a -&gt; n a) -&gt; t m b -&gt; t n b
+</span><a href="../file:///nix/store/5kfpmh3c36d8hypydncrf0k68dh3zc38-mmorph-lib-mmorph-1.1.5-haddock-doc/share/doc/mmorph/html/src"><span class="hs-identifier hs-var">hoist</span></a></span><span> </span><span class="annot"><span class="annottext">forall a. m a -&gt; n a
+</span><a href="#local-6989586621679665316"><span class="hs-identifier hs-var">nat</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">FreshT e m b -&gt; ReaderT (Successor e) (StateT e m) b
+forall e (m :: * -&gt; *) a.
+FreshT e m a -&gt; ReaderT (Successor e) (StateT e m) a
+</span><a href="Control.Monad.Fresh.html#unFreshT"><span class="hs-identifier hs-var hs-var">unFreshT</span></a></span><span> </span><span class="annot"><span class="annottext">FreshT e m b
+</span><a href="#local-6989586621679665315"><span class="hs-identifier hs-var">m</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-89"></span><span>
+</span><span id="line-90"></span><span id="local-6989586621679665313"><span id="local-6989586621679665314"><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="../file:///nix/store/yfw29a1vc0myh0ffv2m947hi5bhyzazm-hedgehog-lib-hedgehog-1.0.5-haddock-doc/share/doc/hedgehog/html/src"><span class="hs-identifier hs-type">MonadGen</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665314"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="../file:///nix/store/yfw29a1vc0myh0ffv2m947hi5bhyzazm-hedgehog-lib-hedgehog-1.0.5-haddock-doc/share/doc/hedgehog/html/src"><span class="hs-identifier hs-type">MonadGen</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665313"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665314"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-91"></span><span>  </span><span class="hs-keyword">type</span><span> </span><span id="GenBase"><span class="annot"><a href="../file:///nix/store/yfw29a1vc0myh0ffv2m947hi5bhyzazm-hedgehog-lib-hedgehog-1.0.5-haddock-doc/share/doc/hedgehog/html/src"><span class="hs-identifier hs-var">GenBase</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665313"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665314"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665313"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/yfw29a1vc0myh0ffv2m947hi5bhyzazm-hedgehog-lib-hedgehog-1.0.5-haddock-doc/share/doc/hedgehog/html/src"><span class="hs-identifier hs-type">GenBase</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665314"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-92"></span><span>  </span><span id="local-6989586621679665307"><span class="annot"><span class="annottext">toGenT :: FreshT e m a -&gt; GenT (GenBase (FreshT e m)) a
+</span><a href="../file:///nix/store/yfw29a1vc0myh0ffv2m947hi5bhyzazm-hedgehog-lib-hedgehog-1.0.5-haddock-doc/share/doc/hedgehog/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">toGenT</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(forall a.
+ ReaderT (Successor e) (StateT e (GenBase m)) a
+ -&gt; FreshT e (GenBase m) a)
+-&gt; GenT (ReaderT (Successor e) (StateT e (GenBase m))) a
+-&gt; GenT (FreshT e (GenBase m)) a
+forall k (t :: (* -&gt; *) -&gt; k -&gt; *) (m :: * -&gt; *) (n :: * -&gt; *)
+       (b :: k).
+(MFunctor t, Monad m) =&gt;
+(forall a. m a -&gt; n a) -&gt; t m b -&gt; t n b
+</span><a href="../file:///nix/store/5kfpmh3c36d8hypydncrf0k68dh3zc38-mmorph-lib-mmorph-1.1.5-haddock-doc/share/doc/mmorph/html/src"><span class="hs-identifier hs-var">hoist</span></a></span><span> </span><span class="annot"><span class="annottext">forall a.
+ReaderT (Successor e) (StateT e (GenBase m)) a
+-&gt; FreshT e (GenBase m) a
+forall e (m :: * -&gt; *) a.
+ReaderT (Successor e) (StateT e m) a -&gt; FreshT e m a
+</span><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-var">FreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(GenT (ReaderT (Successor e) (StateT e (GenBase m))) a
+ -&gt; GenT (FreshT e (GenBase m)) a)
+-&gt; (FreshT e m a
+    -&gt; GenT (ReaderT (Successor e) (StateT e (GenBase m))) a)
+-&gt; FreshT e m a
+-&gt; GenT (FreshT e (GenBase m)) a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (GenT (StateT e (GenBase m))) a
+-&gt; GenT (ReaderT (Successor e) (StateT e (GenBase m))) a
+forall (g :: (* -&gt; *) -&gt; * -&gt; *) (f :: (* -&gt; *) -&gt; * -&gt; *)
+       (m :: * -&gt; *) a.
+(MonadTransDistributive g, Transformer f g m) =&gt;
+g (f m) a -&gt; f (g m) a
+</span><a href="../file:///nix/store/yfw29a1vc0myh0ffv2m947hi5bhyzazm-hedgehog-lib-hedgehog-1.0.5-haddock-doc/share/doc/hedgehog/html/src"><span class="hs-identifier hs-var">distributeT</span></a></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (GenT (StateT e (GenBase m))) a
+ -&gt; GenT (ReaderT (Successor e) (StateT e (GenBase m))) a)
+-&gt; (FreshT e m a
+    -&gt; ReaderT (Successor e) (GenT (StateT e (GenBase m))) a)
+-&gt; FreshT e m a
+-&gt; GenT (ReaderT (Successor e) (StateT e (GenBase m))) a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(forall a.
+ StateT e (GenT (GenBase m)) a -&gt; GenT (StateT e (GenBase m)) a)
+-&gt; ReaderT (Successor e) (StateT e (GenT (GenBase m))) a
+-&gt; ReaderT (Successor e) (GenT (StateT e (GenBase m))) a
+forall k (t :: (* -&gt; *) -&gt; k -&gt; *) (m :: * -&gt; *) (n :: * -&gt; *)
+       (b :: k).
+(MFunctor t, Monad m) =&gt;
+(forall a. m a -&gt; n a) -&gt; t m b -&gt; t n b
+</span><a href="../file:///nix/store/5kfpmh3c36d8hypydncrf0k68dh3zc38-mmorph-lib-mmorph-1.1.5-haddock-doc/share/doc/mmorph/html/src"><span class="hs-identifier hs-var">hoist</span></a></span><span> </span><span class="annot"><span class="annottext">forall a.
+StateT e (GenT (GenBase m)) a -&gt; GenT (StateT e (GenBase m)) a
+forall (g :: (* -&gt; *) -&gt; * -&gt; *) (f :: (* -&gt; *) -&gt; * -&gt; *)
+       (m :: * -&gt; *) a.
+(MonadTransDistributive g, Transformer f g m) =&gt;
+g (f m) a -&gt; f (g m) a
+</span><a href="../file:///nix/store/yfw29a1vc0myh0ffv2m947hi5bhyzazm-hedgehog-lib-hedgehog-1.0.5-haddock-doc/share/doc/hedgehog/html/src"><span class="hs-identifier hs-var">distributeT</span></a></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (StateT e (GenT (GenBase m))) a
+ -&gt; ReaderT (Successor e) (GenT (StateT e (GenBase m))) a)
+-&gt; (FreshT e m a
+    -&gt; ReaderT (Successor e) (StateT e (GenT (GenBase m))) a)
+-&gt; FreshT e m a
+-&gt; ReaderT (Successor e) (GenT (StateT e (GenBase m))) a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">FreshT e (GenT (GenBase m)) a
+-&gt; ReaderT (Successor e) (StateT e (GenT (GenBase m))) a
+forall e (m :: * -&gt; *) a.
+FreshT e m a -&gt; ReaderT (Successor e) (StateT e m) a
+</span><a href="Control.Monad.Fresh.html#unFreshT"><span class="hs-identifier hs-var hs-var">unFreshT</span></a></span><span> </span><span class="annot"><span class="annottext">(FreshT e (GenT (GenBase m)) a
+ -&gt; ReaderT (Successor e) (StateT e (GenT (GenBase m))) a)
+-&gt; (FreshT e m a -&gt; FreshT e (GenT (GenBase m)) a)
+-&gt; FreshT e m a
+-&gt; ReaderT (Successor e) (StateT e (GenT (GenBase m))) a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(forall a. m a -&gt; GenT (GenBase m) a)
+-&gt; FreshT e m a -&gt; FreshT e (GenT (GenBase m)) a
+forall k (t :: (* -&gt; *) -&gt; k -&gt; *) (m :: * -&gt; *) (n :: * -&gt; *)
+       (b :: k).
+(MFunctor t, Monad m) =&gt;
+(forall a. m a -&gt; n a) -&gt; t m b -&gt; t n b
+</span><a href="../file:///nix/store/5kfpmh3c36d8hypydncrf0k68dh3zc38-mmorph-lib-mmorph-1.1.5-haddock-doc/share/doc/mmorph/html/src"><span class="hs-identifier hs-var">hoist</span></a></span><span> </span><span class="annot"><span class="annottext">forall a. m a -&gt; GenT (GenBase m) a
+forall (m :: * -&gt; *) a. MonadGen m =&gt; m a -&gt; GenT (GenBase m) a
+</span><a href="../file:///nix/store/yfw29a1vc0myh0ffv2m947hi5bhyzazm-hedgehog-lib-hedgehog-1.0.5-haddock-doc/share/doc/hedgehog/html/src"><span class="hs-identifier hs-var">toGenT</span></a></span><span>
+</span><span id="line-93"></span><span>  </span><span id="local-6989586621679665305"><span class="annot"><span class="annottext">fromGenT :: GenT (GenBase (FreshT e m)) a -&gt; FreshT e m a
+</span><a href="../file:///nix/store/yfw29a1vc0myh0ffv2m947hi5bhyzazm-hedgehog-lib-hedgehog-1.0.5-haddock-doc/share/doc/hedgehog/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromGenT</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(forall a. GenT (GenBase m) a -&gt; m a)
+-&gt; FreshT e (GenT (GenBase m)) a -&gt; FreshT e m a
+forall k (t :: (* -&gt; *) -&gt; k -&gt; *) (m :: * -&gt; *) (n :: * -&gt; *)
+       (b :: k).
+(MFunctor t, Monad m) =&gt;
+(forall a. m a -&gt; n a) -&gt; t m b -&gt; t n b
+</span><a href="../file:///nix/store/5kfpmh3c36d8hypydncrf0k68dh3zc38-mmorph-lib-mmorph-1.1.5-haddock-doc/share/doc/mmorph/html/src"><span class="hs-identifier hs-var">hoist</span></a></span><span> </span><span class="annot"><span class="annottext">forall a. GenT (GenBase m) a -&gt; m a
+forall (m :: * -&gt; *) a. MonadGen m =&gt; GenT (GenBase m) a -&gt; m a
+</span><a href="../file:///nix/store/yfw29a1vc0myh0ffv2m947hi5bhyzazm-hedgehog-lib-hedgehog-1.0.5-haddock-doc/share/doc/hedgehog/html/src"><span class="hs-identifier hs-var">fromGenT</span></a></span><span> </span><span class="annot"><span class="annottext">(FreshT e (GenT (GenBase m)) a -&gt; FreshT e m a)
+-&gt; (GenT (FreshT e (GenBase m)) a -&gt; FreshT e (GenT (GenBase m)) a)
+-&gt; GenT (FreshT e (GenBase m)) a
+-&gt; FreshT e m a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">GenT (FreshT e (GenBase m)) a -&gt; FreshT e (GenT (GenBase m)) a
+forall (g :: (* -&gt; *) -&gt; * -&gt; *) (f :: (* -&gt; *) -&gt; * -&gt; *)
+       (m :: * -&gt; *) a.
+(MonadTransDistributive g, Transformer f g m) =&gt;
+g (f m) a -&gt; f (g m) a
+</span><a href="../file:///nix/store/yfw29a1vc0myh0ffv2m947hi5bhyzazm-hedgehog-lib-hedgehog-1.0.5-haddock-doc/share/doc/hedgehog/html/src"><span class="hs-identifier hs-var">distributeT</span></a></span></span></span><span>
+</span><span id="line-94"></span><span>
+</span><span id="line-95"></span><span class="annot"><a href="Control.Monad.Fresh.html#successor"><span class="hs-identifier hs-type">successor</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679665302"><span class="annot"><a href="#local-6989586621679665302"><span class="hs-identifier hs-type">e</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679665302"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679665302"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#Successor"><span class="hs-identifier hs-type">Successor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665302"><span class="hs-identifier hs-type">e</span></a></span><span>
+</span><span id="line-96"></span><span id="successor"><span class="annot"><span class="annottext">successor :: (e -&gt; e) -&gt; Successor e
+</span><a href="Control.Monad.Fresh.html#successor"><span class="hs-identifier hs-var hs-var">successor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(e -&gt; e) -&gt; Successor e
+forall a. (a -&gt; a) -&gt; Successor a
+</span><a href="Control.Monad.Fresh.html#Successor"><span class="hs-identifier hs-var">Successor</span></a></span><span>
+</span><span id="line-97"></span><span>
+</span><span id="line-98"></span><span class="annot"><a href="Control.Monad.Fresh.html#enumSucc"><span class="hs-identifier hs-type">enumSucc</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679665534"><span class="annot"><a href="#local-6989586621679665534"><span class="hs-identifier hs-type">e</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Enum</span></span><span> </span><span class="annot"><a href="#local-6989586621679665534"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#Successor"><span class="hs-identifier hs-type">Successor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665534"><span class="hs-identifier hs-type">e</span></a></span><span>
+</span><span id="line-99"></span><span id="enumSucc"><span class="annot"><span class="annottext">enumSucc :: Successor e
+</span><a href="Control.Monad.Fresh.html#enumSucc"><span class="hs-identifier hs-var hs-var">enumSucc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(e -&gt; e) -&gt; Successor e
+forall a. (a -&gt; a) -&gt; Successor a
+</span><a href="Control.Monad.Fresh.html#Successor"><span class="hs-identifier hs-var">Successor</span></a></span><span> </span><span class="annot"><span class="annottext">e -&gt; e
+forall a. Enum a =&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">succ</span></span><span>
+</span><span id="line-100"></span><span>
+</span><span id="line-101"></span><span class="hs-comment">-- | Run a @FreshT@ computation starting from the value</span><span>
+</span><span id="line-102"></span><span class="hs-comment">-- @toEnum 0@</span><span>
+</span><span id="line-103"></span><span class="annot"><a href="Control.Monad.Fresh.html#runFreshT"><span class="hs-identifier hs-type">runFreshT</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679665298"><span class="annot"><a href="#local-6989586621679665298"><span class="hs-identifier hs-type">e</span></a></span></span><span> </span><span id="local-6989586621679665297"><span class="annot"><a href="#local-6989586621679665297"><span class="hs-identifier hs-type">m</span></a></span></span><span> </span><span id="local-6989586621679665296"><span class="annot"><a href="#local-6989586621679665296"><span class="hs-identifier hs-type">a</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Enum</span></span><span> </span><span class="annot"><a href="#local-6989586621679665298"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="annot"><a href="#local-6989586621679665297"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665298"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665297"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665296"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679665297"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665296"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-104"></span><span id="runFreshT"><span class="annot"><span class="annottext">runFreshT :: FreshT e m a -&gt; m a
+</span><a href="Control.Monad.Fresh.html#runFreshT"><span class="hs-identifier hs-var hs-var">runFreshT</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">e -&gt; FreshT e m a -&gt; m a
+forall e (m :: * -&gt; *) a.
+(Monad m, Enum e) =&gt;
+e -&gt; FreshT e m a -&gt; m a
+</span><a href="Control.Monad.Fresh.html#runFreshTFrom"><span class="hs-identifier hs-var">runFreshTFrom</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; e
+forall a. Enum a =&gt; Int -&gt; a
+</span><span class="hs-identifier hs-var">toEnum</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span class="hs-special">)</span><span>
+</span><span id="line-105"></span><span>
+</span><span id="line-106"></span><span class="hs-comment">-- | Run a @Fresh@ computation starting from the value</span><span>
+</span><span id="line-107"></span><span class="hs-comment">-- @toEnum 0@</span><span>
+</span><span id="line-108"></span><span class="annot"><a href="Control.Monad.Fresh.html#runFresh"><span class="hs-identifier hs-type">runFresh</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679665292"><span class="annot"><a href="#local-6989586621679665292"><span class="hs-identifier hs-type">e</span></a></span></span><span> </span><span id="local-6989586621679665291"><span class="annot"><a href="#local-6989586621679665291"><span class="hs-identifier hs-type">a</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Enum</span></span><span> </span><span class="annot"><a href="#local-6989586621679665292"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#Fresh"><span class="hs-identifier hs-type">Fresh</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665292"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665291"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679665291"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-109"></span><span id="runFresh"><span class="annot"><span class="annottext">runFresh :: Fresh e a -&gt; a
+</span><a href="Control.Monad.Fresh.html#runFresh"><span class="hs-identifier hs-var hs-var">runFresh</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">e -&gt; Fresh e a -&gt; a
+forall e a. Enum e =&gt; e -&gt; Fresh e a -&gt; a
+</span><a href="Control.Monad.Fresh.html#runFreshFrom"><span class="hs-identifier hs-var">runFreshFrom</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; e
+forall a. Enum a =&gt; Int -&gt; a
+</span><span class="hs-identifier hs-var">toEnum</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span class="hs-special">)</span><span>
+</span><span id="line-110"></span><span>
+</span><span id="line-111"></span><span class="hs-comment">-- | Run a @FreshT@ computation starting from a specific value @e@.</span><span>
+</span><span id="line-112"></span><span class="annot"><a href="Control.Monad.Fresh.html#runFreshTFrom"><span class="hs-identifier hs-type">runFreshTFrom</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679665547"><span class="annot"><a href="#local-6989586621679665547"><span class="hs-identifier hs-type">e</span></a></span></span><span> </span><span id="local-6989586621679665548"><span class="annot"><a href="#local-6989586621679665548"><span class="hs-identifier hs-type">m</span></a></span></span><span> </span><span id="local-6989586621679665546"><span class="annot"><a href="#local-6989586621679665546"><span class="hs-identifier hs-type">a</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="annot"><a href="#local-6989586621679665548"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Enum</span></span><span> </span><span class="annot"><a href="#local-6989586621679665547"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679665547"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665547"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665548"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665546"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679665548"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665546"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-113"></span><span id="runFreshTFrom"><span class="annot"><span class="annottext">runFreshTFrom :: e -&gt; FreshT e m a -&gt; m a
+</span><a href="Control.Monad.Fresh.html#runFreshTFrom"><span class="hs-identifier hs-var hs-var">runFreshTFrom</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Successor e -&gt; e -&gt; FreshT e m a -&gt; m a
+forall e (m :: * -&gt; *) a.
+Monad m =&gt;
+Successor e -&gt; e -&gt; FreshT e m a -&gt; m a
+</span><a href="Control.Monad.Fresh.html#runFreshTWith"><span class="hs-identifier hs-var">runFreshTWith</span></a></span><span> </span><span class="annot"><span class="annottext">Successor e
+forall e. Enum e =&gt; Successor e
+</span><a href="Control.Monad.Fresh.html#enumSucc"><span class="hs-identifier hs-var">enumSucc</span></a></span><span>
+</span><span id="line-114"></span><span>
+</span><span id="line-115"></span><span class="hs-comment">-- | Run a @Fresh@ computation starting from a specific value @e@.</span><span>
+</span><span id="line-116"></span><span class="annot"><a href="Control.Monad.Fresh.html#runFreshFrom"><span class="hs-identifier hs-type">runFreshFrom</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679665542"><span class="annot"><a href="#local-6989586621679665542"><span class="hs-identifier hs-type">e</span></a></span></span><span> </span><span id="local-6989586621679665541"><span class="annot"><a href="#local-6989586621679665541"><span class="hs-identifier hs-type">a</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Enum</span></span><span> </span><span class="annot"><a href="#local-6989586621679665542"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679665542"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#Fresh"><span class="hs-identifier hs-type">Fresh</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665542"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665541"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679665541"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-117"></span><span id="runFreshFrom"><span class="annot"><span class="annottext">runFreshFrom :: e -&gt; Fresh e a -&gt; a
+</span><a href="Control.Monad.Fresh.html#runFreshFrom"><span class="hs-identifier hs-var hs-var">runFreshFrom</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Successor e -&gt; e -&gt; Fresh e a -&gt; a
+forall e a. Successor e -&gt; e -&gt; Fresh e a -&gt; a
+</span><a href="Control.Monad.Fresh.html#runFreshWith"><span class="hs-identifier hs-var">runFreshWith</span></a></span><span> </span><span class="annot"><span class="annottext">Successor e
+forall e. Enum e =&gt; Successor e
+</span><a href="Control.Monad.Fresh.html#enumSucc"><span class="hs-identifier hs-var">enumSucc</span></a></span><span>
+</span><span id="line-118"></span><span>
+</span><span id="line-119"></span><span class="hs-comment">-- | Run a @FreshT@ computation starting from a specific value @e@ with</span><span>
+</span><span id="line-120"></span><span class="hs-comment">-- a the next fresh value determined by @Successor e@.</span><span>
+</span><span id="line-121"></span><span class="annot"><a href="Control.Monad.Fresh.html#runFreshTWith"><span class="hs-identifier hs-type">runFreshTWith</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679665536"><span class="annot"><a href="#local-6989586621679665536"><span class="hs-identifier hs-type">e</span></a></span></span><span> </span><span id="local-6989586621679665537"><span class="annot"><a href="#local-6989586621679665537"><span class="hs-identifier hs-type">m</span></a></span></span><span> </span><span id="local-6989586621679665535"><span class="annot"><a href="#local-6989586621679665535"><span class="hs-identifier hs-type">a</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="annot"><a href="#local-6989586621679665537"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#Successor"><span class="hs-identifier hs-type">Successor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665536"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679665536"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#FreshT"><span class="hs-identifier hs-type">FreshT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665536"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665537"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665535"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679665537"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665535"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-122"></span><span id="runFreshTWith"><span class="annot"><span class="annottext">runFreshTWith :: Successor e -&gt; e -&gt; FreshT e m a -&gt; m a
+</span><a href="Control.Monad.Fresh.html#runFreshTWith"><span class="hs-identifier hs-var hs-var">runFreshTWith</span></a></span></span><span> </span><span id="local-6989586621679665287"><span class="annot"><span class="annottext">Successor e
+</span><a href="#local-6989586621679665287"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span id="local-6989586621679665286"><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621679665286"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-123"></span><span>  </span><span class="annot"><span class="annottext">(StateT e m a -&gt; e -&gt; m a) -&gt; e -&gt; StateT e m a -&gt; m a
+forall a b c. (a -&gt; b -&gt; c) -&gt; b -&gt; a -&gt; c
+</span><span class="hs-identifier hs-var">flip</span></span><span> </span><span class="annot"><span class="annottext">StateT e m a -&gt; e -&gt; m a
+forall (m :: * -&gt; *) s a. Monad m =&gt; StateT s m a -&gt; s -&gt; m a
+</span><span class="hs-identifier hs-var">evalStateT</span></span><span> </span><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621679665286"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-124"></span><span>    </span><span class="annot"><span class="annottext">(StateT e m a -&gt; m a)
+-&gt; (FreshT e m a -&gt; StateT e m a) -&gt; FreshT e m a -&gt; m a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (StateT e m) a
+ -&gt; Successor e -&gt; StateT e m a)
+-&gt; Successor e
+-&gt; ReaderT (Successor e) (StateT e m) a
+-&gt; StateT e m a
+forall a b c. (a -&gt; b -&gt; c) -&gt; b -&gt; a -&gt; c
+</span><span class="hs-identifier hs-var">flip</span></span><span> </span><span class="annot"><span class="annottext">ReaderT (Successor e) (StateT e m) a -&gt; Successor e -&gt; StateT e m a
+forall r (m :: * -&gt; *) a. ReaderT r m a -&gt; r -&gt; m a
+</span><span class="hs-identifier hs-var hs-var">runReaderT</span></span><span> </span><span class="annot"><span class="annottext">Successor e
+</span><a href="#local-6989586621679665287"><span class="hs-identifier hs-var">s</span></a></span><span>
+</span><span id="line-125"></span><span>    </span><span class="annot"><span class="annottext">(ReaderT (Successor e) (StateT e m) a -&gt; StateT e m a)
+-&gt; (FreshT e m a -&gt; ReaderT (Successor e) (StateT e m) a)
+-&gt; FreshT e m a
+-&gt; StateT e m a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">FreshT e m a -&gt; ReaderT (Successor e) (StateT e m) a
+forall e (m :: * -&gt; *) a.
+FreshT e m a -&gt; ReaderT (Successor e) (StateT e m) a
+</span><a href="Control.Monad.Fresh.html#unFreshT"><span class="hs-identifier hs-var hs-var">unFreshT</span></a></span><span>
+</span><span id="line-126"></span><span>
+</span><span id="line-127"></span><span class="hs-comment">-- | Run a @FreshT@ computation starting from a specific value @e@ with</span><span>
+</span><span id="line-128"></span><span class="hs-comment">-- a the next fresh value determined by @Successor e@.</span><span>
+</span><span id="line-129"></span><span class="annot"><a href="Control.Monad.Fresh.html#runFreshWith"><span class="hs-identifier hs-type">runFreshWith</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679665531"><span class="annot"><a href="#local-6989586621679665531"><span class="hs-identifier hs-type">e</span></a></span></span><span> </span><span id="local-6989586621679665530"><span class="annot"><a href="#local-6989586621679665530"><span class="hs-identifier hs-type">a</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#Successor"><span class="hs-identifier hs-type">Successor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665531"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679665531"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#Fresh"><span class="hs-identifier hs-type">Fresh</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665531"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665530"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679665530"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-130"></span><span id="runFreshWith"><span class="annot"><span class="annottext">runFreshWith :: Successor e -&gt; e -&gt; Fresh e a -&gt; a
+</span><a href="Control.Monad.Fresh.html#runFreshWith"><span class="hs-identifier hs-var hs-var">runFreshWith</span></a></span></span><span> </span><span id="local-6989586621679665284"><span class="annot"><span class="annottext">Successor e
+</span><a href="#local-6989586621679665284"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span id="local-6989586621679665283"><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621679665283"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Identity a -&gt; a
+forall a. Identity a -&gt; a
+</span><span class="hs-identifier hs-var hs-var">runIdentity</span></span><span> </span><span class="annot"><span class="annottext">(Identity a -&gt; a) -&gt; (Fresh e a -&gt; Identity a) -&gt; Fresh e a -&gt; a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Successor e -&gt; e -&gt; Fresh e a -&gt; Identity a
+forall e (m :: * -&gt; *) a.
+Monad m =&gt;
+Successor e -&gt; e -&gt; FreshT e m a -&gt; m a
+</span><a href="Control.Monad.Fresh.html#runFreshTWith"><span class="hs-identifier hs-var">runFreshTWith</span></a></span><span> </span><span class="annot"><span class="annottext">Successor e
+</span><a href="#local-6989586621679665284"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621679665283"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-131"></span><span>
+</span><span id="line-132"></span><span class="hs-comment">-- | The MTL style class for generating fresh values</span><span>
+</span><span id="line-133"></span><span class="hs-keyword">class</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="annot"><a href="#local-6989586621679665723"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span id="MonadFresh"><span class="annot"><a href="Control.Monad.Fresh.html#MonadFresh"><span class="hs-identifier hs-var">MonadFresh</span></a></span></span><span> </span><span id="local-6989586621679665722"><span class="annot"><a href="#local-6989586621679665722"><span class="hs-identifier hs-type">e</span></a></span></span><span> </span><span id="local-6989586621679665723"><span class="annot"><a href="#local-6989586621679665723"><span class="hs-identifier hs-type">m</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><a href="#local-6989586621679665723"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679665722"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-134"></span><span>  </span><span class="hs-comment">-- | Generate a fresh value @e@, @fresh@ should never produce the</span><span>
+</span><span id="line-135"></span><span>  </span><span class="hs-comment">-- same value within a monadic computation.</span><span>
+</span><span id="line-136"></span><span>  </span><span id="fresh"><span class="annot"><a href="Control.Monad.Fresh.html#fresh"><span class="hs-identifier hs-type">fresh</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679665723"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665722"><span class="hs-identifier hs-type">e</span></a></span><span>
+</span><span id="line-137"></span><span>
+</span><span id="line-138"></span><span id="local-6989586621679665280"><span id="local-6989586621679665281"><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#MonadFresh"><span class="hs-identifier hs-type">MonadFresh</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665281"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665280"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#MonadFresh"><span class="hs-identifier hs-type">MonadFresh</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665281"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">IdentityT</span></span><span> </span><span class="annot"><a href="#local-6989586621679665280"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-139"></span><span>  </span><span id="local-6989586621679665277"><span class="annot"><span class="annottext">fresh :: IdentityT m e
+</span><a href="#local-6989586621679665277"><span class="hs-identifier hs-var hs-var hs-var hs-var">fresh</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">m e -&gt; IdentityT m e
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">m e
+forall e (m :: * -&gt; *). MonadFresh e m =&gt; m e
+</span><a href="Control.Monad.Fresh.html#fresh"><span class="hs-identifier hs-var">fresh</span></a></span></span></span><span>
+</span><span id="line-140"></span><span>
+</span><span id="line-141"></span><span id="local-6989586621679665274"><span id="local-6989586621679665275"><span id="local-6989586621679665276"><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#MonadFresh"><span class="hs-identifier hs-type">MonadFresh</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665276"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665275"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#MonadFresh"><span class="hs-identifier hs-type">MonadFresh</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665276"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">StateT</span></span><span> </span><span class="annot"><a href="#local-6989586621679665274"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665275"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-142"></span><span>  </span><span id="local-6989586621679665271"><span class="annot"><span class="annottext">fresh :: StateT s m e
+</span><a href="#local-6989586621679665271"><span class="hs-identifier hs-var hs-var hs-var hs-var">fresh</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">m e -&gt; StateT s m e
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">m e
+forall e (m :: * -&gt; *). MonadFresh e m =&gt; m e
+</span><a href="Control.Monad.Fresh.html#fresh"><span class="hs-identifier hs-var">fresh</span></a></span></span></span></span><span>
+</span><span id="line-143"></span><span>
+</span><span id="line-144"></span><span id="local-6989586621679665268"><span id="local-6989586621679665269"><span id="local-6989586621679665270"><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#MonadFresh"><span class="hs-identifier hs-type">MonadFresh</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665270"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665269"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#MonadFresh"><span class="hs-identifier hs-type">MonadFresh</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665270"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ReaderT</span></span><span> </span><span class="annot"><a href="#local-6989586621679665268"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665269"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-145"></span><span>  </span><span id="local-6989586621679665265"><span class="annot"><span class="annottext">fresh :: ReaderT s m e
+</span><a href="#local-6989586621679665265"><span class="hs-identifier hs-var hs-var hs-var hs-var">fresh</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">m e -&gt; ReaderT s m e
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">m e
+forall e (m :: * -&gt; *). MonadFresh e m =&gt; m e
+</span><a href="Control.Monad.Fresh.html#fresh"><span class="hs-identifier hs-var">fresh</span></a></span></span></span></span><span>
+</span><span id="line-146"></span><span>
+</span><span id="line-147"></span><span id="local-6989586621679665262"><span id="local-6989586621679665263"><span id="local-6989586621679665264"><span class="hs-keyword">instance</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#MonadFresh"><span class="hs-identifier hs-type">MonadFresh</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665264"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665263"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Monoid</span></span><span> </span><span class="annot"><a href="#local-6989586621679665262"><span class="hs-identifier hs-type">s</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#MonadFresh"><span class="hs-identifier hs-type">MonadFresh</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665264"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">WriterT</span></span><span> </span><span class="annot"><a href="#local-6989586621679665262"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665263"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-148"></span><span>  </span><span id="local-6989586621679665259"><span class="annot"><span class="annottext">fresh :: WriterT s m e
+</span><a href="#local-6989586621679665259"><span class="hs-identifier hs-var hs-var hs-var hs-var">fresh</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">m e -&gt; WriterT s m e
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">m e
+forall e (m :: * -&gt; *). MonadFresh e m =&gt; m e
+</span><a href="Control.Monad.Fresh.html#fresh"><span class="hs-identifier hs-var">fresh</span></a></span></span></span></span><span>
+</span><span id="line-149"></span><span>
+</span><span id="line-150"></span><span id="local-6989586621679665257"><span id="local-6989586621679665258"><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#MonadFresh"><span class="hs-identifier hs-type">MonadFresh</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665258"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665257"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#MonadFresh"><span class="hs-identifier hs-type">MonadFresh</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665258"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">MaybeT</span></span><span> </span><span class="annot"><a href="#local-6989586621679665257"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-151"></span><span>  </span><span id="local-6989586621679665254"><span class="annot"><span class="annottext">fresh :: MaybeT m e
+</span><a href="#local-6989586621679665254"><span class="hs-identifier hs-var hs-var hs-var hs-var">fresh</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">m e -&gt; MaybeT m e
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">m e
+forall e (m :: * -&gt; *). MonadFresh e m =&gt; m e
+</span><a href="Control.Monad.Fresh.html#fresh"><span class="hs-identifier hs-var">fresh</span></a></span></span></span><span>
+</span><span id="line-152"></span><span>
+</span><span id="line-153"></span><span id="local-6989586621679665251"><span id="local-6989586621679665252"><span id="local-6989586621679665253"><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#MonadFresh"><span class="hs-identifier hs-type">MonadFresh</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665253"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665252"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#MonadFresh"><span class="hs-identifier hs-type">MonadFresh</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665253"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ContT</span></span><span> </span><span class="annot"><a href="#local-6989586621679665251"><span class="hs-identifier hs-type">r</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665252"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-154"></span><span>  </span><span id="local-6989586621679665248"><span class="annot"><span class="annottext">fresh :: ContT r m e
+</span><a href="#local-6989586621679665248"><span class="hs-identifier hs-var hs-var hs-var hs-var">fresh</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">m e -&gt; ContT r m e
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">m e
+forall e (m :: * -&gt; *). MonadFresh e m =&gt; m e
+</span><a href="Control.Monad.Fresh.html#fresh"><span class="hs-identifier hs-var">fresh</span></a></span></span></span></span><span>
+</span><span id="line-155"></span><span>
+</span><span id="line-156"></span><span id="local-6989586621679665243"><span id="local-6989586621679665244"><span id="local-6989586621679665245"><span id="local-6989586621679665246"><span id="local-6989586621679665247"><span class="hs-keyword">instance</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Monoid</span></span><span> </span><span class="annot"><a href="#local-6989586621679665247"><span class="hs-identifier hs-type">w</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#MonadFresh"><span class="hs-identifier hs-type">MonadFresh</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665246"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665245"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#MonadFresh"><span class="hs-identifier hs-type">MonadFresh</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665246"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">RWST</span></span><span> </span><span class="annot"><a href="#local-6989586621679665244"><span class="hs-identifier hs-type">r</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665247"><span class="hs-identifier hs-type">w</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665243"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665245"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-157"></span><span>  </span><span id="local-6989586621679665240"><span class="annot"><span class="annottext">fresh :: RWST r w s m e
+</span><a href="#local-6989586621679665240"><span class="hs-identifier hs-var hs-var hs-var hs-var">fresh</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">m e -&gt; RWST r w s m e
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">m e
+forall e (m :: * -&gt; *). MonadFresh e m =&gt; m e
+</span><a href="Control.Monad.Fresh.html#fresh"><span class="hs-identifier hs-var">fresh</span></a></span></span></span></span></span></span><span>
+</span><span id="line-158"></span><span>
+</span><span id="line-159"></span><span id="local-6989586621679665237"><span id="local-6989586621679665238"><span id="local-6989586621679665239"><span class="hs-keyword">instance</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Control.Monad.Fresh.html#MonadFresh"><span class="hs-identifier hs-type">MonadFresh</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665239"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665238"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Control.Monad.Fresh.html#MonadFresh"><span class="hs-identifier hs-type">MonadFresh</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665239"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ExceptT</span></span><span> </span><span class="annot"><a href="#local-6989586621679665237"><span class="hs-identifier hs-type">e'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679665238"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-160"></span><span>  </span><span id="local-6989586621679665234"><span class="annot"><span class="annottext">fresh :: ExceptT e' m e
+</span><a href="#local-6989586621679665234"><span class="hs-identifier hs-var hs-var hs-var hs-var">fresh</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">m e -&gt; ExceptT e' m e
+forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
+(MonadTrans t, Monad m) =&gt;
+m a -&gt; t m a
+</span><span class="hs-identifier hs-var">lift</span></span><span> </span><span class="annot"><span class="annottext">m e
+forall e (m :: * -&gt; *). MonadFresh e m =&gt; m e
+</span><a href="Control.Monad.Fresh.html#fresh"><span class="hs-identifier hs-var">fresh</span></a></span></span></span></span><span>
+</span><span id="line-161"></span></pre></body></html>
