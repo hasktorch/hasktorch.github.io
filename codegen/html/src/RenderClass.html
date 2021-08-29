@@ -1,32 +1,35 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DeriveAnyClass #-}</span><span>
 </span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
 </span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
-</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE RecordWildCards #-}</span><span>
-</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
-</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE QuasiQuotes #-}</span><span>
-</span><span id="line-7"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">RenderClass</span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-8"></span><span>
-</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">forM_</span></span><span class="hs-special">)</span><span>
-</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/s731834bxjfbps9wx0yw1m4l230157bw-yaml-lib-yaml-0.11.5.0-haddock-doc/share/doc/yaml/html/src"><span class="hs-identifier">Data.Yaml</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/s731834bxjfbps9wx0yw1m4l230157bw-yaml-lib-yaml-0.11.5.0-haddock-doc/share/doc/yaml/html/src"><span class="hs-identifier">ParseException</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/s731834bxjfbps9wx0yw1m4l230157bw-yaml-lib-yaml-0.11.5.0-haddock-doc/share/doc/yaml/html/src"><span class="hs-identifier">Data.Yaml</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Y</span></span><span>
-</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/n8baacp5wvk8vh3ayr66mv16x3p99iid-shakespeare-lib-shakespeare-2.0.25-haddock-doc/share/doc/shakespeare/html/src"><span class="hs-identifier">Text.Shakespeare.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/n8baacp5wvk8vh3ayr66mv16x3p99iid-shakespeare-lib-shakespeare-2.0.25-haddock-doc/share/doc/shakespeare/html/src"><span class="hs-identifier">st</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">unpack</span></span><span class="hs-special">)</span><span>
-</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.String</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">fromString</span></span><span class="hs-special">)</span><span>
-</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text.IO</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
-</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">System.Directory</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">createDirectoryIfMissing</span></span><span class="hs-special">)</span><span>
-</span><span id="line-17"></span><span>
-</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="ParseDeclarations.html"><span class="hs-identifier">ParseDeclarations</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
-</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="ParseClass.html"><span class="hs-identifier">ParseClass</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">PC</span></span><span>
-</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="ParseFunctionSig.html"><span class="hs-identifier">ParseFunctionSig</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">P</span></span><span>
-</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="RenderCommon.html"><span class="hs-identifier">RenderCommon</span></a></span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE QuasiQuotes #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE RecordWildCards #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">RenderClass</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">forM_</span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.String</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">fromString</span></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">unpack</span></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text.IO</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/s731834bxjfbps9wx0yw1m4l230157bw-yaml-lib-yaml-0.11.5.0-haddock-doc/share/doc/yaml/html/src"><span class="hs-identifier">Data.Yaml</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/s731834bxjfbps9wx0yw1m4l230157bw-yaml-lib-yaml-0.11.5.0-haddock-doc/share/doc/yaml/html/src"><span class="hs-identifier">ParseException</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/s731834bxjfbps9wx0yw1m4l230157bw-yaml-lib-yaml-0.11.5.0-haddock-doc/share/doc/yaml/html/src"><span class="hs-identifier">Data.Yaml</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Y</span></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="ParseClass.html"><span class="hs-identifier">ParseClass</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">PC</span></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="ParseDeclarations.html"><span class="hs-identifier">ParseDeclarations</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="ParseFunctionSig.html"><span class="hs-identifier">ParseFunctionSig</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">P</span></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="RenderCommon.html"><span class="hs-identifier">RenderCommon</span></a></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">System.Directory</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">createDirectoryIfMissing</span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/n8baacp5wvk8vh3ayr66mv16x3p99iid-shakespeare-lib-shakespeare-2.0.25-haddock-doc/share/doc/shakespeare/html/src"><span class="hs-identifier">Text.Shakespeare.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/n8baacp5wvk8vh3ayr66mv16x3p99iid-shakespeare-lib-shakespeare-2.0.25-haddock-doc/share/doc/shakespeare/html/src"><span class="hs-identifier">st</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-22"></span><span>
 </span><span id="line-23"></span><span class="annot"><a href="RenderClass.html#renderImport"><span class="hs-identifier hs-type">renderImport</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ParseClass.html#CppClassSpec"><span class="hs-identifier hs-type">PC.CppClassSpec</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
 </span><span id="line-24"></span><span id="renderImport"><span class="annot"><span class="annottext">renderImport :: Bool -&gt; CppClassSpec -&gt; Text -&gt; Text
 </span><a href="RenderClass.html#renderImport"><span class="hs-identifier hs-var hs-var">renderImport</span></a></span></span><span> </span><span id="local-6989586621679282591"><span class="annot"><span class="annottext">Bool
 </span><a href="#local-6989586621679282591"><span class="hs-identifier hs-var">is_managed</span></a></span></span><span> </span><span class="annot"><span class="annottext">CppClassSpec
 </span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679282590"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679282590"><span class="hs-identifier hs-var">unmanagedModuleName</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679282591"><span class="hs-identifier hs-var">is_managed</span></a></span><span> </span><span class="hs-keyword">then</span><span>  </span><span class="annot"><span class="">[st|
+</span><a href="#local-6989586621679282590"><span class="hs-identifier hs-var">unmanagedModuleName</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679282591"><span class="hs-identifier hs-var">is_managed</span></a></span><span>
+</span><span id="line-26"></span><span>    </span><span class="hs-keyword">then</span><span>
+</span><span id="line-27"></span><span>      </span><span class="annot"><span class="">[st|
 import Foreign.C.String
 import Foreign.C.Types
 import Foreign
@@ -35,7 +38,9 @@ import Torch.Internal.Class
 import Torch.Internal.Cast
 import Torch.Internal.Objects
 import qualified #{unmanagedModuleName} as Unmanaged
-|]</span></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="">[st|
+|]</span></span><span>
+</span><span id="line-37"></span><span>    </span><span class="hs-keyword">else</span><span>
+</span><span id="line-38"></span><span>      </span><span class="annot"><span class="">[st|
 import qualified Language.C.Inline.Cpp as C
 import qualified Language.C.Inline.Cpp.Exceptions as C
 import qualified Language.C.Inline.Context as C
@@ -49,10 +54,9 @@ import Torch.Internal.Type
 C.context $ C.cppCtx &lt;&gt; mempty { C.ctxTypesTable = typeTable }
 
 |]</span></span><span>
-</span><span id="line-47"></span><span>
-</span><span id="line-48"></span><span>
-</span><span id="line-49"></span><span class="annot"><a href="RenderClass.html#renderConstructors"><span class="hs-identifier hs-type">renderConstructors</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ParseClass.html#CppClassSpec"><span class="hs-identifier hs-type">PC.CppClassSpec</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">]</span><span>
-</span><span id="line-50"></span><span id="renderConstructors"><span class="annot"><span class="annottext">renderConstructors :: Bool -&gt; CppClassSpec -&gt; [Text]
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="annot"><a href="RenderClass.html#renderConstructors"><span class="hs-identifier hs-type">renderConstructors</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ParseClass.html#CppClassSpec"><span class="hs-identifier hs-type">PC.CppClassSpec</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">]</span><span>
+</span><span id="line-54"></span><span id="renderConstructors"><span class="annot"><span class="annottext">renderConstructors :: Bool -&gt; CppClassSpec -&gt; [Text]
 </span><a href="RenderClass.html#renderConstructors"><span class="hs-identifier hs-var hs-var">renderConstructors</span></a></span></span><span> </span><span id="local-6989586621679282581"><span class="annot"><span class="annottext">Bool
 </span><a href="#local-6989586621679282581"><span class="hs-identifier hs-var">is_managed</span></a></span></span><span> </span><span id="local-6989586621679282580"><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282580"><span class="hs-identifier hs-var">typ_</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Function -&gt; Text) -&gt; [Function] -&gt; [Text]
@@ -68,29 +72,35 @@ forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 </span><span class="hs-string">&quot;&quot;</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CppClassSpec -&gt; [Function]
 </span><a href="ParseClass.html#constructors"><span class="hs-identifier hs-var hs-var">PC.constructors</span></a></span><span> </span><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282580"><span class="hs-identifier hs-var">typ_</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-51"></span><span>
-</span><span id="line-52"></span><span class="annot"><a href="RenderClass.html#renderHeaders"><span class="hs-identifier hs-type">renderHeaders</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ParseClass.html#CppClassSpec"><span class="hs-identifier hs-type">PC.CppClassSpec</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
-</span><span id="line-53"></span><span id="renderHeaders"><span class="annot"><span class="annottext">renderHeaders :: Bool -&gt; CppClassSpec -&gt; Text
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span class="annot"><a href="RenderClass.html#renderHeaders"><span class="hs-identifier hs-type">renderHeaders</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ParseClass.html#CppClassSpec"><span class="hs-identifier hs-type">PC.CppClassSpec</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-57"></span><span id="renderHeaders"><span class="annot"><span class="annottext">renderHeaders :: Bool -&gt; CppClassSpec -&gt; Text
 </span><a href="RenderClass.html#renderHeaders"><span class="hs-identifier hs-var hs-var">renderHeaders</span></a></span></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="annottext">CppClassSpec
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;&quot;</span></span><span>
-</span><span id="line-54"></span><span class="annot"><a href="RenderClass.html#renderHeaders"><span class="hs-identifier hs-var">renderHeaders</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span id="line-58"></span><span class="annot"><a href="RenderClass.html#renderHeaders"><span class="hs-identifier hs-var">renderHeaders</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">False</span></span><span> </span><span id="local-6989586621679282576"><span class="annot"><span class="annottext">CppClassSpec
-</span><a href="#local-6989586621679282576"><span class="hs-identifier hs-var">typ_</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Text] -&gt; Text
+</span><a href="#local-6989586621679282576"><span class="hs-identifier hs-var">typ_</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-59"></span><span>  </span><span class="annot"><span class="annottext">[Text] -&gt; Text
 forall a. Monoid a =&gt; [a] -&gt; a
 </span><span class="hs-identifier hs-var">mconcat</span></span><span> </span><span class="annot"><span class="annottext">([Text] -&gt; Text) -&gt; [Text] -&gt; Text
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Text) -&gt; [String] -&gt; [Text]
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-60"></span><span>    </span><span class="annot"><span class="annottext">(String -&gt; Text) -&gt; [String] -&gt; [Text]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
-</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679282575"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679282575"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="">[st|C.include &quot;&lt;#{s}&gt;&quot;
-|]</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CppClassSpec -&gt; [String]
+</span><span class="hs-identifier hs-var">map</span></span><span>
+</span><span id="line-61"></span><span>      </span><span class="hs-special">(</span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679282575"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679282575"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-62"></span><span>          </span><span class="annot"><span class="">[st|C.include &quot;&lt;#{s}&gt;&quot;
+|]</span></span><span>
+</span><span id="line-64"></span><span>      </span><span class="hs-special">)</span><span>
+</span><span id="line-65"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CppClassSpec -&gt; [String]
 </span><a href="ParseClass.html#headers"><span class="hs-identifier hs-var hs-var">PC.headers</span></a></span><span> </span><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282576"><span class="hs-identifier hs-var">typ_</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-56"></span><span>
-</span><span id="line-57"></span><span class="annot"><a href="RenderClass.html#renderMethods"><span class="hs-identifier hs-type">renderMethods</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ParseClass.html#CppClassSpec"><span class="hs-identifier hs-type">PC.CppClassSpec</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">]</span><span>
-</span><span id="line-58"></span><span id="renderMethods"><span class="annot"><span class="annottext">renderMethods :: Bool -&gt; CppClassSpec -&gt; [Text]
+</span><span id="line-66"></span><span>
+</span><span id="line-67"></span><span class="annot"><a href="RenderClass.html#renderMethods"><span class="hs-identifier hs-type">renderMethods</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ParseClass.html#CppClassSpec"><span class="hs-identifier hs-type">PC.CppClassSpec</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">]</span><span>
+</span><span id="line-68"></span><span id="renderMethods"><span class="annot"><span class="annottext">renderMethods :: Bool -&gt; CppClassSpec -&gt; [Text]
 </span><a href="RenderClass.html#renderMethods"><span class="hs-identifier hs-var hs-var">renderMethods</span></a></span></span><span> </span><span id="local-6989586621679282572"><span class="annot"><span class="annottext">Bool
 </span><a href="#local-6989586621679282572"><span class="hs-identifier hs-var">is_managed</span></a></span></span><span> </span><span id="local-6989586621679282571"><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282571"><span class="hs-identifier hs-var">typ_</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Function -&gt; Text) -&gt; [Function] -&gt; [Text]
@@ -106,9 +116,9 @@ forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 </span><span class="hs-string">&quot;&quot;</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CppClassSpec -&gt; [Function]
 </span><a href="ParseClass.html#methods"><span class="hs-identifier hs-var hs-var">PC.methods</span></a></span><span> </span><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282571"><span class="hs-identifier hs-var">typ_</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-59"></span><span>
-</span><span id="line-60"></span><span class="annot"><a href="RenderClass.html#renderFunctions"><span class="hs-identifier hs-type">renderFunctions</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ParseClass.html#CppClassSpec"><span class="hs-identifier hs-type">PC.CppClassSpec</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">]</span><span>
-</span><span id="line-61"></span><span id="renderFunctions"><span class="annot"><span class="annottext">renderFunctions :: Bool -&gt; CppClassSpec -&gt; [Text]
+</span><span id="line-69"></span><span>
+</span><span id="line-70"></span><span class="annot"><a href="RenderClass.html#renderFunctions"><span class="hs-identifier hs-type">renderFunctions</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ParseClass.html#CppClassSpec"><span class="hs-identifier hs-type">PC.CppClassSpec</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">]</span><span>
+</span><span id="line-71"></span><span id="renderFunctions"><span class="annot"><span class="annottext">renderFunctions :: Bool -&gt; CppClassSpec -&gt; [Text]
 </span><a href="RenderClass.html#renderFunctions"><span class="hs-identifier hs-var hs-var">renderFunctions</span></a></span></span><span> </span><span id="local-6989586621679282568"><span class="annot"><span class="annottext">Bool
 </span><a href="#local-6989586621679282568"><span class="hs-identifier hs-var">is_managed</span></a></span></span><span> </span><span id="local-6989586621679282567"><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282567"><span class="hs-identifier hs-var">typ_</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Function -&gt; Text) -&gt; [Function] -&gt; [Text]
@@ -121,18 +131,18 @@ forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 </span><span class="hs-string">&quot;&quot;</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CppClassSpec -&gt; [Function]
 </span><a href="ParseClass.html#functions"><span class="hs-identifier hs-var hs-var">PC.functions</span></a></span><span> </span><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282567"><span class="hs-identifier hs-var">typ_</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-62"></span><span>
-</span><span id="line-63"></span><span>
-</span><span id="line-64"></span><span class="annot"><a href="RenderClass.html#toMethod"><span class="hs-identifier hs-type">toMethod</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="ParseDeclarations.html#Declaration"><span class="hs-identifier hs-type">D.Declaration</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ParseFunctionSig.html#Function"><span class="hs-identifier hs-type">P.Function</span></a></span><span>
-</span><span id="line-65"></span><span id="toMethod"><span class="annot"><span class="annottext">toMethod :: Declaration -&gt; Function
+</span><span id="line-72"></span><span>
+</span><span id="line-73"></span><span class="annot"><a href="RenderClass.html#toMethod"><span class="hs-identifier hs-type">toMethod</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="ParseDeclarations.html#Declaration"><span class="hs-identifier hs-type">D.Declaration</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ParseFunctionSig.html#Function"><span class="hs-identifier hs-type">P.Function</span></a></span><span>
+</span><span id="line-74"></span><span id="toMethod"><span class="annot"><span class="annottext">toMethod :: Declaration -&gt; Function
 </span><a href="RenderClass.html#toMethod"><span class="hs-identifier hs-var hs-var">toMethod</span></a></span></span><span> </span><span id="local-6989586621679282563"><span class="annot"><span class="annottext">Declaration
-</span><a href="#local-6989586621679282563"><span class="hs-identifier hs-var">dl</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Function :: String -&gt; [Parameter] -&gt; Parsable -&gt; Variants -&gt; Function
+</span><a href="#local-6989586621679282563"><span class="hs-identifier hs-var">dl</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-75"></span><span>  </span><span class="annot"><span class="annottext">Function :: String -&gt; [Parameter] -&gt; Parsable -&gt; Variants -&gt; Function
 </span><a href="ParseFunctionSig.html#Function"><span class="hs-identifier hs-type">P.Function</span></a></span><span>
-</span><span id="line-66"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">name :: String
+</span><span id="line-76"></span><span>    </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">name :: String
 </span><a href="ParseFunctionSig.html#name"><span class="hs-identifier hs-var">P.name</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Declaration -&gt; String
 </span><a href="ParseDeclarations.html#name"><span class="hs-identifier hs-var hs-var">D.name</span></a></span><span> </span><span class="annot"><span class="annottext">Declaration
-</span><a href="#local-6989586621679282563"><span class="hs-identifier hs-var">dl</span></a></span><span>
-</span><span id="line-67"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">parameters :: [Parameter]
+</span><a href="#local-6989586621679282563"><span class="hs-identifier hs-var">dl</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-77"></span><span>      </span><span class="annot"><span class="annottext">parameters :: [Parameter]
 </span><a href="ParseFunctionSig.html#parameters"><span class="hs-identifier hs-var">P.parameters</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Type -&gt; Parameter) -&gt; [Type] -&gt; [Parameter]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 </span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679282558"><span class="annot"><span class="annottext">Type
@@ -149,19 +159,19 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 forall a. [a] -&gt; [a]
 </span><span class="hs-identifier hs-var">tail</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Declaration -&gt; [Type]
 </span><a href="ParseDeclarations.html#arguments"><span class="hs-identifier hs-var hs-var">D.arguments</span></a></span><span> </span><span class="annot"><span class="annottext">Declaration
-</span><a href="#local-6989586621679282563"><span class="hs-identifier hs-var">dl</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-68"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">retType :: Parsable
+</span><a href="#local-6989586621679282563"><span class="hs-identifier hs-var">dl</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-78"></span><span>      </span><span class="annot"><span class="annottext">retType :: Parsable
 </span><a href="ParseFunctionSig.html#retType"><span class="hs-identifier hs-var">P.retType</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Declaration -&gt; [Type]
 </span><a href="ParseDeclarations.html#returns"><span class="hs-identifier hs-var hs-var">D.returns</span></a></span><span> </span><span class="annot"><span class="annottext">Declaration
 </span><a href="#local-6989586621679282563"><span class="hs-identifier hs-var">dl</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-69"></span><span>      </span><span class="hs-special">[</span><span id="local-6989586621679282550"><span class="annot"><span class="annottext">Type
+</span><span id="line-79"></span><span>        </span><span class="hs-special">[</span><span id="local-6989586621679282550"><span class="annot"><span class="annottext">Type
 </span><a href="#local-6989586621679282550"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Type -&gt; Parsable
 </span><a href="ParseDeclarations.html#type2type"><span class="hs-identifier hs-var">D.type2type</span></a></span><span> </span><span class="annot"><span class="annottext">Type
 </span><a href="#local-6989586621679282550"><span class="hs-identifier hs-var">a</span></a></span><span>
-</span><span id="line-70"></span><span>      </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">CType -&gt; Parsable
+</span><span id="line-80"></span><span>        </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">CType -&gt; Parsable
 </span><a href="ParseFunctionSig.html#CType"><span class="hs-identifier hs-var">P.CType</span></a></span><span> </span><span class="annot"><span class="annottext">CType
 </span><a href="ParseFunctionSig.html#CVoid"><span class="hs-identifier hs-var">P.CVoid</span></a></span><span>
-</span><span id="line-71"></span><span>      </span><span id="local-6989586621679282547"><span class="annot"><span class="annottext">[Type]
+</span><span id="line-81"></span><span>        </span><span id="local-6989586621679282547"><span class="annot"><span class="annottext">[Type]
 </span><a href="#local-6989586621679282547"><span class="hs-identifier hs-var">ax</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">[Parsable] -&gt; Parsable
 </span><a href="ParseFunctionSig.html#Tuple"><span class="hs-identifier hs-var">P.Tuple</span></a></span><span> </span><span class="annot"><span class="annottext">([Parsable] -&gt; Parsable) -&gt; [Parsable] -&gt; Parsable
 forall a b. (a -&gt; b) -&gt; a -&gt; b
@@ -169,14 +179,14 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 </span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">Type -&gt; Parsable
 </span><a href="ParseDeclarations.html#type2type"><span class="hs-identifier hs-var">D.type2type</span></a></span><span> </span><span class="annot"><span class="annottext">[Type]
-</span><a href="#local-6989586621679282547"><span class="hs-identifier hs-var">ax</span></a></span><span>
-</span><span id="line-72"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">variant :: Variants
+</span><a href="#local-6989586621679282547"><span class="hs-identifier hs-var">ax</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-82"></span><span>      </span><span class="annot"><span class="annottext">variant :: Variants
 </span><a href="ParseFunctionSig.html#variant"><span class="hs-identifier hs-var">P.variant</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Variants
 </span><a href="ParseFunctionSig.html#VFunction"><span class="hs-identifier hs-var">P.VFunction</span></a></span><span>
-</span><span id="line-73"></span><span>  </span><span class="hs-special">}</span><span>
-</span><span id="line-74"></span><span>
-</span><span id="line-75"></span><span class="annot"><a href="RenderClass.html#renderMethodsForTensor"><span class="hs-identifier hs-type">renderMethodsForTensor</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ParseClass.html#CppClassSpec"><span class="hs-identifier hs-type">PC.CppClassSpec</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="ParseDeclarations.html#Declaration"><span class="hs-identifier hs-type">D.Declaration</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">]</span><span>
-</span><span id="line-76"></span><span id="renderMethodsForTensor"><span class="annot"><span class="annottext">renderMethodsForTensor :: Bool -&gt; CppClassSpec -&gt; [Declaration] -&gt; [Text]
+</span><span id="line-83"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-84"></span><span>
+</span><span id="line-85"></span><span class="annot"><a href="RenderClass.html#renderMethodsForTensor"><span class="hs-identifier hs-type">renderMethodsForTensor</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ParseClass.html#CppClassSpec"><span class="hs-identifier hs-type">PC.CppClassSpec</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="ParseDeclarations.html#Declaration"><span class="hs-identifier hs-type">D.Declaration</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">]</span><span>
+</span><span id="line-86"></span><span id="renderMethodsForTensor"><span class="annot"><span class="annottext">renderMethodsForTensor :: Bool -&gt; CppClassSpec -&gt; [Declaration] -&gt; [Text]
 </span><a href="RenderClass.html#renderMethodsForTensor"><span class="hs-identifier hs-var hs-var">renderMethodsForTensor</span></a></span></span><span> </span><span id="local-6989586621679282542"><span class="annot"><span class="annottext">Bool
 </span><a href="#local-6989586621679282542"><span class="hs-identifier hs-var">is_managed</span></a></span></span><span> </span><span id="local-6989586621679282541"><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282541"><span class="hs-identifier hs-var">classTyp</span></a></span></span><span> </span><span id="local-6989586621679282540"><span class="annot"><span class="annottext">[Declaration]
@@ -196,8 +206,8 @@ forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Declaration -&gt; Function
 </span><a href="RenderClass.html#toMethod"><span class="hs-identifier hs-var">toMethod</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Declaration]
 </span><a href="#local-6989586621679282539"><span class="hs-identifier hs-var">tensorMethods</span></a></span><span>
-</span><span id="line-77"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-78"></span><span>    </span><span id="local-6989586621679282539"><span class="annot"><span class="annottext">tensorMethods :: [Declaration]
+</span><span id="line-87"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-88"></span><span>    </span><span id="local-6989586621679282539"><span class="annot"><span class="annottext">tensorMethods :: [Declaration]
 </span><a href="#local-6989586621679282539"><span class="hs-identifier hs-var hs-var">tensorMethods</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Declaration -&gt; Bool) -&gt; [Declaration] -&gt; [Declaration]
 forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
 </span><span class="hs-identifier hs-var">filter</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679282538"><span class="annot"><span class="annottext">Declaration
@@ -214,58 +224,58 @@ forall (t :: * -&gt; *) a. (Foldable t, Eq a) =&gt; a -&gt; t a -&gt; Bool
 </span><a href="ParseDeclarations.html#method_of"><span class="hs-identifier hs-var hs-var">D.method_of</span></a></span><span> </span><span class="annot"><span class="annottext">Declaration
 </span><a href="#local-6989586621679282538"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Declaration]
 </span><a href="#local-6989586621679282540"><span class="hs-identifier hs-var">typ_</span></a></span><span>
-</span><span id="line-79"></span><span>
-</span><span id="line-80"></span><span class="annot"><a href="RenderClass.html#decodeAndCodeGen"><span class="hs-identifier hs-type">decodeAndCodeGen</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
-</span><span id="line-81"></span><span id="decodeAndCodeGen"><span class="annot"><span class="annottext">decodeAndCodeGen :: String -&gt; String -&gt; Int -&gt; IO ()
+</span><span id="line-89"></span><span>
+</span><span id="line-90"></span><span class="annot"><a href="RenderClass.html#decodeAndCodeGen"><span class="hs-identifier hs-type">decodeAndCodeGen</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-91"></span><span id="decodeAndCodeGen"><span class="annot"><span class="annottext">decodeAndCodeGen :: String -&gt; String -&gt; Int -&gt; IO ()
 </span><a href="RenderClass.html#decodeAndCodeGen"><span class="hs-identifier hs-var hs-var">decodeAndCodeGen</span></a></span></span><span> </span><span id="local-6989586621679282531"><span class="annot"><span class="annottext">String
 </span><a href="#local-6989586621679282531"><span class="hs-identifier hs-var">basedir</span></a></span></span><span> </span><span id="local-6989586621679282530"><span class="annot"><span class="annottext">String
 </span><a href="#local-6989586621679282530"><span class="hs-identifier hs-var">fileName</span></a></span></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">1</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-82"></span><span>  </span><span id="local-6989586621679282529"><span class="annot"><span class="annottext">Either ParseException CppClassSpec
+</span><span id="line-92"></span><span>  </span><span id="local-6989586621679282529"><span class="annot"><span class="annottext">Either ParseException CppClassSpec
 </span><a href="#local-6989586621679282529"><span class="hs-identifier hs-var">funcs</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; IO (Either ParseException CppClassSpec)
 forall a. FromJSON a =&gt; String -&gt; IO (Either ParseException a)
 </span><a href="../file:///nix/store/s731834bxjfbps9wx0yw1m4l230157bw-yaml-lib-yaml-0.11.5.0-haddock-doc/share/doc/yaml/html/src"><span class="hs-identifier hs-var">Y.decodeFileEither</span></a></span><span> </span><span class="annot"><span class="annottext">String
 </span><a href="#local-6989586621679282530"><span class="hs-identifier hs-var">fileName</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="../file:///nix/store/s731834bxjfbps9wx0yw1m4l230157bw-yaml-lib-yaml-0.11.5.0-haddock-doc/share/doc/yaml/html/src"><span class="hs-identifier hs-type">ParseException</span></a></span><span> </span><span class="annot"><a href="ParseClass.html#CppClassSpec"><span class="hs-identifier hs-type">PC.CppClassSpec</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-83"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Either ParseException CppClassSpec
+</span><span id="line-93"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Either ParseException CppClassSpec
 </span><a href="#local-6989586621679282529"><span class="hs-identifier hs-var">funcs</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-84"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679282527"><span class="annot"><span class="annottext">ParseException
+</span><span id="line-94"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679282527"><span class="annot"><span class="annottext">ParseException
 </span><a href="#local-6989586621679282527"><span class="hs-identifier hs-var">err'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ParseException -&gt; IO ()
 forall a. Show a =&gt; a -&gt; IO ()
 </span><span class="hs-identifier hs-var">print</span></span><span> </span><span class="annot"><span class="annottext">ParseException
 </span><a href="#local-6989586621679282527"><span class="hs-identifier hs-var">err'</span></a></span><span>
-</span><span id="line-85"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679282526"><span class="annot"><span class="annottext">CppClassSpec
+</span><span id="line-95"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679282526"><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282526"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-86"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679282525"><span class="annot"><span class="annottext">moduleName :: String
+</span><span id="line-96"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679282525"><span class="annot"><span class="annottext">moduleName :: String
 </span><a href="#local-6989586621679282525"><span class="hs-identifier hs-var hs-var">moduleName</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CppClassSpec -&gt; String
 </span><a href="ParseClass.html#hsnameWithoutSpace"><span class="hs-identifier hs-var">PC.hsnameWithoutSpace</span></a></span><span> </span><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282526"><span class="hs-identifier hs-var">spec</span></a></span><span>
-</span><span id="line-87"></span><span>          </span><span id="local-6989586621679282523"><span class="annot"><span class="annottext">fns :: Bool -&gt; [Text]
+</span><span id="line-97"></span><span>          </span><span id="local-6989586621679282523"><span class="annot"><span class="annottext">fns :: Bool -&gt; [Text]
 </span><a href="#local-6989586621679282523"><span class="hs-identifier hs-var hs-var">fns</span></a></span></span><span> </span><span id="local-6989586621679282522"><span class="annot"><span class="annottext">Bool
 </span><a href="#local-6989586621679282522"><span class="hs-identifier hs-var">is_managed</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-88"></span><span>            </span><span class="annot"><span class="annottext">Bool -&gt; CppClassSpec -&gt; [Text]
+</span><span id="line-98"></span><span>            </span><span class="annot"><span class="annottext">Bool -&gt; CppClassSpec -&gt; [Text]
 </span><a href="RenderClass.html#renderConstructors"><span class="hs-identifier hs-var">renderConstructors</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><a href="#local-6989586621679282522"><span class="hs-identifier hs-var">is_managed</span></a></span><span> </span><span class="annot"><span class="annottext">CppClassSpec
-</span><a href="#local-6989586621679282526"><span class="hs-identifier hs-var">spec</span></a></span><span> </span><span class="annot"><span class="annottext">[Text] -&gt; [Text] -&gt; [Text]
+</span><a href="#local-6989586621679282526"><span class="hs-identifier hs-var">spec</span></a></span><span>
+</span><span id="line-99"></span><span>              </span><span class="annot"><span class="annottext">[Text] -&gt; [Text] -&gt; [Text]
 forall a. [a] -&gt; [a] -&gt; [a]
-</span><span class="hs-operator hs-var">++</span></span><span>
-</span><span id="line-89"></span><span>            </span><span class="annot"><span class="annottext">Bool -&gt; CppClassSpec -&gt; [Text]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; CppClassSpec -&gt; [Text]
 </span><a href="RenderClass.html#renderMethods"><span class="hs-identifier hs-var">renderMethods</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><a href="#local-6989586621679282522"><span class="hs-identifier hs-var">is_managed</span></a></span><span> </span><span class="annot"><span class="annottext">CppClassSpec
-</span><a href="#local-6989586621679282526"><span class="hs-identifier hs-var">spec</span></a></span><span> </span><span class="annot"><span class="annottext">[Text] -&gt; [Text] -&gt; [Text]
+</span><a href="#local-6989586621679282526"><span class="hs-identifier hs-var">spec</span></a></span><span>
+</span><span id="line-100"></span><span>              </span><span class="annot"><span class="annottext">[Text] -&gt; [Text] -&gt; [Text]
 forall a. [a] -&gt; [a] -&gt; [a]
-</span><span class="hs-operator hs-var">++</span></span><span>
-</span><span id="line-90"></span><span>            </span><span class="annot"><span class="annottext">Bool -&gt; CppClassSpec -&gt; [Text]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; CppClassSpec -&gt; [Text]
 </span><a href="RenderClass.html#renderFunctions"><span class="hs-identifier hs-var">renderFunctions</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><a href="#local-6989586621679282522"><span class="hs-identifier hs-var">is_managed</span></a></span><span> </span><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282526"><span class="hs-identifier hs-var">spec</span></a></span><span>
-</span><span id="line-91"></span><span>      </span><span class="annot"><span class="annottext">Bool -&gt; String -&gt; IO ()
+</span><span id="line-101"></span><span>      </span><span class="annot"><span class="annottext">Bool -&gt; String -&gt; IO ()
 </span><span class="hs-identifier hs-var">createDirectoryIfMissing</span></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
 </span><a href="#local-6989586621679282531"><span class="hs-identifier hs-var">basedir</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;/Torch/Internal/Unmanaged/Type&quot;</span></span><span class="hs-special">)</span><span>
-</span><span id="line-92"></span><span>      </span><span class="annot"><span class="annottext">String -&gt; Text -&gt; IO ()
+</span><span id="line-102"></span><span>      </span><span class="annot"><span class="annottext">String -&gt; Text -&gt; IO ()
 </span><span class="hs-identifier hs-var">T.writeFile</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
 </span><a href="#local-6989586621679282531"><span class="hs-identifier hs-var">basedir</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
@@ -279,32 +289,32 @@ forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-string">&quot;.hs&quot;</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Text -&gt; IO ()) -&gt; Text -&gt; IO ()
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span>
-</span><span id="line-93"></span><span>        </span><span class="annot"><span class="annottext">Bool -&gt; Text -&gt; Text -&gt; CppClassSpec -&gt; [Text] -&gt; Text
+</span><span id="line-103"></span><span>        </span><span class="annot"><span class="annottext">Bool -&gt; Text -&gt; Text -&gt; CppClassSpec -&gt; [Text] -&gt; Text
 </span><a href="RenderClass.html#template"><span class="hs-identifier hs-var">template</span></a></span><span>
-</span><span id="line-94"></span><span>          </span><span class="annot"><span class="annottext">Bool
+</span><span id="line-104"></span><span>          </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">False</span></span><span>
-</span><span id="line-95"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span id="line-105"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;Torch.Internal.Unmanaged.Type.&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
 forall a. IsString a =&gt; String -&gt; a
 </span><span class="hs-identifier hs-var">fromString</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
 </span><a href="#local-6989586621679282525"><span class="hs-identifier hs-var">moduleName</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-96"></span><span>          </span><span class="annot"><span class="annottext">Text
+</span><span id="line-106"></span><span>          </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;&quot;</span></span><span>
-</span><span id="line-97"></span><span>          </span><span class="annot"><span class="annottext">CppClassSpec
+</span><span id="line-107"></span><span>          </span><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282526"><span class="hs-identifier hs-var">spec</span></a></span><span>
-</span><span id="line-98"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; [Text]
+</span><span id="line-108"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; [Text]
 </span><a href="#local-6989586621679282523"><span class="hs-identifier hs-var">fns</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">False</span></span><span class="hs-special">)</span><span>
-</span><span id="line-99"></span><span>      </span><span class="annot"><span class="annottext">Bool -&gt; String -&gt; IO ()
+</span><span id="line-109"></span><span>      </span><span class="annot"><span class="annottext">Bool -&gt; String -&gt; IO ()
 </span><span class="hs-identifier hs-var">createDirectoryIfMissing</span></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
 </span><a href="#local-6989586621679282531"><span class="hs-identifier hs-var">basedir</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;/Torch/Internal/Managed/Type&quot;</span></span><span class="hs-special">)</span><span>
-</span><span id="line-100"></span><span>      </span><span class="annot"><span class="annottext">String -&gt; Text -&gt; IO ()
+</span><span id="line-110"></span><span>      </span><span class="annot"><span class="annottext">String -&gt; Text -&gt; IO ()
 </span><span class="hs-identifier hs-var">T.writeFile</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
 </span><a href="#local-6989586621679282531"><span class="hs-identifier hs-var">basedir</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
@@ -318,301 +328,302 @@ forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-string">&quot;.hs&quot;</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Text -&gt; IO ()) -&gt; Text -&gt; IO ()
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span>
-</span><span id="line-101"></span><span>        </span><span class="annot"><span class="annottext">Bool -&gt; Text -&gt; Text -&gt; CppClassSpec -&gt; [Text] -&gt; Text
+</span><span id="line-111"></span><span>        </span><span class="annot"><span class="annottext">Bool -&gt; Text -&gt; Text -&gt; CppClassSpec -&gt; [Text] -&gt; Text
 </span><a href="RenderClass.html#template"><span class="hs-identifier hs-var">template</span></a></span><span>
-</span><span id="line-102"></span><span>          </span><span class="annot"><span class="annottext">Bool
+</span><span id="line-112"></span><span>          </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">True</span></span><span>
-</span><span id="line-103"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span id="line-113"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;Torch.Internal.Managed.Type.&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
 forall a. IsString a =&gt; String -&gt; a
 </span><span class="hs-identifier hs-var">fromString</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
 </span><a href="#local-6989586621679282525"><span class="hs-identifier hs-var">moduleName</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-104"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span id="line-114"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;Torch.Internal.Unmanaged.Type.&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
 forall a. IsString a =&gt; String -&gt; a
 </span><span class="hs-identifier hs-var">fromString</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
 </span><a href="#local-6989586621679282525"><span class="hs-identifier hs-var">moduleName</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-105"></span><span>          </span><span class="annot"><span class="annottext">CppClassSpec
+</span><span id="line-115"></span><span>          </span><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282526"><span class="hs-identifier hs-var">spec</span></a></span><span>
-</span><span id="line-106"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; [Text]
+</span><span id="line-116"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; [Text]
 </span><a href="#local-6989586621679282523"><span class="hs-identifier hs-var">fns</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">True</span></span><span class="hs-special">)</span><span>
-</span><span id="line-107"></span><span class="annot"><a href="RenderClass.html#decodeAndCodeGen"><span class="hs-identifier hs-var">decodeAndCodeGen</span></a></span><span> </span><span id="local-6989586621679282519"><span class="annot"><span class="annottext">String
+</span><span id="line-117"></span><span class="annot"><a href="RenderClass.html#decodeAndCodeGen"><span class="hs-identifier hs-var">decodeAndCodeGen</span></a></span><span> </span><span id="local-6989586621679282519"><span class="annot"><span class="annottext">String
 </span><a href="#local-6989586621679282519"><span class="hs-identifier hs-var">basedir</span></a></span></span><span> </span><span id="local-6989586621679282518"><span class="annot"><span class="annottext">String
 </span><a href="#local-6989586621679282518"><span class="hs-identifier hs-var">fileName</span></a></span></span><span> </span><span id="local-6989586621679282517"><span class="annot"><span class="annottext">Int
 </span><a href="#local-6989586621679282517"><span class="hs-identifier hs-var">num</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-108"></span><span>  </span><span id="local-6989586621679282516"><span class="annot"><span class="annottext">Either ParseException CppClassSpec
+</span><span id="line-118"></span><span>  </span><span id="local-6989586621679282516"><span class="annot"><span class="annottext">Either ParseException CppClassSpec
 </span><a href="#local-6989586621679282516"><span class="hs-identifier hs-var">funcs</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; IO (Either ParseException CppClassSpec)
 forall a. FromJSON a =&gt; String -&gt; IO (Either ParseException a)
 </span><a href="../file:///nix/store/s731834bxjfbps9wx0yw1m4l230157bw-yaml-lib-yaml-0.11.5.0-haddock-doc/share/doc/yaml/html/src"><span class="hs-identifier hs-var">Y.decodeFileEither</span></a></span><span> </span><span class="annot"><span class="annottext">String
 </span><a href="#local-6989586621679282518"><span class="hs-identifier hs-var">fileName</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="../file:///nix/store/s731834bxjfbps9wx0yw1m4l230157bw-yaml-lib-yaml-0.11.5.0-haddock-doc/share/doc/yaml/html/src"><span class="hs-identifier hs-type">ParseException</span></a></span><span> </span><span class="annot"><a href="ParseClass.html#CppClassSpec"><span class="hs-identifier hs-type">PC.CppClassSpec</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-109"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Either ParseException CppClassSpec
+</span><span id="line-119"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Either ParseException CppClassSpec
 </span><a href="#local-6989586621679282516"><span class="hs-identifier hs-var">funcs</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-110"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679282515"><span class="annot"><span class="annottext">ParseException
+</span><span id="line-120"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679282515"><span class="annot"><span class="annottext">ParseException
 </span><a href="#local-6989586621679282515"><span class="hs-identifier hs-var">err'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ParseException -&gt; IO ()
 forall a. Show a =&gt; a -&gt; IO ()
 </span><span class="hs-identifier hs-var">print</span></span><span> </span><span class="annot"><span class="annottext">ParseException
 </span><a href="#local-6989586621679282515"><span class="hs-identifier hs-var">err'</span></a></span><span>
-</span><span id="line-111"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679282514"><span class="annot"><span class="annottext">CppClassSpec
+</span><span id="line-121"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679282514"><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282514"><span class="hs-identifier hs-var">spec</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-112"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679282513"><span class="annot"><span class="annottext">moduleName :: String
+</span><span id="line-122"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679282513"><span class="annot"><span class="annottext">moduleName :: String
 </span><a href="#local-6989586621679282513"><span class="hs-identifier hs-var hs-var">moduleName</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CppClassSpec -&gt; String
 </span><a href="ParseClass.html#hsnameWithoutSpace"><span class="hs-identifier hs-var">PC.hsnameWithoutSpace</span></a></span><span> </span><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282514"><span class="hs-identifier hs-var">spec</span></a></span><span>
-</span><span id="line-113"></span><span>          </span><span id="local-6989586621679282512"><span class="annot"><span class="annottext">fns :: Bool -&gt; [Text]
+</span><span id="line-123"></span><span>          </span><span id="local-6989586621679282512"><span class="annot"><span class="annottext">fns :: Bool -&gt; [Text]
 </span><a href="#local-6989586621679282512"><span class="hs-identifier hs-var hs-var">fns</span></a></span></span><span> </span><span id="local-6989586621679282511"><span class="annot"><span class="annottext">Bool
 </span><a href="#local-6989586621679282511"><span class="hs-identifier hs-var">is_managed</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-114"></span><span>            </span><span class="annot"><span class="annottext">Bool -&gt; CppClassSpec -&gt; [Text]
+</span><span id="line-124"></span><span>            </span><span class="annot"><span class="annottext">Bool -&gt; CppClassSpec -&gt; [Text]
 </span><a href="RenderClass.html#renderConstructors"><span class="hs-identifier hs-var">renderConstructors</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><a href="#local-6989586621679282511"><span class="hs-identifier hs-var">is_managed</span></a></span><span> </span><span class="annot"><span class="annottext">CppClassSpec
-</span><a href="#local-6989586621679282514"><span class="hs-identifier hs-var">spec</span></a></span><span> </span><span class="annot"><span class="annottext">[Text] -&gt; [Text] -&gt; [Text]
+</span><a href="#local-6989586621679282514"><span class="hs-identifier hs-var">spec</span></a></span><span>
+</span><span id="line-125"></span><span>              </span><span class="annot"><span class="annottext">[Text] -&gt; [Text] -&gt; [Text]
 forall a. [a] -&gt; [a] -&gt; [a]
-</span><span class="hs-operator hs-var">++</span></span><span>
-</span><span id="line-115"></span><span>            </span><span class="annot"><span class="annottext">Bool -&gt; CppClassSpec -&gt; [Text]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; CppClassSpec -&gt; [Text]
 </span><a href="RenderClass.html#renderMethods"><span class="hs-identifier hs-var">renderMethods</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><a href="#local-6989586621679282511"><span class="hs-identifier hs-var">is_managed</span></a></span><span> </span><span class="annot"><span class="annottext">CppClassSpec
-</span><a href="#local-6989586621679282514"><span class="hs-identifier hs-var">spec</span></a></span><span> </span><span class="annot"><span class="annottext">[Text] -&gt; [Text] -&gt; [Text]
+</span><a href="#local-6989586621679282514"><span class="hs-identifier hs-var">spec</span></a></span><span>
+</span><span id="line-126"></span><span>              </span><span class="annot"><span class="annottext">[Text] -&gt; [Text] -&gt; [Text]
 forall a. [a] -&gt; [a] -&gt; [a]
-</span><span class="hs-operator hs-var">++</span></span><span>
-</span><span id="line-116"></span><span>            </span><span class="annot"><span class="annottext">Bool -&gt; CppClassSpec -&gt; [Text]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; CppClassSpec -&gt; [Text]
 </span><a href="RenderClass.html#renderFunctions"><span class="hs-identifier hs-var">renderFunctions</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><a href="#local-6989586621679282511"><span class="hs-identifier hs-var">is_managed</span></a></span><span> </span><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282514"><span class="hs-identifier hs-var">spec</span></a></span><span>
-</span><span id="line-117"></span><span>          </span><span id="local-6989586621679282510"><span class="annot"><span class="annottext">unmanagedFuncs :: [[Text]]
+</span><span id="line-127"></span><span>          </span><span id="local-6989586621679282510"><span class="annot"><span class="annottext">unmanagedFuncs :: [[Text]]
 </span><a href="#local-6989586621679282510"><span class="hs-identifier hs-var hs-var">unmanagedFuncs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [Text] -&gt; [[Text]]
 forall a. Int -&gt; [a] -&gt; [[a]]
 </span><a href="RenderCommon.html#split%27"><span class="hs-identifier hs-var">split'</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><a href="#local-6989586621679282517"><span class="hs-identifier hs-var">num</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; [Text]
 </span><a href="#local-6989586621679282512"><span class="hs-identifier hs-var">fns</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">False</span></span><span class="hs-special">)</span><span>
-</span><span id="line-118"></span><span>          </span><span id="local-6989586621679282508"><span class="annot"><span class="annottext">managedFuncs :: [[Text]]
+</span><span id="line-128"></span><span>          </span><span id="local-6989586621679282508"><span class="annot"><span class="annottext">managedFuncs :: [[Text]]
 </span><a href="#local-6989586621679282508"><span class="hs-identifier hs-var hs-var">managedFuncs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [Text] -&gt; [[Text]]
 forall a. Int -&gt; [a] -&gt; [[a]]
 </span><a href="RenderCommon.html#split%27"><span class="hs-identifier hs-var">split'</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><a href="#local-6989586621679282517"><span class="hs-identifier hs-var">num</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; [Text]
 </span><a href="#local-6989586621679282512"><span class="hs-identifier hs-var">fns</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">True</span></span><span class="hs-special">)</span><span>
-</span><span id="line-119"></span><span>      </span><span class="annot"><span class="annottext">Bool -&gt; String -&gt; IO ()
+</span><span id="line-129"></span><span>      </span><span class="annot"><span class="annottext">Bool -&gt; String -&gt; IO ()
 </span><span class="hs-identifier hs-var">createDirectoryIfMissing</span></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; String
 </span><span class="hs-identifier hs-var">unpack</span></span><span> </span><span class="annot"><span class="">[st|#{basedir}/Torch/Internal/Unmanaged/Type/#{moduleName}|]</span></span><span class="hs-special">)</span><span>
-</span><span id="line-120"></span><span>      </span><span class="annot"><span class="annottext">[(Int, [Text])] -&gt; ((Int, [Text]) -&gt; IO ()) -&gt; IO ()
+</span><span id="line-130"></span><span>      </span><span class="annot"><span class="annottext">[(Int, [Text])] -&gt; ((Int, [Text]) -&gt; IO ()) -&gt; IO ()
 forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
 (Foldable t, Monad m) =&gt;
 t a -&gt; (a -&gt; m b) -&gt; m ()
 </span><span class="hs-identifier hs-var">forM_</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Int] -&gt; [[Text]] -&gt; [(Int, [Text])]
 forall a b. [a] -&gt; [b] -&gt; [(a, b)]
 </span><span class="hs-identifier hs-var">zip</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">0</span></span><span class="hs-glyph">..</span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">[[Text]]
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">..</span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">[[Text]]
 </span><a href="#local-6989586621679282510"><span class="hs-identifier hs-var">unmanagedFuncs</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(((Int, [Text]) -&gt; IO ()) -&gt; IO ())
 -&gt; ((Int, [Text]) -&gt; IO ()) -&gt; IO ()
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621679282507"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679282507"><span class="hs-identifier hs-var">i</span></a></span></span><span class="hs-glyph">::</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span id="local-6989586621679282506"><span class="annot"><span class="annottext">[Text]
+</span><a href="#local-6989586621679282507"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679282506"><span class="annot"><span class="annottext">[Text]
 </span><a href="#local-6989586621679282506"><span class="hs-identifier hs-var">fns'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-121"></span><span>        </span><span class="annot"><span class="annottext">String -&gt; Text -&gt; IO ()
+</span><span id="line-131"></span><span>        </span><span class="annot"><span class="annottext">String -&gt; Text -&gt; IO ()
 </span><span class="hs-identifier hs-var">T.writeFile</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; String
 </span><span class="hs-identifier hs-var">unpack</span></span><span> </span><span class="annot"><span class="">[st|#{basedir}/Torch/Internal/Unmanaged/Type/#{moduleName}/#{moduleName}#{i}.hs|]</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Text -&gt; IO ()) -&gt; Text -&gt; IO ()
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span>
-</span><span id="line-122"></span><span>          </span><span class="annot"><span class="annottext">Bool -&gt; Text -&gt; Text -&gt; CppClassSpec -&gt; [Text] -&gt; Text
+</span><span id="line-132"></span><span>          </span><span class="annot"><span class="annottext">Bool -&gt; Text -&gt; Text -&gt; CppClassSpec -&gt; [Text] -&gt; Text
 </span><a href="RenderClass.html#template"><span class="hs-identifier hs-var">template</span></a></span><span>
-</span><span id="line-123"></span><span>            </span><span class="annot"><span class="annottext">Bool
+</span><span id="line-133"></span><span>            </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">False</span></span><span>
-</span><span id="line-124"></span><span>            </span><span class="annot"><span class="">[st|Torch.Internal.Unmanaged.Type.#{moduleName}.#{moduleName}#{i}|]</span></span><span>
-</span><span id="line-125"></span><span>            </span><span class="annot"><span class="annottext">Text
+</span><span id="line-134"></span><span>            </span><span class="annot"><span class="">[st|Torch.Internal.Unmanaged.Type.#{moduleName}.#{moduleName}#{i}|]</span></span><span>
+</span><span id="line-135"></span><span>            </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;&quot;</span></span><span>
-</span><span id="line-126"></span><span>            </span><span class="annot"><span class="annottext">CppClassSpec
+</span><span id="line-136"></span><span>            </span><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282514"><span class="hs-identifier hs-var">spec</span></a></span><span>
-</span><span id="line-127"></span><span>            </span><span class="annot"><span class="annottext">[Text]
+</span><span id="line-137"></span><span>            </span><span class="annot"><span class="annottext">[Text]
 </span><a href="#local-6989586621679282506"><span class="hs-identifier hs-var">fns'</span></a></span><span>
-</span><span id="line-128"></span><span>        </span><span class="annot"><span class="annottext">Bool -&gt; String -&gt; IO ()
+</span><span id="line-138"></span><span>        </span><span class="annot"><span class="annottext">Bool -&gt; String -&gt; IO ()
 </span><span class="hs-identifier hs-var">createDirectoryIfMissing</span></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; String
 </span><span class="hs-identifier hs-var">unpack</span></span><span> </span><span class="annot"><span class="">[st|#{basedir}/Torch/Internal/Managed/Type/#{moduleName}|]</span></span><span class="hs-special">)</span><span>
-</span><span id="line-129"></span><span>      </span><span class="annot"><span class="annottext">[(Int, [Text])] -&gt; ((Int, [Text]) -&gt; IO ()) -&gt; IO ()
+</span><span id="line-139"></span><span>      </span><span class="annot"><span class="annottext">[(Int, [Text])] -&gt; ((Int, [Text]) -&gt; IO ()) -&gt; IO ()
 forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
 (Foldable t, Monad m) =&gt;
 t a -&gt; (a -&gt; m b) -&gt; m ()
 </span><span class="hs-identifier hs-var">forM_</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Int] -&gt; [[Text]] -&gt; [(Int, [Text])]
 forall a b. [a] -&gt; [b] -&gt; [(a, b)]
 </span><span class="hs-identifier hs-var">zip</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">0</span></span><span class="hs-glyph">..</span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">[[Text]]
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">..</span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">[[Text]]
 </span><a href="#local-6989586621679282508"><span class="hs-identifier hs-var">managedFuncs</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(((Int, [Text]) -&gt; IO ()) -&gt; IO ())
 -&gt; ((Int, [Text]) -&gt; IO ()) -&gt; IO ()
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621679282505"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679282505"><span class="hs-identifier hs-var">i</span></a></span></span><span class="hs-glyph">::</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span id="local-6989586621679282504"><span class="annot"><span class="annottext">[Text]
+</span><a href="#local-6989586621679282505"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679282504"><span class="annot"><span class="annottext">[Text]
 </span><a href="#local-6989586621679282504"><span class="hs-identifier hs-var">fns'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-130"></span><span>        </span><span class="annot"><span class="annottext">String -&gt; Text -&gt; IO ()
+</span><span id="line-140"></span><span>        </span><span class="annot"><span class="annottext">String -&gt; Text -&gt; IO ()
 </span><span class="hs-identifier hs-var">T.writeFile</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; String
 </span><span class="hs-identifier hs-var">unpack</span></span><span> </span><span class="annot"><span class="">[st|#{basedir}/Torch/Internal/Managed/Type/#{moduleName}/#{moduleName}#{i}.hs|]</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Text -&gt; IO ()) -&gt; Text -&gt; IO ()
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span>
-</span><span id="line-131"></span><span>          </span><span class="annot"><span class="annottext">Bool -&gt; Text -&gt; Text -&gt; CppClassSpec -&gt; [Text] -&gt; Text
+</span><span id="line-141"></span><span>          </span><span class="annot"><span class="annottext">Bool -&gt; Text -&gt; Text -&gt; CppClassSpec -&gt; [Text] -&gt; Text
 </span><a href="RenderClass.html#template"><span class="hs-identifier hs-var">template</span></a></span><span>
-</span><span id="line-132"></span><span>            </span><span class="annot"><span class="annottext">Bool
+</span><span id="line-142"></span><span>            </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">True</span></span><span>
-</span><span id="line-133"></span><span>            </span><span class="annot"><span class="">[st|Torch.Internal.Managed.Type.#{moduleName}.#{moduleName}#{i}|]</span></span><span>
-</span><span id="line-134"></span><span>            </span><span class="annot"><span class="">[st|Torch.Internal.Unmanaged.Type.#{moduleName}.#{moduleName}#{i}|]</span></span><span>
-</span><span id="line-135"></span><span>            </span><span class="annot"><span class="annottext">CppClassSpec
+</span><span id="line-143"></span><span>            </span><span class="annot"><span class="">[st|Torch.Internal.Managed.Type.#{moduleName}.#{moduleName}#{i}|]</span></span><span>
+</span><span id="line-144"></span><span>            </span><span class="annot"><span class="">[st|Torch.Internal.Unmanaged.Type.#{moduleName}.#{moduleName}#{i}|]</span></span><span>
+</span><span id="line-145"></span><span>            </span><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282514"><span class="hs-identifier hs-var">spec</span></a></span><span>
-</span><span id="line-136"></span><span>            </span><span class="annot"><span class="annottext">[Text]
+</span><span id="line-146"></span><span>            </span><span class="annot"><span class="annottext">[Text]
 </span><a href="#local-6989586621679282504"><span class="hs-identifier hs-var">fns'</span></a></span><span>
-</span><span id="line-137"></span><span>
-</span><span id="line-138"></span><span class="annot"><a href="RenderClass.html#decodeAndCodeGenForTensor"><span class="hs-identifier hs-type">decodeAndCodeGenForTensor</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
-</span><span id="line-139"></span><span id="decodeAndCodeGenForTensor"><span class="annot"><span class="annottext">decodeAndCodeGenForTensor :: String -&gt; String -&gt; String -&gt; Int -&gt; IO ()
+</span><span id="line-147"></span><span>
+</span><span id="line-148"></span><span class="annot"><a href="RenderClass.html#decodeAndCodeGenForTensor"><span class="hs-identifier hs-type">decodeAndCodeGenForTensor</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-149"></span><span id="decodeAndCodeGenForTensor"><span class="annot"><span class="annottext">decodeAndCodeGenForTensor :: String -&gt; String -&gt; String -&gt; Int -&gt; IO ()
 </span><a href="RenderClass.html#decodeAndCodeGenForTensor"><span class="hs-identifier hs-var hs-var">decodeAndCodeGenForTensor</span></a></span></span><span> </span><span id="local-6989586621679282502"><span class="annot"><span class="annottext">String
 </span><a href="#local-6989586621679282502"><span class="hs-identifier hs-var">basedir</span></a></span></span><span> </span><span id="local-6989586621679282501"><span class="annot"><span class="annottext">String
 </span><a href="#local-6989586621679282501"><span class="hs-identifier hs-var">fileName</span></a></span></span><span> </span><span id="local-6989586621679282500"><span class="annot"><span class="annottext">String
 </span><a href="#local-6989586621679282500"><span class="hs-identifier hs-var">fileNameOfDeclarations</span></a></span></span><span> </span><span id="local-6989586621679282499"><span class="annot"><span class="annottext">Int
 </span><a href="#local-6989586621679282499"><span class="hs-identifier hs-var">num</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-140"></span><span>  </span><span id="local-6989586621679282498"><span class="annot"><span class="annottext">Either ParseException CppClassSpec
+</span><span id="line-150"></span><span>  </span><span id="local-6989586621679282498"><span class="annot"><span class="annottext">Either ParseException CppClassSpec
 </span><a href="#local-6989586621679282498"><span class="hs-identifier hs-var">funcs</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; IO (Either ParseException CppClassSpec)
 forall a. FromJSON a =&gt; String -&gt; IO (Either ParseException a)
 </span><a href="../file:///nix/store/s731834bxjfbps9wx0yw1m4l230157bw-yaml-lib-yaml-0.11.5.0-haddock-doc/share/doc/yaml/html/src"><span class="hs-identifier hs-var">Y.decodeFileEither</span></a></span><span> </span><span class="annot"><span class="annottext">String
 </span><a href="#local-6989586621679282501"><span class="hs-identifier hs-var">fileName</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="../file:///nix/store/s731834bxjfbps9wx0yw1m4l230157bw-yaml-lib-yaml-0.11.5.0-haddock-doc/share/doc/yaml/html/src"><span class="hs-identifier hs-type">ParseException</span></a></span><span> </span><span class="annot"><a href="ParseClass.html#CppClassSpec"><span class="hs-identifier hs-type">PC.CppClassSpec</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-141"></span><span>  </span><span id="local-6989586621679282497"><span class="annot"><span class="annottext">Either ParseException [Declaration]
+</span><span id="line-151"></span><span>  </span><span id="local-6989586621679282497"><span class="annot"><span class="annottext">Either ParseException [Declaration]
 </span><a href="#local-6989586621679282497"><span class="hs-identifier hs-var">funcsOfDeclarations</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; IO (Either ParseException [Declaration])
 forall a. FromJSON a =&gt; String -&gt; IO (Either ParseException a)
 </span><a href="../file:///nix/store/s731834bxjfbps9wx0yw1m4l230157bw-yaml-lib-yaml-0.11.5.0-haddock-doc/share/doc/yaml/html/src"><span class="hs-identifier hs-var">Y.decodeFileEither</span></a></span><span> </span><span class="annot"><span class="annottext">String
 </span><a href="#local-6989586621679282500"><span class="hs-identifier hs-var">fileNameOfDeclarations</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="../file:///nix/store/s731834bxjfbps9wx0yw1m4l230157bw-yaml-lib-yaml-0.11.5.0-haddock-doc/share/doc/yaml/html/src"><span class="hs-identifier hs-type">ParseException</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="ParseDeclarations.html#Declaration"><span class="hs-identifier hs-type">D.Declaration</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
-</span><span id="line-142"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Either ParseException CppClassSpec
-</span><a href="#local-6989586621679282498"><span class="hs-identifier hs-var">funcs</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Either ParseException [Declaration]
+</span><span id="line-152"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Either ParseException CppClassSpec
+</span><a href="#local-6989586621679282498"><span class="hs-identifier hs-var">funcs</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Either ParseException [Declaration]
 </span><a href="#local-6989586621679282497"><span class="hs-identifier hs-var">funcsOfDeclarations</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-143"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679282496"><span class="annot"><span class="annottext">ParseException
-</span><a href="#local-6989586621679282496"><span class="hs-identifier hs-var">err'</span></a></span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Either ParseException [Declaration]
+</span><span id="line-153"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679282496"><span class="annot"><span class="annottext">ParseException
+</span><a href="#local-6989586621679282496"><span class="hs-identifier hs-var">err'</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Either ParseException [Declaration]
 </span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ParseException -&gt; IO ()
 forall a. Show a =&gt; a -&gt; IO ()
 </span><span class="hs-identifier hs-var">print</span></span><span> </span><span class="annot"><span class="annottext">ParseException
 </span><a href="#local-6989586621679282496"><span class="hs-identifier hs-var">err'</span></a></span><span>
-</span><span id="line-144"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Either ParseException CppClassSpec
-</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-special">,</span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679282495"><span class="annot"><span class="annottext">ParseException
+</span><span id="line-154"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Either ParseException CppClassSpec
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679282495"><span class="annot"><span class="annottext">ParseException
 </span><a href="#local-6989586621679282495"><span class="hs-identifier hs-var">err'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ParseException -&gt; IO ()
 forall a. Show a =&gt; a -&gt; IO ()
 </span><span class="hs-identifier hs-var">print</span></span><span> </span><span class="annot"><span class="annottext">ParseException
 </span><a href="#local-6989586621679282495"><span class="hs-identifier hs-var">err'</span></a></span><span>
-</span><span id="line-145"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679282494"><span class="annot"><span class="annottext">CppClassSpec
-</span><a href="#local-6989586621679282494"><span class="hs-identifier hs-var">spec</span></a></span></span><span class="hs-special">,</span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679282493"><span class="annot"><span class="annottext">[Declaration]
+</span><span id="line-155"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679282494"><span class="annot"><span class="annottext">CppClassSpec
+</span><a href="#local-6989586621679282494"><span class="hs-identifier hs-var">spec</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679282493"><span class="annot"><span class="annottext">[Declaration]
 </span><a href="#local-6989586621679282493"><span class="hs-identifier hs-var">specOfDeclarations</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-146"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679282492"><span class="annot"><span class="annottext">moduleName :: String
+</span><span id="line-156"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679282492"><span class="annot"><span class="annottext">moduleName :: String
 </span><a href="#local-6989586621679282492"><span class="hs-identifier hs-var hs-var">moduleName</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CppClassSpec -&gt; String
 </span><a href="ParseClass.html#hsnameWithoutSpace"><span class="hs-identifier hs-var">PC.hsnameWithoutSpace</span></a></span><span> </span><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282494"><span class="hs-identifier hs-var">spec</span></a></span><span>
-</span><span id="line-147"></span><span>          </span><span id="local-6989586621679282491"><span class="annot"><span class="annottext">fns :: Bool -&gt; [Text]
+</span><span id="line-157"></span><span>          </span><span id="local-6989586621679282491"><span class="annot"><span class="annottext">fns :: Bool -&gt; [Text]
 </span><a href="#local-6989586621679282491"><span class="hs-identifier hs-var hs-var">fns</span></a></span></span><span> </span><span id="local-6989586621679282490"><span class="annot"><span class="annottext">Bool
 </span><a href="#local-6989586621679282490"><span class="hs-identifier hs-var">is_managed</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-148"></span><span>            </span><span class="annot"><span class="annottext">Bool -&gt; CppClassSpec -&gt; [Text]
+</span><span id="line-158"></span><span>            </span><span class="annot"><span class="annottext">Bool -&gt; CppClassSpec -&gt; [Text]
 </span><a href="RenderClass.html#renderConstructors"><span class="hs-identifier hs-var">renderConstructors</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><a href="#local-6989586621679282490"><span class="hs-identifier hs-var">is_managed</span></a></span><span> </span><span class="annot"><span class="annottext">CppClassSpec
-</span><a href="#local-6989586621679282494"><span class="hs-identifier hs-var">spec</span></a></span><span> </span><span class="annot"><span class="annottext">[Text] -&gt; [Text] -&gt; [Text]
+</span><a href="#local-6989586621679282494"><span class="hs-identifier hs-var">spec</span></a></span><span>
+</span><span id="line-159"></span><span>              </span><span class="annot"><span class="annottext">[Text] -&gt; [Text] -&gt; [Text]
 forall a. [a] -&gt; [a] -&gt; [a]
-</span><span class="hs-operator hs-var">++</span></span><span>
-</span><span id="line-149"></span><span>            </span><span class="annot"><span class="annottext">Bool -&gt; CppClassSpec -&gt; [Text]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; CppClassSpec -&gt; [Text]
 </span><a href="RenderClass.html#renderMethods"><span class="hs-identifier hs-var">renderMethods</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><a href="#local-6989586621679282490"><span class="hs-identifier hs-var">is_managed</span></a></span><span> </span><span class="annot"><span class="annottext">CppClassSpec
-</span><a href="#local-6989586621679282494"><span class="hs-identifier hs-var">spec</span></a></span><span> </span><span class="annot"><span class="annottext">[Text] -&gt; [Text] -&gt; [Text]
+</span><a href="#local-6989586621679282494"><span class="hs-identifier hs-var">spec</span></a></span><span>
+</span><span id="line-160"></span><span>              </span><span class="annot"><span class="annottext">[Text] -&gt; [Text] -&gt; [Text]
 forall a. [a] -&gt; [a] -&gt; [a]
-</span><span class="hs-operator hs-var">++</span></span><span>
-</span><span id="line-150"></span><span>            </span><span class="annot"><span class="annottext">Bool -&gt; CppClassSpec -&gt; [Declaration] -&gt; [Text]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; CppClassSpec -&gt; [Declaration] -&gt; [Text]
 </span><a href="RenderClass.html#renderMethodsForTensor"><span class="hs-identifier hs-var">renderMethodsForTensor</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><a href="#local-6989586621679282490"><span class="hs-identifier hs-var">is_managed</span></a></span><span> </span><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282494"><span class="hs-identifier hs-var">spec</span></a></span><span> </span><span class="annot"><span class="annottext">[Declaration]
 </span><a href="#local-6989586621679282493"><span class="hs-identifier hs-var">specOfDeclarations</span></a></span><span>
-</span><span id="line-151"></span><span>          </span><span id="local-6989586621679282489"><span class="annot"><span class="annottext">unmanagedFuncs :: [[Text]]
+</span><span id="line-161"></span><span>          </span><span id="local-6989586621679282489"><span class="annot"><span class="annottext">unmanagedFuncs :: [[Text]]
 </span><a href="#local-6989586621679282489"><span class="hs-identifier hs-var hs-var">unmanagedFuncs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [Text] -&gt; [[Text]]
 forall a. Int -&gt; [a] -&gt; [[a]]
 </span><a href="RenderCommon.html#split%27"><span class="hs-identifier hs-var">split'</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><a href="#local-6989586621679282499"><span class="hs-identifier hs-var">num</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; [Text]
 </span><a href="#local-6989586621679282491"><span class="hs-identifier hs-var">fns</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">False</span></span><span class="hs-special">)</span><span>
-</span><span id="line-152"></span><span>          </span><span id="local-6989586621679282488"><span class="annot"><span class="annottext">managedFuncs :: [[Text]]
+</span><span id="line-162"></span><span>          </span><span id="local-6989586621679282488"><span class="annot"><span class="annottext">managedFuncs :: [[Text]]
 </span><a href="#local-6989586621679282488"><span class="hs-identifier hs-var hs-var">managedFuncs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [Text] -&gt; [[Text]]
 forall a. Int -&gt; [a] -&gt; [[a]]
 </span><a href="RenderCommon.html#split%27"><span class="hs-identifier hs-var">split'</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><a href="#local-6989586621679282499"><span class="hs-identifier hs-var">num</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; [Text]
 </span><a href="#local-6989586621679282491"><span class="hs-identifier hs-var">fns</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">True</span></span><span class="hs-special">)</span><span>
-</span><span id="line-153"></span><span>      </span><span class="annot"><span class="annottext">Bool -&gt; String -&gt; IO ()
+</span><span id="line-163"></span><span>      </span><span class="annot"><span class="annottext">Bool -&gt; String -&gt; IO ()
 </span><span class="hs-identifier hs-var">createDirectoryIfMissing</span></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; String
 </span><span class="hs-identifier hs-var">unpack</span></span><span> </span><span class="annot"><span class="">[st|#{basedir}/Torch/Internal/Unmanaged/Type/#{moduleName}|]</span></span><span class="hs-special">)</span><span>
-</span><span id="line-154"></span><span>      </span><span class="annot"><span class="annottext">[(Int, [Text])] -&gt; ((Int, [Text]) -&gt; IO ()) -&gt; IO ()
+</span><span id="line-164"></span><span>      </span><span class="annot"><span class="annottext">[(Int, [Text])] -&gt; ((Int, [Text]) -&gt; IO ()) -&gt; IO ()
 forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
 (Foldable t, Monad m) =&gt;
 t a -&gt; (a -&gt; m b) -&gt; m ()
 </span><span class="hs-identifier hs-var">forM_</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Int] -&gt; [[Text]] -&gt; [(Int, [Text])]
 forall a b. [a] -&gt; [b] -&gt; [(a, b)]
 </span><span class="hs-identifier hs-var">zip</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">0</span></span><span class="hs-glyph">..</span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">[[Text]]
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">..</span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">[[Text]]
 </span><a href="#local-6989586621679282489"><span class="hs-identifier hs-var">unmanagedFuncs</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(((Int, [Text]) -&gt; IO ()) -&gt; IO ())
 -&gt; ((Int, [Text]) -&gt; IO ()) -&gt; IO ()
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621679282487"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679282487"><span class="hs-identifier hs-var">i</span></a></span></span><span class="hs-glyph">::</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span id="local-6989586621679282486"><span class="annot"><span class="annottext">[Text]
+</span><a href="#local-6989586621679282487"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679282486"><span class="annot"><span class="annottext">[Text]
 </span><a href="#local-6989586621679282486"><span class="hs-identifier hs-var">fns'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-155"></span><span>        </span><span class="annot"><span class="annottext">String -&gt; Text -&gt; IO ()
+</span><span id="line-165"></span><span>        </span><span class="annot"><span class="annottext">String -&gt; Text -&gt; IO ()
 </span><span class="hs-identifier hs-var">T.writeFile</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; String
 </span><span class="hs-identifier hs-var">unpack</span></span><span> </span><span class="annot"><span class="">[st|#{basedir}/Torch/Internal/Unmanaged/Type/#{moduleName}/#{moduleName}#{i}.hs|]</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Text -&gt; IO ()) -&gt; Text -&gt; IO ()
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span>
-</span><span id="line-156"></span><span>          </span><span class="annot"><span class="annottext">Bool -&gt; Text -&gt; Text -&gt; CppClassSpec -&gt; [Text] -&gt; Text
+</span><span id="line-166"></span><span>          </span><span class="annot"><span class="annottext">Bool -&gt; Text -&gt; Text -&gt; CppClassSpec -&gt; [Text] -&gt; Text
 </span><a href="RenderClass.html#template"><span class="hs-identifier hs-var">template</span></a></span><span>
-</span><span id="line-157"></span><span>            </span><span class="annot"><span class="annottext">Bool
+</span><span id="line-167"></span><span>            </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">False</span></span><span>
-</span><span id="line-158"></span><span>            </span><span class="annot"><span class="">[st|Torch.Internal.Unmanaged.Type.#{moduleName}.#{moduleName}#{i}|]</span></span><span>
-</span><span id="line-159"></span><span>            </span><span class="annot"><span class="annottext">Text
+</span><span id="line-168"></span><span>            </span><span class="annot"><span class="">[st|Torch.Internal.Unmanaged.Type.#{moduleName}.#{moduleName}#{i}|]</span></span><span>
+</span><span id="line-169"></span><span>            </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;&quot;</span></span><span>
-</span><span id="line-160"></span><span>            </span><span class="annot"><span class="annottext">CppClassSpec
+</span><span id="line-170"></span><span>            </span><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282494"><span class="hs-identifier hs-var">spec</span></a></span><span>
-</span><span id="line-161"></span><span>            </span><span class="annot"><span class="annottext">[Text]
+</span><span id="line-171"></span><span>            </span><span class="annot"><span class="annottext">[Text]
 </span><a href="#local-6989586621679282486"><span class="hs-identifier hs-var">fns'</span></a></span><span>
-</span><span id="line-162"></span><span>        </span><span class="annot"><span class="annottext">Bool -&gt; String -&gt; IO ()
+</span><span id="line-172"></span><span>        </span><span class="annot"><span class="annottext">Bool -&gt; String -&gt; IO ()
 </span><span class="hs-identifier hs-var">createDirectoryIfMissing</span></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; String
 </span><span class="hs-identifier hs-var">unpack</span></span><span> </span><span class="annot"><span class="">[st|#{basedir}/Torch/Internal/Managed/Type/#{moduleName}|]</span></span><span class="hs-special">)</span><span>
-</span><span id="line-163"></span><span>      </span><span class="annot"><span class="annottext">[(Int, [Text])] -&gt; ((Int, [Text]) -&gt; IO ()) -&gt; IO ()
+</span><span id="line-173"></span><span>      </span><span class="annot"><span class="annottext">[(Int, [Text])] -&gt; ((Int, [Text]) -&gt; IO ()) -&gt; IO ()
 forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
 (Foldable t, Monad m) =&gt;
 t a -&gt; (a -&gt; m b) -&gt; m ()
 </span><span class="hs-identifier hs-var">forM_</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Int] -&gt; [[Text]] -&gt; [(Int, [Text])]
 forall a b. [a] -&gt; [b] -&gt; [(a, b)]
 </span><span class="hs-identifier hs-var">zip</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">0</span></span><span class="hs-glyph">..</span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">[[Text]]
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">..</span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">[[Text]]
 </span><a href="#local-6989586621679282488"><span class="hs-identifier hs-var">managedFuncs</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(((Int, [Text]) -&gt; IO ()) -&gt; IO ())
 -&gt; ((Int, [Text]) -&gt; IO ()) -&gt; IO ()
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621679282485"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679282485"><span class="hs-identifier hs-var">i</span></a></span></span><span class="hs-glyph">::</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span id="local-6989586621679282484"><span class="annot"><span class="annottext">[Text]
+</span><a href="#local-6989586621679282485"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679282484"><span class="annot"><span class="annottext">[Text]
 </span><a href="#local-6989586621679282484"><span class="hs-identifier hs-var">fns'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-164"></span><span>        </span><span class="annot"><span class="annottext">String -&gt; Text -&gt; IO ()
+</span><span id="line-174"></span><span>        </span><span class="annot"><span class="annottext">String -&gt; Text -&gt; IO ()
 </span><span class="hs-identifier hs-var">T.writeFile</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; String
 </span><span class="hs-identifier hs-var">unpack</span></span><span> </span><span class="annot"><span class="">[st|#{basedir}/Torch/Internal/Managed/Type/#{moduleName}/#{moduleName}#{i}.hs|]</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Text -&gt; IO ()) -&gt; Text -&gt; IO ()
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span>
-</span><span id="line-165"></span><span>          </span><span class="annot"><span class="annottext">Bool -&gt; Text -&gt; Text -&gt; CppClassSpec -&gt; [Text] -&gt; Text
+</span><span id="line-175"></span><span>          </span><span class="annot"><span class="annottext">Bool -&gt; Text -&gt; Text -&gt; CppClassSpec -&gt; [Text] -&gt; Text
 </span><a href="RenderClass.html#template"><span class="hs-identifier hs-var">template</span></a></span><span>
-</span><span id="line-166"></span><span>            </span><span class="annot"><span class="annottext">Bool
+</span><span id="line-176"></span><span>            </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">True</span></span><span>
-</span><span id="line-167"></span><span>            </span><span class="annot"><span class="">[st|Torch.Internal.Managed.Type.#{moduleName}.#{moduleName}#{i}|]</span></span><span>
-</span><span id="line-168"></span><span>            </span><span class="annot"><span class="">[st|Torch.Internal.Unmanaged.Type.#{moduleName}.#{moduleName}#{i}|]</span></span><span>
-</span><span id="line-169"></span><span>            </span><span class="annot"><span class="annottext">CppClassSpec
+</span><span id="line-177"></span><span>            </span><span class="annot"><span class="">[st|Torch.Internal.Managed.Type.#{moduleName}.#{moduleName}#{i}|]</span></span><span>
+</span><span id="line-178"></span><span>            </span><span class="annot"><span class="">[st|Torch.Internal.Unmanaged.Type.#{moduleName}.#{moduleName}#{i}|]</span></span><span>
+</span><span id="line-179"></span><span>            </span><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282494"><span class="hs-identifier hs-var">spec</span></a></span><span>
-</span><span id="line-170"></span><span>            </span><span class="annot"><span class="annottext">[Text]
+</span><span id="line-180"></span><span>            </span><span class="annot"><span class="annottext">[Text]
 </span><a href="#local-6989586621679282484"><span class="hs-identifier hs-var">fns'</span></a></span><span>
-</span><span id="line-171"></span><span>            </span><span>
-</span><span id="line-172"></span><span class="annot"><a href="RenderClass.html#template"><span class="hs-identifier hs-type">template</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ParseClass.html#CppClassSpec"><span class="hs-identifier hs-type">PC.CppClassSpec</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
-</span><span id="line-173"></span><span id="template"><span class="annot"><span class="annottext">template :: Bool -&gt; Text -&gt; Text -&gt; CppClassSpec -&gt; [Text] -&gt; Text
+</span><span id="line-181"></span><span>
+</span><span id="line-182"></span><span class="annot"><a href="RenderClass.html#template"><span class="hs-identifier hs-type">template</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="ParseClass.html#CppClassSpec"><span class="hs-identifier hs-type">PC.CppClassSpec</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-183"></span><span id="template"><span class="annot"><span class="annottext">template :: Bool -&gt; Text -&gt; Text -&gt; CppClassSpec -&gt; [Text] -&gt; Text
 </span><a href="RenderClass.html#template"><span class="hs-identifier hs-var hs-var">template</span></a></span></span><span> </span><span id="local-6989586621679282483"><span class="annot"><span class="annottext">Bool
 </span><a href="#local-6989586621679282483"><span class="hs-identifier hs-var">is_managed</span></a></span></span><span> </span><span id="local-6989586621679282482"><span class="annot"><span class="annottext">Text
 </span><a href="#local-6989586621679282482"><span class="hs-identifier hs-var">module_name</span></a></span></span><span> </span><span id="local-6989586621679282481"><span class="annot"><span class="annottext">Text
 </span><a href="#local-6989586621679282481"><span class="hs-identifier hs-var">unamagedModuleName</span></a></span></span><span> </span><span id="local-6989586621679282480"><span class="annot"><span class="annottext">CppClassSpec
 </span><a href="#local-6989586621679282480"><span class="hs-identifier hs-var">types</span></a></span></span><span> </span><span id="local-6989586621679282479"><span class="annot"><span class="annottext">[Text]
-</span><a href="#local-6989586621679282479"><span class="hs-identifier hs-var">funcs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[st|
+</span><a href="#local-6989586621679282479"><span class="hs-identifier hs-var">funcs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-184"></span><span>  </span><span class="annot"><span class="">[st|
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE TemplateHaskell #-}
@@ -630,4 +641,4 @@ module #{module_name} where
 
 #{mconcat funcs}
 |]</span></span><span>
-</span><span id="line-191"></span></pre></body></html>
+</span><span id="line-202"></span></pre></body></html>

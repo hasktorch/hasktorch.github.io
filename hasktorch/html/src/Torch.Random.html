@@ -20,8 +20,8 @@
 </span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/apj4fhhmp4gbch73305ll5kzmxzh18bj-stm-lib-stm-2.5.0.0-haddock-doc/share/doc/stm/html/src"><span class="hs-identifier">Control.Concurrent.STM</span></a></span><span>
 </span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.IO.Class</span></span><span>
 </span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/apj4fhhmp4gbch73305ll5kzmxzh18bj-stm-lib-stm-2.5.0.0-haddock-doc/share/doc/stm/html/src"><span class="hs-identifier">Control.Monad.STM</span></a></span><span>
-</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Word</span></span><span>
-</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Word</span></span><span>
 </span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Foreign.ForeignPtr</span></span><span>
 </span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">System.IO.Unsafe</span></span><span>
 </span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.Device.html"><span class="hs-identifier">Torch.Device</span></a></span><span>
@@ -43,7 +43,8 @@
 </span><span id="line-40"></span><span class="hs-keyword">newtype</span><span> </span><span id="Generator"><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-var">Generator</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="UnsafeGenerator"><span class="annot"><a href="Torch.Random.html#UnsafeGenerator"><span class="hs-identifier hs-var">UnsafeGenerator</span></a></span></span><span>
 </span><span id="line-41"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="unGenerator"><span class="annot"><span class="annottext">Generator -&gt; TVar (Either (Word64, Device) (ForeignPtr Generator))
 </span><a href="Torch.Random.html#unGenerator"><span class="hs-identifier hs-var hs-var">unGenerator</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">TVar</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Word64</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Device.html#Device"><span class="hs-identifier hs-type">Device</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-42"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679730029"><span id="local-6989586621679730031"><span class="annot"><span class="annottext">Generator -&gt; Generator -&gt; Bool
+</span><span id="line-42"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679730029"><span id="local-6989586621679730031"><span class="annot"><span class="annottext">Generator -&gt; Generator -&gt; Bool
 (Generator -&gt; Generator -&gt; Bool)
 -&gt; (Generator -&gt; Generator -&gt; Bool) -&gt; Eq Generator
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -67,22 +68,22 @@ $cshow :: Generator -&gt; String
 showsPrec :: Int -&gt; Generator -&gt; ShowS
 $cshowsPrec :: Int -&gt; Generator -&gt; ShowS
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
-</span><span id="line-43"></span><span>
-</span><span id="line-44"></span><span class="annot"><a href="Torch.Random.html#mkGenerator"><span class="hs-identifier hs-type">mkGenerator</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Device.html#Device"><span class="hs-identifier hs-type">Device</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span>
-</span><span id="line-45"></span><span id="mkGenerator"><span class="annot"><span class="annottext">mkGenerator :: Device -&gt; Word64 -&gt; IO Generator
+</span><span id="line-44"></span><span>
+</span><span id="line-45"></span><span class="annot"><a href="Torch.Random.html#mkGenerator"><span class="hs-identifier hs-type">mkGenerator</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Device.html#Device"><span class="hs-identifier hs-type">Device</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span>
+</span><span id="line-46"></span><span id="mkGenerator"><span class="annot"><span class="annottext">mkGenerator :: Device -&gt; Word64 -&gt; IO Generator
 </span><a href="Torch.Random.html#mkGenerator"><span class="hs-identifier hs-var hs-var">mkGenerator</span></a></span></span><span> </span><span id="local-6989586621679730021"><span class="annot"><span class="annottext">Device
 </span><a href="#local-6989586621679730021"><span class="hs-identifier hs-var">device</span></a></span></span><span> </span><span id="local-6989586621679730020"><span class="annot"><span class="annottext">Word64
 </span><a href="#local-6989586621679730020"><span class="hs-identifier hs-var">seed</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-46"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Device
+</span><span id="line-47"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Device
 </span><a href="#local-6989586621679730021"><span class="hs-identifier hs-var">device</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-47"></span><span>    </span><span class="annot"><a href="Torch.Device.html#Device"><span class="hs-identifier hs-type">Device</span></a></span><span> </span><span class="annot"><span class="annottext">DeviceType
+</span><span id="line-48"></span><span>    </span><span class="annot"><a href="Torch.Device.html#Device"><span class="hs-identifier hs-type">Device</span></a></span><span> </span><span class="annot"><span class="annottext">DeviceType
 </span><a href="Torch.Device.html#CPU"><span class="hs-identifier hs-var">CPU</span></a></span><span> </span><span class="annot"><span class="annottext">Int16
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-48"></span><span>      </span><span id="local-6989586621679730017"><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><span id="line-49"></span><span>      </span><span id="local-6989586621679730017"><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679730017"><span class="hs-identifier hs-var">genPtr</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; IO (ForeignPtr Generator)
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.newCPUGenerator</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
 </span><a href="#local-6989586621679730020"><span class="hs-identifier hs-var">seed</span></a></span><span>
-</span><span id="line-49"></span><span>      </span><span id="local-6989586621679730015"><span class="annot"><span class="annottext">TVar (Either (Word64, Device) (ForeignPtr Generator))
+</span><span id="line-50"></span><span>      </span><span id="local-6989586621679730015"><span class="annot"><span class="annottext">TVar (Either (Word64, Device) (ForeignPtr Generator))
 </span><a href="#local-6989586621679730015"><span class="hs-identifier hs-var">genenerator</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Either (Word64, Device) (ForeignPtr Generator)
 -&gt; IO (TVar (Either (Word64, Device) (ForeignPtr Generator)))
 forall a. a -&gt; IO (TVar a)
@@ -91,27 +92,27 @@ forall a. a -&gt; IO (TVar a)
 forall a b. b -&gt; Either a b
 </span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679730017"><span class="hs-identifier hs-var">genPtr</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-50"></span><span>      </span><span class="annot"><span class="annottext">Generator -&gt; IO Generator
+</span><span id="line-51"></span><span>      </span><span class="annot"><span class="annottext">Generator -&gt; IO Generator
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(Generator -&gt; IO Generator) -&gt; Generator -&gt; IO Generator
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TVar (Either (Word64, Device) (ForeignPtr Generator)) -&gt; Generator
 </span><a href="Torch.Random.html#UnsafeGenerator"><span class="hs-identifier hs-var">UnsafeGenerator</span></a></span><span> </span><span class="annot"><span class="annottext">TVar (Either (Word64, Device) (ForeignPtr Generator))
 </span><a href="#local-6989586621679730015"><span class="hs-identifier hs-var">genenerator</span></a></span><span>
-</span><span id="line-51"></span><span>    </span><span class="annot"><a href="Torch.Device.html#Device"><span class="hs-identifier hs-type">Device</span></a></span><span> </span><span class="annot"><span class="annottext">DeviceType
+</span><span id="line-52"></span><span>    </span><span class="annot"><a href="Torch.Device.html#Device"><span class="hs-identifier hs-type">Device</span></a></span><span> </span><span class="annot"><span class="annottext">DeviceType
 </span><a href="Torch.Device.html#CUDA"><span class="hs-identifier hs-var">CUDA</span></a></span><span> </span><span id="local-6989586621679730012"><span class="annot"><span class="annottext">Int16
 </span><a href="#local-6989586621679730012"><span class="hs-identifier hs-var">idx</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-52"></span><span>      </span><span id="local-6989586621679730011"><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><span id="line-53"></span><span>      </span><span id="local-6989586621679730011"><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679730011"><span class="hs-identifier hs-var">genPtr</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; IO (ForeignPtr Generator)
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.newCUDAGenerator</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int16 -&gt; Word16
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Int16
 </span><a href="#local-6989586621679730012"><span class="hs-identifier hs-var">idx</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-53"></span><span>      </span><span class="annot"><span class="annottext">ForeignPtr Generator -&gt; Word64 -&gt; IO ()
+</span><span id="line-54"></span><span>      </span><span class="annot"><span class="annottext">ForeignPtr Generator -&gt; Word64 -&gt; IO ()
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.generator_set_current_seed</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679730011"><span class="hs-identifier hs-var">genPtr</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
 </span><a href="#local-6989586621679730020"><span class="hs-identifier hs-var">seed</span></a></span><span>
-</span><span id="line-54"></span><span>      </span><span id="local-6989586621679730008"><span class="annot"><span class="annottext">TVar (Either (Word64, Device) (ForeignPtr Generator))
+</span><span id="line-55"></span><span>      </span><span id="local-6989586621679730008"><span class="annot"><span class="annottext">TVar (Either (Word64, Device) (ForeignPtr Generator))
 </span><a href="#local-6989586621679730008"><span class="hs-identifier hs-var">genenerator</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Either (Word64, Device) (ForeignPtr Generator)
 -&gt; IO (TVar (Either (Word64, Device) (ForeignPtr Generator)))
 forall a. a -&gt; IO (TVar a)
@@ -120,16 +121,15 @@ forall a. a -&gt; IO (TVar a)
 forall a b. b -&gt; Either a b
 </span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679730011"><span class="hs-identifier hs-var">genPtr</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-55"></span><span>      </span><span class="annot"><span class="annottext">Generator -&gt; IO Generator
+</span><span id="line-56"></span><span>      </span><span class="annot"><span class="annottext">Generator -&gt; IO Generator
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(Generator -&gt; IO Generator) -&gt; Generator -&gt; IO Generator
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TVar (Either (Word64, Device) (ForeignPtr Generator)) -&gt; Generator
 </span><a href="Torch.Random.html#UnsafeGenerator"><span class="hs-identifier hs-var">UnsafeGenerator</span></a></span><span> </span><span class="annot"><span class="annottext">TVar (Either (Word64, Device) (ForeignPtr Generator))
 </span><a href="#local-6989586621679730008"><span class="hs-identifier hs-var">genenerator</span></a></span><span>
-</span><span id="line-56"></span><span>
-</span><span id="line-57"></span><span class="hs-keyword">type</span><span> </span><span id="RandomGenFunc"><span class="annot"><a href="Torch.Random.html#RandomGenFunc"><span class="hs-identifier hs-var">RandomGenFunc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.IntArray</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.TensorOptions</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Tensor</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-58"></span><span>
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span class="hs-keyword">type</span><span> </span><span id="RandomGenFunc"><span class="annot"><a href="Torch.Random.html#RandomGenFunc"><span class="hs-identifier hs-var">RandomGenFunc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.IntArray</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.TensorOptions</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Tensor</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-59"></span><span>
 </span><span id="line-60"></span><span class="annot"><a href="Torch.Random.html#generatorFactory"><span class="hs-identifier hs-type">generatorFactory</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Random.html#RandomGenFunc"><span class="hs-identifier hs-type">RandomGenFunc</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.TensorOptions.html#TensorOptions"><span class="hs-identifier hs-type">TensorOptions</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-61"></span><span id="generatorFactory"><span class="annot"><span class="annottext">generatorFactory :: RandomGenFunc
@@ -169,8 +169,8 @@ forall a. TVar a -&gt; STM a
 </span><a href="#local-6989586621679729993"><span class="hs-identifier hs-var hs-var">device</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-68"></span><span>                </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator -&gt; Bool
 </span><a href="#local-6989586621679729992"><span class="hs-identifier hs-var">generatorIsCuda</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
-</span><a href="#local-6989586621679729994"><span class="hs-identifier hs-var">v'</span></a></span><span> </span><span class="hs-keyword">then</span><span>
-</span><span id="line-69"></span><span>                  </span><span class="annot"><span class="annottext">Device :: DeviceType -&gt; Int16 -&gt; Device
+</span><a href="#local-6989586621679729994"><span class="hs-identifier hs-var">v'</span></a></span><span>
+</span><span id="line-69"></span><span>                  </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Device :: DeviceType -&gt; Int16 -&gt; Device
 </span><a href="Torch.Device.html#Device"><span class="hs-identifier hs-type">Device</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="annottext">deviceType :: DeviceType
 </span><a href="Torch.Device.html#deviceType"><span class="hs-identifier hs-var">deviceType</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DeviceType
 </span><a href="Torch.Device.html#CUDA"><span class="hs-identifier hs-var">CUDA</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">deviceIndex :: Int16
@@ -181,18 +181,17 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator -&gt; Int
 </span><a href="#local-6989586621679729989"><span class="hs-identifier hs-var">generatorDevice</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679729994"><span class="hs-identifier hs-var">v'</span></a></span><span class="hs-special">}</span><span>
-</span><span id="line-70"></span><span>                </span><span class="hs-keyword">else</span><span>
-</span><span id="line-71"></span><span>                  </span><span class="annot"><span class="annottext">Device :: DeviceType -&gt; Int16 -&gt; Device
+</span><span id="line-70"></span><span>                  </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Device :: DeviceType -&gt; Int16 -&gt; Device
 </span><a href="Torch.Device.html#Device"><span class="hs-identifier hs-type">Device</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="annottext">deviceType :: DeviceType
 </span><a href="Torch.Device.html#deviceType"><span class="hs-identifier hs-var">deviceType</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DeviceType
 </span><a href="Torch.Device.html#CPU"><span class="hs-identifier hs-var">CPU</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">deviceIndex :: Int16
 </span><a href="Torch.Device.html#deviceIndex"><span class="hs-identifier hs-var">deviceIndex</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int16
 </span><span class="hs-number">0</span></span><span class="hs-special">}</span><span>
-</span><span id="line-72"></span><span>              </span><span id="local-6989586621679729988"><span class="annot"><span class="annottext">seed :: Word64
+</span><span id="line-71"></span><span>              </span><span id="local-6989586621679729988"><span class="annot"><span class="annottext">seed :: Word64
 </span><a href="#local-6989586621679729988"><span class="hs-identifier hs-var hs-var">seed</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator -&gt; Word64
 </span><a href="#local-6989586621679729987"><span class="hs-identifier hs-var">generatorSeed</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679729994"><span class="hs-identifier hs-var">v'</span></a></span><span>
-</span><span id="line-73"></span><span>          </span><span class="annot"><span class="annottext">TVar (Either (Word64, Device) (ForeignPtr Generator))
+</span><span id="line-72"></span><span>          </span><span class="annot"><span class="annottext">TVar (Either (Word64, Device) (ForeignPtr Generator))
 -&gt; Either (Word64, Device) (ForeignPtr Generator) -&gt; STM ()
 forall a. TVar a -&gt; a -&gt; STM ()
 </span><span class="hs-identifier hs-var">writeTVar</span></span><span> </span><span class="annot"><span class="annottext">TVar (Either (Word64, Device) (ForeignPtr Generator))
@@ -218,7 +217,7 @@ forall a b. a -&gt; Either a b
 </span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word64
 </span><a href="#local-6989586621679729988"><span class="hs-identifier hs-var">seed</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Device
 </span><a href="#local-6989586621679729993"><span class="hs-identifier hs-var">device</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-74"></span><span>          </span><span class="annot"><span class="annottext">Either (Word64, Device) (ForeignPtr Generator)
+</span><span id="line-73"></span><span>          </span><span class="annot"><span class="annottext">Either (Word64, Device) (ForeignPtr Generator)
 -&gt; STM (Either (Word64, Device) (ForeignPtr Generator))
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(Either (Word64, Device) (ForeignPtr Generator)
@@ -231,7 +230,7 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 forall a b. b -&gt; Either a b
 </span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679729994"><span class="hs-identifier hs-var">v'</span></a></span><span>
-</span><span id="line-75"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679729985"><span class="annot"><span class="annottext">(Word64, Device)
+</span><span id="line-74"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679729985"><span class="annot"><span class="annottext">(Word64, Device)
 </span><a href="#local-6989586621679729985"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either (Word64, Device) (ForeignPtr Generator)
 -&gt; STM (Either (Word64, Device) (ForeignPtr Generator))
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
@@ -239,41 +238,41 @@ forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 forall a b. a -&gt; Either a b
 </span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(Word64, Device)
 </span><a href="#local-6989586621679729985"><span class="hs-identifier hs-var">v</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-76"></span><span>    </span><span id="local-6989586621679729984"><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><span id="line-75"></span><span>    </span><span id="local-6989586621679729984"><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679729984"><span class="hs-identifier hs-var">genPtr</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Either (Word64, Device) (ForeignPtr Generator)
 </span><a href="#local-6989586621679729998"><span class="hs-identifier hs-var">mGenerator</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-77"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679729983"><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><span id="line-76"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679729983"><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679729983"><span class="hs-identifier hs-var">gen</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator -&gt; IO (ForeignPtr Generator)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679729983"><span class="hs-identifier hs-var">gen</span></a></span><span>
-</span><span id="line-78"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679729982"><span class="annot"><span class="annottext">Word64
+</span><span id="line-77"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679729982"><span class="annot"><span class="annottext">Word64
 </span><a href="#local-6989586621679729982"><span class="hs-identifier hs-var">seed</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679729981"><span class="annot"><span class="annottext">Device
 </span><a href="#local-6989586621679729981"><span class="hs-identifier hs-var">device</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Device
 </span><a href="#local-6989586621679729981"><span class="hs-identifier hs-var">device</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-79"></span><span>        </span><span class="annot"><a href="Torch.Device.html#Device"><span class="hs-identifier hs-type">Device</span></a></span><span> </span><span class="annot"><span class="annottext">DeviceType
+</span><span id="line-78"></span><span>        </span><span class="annot"><a href="Torch.Device.html#Device"><span class="hs-identifier hs-type">Device</span></a></span><span> </span><span class="annot"><span class="annottext">DeviceType
 </span><a href="Torch.Device.html#CPU"><span class="hs-identifier hs-var">CPU</span></a></span><span> </span><span class="annot"><span class="annottext">Int16
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; IO (ForeignPtr Generator)
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.newCPUGenerator</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
 </span><a href="#local-6989586621679729982"><span class="hs-identifier hs-var">seed</span></a></span><span>
-</span><span id="line-80"></span><span>        </span><span class="annot"><a href="Torch.Device.html#Device"><span class="hs-identifier hs-type">Device</span></a></span><span> </span><span class="annot"><span class="annottext">DeviceType
+</span><span id="line-79"></span><span>        </span><span class="annot"><a href="Torch.Device.html#Device"><span class="hs-identifier hs-type">Device</span></a></span><span> </span><span class="annot"><span class="annottext">DeviceType
 </span><a href="Torch.Device.html#CUDA"><span class="hs-identifier hs-var">CUDA</span></a></span><span> </span><span id="local-6989586621679729980"><span class="annot"><span class="annottext">Int16
 </span><a href="#local-6989586621679729980"><span class="hs-identifier hs-var">idx</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-81"></span><span>          </span><span id="local-6989586621679729979"><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><span id="line-80"></span><span>          </span><span id="local-6989586621679729979"><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679729979"><span class="hs-identifier hs-var">gen</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; IO (ForeignPtr Generator)
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.newCUDAGenerator</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int16 -&gt; Word16
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Int16
 </span><a href="#local-6989586621679729980"><span class="hs-identifier hs-var">idx</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-82"></span><span>          </span><span class="annot"><span class="annottext">ForeignPtr Generator -&gt; Word64 -&gt; IO ()
+</span><span id="line-81"></span><span>          </span><span class="annot"><span class="annottext">ForeignPtr Generator -&gt; Word64 -&gt; IO ()
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.generator_set_current_seed</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679729979"><span class="hs-identifier hs-var">gen</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
 </span><a href="#local-6989586621679729982"><span class="hs-identifier hs-var">seed</span></a></span><span>
-</span><span id="line-83"></span><span>          </span><span class="annot"><span class="annottext">ForeignPtr Generator -&gt; IO (ForeignPtr Generator)
+</span><span id="line-82"></span><span>          </span><span class="annot"><span class="annottext">ForeignPtr Generator -&gt; IO (ForeignPtr Generator)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679729979"><span class="hs-identifier hs-var">gen</span></a></span><span>
-</span><span id="line-84"></span><span>    </span><span id="local-6989586621679729978"><span class="annot"><span class="annottext">Tensor
+</span><span id="line-83"></span><span>    </span><span id="local-6989586621679729978"><span class="annot"><span class="annottext">Tensor
 </span><a href="#local-6989586621679729978"><span class="hs-identifier hs-var">tensor</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">RandomGenFunc
 -&gt; [Int] -&gt; ForeignPtr Generator -&gt; TensorOptions -&gt; IO Tensor
 forall a ca x1 cx1 x2 cx2 y cy.
@@ -284,7 +283,7 @@ forall a ca x1 cx1 x2 cx2 y cy.
 </span><a href="#local-6989586621679730002"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679729984"><span class="hs-identifier hs-var">genPtr</span></a></span><span> </span><span class="annot"><span class="annottext">TensorOptions
 </span><a href="#local-6989586621679730001"><span class="hs-identifier hs-var">options</span></a></span><span>
-</span><span id="line-85"></span><span>    </span><span id="local-6989586621679729976"><span class="annot"><span class="annottext">TVar (Either (Word64, Device) (ForeignPtr Generator))
+</span><span id="line-84"></span><span>    </span><span id="local-6989586621679729976"><span class="annot"><span class="annottext">TVar (Either (Word64, Device) (ForeignPtr Generator))
 </span><a href="#local-6989586621679729976"><span class="hs-identifier hs-var">nextGenenerator</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Either (Word64, Device) (ForeignPtr Generator)
 -&gt; IO (TVar (Either (Word64, Device) (ForeignPtr Generator)))
 forall a. a -&gt; IO (TVar a)
@@ -293,15 +292,15 @@ forall a. a -&gt; IO (TVar a)
 forall a b. b -&gt; Either a b
 </span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679729984"><span class="hs-identifier hs-var">genPtr</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-86"></span><span>    </span><span class="annot"><span class="annottext">(Tensor, Generator) -&gt; IO (Tensor, Generator)
+</span><span id="line-85"></span><span>    </span><span class="annot"><span class="annottext">(Tensor, Generator) -&gt; IO (Tensor, Generator)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
 </span><a href="#local-6989586621679729978"><span class="hs-identifier hs-var">tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">TVar (Either (Word64, Device) (ForeignPtr Generator)) -&gt; Generator
 </span><a href="Torch.Random.html#UnsafeGenerator"><span class="hs-identifier hs-var">UnsafeGenerator</span></a></span><span> </span><span class="annot"><span class="annottext">TVar (Either (Word64, Device) (ForeignPtr Generator))
 </span><a href="#local-6989586621679729976"><span class="hs-identifier hs-var">nextGenenerator</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-87"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-88"></span><span>    </span><span class="annot"><a href="#local-6989586621679729975"><span class="hs-identifier hs-type">generatorIsCpu</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
-</span><span id="line-89"></span><span>    </span><span id="local-6989586621679729975"><span class="annot"><span class="annottext">generatorIsCpu :: ForeignPtr Generator -&gt; Bool
+</span><span id="line-86"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-87"></span><span>    </span><span class="annot"><a href="#local-6989586621679729975"><span class="hs-identifier hs-type">generatorIsCpu</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-88"></span><span>    </span><span id="local-6989586621679729975"><span class="annot"><span class="annottext">generatorIsCpu :: ForeignPtr Generator -&gt; Bool
 </span><a href="#local-6989586621679729975"><span class="hs-identifier hs-var hs-var">generatorIsCpu</span></a></span></span><span> </span><span id="local-6989586621679729974"><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679729974"><span class="hs-identifier hs-var">gen</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO Bool -&gt; Bool
 forall a. IO a -&gt; a
@@ -315,9 +314,9 @@ forall a ca y cy.
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">cast1</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator -&gt; IO CBool
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.generator_is_cpu</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679729974"><span class="hs-identifier hs-var">gen</span></a></span><span>
-</span><span id="line-90"></span><span>    </span><span>
-</span><span id="line-91"></span><span>    </span><span class="annot"><a href="#local-6989586621679729992"><span class="hs-identifier hs-type">generatorIsCuda</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
-</span><span id="line-92"></span><span>    </span><span id="local-6989586621679729992"><span class="annot"><span class="annottext">generatorIsCuda :: ForeignPtr Generator -&gt; Bool
+</span><span id="line-89"></span><span>
+</span><span id="line-90"></span><span>    </span><span class="annot"><a href="#local-6989586621679729992"><span class="hs-identifier hs-type">generatorIsCuda</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-91"></span><span>    </span><span id="local-6989586621679729992"><span class="annot"><span class="annottext">generatorIsCuda :: ForeignPtr Generator -&gt; Bool
 </span><a href="#local-6989586621679729992"><span class="hs-identifier hs-var hs-var">generatorIsCuda</span></a></span></span><span> </span><span id="local-6989586621679729971"><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679729971"><span class="hs-identifier hs-var">gen</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO Bool -&gt; Bool
 forall a. IO a -&gt; a
@@ -331,9 +330,9 @@ forall a ca y cy.
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">cast1</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator -&gt; IO CBool
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.generator_is_cuda</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679729971"><span class="hs-identifier hs-var">gen</span></a></span><span>
-</span><span id="line-93"></span><span>    </span><span>
-</span><span id="line-94"></span><span>    </span><span class="annot"><a href="#local-6989586621679729989"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
-</span><span id="line-95"></span><span>    </span><span id="local-6989586621679729989"><span class="annot"><span class="annottext">generatorDevice :: ForeignPtr Generator -&gt; Int
+</span><span id="line-92"></span><span>
+</span><span id="line-93"></span><span>    </span><span class="annot"><a href="#local-6989586621679729989"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-94"></span><span>    </span><span id="local-6989586621679729989"><span class="annot"><span class="annottext">generatorDevice :: ForeignPtr Generator -&gt; Int
 </span><a href="#local-6989586621679729989"><span class="hs-identifier hs-var hs-var">generatorDevice</span></a></span></span><span> </span><span id="local-6989586621679729969"><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679729969"><span class="hs-identifier hs-var">gen</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO Int -&gt; Int
 forall a. IO a -&gt; a
@@ -347,9 +346,9 @@ forall a ca y cy.
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">cast1</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator -&gt; IO Int64
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.generator_get_device</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679729969"><span class="hs-identifier hs-var">gen</span></a></span><span>
-</span><span id="line-96"></span><span>    </span><span>
-</span><span id="line-97"></span><span>    </span><span class="annot"><a href="#local-6989586621679729987"><span class="hs-identifier hs-type">generatorSeed</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word64</span></span><span>
-</span><span id="line-98"></span><span>    </span><span id="local-6989586621679729987"><span class="annot"><span class="annottext">generatorSeed :: ForeignPtr Generator -&gt; Word64
+</span><span id="line-95"></span><span>
+</span><span id="line-96"></span><span>    </span><span class="annot"><a href="#local-6989586621679729987"><span class="hs-identifier hs-type">generatorSeed</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word64</span></span><span>
+</span><span id="line-97"></span><span>    </span><span id="local-6989586621679729987"><span class="annot"><span class="annottext">generatorSeed :: ForeignPtr Generator -&gt; Word64
 </span><a href="#local-6989586621679729987"><span class="hs-identifier hs-var hs-var">generatorSeed</span></a></span></span><span> </span><span id="local-6989586621679729967"><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679729967"><span class="hs-identifier hs-var">gen</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO Word64 -&gt; Word64
 forall a. IO a -&gt; a
@@ -363,80 +362,79 @@ forall a ca y cy.
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">cast1</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator -&gt; IO Word64
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.generator_current_seed</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
 </span><a href="#local-6989586621679729967"><span class="hs-identifier hs-var">gen</span></a></span><span>
-</span><span id="line-99"></span><span>    </span><span>
-</span><span id="line-100"></span><span>
-</span><span id="line-101"></span><span class="annot"><a href="Torch.Random.html#randn"><span class="hs-identifier hs-type">randn</span></a></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-102"></span><span>  </span><span class="hs-comment">-- | size</span><span>
-</span><span id="line-103"></span><span>  </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-104"></span><span>  </span><span class="hs-comment">-- | options</span><span>
-</span><span id="line-105"></span><span>  </span><span class="annot"><a href="Torch.TensorOptions.html#TensorOptions"><span class="hs-identifier hs-type">TensorOptions</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-106"></span><span>  </span><span class="hs-comment">-- | generator</span><span>
-</span><span id="line-107"></span><span>  </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-108"></span><span>  </span><span class="hs-comment">-- | output</span><span>
-</span><span id="line-109"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-110"></span><span id="randn"><span class="annot"><span class="annottext">randn :: [Int] -&gt; TensorOptions -&gt; Generator -&gt; (Tensor, Generator)
+</span><span id="line-98"></span><span>
+</span><span id="line-99"></span><span class="annot"><a href="Torch.Random.html#randn"><span class="hs-identifier hs-type">randn</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-100"></span><span>  </span><span class="hs-comment">-- | size</span><span>
+</span><span id="line-101"></span><span>  </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-102"></span><span>  </span><span class="hs-comment">-- | options</span><span>
+</span><span id="line-103"></span><span>  </span><span class="annot"><a href="Torch.TensorOptions.html#TensorOptions"><span class="hs-identifier hs-type">TensorOptions</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-104"></span><span>  </span><span class="hs-comment">-- | generator</span><span>
+</span><span id="line-105"></span><span>  </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-106"></span><span>  </span><span class="hs-comment">-- | output</span><span>
+</span><span id="line-107"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-108"></span><span id="randn"><span class="annot"><span class="annottext">randn :: [Int] -&gt; TensorOptions -&gt; Generator -&gt; (Tensor, Generator)
 </span><a href="Torch.Random.html#randn"><span class="hs-identifier hs-var hs-var">randn</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">RandomGenFunc
 -&gt; [Int] -&gt; TensorOptions -&gt; Generator -&gt; (Tensor, Generator)
 </span><a href="Torch.Random.html#generatorFactory"><span class="hs-identifier hs-var">generatorFactory</span></a></span><span> </span><span class="annot"><span class="annottext">RandomGenFunc
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">LibTorch.randn_lGo</span></a></span><span>
-</span><span id="line-111"></span><span>
-</span><span id="line-112"></span><span class="annot"><a href="Torch.Random.html#randn%27"><span class="hs-identifier hs-type">randn'</span></a></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-113"></span><span>  </span><span class="hs-comment">-- | size</span><span>
-</span><span id="line-114"></span><span>  </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-115"></span><span>  </span><span class="hs-comment">-- | generator</span><span>
-</span><span id="line-116"></span><span>  </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-117"></span><span>  </span><span class="hs-comment">-- | output</span><span>
-</span><span id="line-118"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-119"></span><span id="randn%27"><span class="annot"><span class="annottext">randn' :: [Int] -&gt; Generator -&gt; (Tensor, Generator)
+</span><span id="line-109"></span><span>
+</span><span id="line-110"></span><span class="annot"><a href="Torch.Random.html#randn%27"><span class="hs-identifier hs-type">randn'</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-111"></span><span>  </span><span class="hs-comment">-- | size</span><span>
+</span><span id="line-112"></span><span>  </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-113"></span><span>  </span><span class="hs-comment">-- | generator</span><span>
+</span><span id="line-114"></span><span>  </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-115"></span><span>  </span><span class="hs-comment">-- | output</span><span>
+</span><span id="line-116"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-117"></span><span id="randn%27"><span class="annot"><span class="annottext">randn' :: [Int] -&gt; Generator -&gt; (Tensor, Generator)
 </span><a href="Torch.Random.html#randn%27"><span class="hs-identifier hs-var hs-var">randn'</span></a></span></span><span> </span><span id="local-6989586621679729964"><span class="annot"><span class="annottext">[Int]
 </span><a href="#local-6989586621679729964"><span class="hs-identifier hs-var">size</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; TensorOptions -&gt; Generator -&gt; (Tensor, Generator)
 </span><a href="Torch.Random.html#randn"><span class="hs-identifier hs-var">randn</span></a></span><span> </span><span class="annot"><span class="annottext">[Int]
 </span><a href="#local-6989586621679729964"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">TensorOptions
 </span><a href="Torch.TensorOptions.html#defaultOpts"><span class="hs-identifier hs-var">defaultOpts</span></a></span><span>
-</span><span id="line-120"></span><span>
-</span><span id="line-121"></span><span class="annot"><a href="Torch.Random.html#rand"><span class="hs-identifier hs-type">rand</span></a></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-122"></span><span>  </span><span class="hs-comment">-- | size</span><span>
-</span><span id="line-123"></span><span>  </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-124"></span><span>  </span><span class="hs-comment">-- | options</span><span>
-</span><span id="line-125"></span><span>  </span><span class="annot"><a href="Torch.TensorOptions.html#TensorOptions"><span class="hs-identifier hs-type">TensorOptions</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-126"></span><span>  </span><span class="hs-comment">-- | generator</span><span>
-</span><span id="line-127"></span><span>  </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-128"></span><span>  </span><span class="hs-comment">-- | output</span><span>
-</span><span id="line-129"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-130"></span><span id="rand"><span class="annot"><span class="annottext">rand :: [Int] -&gt; TensorOptions -&gt; Generator -&gt; (Tensor, Generator)
+</span><span id="line-118"></span><span>
+</span><span id="line-119"></span><span class="annot"><a href="Torch.Random.html#rand"><span class="hs-identifier hs-type">rand</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-120"></span><span>  </span><span class="hs-comment">-- | size</span><span>
+</span><span id="line-121"></span><span>  </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-122"></span><span>  </span><span class="hs-comment">-- | options</span><span>
+</span><span id="line-123"></span><span>  </span><span class="annot"><a href="Torch.TensorOptions.html#TensorOptions"><span class="hs-identifier hs-type">TensorOptions</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-124"></span><span>  </span><span class="hs-comment">-- | generator</span><span>
+</span><span id="line-125"></span><span>  </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-126"></span><span>  </span><span class="hs-comment">-- | output</span><span>
+</span><span id="line-127"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-128"></span><span id="rand"><span class="annot"><span class="annottext">rand :: [Int] -&gt; TensorOptions -&gt; Generator -&gt; (Tensor, Generator)
 </span><a href="Torch.Random.html#rand"><span class="hs-identifier hs-var hs-var">rand</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">RandomGenFunc
 -&gt; [Int] -&gt; TensorOptions -&gt; Generator -&gt; (Tensor, Generator)
 </span><a href="Torch.Random.html#generatorFactory"><span class="hs-identifier hs-var">generatorFactory</span></a></span><span> </span><span class="annot"><span class="annottext">RandomGenFunc
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">LibTorch.rand_lGo</span></a></span><span>
-</span><span id="line-131"></span><span>
-</span><span id="line-132"></span><span class="annot"><a href="Torch.Random.html#rand%27"><span class="hs-identifier hs-type">rand'</span></a></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-133"></span><span>  </span><span class="hs-comment">-- | size</span><span>
-</span><span id="line-134"></span><span>  </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-135"></span><span>  </span><span class="hs-comment">-- | generator</span><span>
-</span><span id="line-136"></span><span>  </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-137"></span><span>  </span><span class="hs-comment">-- | output</span><span>
-</span><span id="line-138"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-139"></span><span id="rand%27"><span class="annot"><span class="annottext">rand' :: [Int] -&gt; Generator -&gt; (Tensor, Generator)
+</span><span id="line-129"></span><span>
+</span><span id="line-130"></span><span class="annot"><a href="Torch.Random.html#rand%27"><span class="hs-identifier hs-type">rand'</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-131"></span><span>  </span><span class="hs-comment">-- | size</span><span>
+</span><span id="line-132"></span><span>  </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-133"></span><span>  </span><span class="hs-comment">-- | generator</span><span>
+</span><span id="line-134"></span><span>  </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-135"></span><span>  </span><span class="hs-comment">-- | output</span><span>
+</span><span id="line-136"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-137"></span><span id="rand%27"><span class="annot"><span class="annottext">rand' :: [Int] -&gt; Generator -&gt; (Tensor, Generator)
 </span><a href="Torch.Random.html#rand%27"><span class="hs-identifier hs-var hs-var">rand'</span></a></span></span><span> </span><span id="local-6989586621679729961"><span class="annot"><span class="annottext">[Int]
 </span><a href="#local-6989586621679729961"><span class="hs-identifier hs-var">size</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; TensorOptions -&gt; Generator -&gt; (Tensor, Generator)
 </span><a href="Torch.Random.html#rand"><span class="hs-identifier hs-var">rand</span></a></span><span> </span><span class="annot"><span class="annottext">[Int]
 </span><a href="#local-6989586621679729961"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">TensorOptions
 </span><a href="Torch.TensorOptions.html#defaultOpts"><span class="hs-identifier hs-var">defaultOpts</span></a></span><span>
-</span><span id="line-140"></span><span>
-</span><span id="line-141"></span><span class="annot"><a href="Torch.Random.html#randint"><span class="hs-identifier hs-type">randint</span></a></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-142"></span><span>  </span><span class="hs-comment">-- | low</span><span>
+</span><span id="line-138"></span><span>
+</span><span id="line-139"></span><span class="annot"><a href="Torch.Random.html#randint"><span class="hs-identifier hs-type">randint</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-140"></span><span>  </span><span class="hs-comment">-- | low</span><span>
+</span><span id="line-141"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-142"></span><span>  </span><span class="hs-comment">-- | high</span><span>
 </span><span id="line-143"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-144"></span><span>  </span><span class="hs-comment">-- | high</span><span>
-</span><span id="line-145"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-146"></span><span>  </span><span class="hs-comment">-- | size</span><span>
-</span><span id="line-147"></span><span>  </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-148"></span><span>  </span><span class="hs-comment">-- | options</span><span>
-</span><span id="line-149"></span><span>  </span><span class="annot"><a href="Torch.TensorOptions.html#TensorOptions"><span class="hs-identifier hs-type">TensorOptions</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-150"></span><span>  </span><span class="hs-comment">-- | generator</span><span>
-</span><span id="line-151"></span><span>  </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-152"></span><span>  </span><span class="hs-comment">-- | output</span><span>
-</span><span id="line-153"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-154"></span><span id="randint"><span class="annot"><span class="annottext">randint :: Int
+</span><span id="line-144"></span><span>  </span><span class="hs-comment">-- | size</span><span>
+</span><span id="line-145"></span><span>  </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-146"></span><span>  </span><span class="hs-comment">-- | options</span><span>
+</span><span id="line-147"></span><span>  </span><span class="annot"><a href="Torch.TensorOptions.html#TensorOptions"><span class="hs-identifier hs-type">TensorOptions</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-148"></span><span>  </span><span class="hs-comment">-- | generator</span><span>
+</span><span id="line-149"></span><span>  </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-150"></span><span>  </span><span class="hs-comment">-- | output</span><span>
+</span><span id="line-151"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-152"></span><span id="randint"><span class="annot"><span class="annottext">randint :: Int
 -&gt; Int
 -&gt; [Int]
 -&gt; TensorOptions
@@ -454,19 +452,19 @@ forall a b. (Integral a, Num b) =&gt; a -&gt; b
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Int
 </span><a href="#local-6989586621679729959"><span class="hs-identifier hs-var">high</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-155"></span><span>
-</span><span id="line-156"></span><span class="annot"><a href="Torch.Random.html#randint%27"><span class="hs-identifier hs-type">randint'</span></a></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-157"></span><span>  </span><span class="hs-comment">-- | low</span><span>
+</span><span id="line-153"></span><span>
+</span><span id="line-154"></span><span class="annot"><a href="Torch.Random.html#randint%27"><span class="hs-identifier hs-type">randint'</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-155"></span><span>  </span><span class="hs-comment">-- | low</span><span>
+</span><span id="line-156"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-157"></span><span>  </span><span class="hs-comment">-- | high</span><span>
 </span><span id="line-158"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-159"></span><span>  </span><span class="hs-comment">-- | high</span><span>
-</span><span id="line-160"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-161"></span><span>  </span><span class="hs-comment">-- | size</span><span>
-</span><span id="line-162"></span><span>  </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-163"></span><span>  </span><span class="hs-comment">-- | generator</span><span>
-</span><span id="line-164"></span><span>  </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-165"></span><span>  </span><span class="hs-comment">-- | output</span><span>
-</span><span id="line-166"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-167"></span><span id="randint%27"><span class="annot"><span class="annottext">randint' :: Int -&gt; Int -&gt; [Int] -&gt; Generator -&gt; (Tensor, Generator)
+</span><span id="line-159"></span><span>  </span><span class="hs-comment">-- | size</span><span>
+</span><span id="line-160"></span><span>  </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-161"></span><span>  </span><span class="hs-comment">-- | generator</span><span>
+</span><span id="line-162"></span><span>  </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-163"></span><span>  </span><span class="hs-comment">-- | output</span><span>
+</span><span id="line-164"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-165"></span><span id="randint%27"><span class="annot"><span class="annottext">randint' :: Int -&gt; Int -&gt; [Int] -&gt; Generator -&gt; (Tensor, Generator)
 </span><a href="Torch.Random.html#randint%27"><span class="hs-identifier hs-var hs-var">randint'</span></a></span></span><span> </span><span id="local-6989586621679729957"><span class="annot"><span class="annottext">Int
 </span><a href="#local-6989586621679729957"><span class="hs-identifier hs-var">low</span></a></span></span><span> </span><span id="local-6989586621679729956"><span class="annot"><span class="annottext">Int
 </span><a href="#local-6989586621679729956"><span class="hs-identifier hs-var">high</span></a></span></span><span> </span><span id="local-6989586621679729955"><span class="annot"><span class="annottext">[Int]
@@ -481,21 +479,21 @@ forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><a href="#local-6989586621679729956"><span class="hs-identifier hs-var">high</span></a></span><span> </span><span class="annot"><span class="annottext">[Int]
 </span><a href="#local-6989586621679729955"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">TensorOptions
 </span><a href="Torch.TensorOptions.html#defaultOpts"><span class="hs-identifier hs-var">defaultOpts</span></a></span><span>
-</span><span id="line-168"></span><span>
-</span><span id="line-169"></span><span class="annot"><a href="Torch.Random.html#normal"><span class="hs-identifier hs-type">normal</span></a></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-170"></span><span>  </span><span class="hs-comment">-- | mean</span><span>
+</span><span id="line-166"></span><span>
+</span><span id="line-167"></span><span class="annot"><a href="Torch.Random.html#normal"><span class="hs-identifier hs-type">normal</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-168"></span><span>  </span><span class="hs-comment">-- | mean</span><span>
+</span><span id="line-169"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-170"></span><span>  </span><span class="hs-comment">-- | std</span><span>
 </span><span id="line-171"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-172"></span><span>  </span><span class="hs-comment">-- | std</span><span>
-</span><span id="line-173"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-174"></span><span>  </span><span class="hs-comment">-- | size</span><span>
-</span><span id="line-175"></span><span>  </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-176"></span><span>  </span><span class="hs-comment">-- | options</span><span>
-</span><span id="line-177"></span><span>  </span><span class="annot"><a href="Torch.TensorOptions.html#TensorOptions"><span class="hs-identifier hs-type">TensorOptions</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-178"></span><span>  </span><span class="hs-comment">-- | generator</span><span>
-</span><span id="line-179"></span><span>  </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-180"></span><span>  </span><span class="hs-comment">-- | output</span><span>
-</span><span id="line-181"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-182"></span><span id="normal"><span class="annot"><span class="annottext">normal :: Double
+</span><span id="line-172"></span><span>  </span><span class="hs-comment">-- | size</span><span>
+</span><span id="line-173"></span><span>  </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-174"></span><span>  </span><span class="hs-comment">-- | options</span><span>
+</span><span id="line-175"></span><span>  </span><span class="annot"><a href="Torch.TensorOptions.html#TensorOptions"><span class="hs-identifier hs-type">TensorOptions</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-176"></span><span>  </span><span class="hs-comment">-- | generator</span><span>
+</span><span id="line-177"></span><span>  </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-178"></span><span>  </span><span class="hs-comment">-- | output</span><span>
+</span><span id="line-179"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-180"></span><span id="normal"><span class="annot"><span class="annottext">normal :: Double
 -&gt; Double
 -&gt; [Int]
 -&gt; TensorOptions
@@ -513,19 +511,19 @@ forall a b. (Real a, Fractional b) =&gt; a -&gt; b
 forall a b. (Real a, Fractional b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">realToFrac</span></span><span> </span><span class="annot"><span class="annottext">Double
 </span><a href="#local-6989586621679729953"><span class="hs-identifier hs-var">std</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-183"></span><span>
-</span><span id="line-184"></span><span class="annot"><a href="Torch.Random.html#normal%27"><span class="hs-identifier hs-type">normal'</span></a></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-185"></span><span>  </span><span class="hs-comment">-- | mean</span><span>
+</span><span id="line-181"></span><span>
+</span><span id="line-182"></span><span class="annot"><a href="Torch.Random.html#normal%27"><span class="hs-identifier hs-type">normal'</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-183"></span><span>  </span><span class="hs-comment">-- | mean</span><span>
+</span><span id="line-184"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-185"></span><span>  </span><span class="hs-comment">-- | std</span><span>
 </span><span id="line-186"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-187"></span><span>  </span><span class="hs-comment">-- | std</span><span>
-</span><span id="line-188"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-189"></span><span>  </span><span class="hs-comment">-- | size</span><span>
-</span><span id="line-190"></span><span>  </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-191"></span><span>  </span><span class="hs-comment">-- | generator</span><span>
-</span><span id="line-192"></span><span>  </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-193"></span><span>  </span><span class="hs-comment">-- | output</span><span>
-</span><span id="line-194"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-195"></span><span id="normal%27"><span class="annot"><span class="annottext">normal' :: Double -&gt; Double -&gt; [Int] -&gt; Generator -&gt; (Tensor, Generator)
+</span><span id="line-187"></span><span>  </span><span class="hs-comment">-- | size</span><span>
+</span><span id="line-188"></span><span>  </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-189"></span><span>  </span><span class="hs-comment">-- | generator</span><span>
+</span><span id="line-190"></span><span>  </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-191"></span><span>  </span><span class="hs-comment">-- | output</span><span>
+</span><span id="line-192"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-193"></span><span id="normal%27"><span class="annot"><span class="annottext">normal' :: Double -&gt; Double -&gt; [Int] -&gt; Generator -&gt; (Tensor, Generator)
 </span><a href="Torch.Random.html#normal%27"><span class="hs-identifier hs-var hs-var">normal'</span></a></span></span><span> </span><span id="local-6989586621679729951"><span class="annot"><span class="annottext">Double
 </span><a href="#local-6989586621679729951"><span class="hs-identifier hs-var">mean</span></a></span></span><span> </span><span id="local-6989586621679729950"><span class="annot"><span class="annottext">Double
 </span><a href="#local-6989586621679729950"><span class="hs-identifier hs-var">std</span></a></span></span><span> </span><span id="local-6989586621679729949"><span class="annot"><span class="annottext">[Int]
@@ -540,4 +538,4 @@ forall a b. (Real a, Fractional b) =&gt; a -&gt; b
 </span><a href="#local-6989586621679729950"><span class="hs-identifier hs-var">std</span></a></span><span> </span><span class="annot"><span class="annottext">[Int]
 </span><a href="#local-6989586621679729949"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">TensorOptions
 </span><a href="Torch.TensorOptions.html#defaultOpts"><span class="hs-identifier hs-var">defaultOpts</span></a></span><span>
-</span><span id="line-196"></span></pre></body></html>
+</span><span id="line-194"></span></pre></body></html>
