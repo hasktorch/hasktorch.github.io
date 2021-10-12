@@ -10,7 +10,7 @@
 </span><span id="line-10"></span><span>
 </span><span id="line-11"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.Optim.CppOptim</span><span> </span><span class="hs-keyword">where</span><span>
 </span><span id="line-12"></span><span>
-</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/nq0mv4n2x1rmslkzdxaic3kqahcr5rdl-data-default-class-lib-data-default-class-0.1.2.0-haddock-doc/share/doc/data-default-class/html/src"><span class="hs-identifier">Data.Default.Class</span></a></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/3f06v2shlanrp4l2bn8jw511ym6wqx7p-data-default-class-lib-data-default-class-0.1.2.0-haddock-doc/share/doc/data-default-class/html/src"><span class="hs-identifier">Data.Default.Class</span></a></span><span>
 </span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Foreign.ForeignPtr</span></span><span>
 </span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">System.Mem</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">performGC</span></span><span class="hs-special">)</span><span>
 </span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.Autograd.html"><span class="hs-identifier">Torch.Autograd</span></a></span><span>
@@ -25,7 +25,7 @@
 </span><span id="line-25"></span><span>
 </span><span id="line-26"></span><span class="hs-keyword">type</span><span> </span><span id="CppOptimizerRef"><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerRef"><span class="hs-identifier hs-var">CppOptimizerRef</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Optimizer</span></a></span><span>
 </span><span id="line-27"></span><span>
-</span><span id="line-28"></span><span class="hs-keyword">data</span><span> </span><span id="CppOptimizerState"><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-var">CppOptimizerState</span></a></span></span><span> </span><span id="local-6989586621679729108"><span class="annot"><a href="#local-6989586621679729108"><span class="hs-identifier hs-type">option</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CppOptimizerState"><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-var">CppOptimizerState</span></a></span></span><span> </span><span class="annot"><a href="#local-6989586621679729108"><span class="hs-identifier hs-type">option</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerRef"><span class="hs-identifier hs-type">CppOptimizerRef</span></a></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">data</span><span> </span><span id="CppOptimizerState"><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-var">CppOptimizerState</span></a></span></span><span> </span><span id="local-6989586621679739708"><span class="annot"><a href="#local-6989586621679739708"><span class="hs-identifier hs-type">option</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CppOptimizerState"><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-var">CppOptimizerState</span></a></span></span><span> </span><span class="annot"><a href="#local-6989586621679739708"><span class="hs-identifier hs-type">option</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerRef"><span class="hs-identifier hs-type">CppOptimizerRef</span></a></span><span>
 </span><span id="line-29"></span><span>
 </span><span id="line-30"></span><span class="hs-comment">-- class Optimizer option where</span><span>
 </span><span id="line-31"></span><span class="hs-comment">--   initOptimizer :: Parameterized model =&gt; option -&gt; model -&gt; IO (OptimizerState option model)</span><span>
@@ -42,26 +42,27 @@
 </span><span id="line-42"></span><span class="hs-comment">--           cast ret return</span><span>
 </span><span id="line-43"></span><span class="hs-comment">--   getParams (OptimizerState _ optimizer initParams) = fmap (replaceParameters initParams . map (IndependentTensor . Unsafe)) $ cast0 (LibTorch.getParams optimizer)</span><span>
 </span><span id="line-44"></span><span>
-</span><span id="line-45"></span><span id="local-6989586621679729033"><span class="annot"><a href="Torch.Optim.CppOptim.html#stepWithGenerator"><span class="hs-identifier hs-type">stepWithGenerator</span></a></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-46"></span><span>  </span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-type">CppOptimizerState</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679729033"><span class="hs-identifier hs-type">option</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-45"></span><span id="local-6989586621679739791"><span class="annot"><a href="Torch.Optim.CppOptim.html#stepWithGenerator"><span class="hs-identifier hs-type">stepWithGenerator</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-46"></span><span>  </span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-type">CppOptimizerState</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679739791"><span class="hs-identifier hs-type">option</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-47"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-48"></span><span>  </span><span class="hs-special">(</span><span class="hs-special">[</span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-49"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span class="hs-special">)</span></span><span>
-</span><span id="line-50"></span><span id="stepWithGenerator"><span class="annot"><span class="annottext">stepWithGenerator :: CppOptimizerState option
+</span><span id="line-50"></span><span id="stepWithGenerator"><span class="annot"><span class="annottext">stepWithGenerator :: forall option.
+CppOptimizerState option
 -&gt; ForeignPtr Generator
 -&gt; ([Tensor]
     -&gt; ForeignPtr Generator -&gt; IO (Tensor, ForeignPtr Generator))
 -&gt; IO (Tensor, ForeignPtr Generator)
-</span><a href="Torch.Optim.CppOptim.html#stepWithGenerator"><span class="hs-identifier hs-var hs-var">stepWithGenerator</span></a></span></span><span> </span><span id="local-6989586621679729031"><span class="annot"><span class="annottext">o :: CppOptimizerState option
-</span><a href="#local-6989586621679729031"><span class="hs-identifier hs-var">o</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-type">CppOptimizerState</span></a></span><span> </span><span class="annot"><span class="annottext">option
-</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679729030"><span class="annot"><span class="annottext">CppOptimizerRef
-</span><a href="#local-6989586621679729030"><span class="hs-identifier hs-var">ref</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679729029"><span class="annot"><span class="annottext">ForeignPtr Generator
-</span><a href="#local-6989586621679729029"><span class="hs-identifier hs-var">generator</span></a></span></span><span> </span><span id="local-6989586621679729028"><span class="annot"><span class="annottext">[Tensor]
+</span><a href="Torch.Optim.CppOptim.html#stepWithGenerator"><span class="hs-identifier hs-var hs-var">stepWithGenerator</span></a></span></span><span> </span><span id="local-6989586621679739551"><span class="annot"><span class="annottext">o :: CppOptimizerState option
+</span><a href="#local-6989586621679739551"><span class="hs-identifier hs-var">o</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-type">CppOptimizerState</span></a></span><span> </span><span class="annot"><span class="annottext">option
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679739550"><span class="annot"><span class="annottext">CppOptimizerRef
+</span><a href="#local-6989586621679739550"><span class="hs-identifier hs-var">ref</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679739549"><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><a href="#local-6989586621679739549"><span class="hs-identifier hs-var">generator</span></a></span></span><span> </span><span id="local-6989586621679739548"><span class="annot"><span class="annottext">[Tensor]
 -&gt; ForeignPtr Generator -&gt; IO (Tensor, ForeignPtr Generator)
-</span><a href="#local-6989586621679729028"><span class="hs-identifier hs-var">loss</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-51"></span><span>  </span><span class="hs-special">(</span><span id="local-6989586621679729027"><span class="annot"><span class="annottext">Tensor
-</span><a href="#local-6989586621679729027"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679729026"><span class="annot"><span class="annottext">ForeignPtr Generator
-</span><a href="#local-6989586621679729026"><span class="hs-identifier hs-var">nextGenerator</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(CppOptimizerRef
+</span><a href="#local-6989586621679739548"><span class="hs-identifier hs-var">loss</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-51"></span><span>  </span><span class="hs-special">(</span><span id="local-6989586621679739547"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679739547"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679739546"><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><a href="#local-6989586621679739546"><span class="hs-identifier hs-var">nextGenerator</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(CppOptimizerRef
  -&gt; ForeignPtr Generator
  -&gt; (ForeignPtr TensorList
      -&gt; ForeignPtr Generator
@@ -83,49 +84,49 @@ forall a ca x1 cx1 x2 cx2 y cy.
     -&gt; IO (ForeignPtr (StdTuple '(Tensor, Generator))))
 -&gt; IO (ForeignPtr (StdTuple '(Tensor, Generator)))
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">LibTorch.stepWithGenerator</span></a></span><span> </span><span class="annot"><span class="annottext">CppOptimizerRef
-</span><a href="#local-6989586621679729030"><span class="hs-identifier hs-var">ref</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
-</span><a href="#local-6989586621679729029"><span class="hs-identifier hs-var">generator</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
+</span><a href="#local-6989586621679739550"><span class="hs-identifier hs-var">ref</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><a href="#local-6989586621679739549"><span class="hs-identifier hs-var">generator</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
 -&gt; ForeignPtr Generator
 -&gt; IO (ForeignPtr (StdTuple '(Tensor, Generator)))
-</span><a href="#local-6989586621679729023"><span class="hs-identifier hs-var">loss'</span></a></span><span>
+</span><a href="#local-6989586621679739543"><span class="hs-identifier hs-var">loss'</span></a></span><span>
 </span><span id="line-52"></span><span>  </span><span class="annot"><span class="annottext">(Tensor, ForeignPtr Generator) -&gt; IO (Tensor, ForeignPtr Generator)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
-</span><a href="#local-6989586621679729027"><span class="hs-identifier hs-var">v</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
-</span><a href="#local-6989586621679729026"><span class="hs-identifier hs-var">nextGenerator</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679739547"><span class="hs-identifier hs-var">v</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><a href="#local-6989586621679739546"><span class="hs-identifier hs-var">nextGenerator</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-53"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-54"></span><span>    </span><span class="annot"><a href="#local-6989586621679729023"><span class="hs-identifier hs-type">loss'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.StdTuple</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">(</span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-55"></span><span>    </span><span id="local-6989586621679729023"><span class="annot"><span class="annottext">loss' :: ForeignPtr TensorList
+</span><span id="line-54"></span><span>    </span><span class="annot"><a href="#local-6989586621679739543"><span class="hs-identifier hs-type">loss'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.StdTuple</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">(</span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span>    </span><span id="local-6989586621679739543"><span class="annot"><span class="annottext">loss' :: ForeignPtr TensorList
 -&gt; ForeignPtr Generator
 -&gt; IO (ForeignPtr (StdTuple '(Tensor, Generator)))
-</span><a href="#local-6989586621679729023"><span class="hs-identifier hs-var hs-var">loss'</span></a></span></span><span> </span><span id="local-6989586621679729022"><span class="annot"><span class="annottext">ForeignPtr TensorList
-</span><a href="#local-6989586621679729022"><span class="hs-identifier hs-var">params</span></a></span></span><span> </span><span id="local-6989586621679729021"><span class="annot"><span class="annottext">ForeignPtr Generator
-</span><a href="#local-6989586621679729021"><span class="hs-identifier hs-var">gen</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-56"></span><span>      </span><span class="hs-special">(</span><span id="local-6989586621679729020"><span class="annot"><span class="annottext">Tensor
-</span><a href="#local-6989586621679729020"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679729019"><span class="annot"><span class="annottext">ForeignPtr Generator
-</span><a href="#local-6989586621679729019"><span class="hs-identifier hs-var">gen'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
+</span><a href="#local-6989586621679739543"><span class="hs-identifier hs-var hs-var">loss'</span></a></span></span><span> </span><span id="local-6989586621679739542"><span class="annot"><span class="annottext">ForeignPtr TensorList
+</span><a href="#local-6989586621679739542"><span class="hs-identifier hs-var">params</span></a></span></span><span> </span><span id="local-6989586621679739541"><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><a href="#local-6989586621679739541"><span class="hs-identifier hs-var">gen</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-56"></span><span>      </span><span class="hs-special">(</span><span id="local-6989586621679739540"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679739540"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679739539"><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><a href="#local-6989586621679739539"><span class="hs-identifier hs-var">gen'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
 -&gt; ([Tensor] -&gt; IO (Tensor, ForeignPtr Generator))
 -&gt; IO (Tensor, ForeignPtr Generator)
 forall a b r. Castable a b =&gt; b -&gt; (a -&gt; IO r) -&gt; IO r
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">uncast</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
-</span><a href="#local-6989586621679729022"><span class="hs-identifier hs-var">params</span></a></span><span> </span><span class="annot"><span class="annottext">(([Tensor] -&gt; IO (Tensor, ForeignPtr Generator))
+</span><a href="#local-6989586621679739542"><span class="hs-identifier hs-var">params</span></a></span><span> </span><span class="annot"><span class="annottext">(([Tensor] -&gt; IO (Tensor, ForeignPtr Generator))
  -&gt; IO (Tensor, ForeignPtr Generator))
 -&gt; ([Tensor] -&gt; IO (Tensor, ForeignPtr Generator))
 -&gt; IO (Tensor, ForeignPtr Generator)
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679729017"><span class="annot"><span class="annottext">[Tensor]
-</span><a href="#local-6989586621679729017"><span class="hs-identifier hs-var">params'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">[Tensor]
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679739537"><span class="annot"><span class="annottext">[Tensor]
+</span><a href="#local-6989586621679739537"><span class="hs-identifier hs-var">params'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">[Tensor]
 -&gt; ForeignPtr Generator -&gt; IO (Tensor, ForeignPtr Generator)
-</span><a href="#local-6989586621679729028"><span class="hs-identifier hs-var">loss</span></a></span><span> </span><span class="annot"><span class="annottext">[Tensor]
-</span><a href="#local-6989586621679729017"><span class="hs-identifier hs-var">params'</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
-</span><a href="#local-6989586621679729021"><span class="hs-identifier hs-var">gen</span></a></span><span>
-</span><span id="line-57"></span><span>      </span><span id="local-6989586621679729016"><span class="annot"><span class="annottext">ForeignPtr Tensor
-</span><a href="#local-6989586621679729016"><span class="hs-identifier hs-var">v'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679739548"><span class="hs-identifier hs-var">loss</span></a></span><span> </span><span class="annot"><span class="annottext">[Tensor]
+</span><a href="#local-6989586621679739537"><span class="hs-identifier hs-var">params'</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><a href="#local-6989586621679739541"><span class="hs-identifier hs-var">gen</span></a></span><span>
+</span><span id="line-57"></span><span>      </span><span id="local-6989586621679739536"><span class="annot"><span class="annottext">ForeignPtr Tensor
+</span><a href="#local-6989586621679739536"><span class="hs-identifier hs-var">v'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Tensor
 -&gt; (ForeignPtr Tensor -&gt; IO (ForeignPtr Tensor))
 -&gt; IO (ForeignPtr Tensor)
 forall a b r. Castable a b =&gt; a -&gt; (b -&gt; IO r) -&gt; IO r
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">cast</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
-</span><a href="#local-6989586621679729020"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Tensor -&gt; IO (ForeignPtr Tensor)
+</span><a href="#local-6989586621679739540"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Tensor -&gt; IO (ForeignPtr Tensor)
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Tensor</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-58"></span><span>      </span><span class="annot"><span class="annottext">(ForeignPtr Tensor, ForeignPtr Generator)
@@ -134,23 +135,23 @@ forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 -&gt; IO (ForeignPtr (StdTuple '(Tensor, Generator)))
 forall a b r. Castable a b =&gt; a -&gt; (b -&gt; IO r) -&gt; IO r
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">cast</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ForeignPtr Tensor
-</span><a href="#local-6989586621679729016"><span class="hs-identifier hs-var">v'</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
-</span><a href="#local-6989586621679729019"><span class="hs-identifier hs-var">gen'</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ForeignPtr (StdTuple '(Tensor, Generator))
+</span><a href="#local-6989586621679739536"><span class="hs-identifier hs-var">v'</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><a href="#local-6989586621679739539"><span class="hs-identifier hs-var">gen'</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ForeignPtr (StdTuple '(Tensor, Generator))
 -&gt; IO (ForeignPtr (StdTuple '(Tensor, Generator)))
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span>
 </span><span id="line-59"></span><span>
-</span><span id="line-60"></span><span class="hs-keyword">class</span><span> </span><span id="CppOptimizer"><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizer"><span class="hs-identifier hs-var">CppOptimizer</span></a></span></span><span> </span><span id="local-6989586621679729156"><span class="annot"><a href="#local-6989586621679729156"><span class="hs-identifier hs-type">option</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-61"></span><span>  </span><span id="local-6989586621679729126"><span id="initOptimizer"><span class="annot"><a href="Torch.Optim.CppOptim.html#initOptimizer"><span class="hs-identifier hs-type">initOptimizer</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.NN.html#Parameterized"><span class="hs-identifier hs-type">Parameterized</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679729126"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679729156"><span class="hs-identifier hs-type">option</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679729126"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-type">CppOptimizerState</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679729156"><span class="hs-identifier hs-type">option</span></a></span><span class="hs-special">)</span></span><span>
-</span><span id="line-62"></span><span>  </span><span id="local-6989586621679729134"><span id="unsafeStep"><span class="annot"><a href="Torch.Optim.CppOptim.html#unsafeStep"><span class="hs-identifier hs-type">unsafeStep</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.NN.html#Parameterized"><span class="hs-identifier hs-type">Parameterized</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679729134"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679729134"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-type">CppOptimizerState</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679729156"><span class="hs-identifier hs-type">option</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679729134"><span class="hs-identifier hs-type">model</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-type">CppOptimizerState</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679729156"><span class="hs-identifier hs-type">option</span></a></span><span class="hs-special">)</span></span><span>
-</span><span id="line-63"></span><span>  </span><span id="local-6989586621679729012"><span class="annot"><a href="Torch.Optim.CppOptim.html#unsafeStep"><span class="hs-identifier hs-var hs-var">unsafeStep</span></a></span><span> </span><span id="local-6989586621679729011"><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679729011"><span class="hs-identifier hs-var">model</span></a></span></span><span> </span><span id="local-6989586621679729010"><span class="annot"><span class="annottext">o :: CppOptimizerState option
-</span><a href="#local-6989586621679729010"><span class="hs-identifier hs-var">o</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-type">CppOptimizerState</span></a></span><span> </span><span class="annot"><span class="annottext">option
-</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679729009"><span class="annot"><span class="annottext">CppOptimizerRef
-</span><a href="#local-6989586621679729009"><span class="hs-identifier hs-var">optimizer</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679729008"><span class="annot"><span class="annottext">Tensor
-</span><a href="#local-6989586621679729008"><span class="hs-identifier hs-var">loss</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-64"></span><span>    </span><span id="local-6989586621679729007"><span class="annot"><span class="annottext">[ForeignPtr Tensor]
-</span><a href="#local-6989586621679729007"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(CppOptimizerRef
+</span><span id="line-60"></span><span class="hs-keyword">class</span><span> </span><span id="CppOptimizer"><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizer"><span class="hs-identifier hs-var">CppOptimizer</span></a></span></span><span> </span><span id="local-6989586621679739753"><span class="annot"><a href="#local-6989586621679739753"><span class="hs-identifier hs-type">option</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-61"></span><span>  </span><span id="local-6989586621679739725"><span id="initOptimizer"><span class="annot"><a href="Torch.Optim.CppOptim.html#initOptimizer"><span class="hs-identifier hs-type">initOptimizer</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.NN.html#Parameterized"><span class="hs-identifier hs-type">Parameterized</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679739725"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679739753"><span class="hs-identifier hs-type">option</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679739725"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-type">CppOptimizerState</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679739753"><span class="hs-identifier hs-type">option</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-62"></span><span>  </span><span id="local-6989586621679739754"><span id="unsafeStep"><span class="annot"><a href="Torch.Optim.CppOptim.html#unsafeStep"><span class="hs-identifier hs-type">unsafeStep</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.NN.html#Parameterized"><span class="hs-identifier hs-type">Parameterized</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679739754"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679739754"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-type">CppOptimizerState</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679739753"><span class="hs-identifier hs-type">option</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679739754"><span class="hs-identifier hs-type">model</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-type">CppOptimizerState</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679739753"><span class="hs-identifier hs-type">option</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-63"></span><span>  </span><span id="local-6989586621679739531"><span class="annot"><a href="Torch.Optim.CppOptim.html#unsafeStep"><span class="hs-identifier hs-var hs-var">unsafeStep</span></a></span><span> </span><span id="local-6989586621679739520"><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679739520"><span class="hs-identifier hs-var">model</span></a></span></span><span> </span><span id="local-6989586621679739519"><span class="annot"><span class="annottext">o :: CppOptimizerState option
+</span><a href="#local-6989586621679739519"><span class="hs-identifier hs-var">o</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-type">CppOptimizerState</span></a></span><span> </span><span class="annot"><span class="annottext">option
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679739518"><span class="annot"><span class="annottext">CppOptimizerRef
+</span><a href="#local-6989586621679739518"><span class="hs-identifier hs-var">optimizer</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679739517"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679739517"><span class="hs-identifier hs-var">loss</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-64"></span><span>    </span><span id="local-6989586621679739516"><span class="annot"><span class="annottext">[ForeignPtr Tensor]
+</span><a href="#local-6989586621679739516"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(CppOptimizerRef
  -&gt; ForeignPtr TensorList
  -&gt; ForeignPtr Tensor
  -&gt; IO (ForeignPtr TensorList))
@@ -163,7 +164,7 @@ forall a ca x1 cx1 x2 cx2 y cy.
 -&gt; ForeignPtr Tensor
 -&gt; IO (ForeignPtr TensorList)
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">LibTorch.unsafeStep</span></a></span><span> </span><span class="annot"><span class="annottext">CppOptimizerRef
-</span><a href="#local-6989586621679729009"><span class="hs-identifier hs-var">optimizer</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(IndependentTensor -&gt; Tensor) -&gt; [IndependentTensor] -&gt; [Tensor]
+</span><a href="#local-6989586621679739518"><span class="hs-identifier hs-var">optimizer</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(IndependentTensor -&gt; Tensor) -&gt; [IndependentTensor] -&gt; [Tensor]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 </span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">IndependentTensor -&gt; Tensor
 </span><a href="Torch.Autograd.html#toDependent"><span class="hs-identifier hs-var hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">([IndependentTensor] -&gt; [Tensor])
@@ -172,13 +173,13 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">model -&gt; [IndependentTensor]
 forall f. Parameterized f =&gt; f -&gt; [IndependentTensor]
 </span><a href="Torch.NN.html#flattenParameters"><span class="hs-identifier hs-var">flattenParameters</span></a></span><span> </span><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679729011"><span class="hs-identifier hs-var">model</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Tensor
-</span><a href="#local-6989586621679729008"><span class="hs-identifier hs-var">loss</span></a></span><span>
-</span><span id="line-65"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679729003"><span class="annot"><span class="annottext">newModel :: model
-</span><a href="#local-6989586621679729003"><span class="hs-identifier hs-var hs-var">newModel</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">model -&gt; [IndependentTensor] -&gt; model
+</span><a href="#local-6989586621679739520"><span class="hs-identifier hs-var">model</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679739517"><span class="hs-identifier hs-var">loss</span></a></span><span>
+</span><span id="line-65"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679739512"><span class="annot"><span class="annottext">newModel :: model
+</span><a href="#local-6989586621679739512"><span class="hs-identifier hs-var hs-var">newModel</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">model -&gt; [IndependentTensor] -&gt; model
 forall f. Parameterized f =&gt; f -&gt; [IndependentTensor] -&gt; f
 </span><a href="Torch.NN.html#replaceParameters"><span class="hs-identifier hs-var">replaceParameters</span></a></span><span> </span><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679729011"><span class="hs-identifier hs-var">model</span></a></span><span> </span><span class="annot"><span class="annottext">([IndependentTensor] -&gt; model) -&gt; [IndependentTensor] -&gt; model
+</span><a href="#local-6989586621679739520"><span class="hs-identifier hs-var">model</span></a></span><span> </span><span class="annot"><span class="annottext">([IndependentTensor] -&gt; model) -&gt; [IndependentTensor] -&gt; model
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(ForeignPtr Tensor -&gt; IndependentTensor)
 -&gt; [ForeignPtr Tensor] -&gt; [IndependentTensor]
@@ -191,16 +192,16 @@ forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Tensor -&gt; Tensor
 </span><a href="Torch.Tensor.html#Unsafe"><span class="hs-identifier hs-var">Unsafe</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[ForeignPtr Tensor]
-</span><a href="#local-6989586621679729007"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><a href="#local-6989586621679739516"><span class="hs-identifier hs-var">v</span></a></span><span>
 </span><span id="line-66"></span><span>    </span><span class="annot"><span class="annottext">(model, CppOptimizerState option)
 -&gt; IO (model, CppOptimizerState option)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679729003"><span class="hs-identifier hs-var">newModel</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">CppOptimizerState option
-</span><a href="#local-6989586621679729010"><span class="hs-identifier hs-var">o</span></a></span><span class="hs-special">)</span></span><span>
+</span><a href="#local-6989586621679739512"><span class="hs-identifier hs-var">newModel</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">CppOptimizerState option
+</span><a href="#local-6989586621679739519"><span class="hs-identifier hs-var">o</span></a></span><span class="hs-special">)</span></span><span>
 </span><span id="line-67"></span><span>
-</span><span id="line-68"></span><span id="local-6989586621679728998"><span class="hs-keyword">instance</span><span> </span><span class="hs-pragma">{-# OVERLAPS</span><span> </span><span class="hs-pragma">#-}</span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizer"><span class="hs-identifier hs-type">CppOptimizer</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679728998"><span class="hs-identifier hs-type">option</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.Optim.html#Optimizer"><span class="hs-identifier hs-type">Optim.Optimizer</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-type">CppOptimizerState</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679728998"><span class="hs-identifier hs-type">option</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-69"></span><span>  </span><span id="local-6989586621679728993"><span class="annot"><span class="annottext">step :: Tensor
+</span><span id="line-68"></span><span id="local-6989586621679739737"><span class="hs-keyword">instance</span><span> </span><span class="hs-pragma">{-# OVERLAPS</span><span> </span><span class="hs-pragma">#-}</span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizer"><span class="hs-identifier hs-type">CppOptimizer</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679739737"><span class="hs-identifier hs-type">option</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.Optim.html#Optimizer"><span class="hs-identifier hs-type">Optim.Optimizer</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-type">CppOptimizerState</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679739737"><span class="hs-identifier hs-type">option</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-69"></span><span>  </span><span id="local-6989586621679739499"><span class="annot"><span class="annottext">step :: Tensor
 -&gt; Gradients
 -&gt; [Tensor]
 -&gt; CppOptimizerState option
@@ -214,16 +215,18 @@ forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 forall a. HasCallStack =&gt; [Char] -&gt; a
 </span><span class="hs-identifier hs-var">error</span></span><span> </span><span class="annot"><span class="annottext">[Char]
 </span><span class="hs-string">&quot;step is not implemented for CppOptimizer.&quot;</span></span><span>
-</span><span id="line-70"></span><span>  </span><span id="local-6989586621679728990"><span class="annot"><span class="annottext">runStep :: model
+</span><span id="line-70"></span><span>  </span><span id="local-6989586621679739489"><span class="annot"><span class="annottext">runStep :: forall model.
+Parameterized model =&gt;
+model
 -&gt; CppOptimizerState option
 -&gt; Tensor
 -&gt; Tensor
 -&gt; IO (model, CppOptimizerState option)
-</span><a href="Torch.Optim.html#runStep"><span class="hs-identifier hs-var hs-var hs-var hs-var">runStep</span></a></span></span><span> </span><span id="local-6989586621679728988"><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679728988"><span class="hs-identifier hs-var">paramState</span></a></span></span><span> </span><span id="local-6989586621679728987"><span class="annot"><span class="annottext">CppOptimizerState option
-</span><a href="#local-6989586621679728987"><span class="hs-identifier hs-var">optState</span></a></span></span><span> </span><span id="local-6989586621679728986"><span class="annot"><span class="annottext">Tensor
-</span><a href="#local-6989586621679728986"><span class="hs-identifier hs-var">lossValue</span></a></span></span><span> </span><span id="local-6989586621679728985"><span class="annot"><span class="annottext">Tensor
-</span><a href="#local-6989586621679728985"><span class="hs-identifier hs-var">lr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><a href="Torch.Optim.html#runStep"><span class="hs-identifier hs-var hs-var hs-var hs-var">runStep</span></a></span></span><span> </span><span id="local-6989586621679739487"><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679739487"><span class="hs-identifier hs-var">paramState</span></a></span></span><span> </span><span id="local-6989586621679739486"><span class="annot"><span class="annottext">CppOptimizerState option
+</span><a href="#local-6989586621679739486"><span class="hs-identifier hs-var">optState</span></a></span></span><span> </span><span id="local-6989586621679739485"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679739485"><span class="hs-identifier hs-var">lossValue</span></a></span></span><span> </span><span id="local-6989586621679739484"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679739484"><span class="hs-identifier hs-var">lr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-71"></span><span>    </span><span class="annot"><span class="annottext">IO ()
 </span><span class="hs-identifier hs-var">performGC</span></span><span>
 </span><span id="line-72"></span><span>    </span><span class="annot"><span class="annottext">CInt -&gt; IO ()
@@ -240,11 +243,13 @@ model
 -&gt; Tensor
 -&gt; IO (model, CppOptimizerState option)
 </span><a href="Torch.Optim.CppOptim.html#unsafeStep"><span class="hs-identifier hs-var">unsafeStep</span></a></span><span> </span><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679728988"><span class="hs-identifier hs-var">paramState</span></a></span><span> </span><span class="annot"><span class="annottext">CppOptimizerState option
-</span><a href="#local-6989586621679728987"><span class="hs-identifier hs-var">optState</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
-</span><a href="#local-6989586621679728986"><span class="hs-identifier hs-var">lossValue</span></a></span><span>
+</span><a href="#local-6989586621679739487"><span class="hs-identifier hs-var">paramState</span></a></span><span> </span><span class="annot"><span class="annottext">CppOptimizerState option
+</span><a href="#local-6989586621679739486"><span class="hs-identifier hs-var">optState</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679739485"><span class="hs-identifier hs-var">lossValue</span></a></span><span>
 </span><span id="line-74"></span><span>
-</span><span id="line-75"></span><span>  </span><span id="local-6989586621679728984"><span class="annot"><span class="annottext">runStep' :: model
+</span><span id="line-75"></span><span>  </span><span id="local-6989586621679739480"><span class="annot"><span class="annottext">runStep' :: forall model.
+Parameterized model =&gt;
+model
 -&gt; CppOptimizerState option
 -&gt; Gradients
 -&gt; Tensor
@@ -271,7 +276,7 @@ forall a. HasCallStack =&gt; [Char] -&gt; a
 </span><span id="line-82"></span><span>    </span><span id="adagradEps"><span class="annot"><span class="annottext">AdagradOptions -&gt; Double
 </span><a href="Torch.Optim.CppOptim.html#adagradEps"><span class="hs-identifier hs-var hs-var">adagradEps</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
 </span><span id="line-83"></span><span>  </span><span class="hs-special">}</span><span>
-</span><span id="line-84"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679728971"><span id="local-6989586621679728973"><span id="local-6989586621679728975"><span class="annot"><span class="annottext">Int -&gt; AdagradOptions -&gt; ShowS
+</span><span id="line-84"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679739459"><span id="local-6989586621679739461"><span id="local-6989586621679739471"><span class="annot"><span class="annottext">Int -&gt; AdagradOptions -&gt; ShowS
 [AdagradOptions] -&gt; ShowS
 AdagradOptions -&gt; [Char]
 (Int -&gt; AdagradOptions -&gt; ShowS)
@@ -286,7 +291,7 @@ show :: AdagradOptions -&gt; [Char]
 $cshow :: AdagradOptions -&gt; [Char]
 showsPrec :: Int -&gt; AdagradOptions -&gt; ShowS
 $cshowsPrec :: Int -&gt; AdagradOptions -&gt; ShowS
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679728966"><span id="local-6989586621679728968"><span class="annot"><span class="annottext">AdagradOptions -&gt; AdagradOptions -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679739448"><span id="local-6989586621679739456"><span class="annot"><span class="annottext">AdagradOptions -&gt; AdagradOptions -&gt; Bool
 (AdagradOptions -&gt; AdagradOptions -&gt; Bool)
 -&gt; (AdagradOptions -&gt; AdagradOptions -&gt; Bool) -&gt; Eq AdagradOptions
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -296,9 +301,9 @@ $c/= :: AdagradOptions -&gt; AdagradOptions -&gt; Bool
 $c== :: AdagradOptions -&gt; AdagradOptions -&gt; Bool
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
 </span><span id="line-85"></span><span>
-</span><span id="line-86"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="../file:///nix/store/nq0mv4n2x1rmslkzdxaic3kqahcr5rdl-data-default-class-lib-data-default-class-0.1.2.0-haddock-doc/share/doc/data-default-class/html/src"><span class="hs-identifier hs-type">Default</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#AdagradOptions"><span class="hs-identifier hs-type">AdagradOptions</span></a></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-87"></span><span>  </span><span id="local-6989586621679728962"><span class="annot"><span class="annottext">def :: AdagradOptions
-</span><a href="../file:///nix/store/nq0mv4n2x1rmslkzdxaic3kqahcr5rdl-data-default-class-lib-data-default-class-0.1.2.0-haddock-doc/share/doc/data-default-class/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">def</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-86"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="../file:///nix/store/3f06v2shlanrp4l2bn8jw511ym6wqx7p-data-default-class-lib-data-default-class-0.1.2.0-haddock-doc/share/doc/data-default-class/html/src"><span class="hs-identifier hs-type">Default</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#AdagradOptions"><span class="hs-identifier hs-type">AdagradOptions</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-87"></span><span>  </span><span id="local-6989586621679739443"><span class="annot"><span class="annottext">def :: AdagradOptions
+</span><a href="../file:///nix/store/3f06v2shlanrp4l2bn8jw511ym6wqx7p-data-default-class-lib-data-default-class-0.1.2.0-haddock-doc/share/doc/data-default-class/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">def</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-88"></span><span>    </span><span class="annot"><span class="annottext">AdagradOptions :: Double -&gt; Double -&gt; Double -&gt; Double -&gt; Double -&gt; AdagradOptions
 </span><a href="Torch.Optim.CppOptim.html#AdagradOptions"><span class="hs-identifier hs-type">AdagradOptions</span></a></span><span>
 </span><span id="line-89"></span><span>      </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">adagradLr :: Double
@@ -318,10 +323,12 @@ $c== :: AdagradOptions -&gt; AdagradOptions -&gt; Bool
 </span><span class="hs-number">1e-10</span></span><span>
 </span><span id="line-94"></span><span>      </span><span class="hs-special">}</span><span>
 </span><span id="line-95"></span><span>
-</span><span id="line-96"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679728958"><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizer"><span class="hs-identifier hs-type">CppOptimizer</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#AdagradOptions"><span class="hs-identifier hs-type">AdagradOptions</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-97"></span><span>  </span><span id="local-6989586621679728956"><span class="annot"><span class="annottext">initOptimizer :: AdagradOptions -&gt; model -&gt; IO (CppOptimizerState AdagradOptions)
-</span><a href="#local-6989586621679728956"><span class="hs-identifier hs-var hs-var hs-var hs-var">initOptimizer</span></a></span></span><span> </span><span id="local-6989586621679728955"><span class="annot"><span class="annottext">opt :: AdagradOptions
-</span><a href="#local-6989586621679728955"><span class="hs-identifier hs-var">opt</span></a></span></span><span class="hs-glyph">@</span><span class="annot"><a href="Torch.Optim.CppOptim.html#AdagradOptions"><span class="hs-identifier hs-type">AdagradOptions</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679728950"><span id="local-6989586621679728951"><span id="local-6989586621679728952"><span id="local-6989586621679728953"><span id="local-6989586621679728954"><span class="annot"><span class="annottext">Double
+</span><span id="line-96"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679739439"><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizer"><span class="hs-identifier hs-type">CppOptimizer</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#AdagradOptions"><span class="hs-identifier hs-type">AdagradOptions</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-97"></span><span>  </span><span id="local-6989586621679739425"><span class="annot"><span class="annottext">initOptimizer :: forall model.
+Parameterized model =&gt;
+AdagradOptions -&gt; model -&gt; IO (CppOptimizerState AdagradOptions)
+</span><a href="#local-6989586621679739425"><span class="hs-identifier hs-var hs-var hs-var hs-var">initOptimizer</span></a></span></span><span> </span><span id="local-6989586621679739424"><span class="annot"><span class="annottext">opt :: AdagradOptions
+</span><a href="#local-6989586621679739424"><span class="hs-identifier hs-var">opt</span></a></span></span><span class="hs-glyph">@</span><span class="annot"><a href="Torch.Optim.CppOptim.html#AdagradOptions"><span class="hs-identifier hs-type">AdagradOptions</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679739419"><span id="local-6989586621679739420"><span id="local-6989586621679739421"><span id="local-6989586621679739422"><span id="local-6989586621679739423"><span class="annot"><span class="annottext">Double
 adagradEps :: Double
 adagradInitialAccumulatorValue :: Double
 adagradWeightDecay :: Double
@@ -332,10 +339,10 @@ adagradInitialAccumulatorValue :: AdagradOptions -&gt; Double
 adagradWeightDecay :: AdagradOptions -&gt; Double
 adagradLrDecay :: AdagradOptions -&gt; Double
 adagradLr :: AdagradOptions -&gt; Double
-</span><a href="#local-6989586621679728950"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679728949"><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679728949"><span class="hs-identifier hs-var">initParams</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-98"></span><span>    </span><span id="local-6989586621679728948"><span class="annot"><span class="annottext">CppOptimizerRef
-</span><a href="#local-6989586621679728948"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(CDouble
+</span><a href="#local-6989586621679739419"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679739418"><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679739418"><span class="hs-identifier hs-var">initParams</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-98"></span><span>    </span><span id="local-6989586621679739417"><span class="annot"><span class="annottext">CppOptimizerRef
+</span><a href="#local-6989586621679739417"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(CDouble
  -&gt; CDouble
  -&gt; CDouble
  -&gt; CDouble
@@ -362,12 +369,12 @@ forall a ca x1 cx1 x2 cx2 x3 cx3 x4 cx4 x5 cx5 y cy.
 -&gt; ForeignPtr TensorList
 -&gt; IO CppOptimizerRef
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">LibTorch.adagrad</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728954"><span class="hs-identifier hs-var">adagradLr</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728953"><span class="hs-identifier hs-var">adagradLrDecay</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728952"><span class="hs-identifier hs-var">adagradWeightDecay</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728951"><span class="hs-identifier hs-var">adagradInitialAccumulatorValue</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728950"><span class="hs-identifier hs-var">adagradEps</span></a></span><span> </span><span class="annot"><span class="annottext">[Tensor]
-</span><a href="#local-6989586621679728945"><span class="hs-identifier hs-var">initParams'</span></a></span><span>
+</span><a href="#local-6989586621679739423"><span class="hs-identifier hs-var">adagradLr</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679739422"><span class="hs-identifier hs-var">adagradLrDecay</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679739421"><span class="hs-identifier hs-var">adagradWeightDecay</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679739420"><span class="hs-identifier hs-var">adagradInitialAccumulatorValue</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679739419"><span class="hs-identifier hs-var">adagradEps</span></a></span><span> </span><span class="annot"><span class="annottext">[Tensor]
+</span><a href="#local-6989586621679739414"><span class="hs-identifier hs-var">initParams'</span></a></span><span>
 </span><span id="line-99"></span><span>    </span><span class="annot"><span class="annottext">CppOptimizerState AdagradOptions
 -&gt; IO (CppOptimizerState AdagradOptions)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
@@ -381,11 +388,11 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 forall option.
 option -&gt; CppOptimizerRef -&gt; CppOptimizerState option
 </span><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-var">CppOptimizerState</span></a></span><span> </span><span class="annot"><span class="annottext">AdagradOptions
-</span><a href="#local-6989586621679728955"><span class="hs-identifier hs-var">opt</span></a></span><span> </span><span class="annot"><span class="annottext">CppOptimizerRef
-</span><a href="#local-6989586621679728948"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><a href="#local-6989586621679739424"><span class="hs-identifier hs-var">opt</span></a></span><span> </span><span class="annot"><span class="annottext">CppOptimizerRef
+</span><a href="#local-6989586621679739417"><span class="hs-identifier hs-var">v</span></a></span><span>
 </span><span id="line-100"></span><span>    </span><span class="hs-keyword">where</span><span>
-</span><span id="line-101"></span><span>      </span><span id="local-6989586621679728945"><span class="annot"><span class="annottext">initParams' :: [Tensor]
-</span><a href="#local-6989586621679728945"><span class="hs-identifier hs-var hs-var">initParams'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(IndependentTensor -&gt; Tensor) -&gt; [IndependentTensor] -&gt; [Tensor]
+</span><span id="line-101"></span><span>      </span><span id="local-6989586621679739414"><span class="annot"><span class="annottext">initParams' :: [Tensor]
+</span><a href="#local-6989586621679739414"><span class="hs-identifier hs-var hs-var">initParams'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(IndependentTensor -&gt; Tensor) -&gt; [IndependentTensor] -&gt; [Tensor]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 </span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">IndependentTensor -&gt; Tensor
 </span><a href="Torch.Autograd.html#toDependent"><span class="hs-identifier hs-var hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">([IndependentTensor] -&gt; [Tensor])
@@ -394,7 +401,7 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">model -&gt; [IndependentTensor]
 forall f. Parameterized f =&gt; f -&gt; [IndependentTensor]
 </span><a href="Torch.NN.html#flattenParameters"><span class="hs-identifier hs-var">flattenParameters</span></a></span><span> </span><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679728949"><span class="hs-identifier hs-var">initParams</span></a></span><span>
+</span><a href="#local-6989586621679739418"><span class="hs-identifier hs-var">initParams</span></a></span><span>
 </span><span id="line-102"></span><span>
 </span><span id="line-103"></span><span class="hs-keyword">data</span><span> </span><span id="AdamOptions"><span class="annot"><a href="Torch.Optim.CppOptim.html#AdamOptions"><span class="hs-identifier hs-var">AdamOptions</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="AdamOptions"><span class="annot"><a href="Torch.Optim.CppOptim.html#AdamOptions"><span class="hs-identifier hs-var">AdamOptions</span></a></span></span><span>
 </span><span id="line-104"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="adamLr"><span class="annot"><span class="annottext">AdamOptions -&gt; Double
@@ -408,7 +415,7 @@ forall f. Parameterized f =&gt; f -&gt; [IndependentTensor]
 </span><span id="line-108"></span><span>    </span><span id="adamAmsgrad"><span class="annot"><span class="annottext">AdamOptions -&gt; Bool
 </span><a href="Torch.Optim.CppOptim.html#adamAmsgrad"><span class="hs-identifier hs-var hs-var">adamAmsgrad</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
 </span><span id="line-109"></span><span>  </span><span class="hs-special">}</span><span>
-</span><span id="line-110"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679728933"><span id="local-6989586621679728935"><span id="local-6989586621679728937"><span class="annot"><span class="annottext">Int -&gt; AdamOptions -&gt; ShowS
+</span><span id="line-110"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679739394"><span id="local-6989586621679739396"><span id="local-6989586621679739406"><span class="annot"><span class="annottext">Int -&gt; AdamOptions -&gt; ShowS
 [AdamOptions] -&gt; ShowS
 AdamOptions -&gt; [Char]
 (Int -&gt; AdamOptions -&gt; ShowS)
@@ -423,7 +430,7 @@ show :: AdamOptions -&gt; [Char]
 $cshow :: AdamOptions -&gt; [Char]
 showsPrec :: Int -&gt; AdamOptions -&gt; ShowS
 $cshowsPrec :: Int -&gt; AdamOptions -&gt; ShowS
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679728929"><span id="local-6989586621679728931"><span class="annot"><span class="annottext">AdamOptions -&gt; AdamOptions -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679739383"><span id="local-6989586621679739392"><span class="annot"><span class="annottext">AdamOptions -&gt; AdamOptions -&gt; Bool
 (AdamOptions -&gt; AdamOptions -&gt; Bool)
 -&gt; (AdamOptions -&gt; AdamOptions -&gt; Bool) -&gt; Eq AdamOptions
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -433,9 +440,9 @@ $c/= :: AdamOptions -&gt; AdamOptions -&gt; Bool
 $c== :: AdamOptions -&gt; AdamOptions -&gt; Bool
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
 </span><span id="line-111"></span><span>
-</span><span id="line-112"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="../file:///nix/store/nq0mv4n2x1rmslkzdxaic3kqahcr5rdl-data-default-class-lib-data-default-class-0.1.2.0-haddock-doc/share/doc/data-default-class/html/src"><span class="hs-identifier hs-type">Default</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#AdamOptions"><span class="hs-identifier hs-type">AdamOptions</span></a></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-113"></span><span>  </span><span id="local-6989586621679728927"><span class="annot"><span class="annottext">def :: AdamOptions
-</span><a href="#local-6989586621679728927"><span class="hs-identifier hs-var hs-var hs-var hs-var">def</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-112"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="../file:///nix/store/3f06v2shlanrp4l2bn8jw511ym6wqx7p-data-default-class-lib-data-default-class-0.1.2.0-haddock-doc/share/doc/data-default-class/html/src"><span class="hs-identifier hs-type">Default</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#AdamOptions"><span class="hs-identifier hs-type">AdamOptions</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-113"></span><span>  </span><span id="local-6989586621679739380"><span class="annot"><span class="annottext">def :: AdamOptions
+</span><a href="#local-6989586621679739380"><span class="hs-identifier hs-var hs-var hs-var hs-var">def</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-114"></span><span>    </span><span class="annot"><span class="annottext">AdamOptions :: Double
 -&gt; (Double, Double) -&gt; Double -&gt; Double -&gt; Bool -&gt; AdamOptions
 </span><a href="Torch.Optim.CppOptim.html#AdamOptions"><span class="hs-identifier hs-type">AdamOptions</span></a></span><span>
@@ -457,10 +464,12 @@ $c== :: AdamOptions -&gt; AdamOptions -&gt; Bool
 </span><span class="hs-identifier hs-var">False</span></span><span>
 </span><span id="line-120"></span><span>      </span><span class="hs-special">}</span><span>
 </span><span id="line-121"></span><span>
-</span><span id="line-122"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679728924"><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizer"><span class="hs-identifier hs-type">CppOptimizer</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#AdamOptions"><span class="hs-identifier hs-type">AdamOptions</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-123"></span><span>  </span><span id="local-6989586621679728923"><span class="annot"><span class="annottext">initOptimizer :: AdamOptions -&gt; model -&gt; IO (CppOptimizerState AdamOptions)
-</span><a href="#local-6989586621679728923"><span class="hs-identifier hs-var hs-var hs-var hs-var">initOptimizer</span></a></span></span><span> </span><span id="local-6989586621679728922"><span class="annot"><span class="annottext">opt :: AdamOptions
-</span><a href="#local-6989586621679728922"><span class="hs-identifier hs-var">opt</span></a></span></span><span class="hs-glyph">@</span><span class="annot"><a href="Torch.Optim.CppOptim.html#AdamOptions"><span class="hs-identifier hs-type">AdamOptions</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679728917"><span id="local-6989586621679728918"><span id="local-6989586621679728919"><span id="local-6989586621679728920"><span id="local-6989586621679728921"><span class="annot"><span class="annottext">Bool
+</span><span id="line-122"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679739377"><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizer"><span class="hs-identifier hs-type">CppOptimizer</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#AdamOptions"><span class="hs-identifier hs-type">AdamOptions</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-123"></span><span>  </span><span id="local-6989586621679739363"><span class="annot"><span class="annottext">initOptimizer :: forall model.
+Parameterized model =&gt;
+AdamOptions -&gt; model -&gt; IO (CppOptimizerState AdamOptions)
+</span><a href="#local-6989586621679739363"><span class="hs-identifier hs-var hs-var hs-var hs-var">initOptimizer</span></a></span></span><span> </span><span id="local-6989586621679739362"><span class="annot"><span class="annottext">opt :: AdamOptions
+</span><a href="#local-6989586621679739362"><span class="hs-identifier hs-var">opt</span></a></span></span><span class="hs-glyph">@</span><span class="annot"><a href="Torch.Optim.CppOptim.html#AdamOptions"><span class="hs-identifier hs-type">AdamOptions</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679739357"><span id="local-6989586621679739358"><span id="local-6989586621679739359"><span id="local-6989586621679739360"><span id="local-6989586621679739361"><span class="annot"><span class="annottext">Bool
 Double
 (Double, Double)
 adamAmsgrad :: Bool
@@ -473,10 +482,10 @@ adamWeightDecay :: AdamOptions -&gt; Double
 adamEps :: AdamOptions -&gt; Double
 adamBetas :: AdamOptions -&gt; (Double, Double)
 adamLr :: AdamOptions -&gt; Double
-</span><a href="#local-6989586621679728917"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679728916"><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679728916"><span class="hs-identifier hs-var">initParams</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-124"></span><span>    </span><span id="local-6989586621679728915"><span class="annot"><span class="annottext">CppOptimizerRef
-</span><a href="#local-6989586621679728915"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(CDouble
+</span><a href="#local-6989586621679739357"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679739356"><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679739356"><span class="hs-identifier hs-var">initParams</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-124"></span><span>    </span><span id="local-6989586621679739355"><span class="annot"><span class="annottext">CppOptimizerRef
+</span><a href="#local-6989586621679739355"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(CDouble
  -&gt; CDouble
  -&gt; CDouble
  -&gt; CDouble
@@ -507,17 +516,17 @@ forall a ca x1 cx1 x2 cx2 x3 cx3 x4 cx4 x5 cx5 x6 cx6 y cy.
 -&gt; ForeignPtr TensorList
 -&gt; IO CppOptimizerRef
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">LibTorch.adam</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728921"><span class="hs-identifier hs-var">adamLr</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Double, Double) -&gt; Double
+</span><a href="#local-6989586621679739361"><span class="hs-identifier hs-var">adamLr</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Double, Double) -&gt; Double
 forall a b. (a, b) -&gt; a
 </span><span class="hs-identifier hs-var">fst</span></span><span> </span><span class="annot"><span class="annottext">(Double, Double)
-</span><a href="#local-6989586621679728920"><span class="hs-identifier hs-var">adamBetas</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Double, Double) -&gt; Double
+</span><a href="#local-6989586621679739360"><span class="hs-identifier hs-var">adamBetas</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Double, Double) -&gt; Double
 forall a b. (a, b) -&gt; b
 </span><span class="hs-identifier hs-var">snd</span></span><span> </span><span class="annot"><span class="annottext">(Double, Double)
-</span><a href="#local-6989586621679728920"><span class="hs-identifier hs-var">adamBetas</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728919"><span class="hs-identifier hs-var">adamEps</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728918"><span class="hs-identifier hs-var">adamWeightDecay</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679728917"><span class="hs-identifier hs-var">adamAmsgrad</span></a></span><span> </span><span class="annot"><span class="annottext">[Tensor]
-</span><a href="#local-6989586621679728912"><span class="hs-identifier hs-var">initParams'</span></a></span><span>
+</span><a href="#local-6989586621679739360"><span class="hs-identifier hs-var">adamBetas</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679739359"><span class="hs-identifier hs-var">adamEps</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679739358"><span class="hs-identifier hs-var">adamWeightDecay</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679739357"><span class="hs-identifier hs-var">adamAmsgrad</span></a></span><span> </span><span class="annot"><span class="annottext">[Tensor]
+</span><a href="#local-6989586621679739352"><span class="hs-identifier hs-var">initParams'</span></a></span><span>
 </span><span id="line-125"></span><span>    </span><span class="annot"><span class="annottext">CppOptimizerState AdamOptions -&gt; IO (CppOptimizerState AdamOptions)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(CppOptimizerState AdamOptions
@@ -529,11 +538,11 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 forall option.
 option -&gt; CppOptimizerRef -&gt; CppOptimizerState option
 </span><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-var">CppOptimizerState</span></a></span><span> </span><span class="annot"><span class="annottext">AdamOptions
-</span><a href="#local-6989586621679728922"><span class="hs-identifier hs-var">opt</span></a></span><span> </span><span class="annot"><span class="annottext">CppOptimizerRef
-</span><a href="#local-6989586621679728915"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><a href="#local-6989586621679739362"><span class="hs-identifier hs-var">opt</span></a></span><span> </span><span class="annot"><span class="annottext">CppOptimizerRef
+</span><a href="#local-6989586621679739355"><span class="hs-identifier hs-var">v</span></a></span><span>
 </span><span id="line-126"></span><span>    </span><span class="hs-keyword">where</span><span>
-</span><span id="line-127"></span><span>      </span><span id="local-6989586621679728912"><span class="annot"><span class="annottext">initParams' :: [Tensor]
-</span><a href="#local-6989586621679728912"><span class="hs-identifier hs-var hs-var">initParams'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(IndependentTensor -&gt; Tensor) -&gt; [IndependentTensor] -&gt; [Tensor]
+</span><span id="line-127"></span><span>      </span><span id="local-6989586621679739352"><span class="annot"><span class="annottext">initParams' :: [Tensor]
+</span><a href="#local-6989586621679739352"><span class="hs-identifier hs-var hs-var">initParams'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(IndependentTensor -&gt; Tensor) -&gt; [IndependentTensor] -&gt; [Tensor]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 </span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">IndependentTensor -&gt; Tensor
 </span><a href="Torch.Autograd.html#toDependent"><span class="hs-identifier hs-var hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">([IndependentTensor] -&gt; [Tensor])
@@ -542,7 +551,7 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">model -&gt; [IndependentTensor]
 forall f. Parameterized f =&gt; f -&gt; [IndependentTensor]
 </span><a href="Torch.NN.html#flattenParameters"><span class="hs-identifier hs-var">flattenParameters</span></a></span><span> </span><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679728916"><span class="hs-identifier hs-var">initParams</span></a></span><span>
+</span><a href="#local-6989586621679739356"><span class="hs-identifier hs-var">initParams</span></a></span><span>
 </span><span id="line-128"></span><span>
 </span><span id="line-129"></span><span class="hs-keyword">data</span><span> </span><span id="AdamwOptions"><span class="annot"><a href="Torch.Optim.CppOptim.html#AdamwOptions"><span class="hs-identifier hs-var">AdamwOptions</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="AdamwOptions"><span class="annot"><a href="Torch.Optim.CppOptim.html#AdamwOptions"><span class="hs-identifier hs-var">AdamwOptions</span></a></span></span><span>
 </span><span id="line-130"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="adamwLr"><span class="annot"><span class="annottext">AdamwOptions -&gt; Double
@@ -556,7 +565,7 @@ forall f. Parameterized f =&gt; f -&gt; [IndependentTensor]
 </span><span id="line-134"></span><span>    </span><span id="adamwAmsgrad"><span class="annot"><span class="annottext">AdamwOptions -&gt; Bool
 </span><a href="Torch.Optim.CppOptim.html#adamwAmsgrad"><span class="hs-identifier hs-var hs-var">adamwAmsgrad</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
 </span><span id="line-135"></span><span>  </span><span class="hs-special">}</span><span>
-</span><span id="line-136"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679728900"><span id="local-6989586621679728902"><span id="local-6989586621679728904"><span class="annot"><span class="annottext">Int -&gt; AdamwOptions -&gt; ShowS
+</span><span id="line-136"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679739334"><span id="local-6989586621679739336"><span id="local-6989586621679739344"><span class="annot"><span class="annottext">Int -&gt; AdamwOptions -&gt; ShowS
 [AdamwOptions] -&gt; ShowS
 AdamwOptions -&gt; [Char]
 (Int -&gt; AdamwOptions -&gt; ShowS)
@@ -571,7 +580,7 @@ show :: AdamwOptions -&gt; [Char]
 $cshow :: AdamwOptions -&gt; [Char]
 showsPrec :: Int -&gt; AdamwOptions -&gt; ShowS
 $cshowsPrec :: Int -&gt; AdamwOptions -&gt; ShowS
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679728896"><span id="local-6989586621679728898"><span class="annot"><span class="annottext">AdamwOptions -&gt; AdamwOptions -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679739325"><span id="local-6989586621679739332"><span class="annot"><span class="annottext">AdamwOptions -&gt; AdamwOptions -&gt; Bool
 (AdamwOptions -&gt; AdamwOptions -&gt; Bool)
 -&gt; (AdamwOptions -&gt; AdamwOptions -&gt; Bool) -&gt; Eq AdamwOptions
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -581,9 +590,9 @@ $c/= :: AdamwOptions -&gt; AdamwOptions -&gt; Bool
 $c== :: AdamwOptions -&gt; AdamwOptions -&gt; Bool
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
 </span><span id="line-137"></span><span>
-</span><span id="line-138"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="../file:///nix/store/nq0mv4n2x1rmslkzdxaic3kqahcr5rdl-data-default-class-lib-data-default-class-0.1.2.0-haddock-doc/share/doc/data-default-class/html/src"><span class="hs-identifier hs-type">Default</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#AdamwOptions"><span class="hs-identifier hs-type">AdamwOptions</span></a></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-139"></span><span>  </span><span id="local-6989586621679728894"><span class="annot"><span class="annottext">def :: AdamwOptions
-</span><a href="#local-6989586621679728894"><span class="hs-identifier hs-var hs-var hs-var hs-var">def</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-138"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="../file:///nix/store/3f06v2shlanrp4l2bn8jw511ym6wqx7p-data-default-class-lib-data-default-class-0.1.2.0-haddock-doc/share/doc/data-default-class/html/src"><span class="hs-identifier hs-type">Default</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#AdamwOptions"><span class="hs-identifier hs-type">AdamwOptions</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-139"></span><span>  </span><span id="local-6989586621679739322"><span class="annot"><span class="annottext">def :: AdamwOptions
+</span><a href="#local-6989586621679739322"><span class="hs-identifier hs-var hs-var hs-var hs-var">def</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-140"></span><span>    </span><span class="annot"><span class="annottext">AdamwOptions :: Double
 -&gt; (Double, Double) -&gt; Double -&gt; Double -&gt; Bool -&gt; AdamwOptions
 </span><a href="Torch.Optim.CppOptim.html#AdamwOptions"><span class="hs-identifier hs-type">AdamwOptions</span></a></span><span>
@@ -605,10 +614,12 @@ $c== :: AdamwOptions -&gt; AdamwOptions -&gt; Bool
 </span><span class="hs-identifier hs-var">False</span></span><span>
 </span><span id="line-146"></span><span>      </span><span class="hs-special">}</span><span>
 </span><span id="line-147"></span><span>
-</span><span id="line-148"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679728891"><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizer"><span class="hs-identifier hs-type">CppOptimizer</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#AdamwOptions"><span class="hs-identifier hs-type">AdamwOptions</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-149"></span><span>  </span><span id="local-6989586621679728890"><span class="annot"><span class="annottext">initOptimizer :: AdamwOptions -&gt; model -&gt; IO (CppOptimizerState AdamwOptions)
-</span><a href="#local-6989586621679728890"><span class="hs-identifier hs-var hs-var hs-var hs-var">initOptimizer</span></a></span></span><span> </span><span id="local-6989586621679728889"><span class="annot"><span class="annottext">opt :: AdamwOptions
-</span><a href="#local-6989586621679728889"><span class="hs-identifier hs-var">opt</span></a></span></span><span class="hs-glyph">@</span><span class="annot"><a href="Torch.Optim.CppOptim.html#AdamwOptions"><span class="hs-identifier hs-type">AdamwOptions</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679728884"><span id="local-6989586621679728885"><span id="local-6989586621679728886"><span id="local-6989586621679728887"><span id="local-6989586621679728888"><span class="annot"><span class="annottext">Bool
+</span><span id="line-148"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679739319"><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizer"><span class="hs-identifier hs-type">CppOptimizer</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#AdamwOptions"><span class="hs-identifier hs-type">AdamwOptions</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-149"></span><span>  </span><span id="local-6989586621679739306"><span class="annot"><span class="annottext">initOptimizer :: forall model.
+Parameterized model =&gt;
+AdamwOptions -&gt; model -&gt; IO (CppOptimizerState AdamwOptions)
+</span><a href="#local-6989586621679739306"><span class="hs-identifier hs-var hs-var hs-var hs-var">initOptimizer</span></a></span></span><span> </span><span id="local-6989586621679739305"><span class="annot"><span class="annottext">opt :: AdamwOptions
+</span><a href="#local-6989586621679739305"><span class="hs-identifier hs-var">opt</span></a></span></span><span class="hs-glyph">@</span><span class="annot"><a href="Torch.Optim.CppOptim.html#AdamwOptions"><span class="hs-identifier hs-type">AdamwOptions</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679739300"><span id="local-6989586621679739301"><span id="local-6989586621679739302"><span id="local-6989586621679739303"><span id="local-6989586621679739304"><span class="annot"><span class="annottext">Bool
 Double
 (Double, Double)
 adamwAmsgrad :: Bool
@@ -621,10 +632,10 @@ adamwWeightDecay :: AdamwOptions -&gt; Double
 adamwEps :: AdamwOptions -&gt; Double
 adamwBetas :: AdamwOptions -&gt; (Double, Double)
 adamwLr :: AdamwOptions -&gt; Double
-</span><a href="#local-6989586621679728884"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679728883"><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679728883"><span class="hs-identifier hs-var">initParams</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-150"></span><span>    </span><span id="local-6989586621679728882"><span class="annot"><span class="annottext">CppOptimizerRef
-</span><a href="#local-6989586621679728882"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(CDouble
+</span><a href="#local-6989586621679739300"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679739299"><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679739299"><span class="hs-identifier hs-var">initParams</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-150"></span><span>    </span><span id="local-6989586621679739298"><span class="annot"><span class="annottext">CppOptimizerRef
+</span><a href="#local-6989586621679739298"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(CDouble
  -&gt; CDouble
  -&gt; CDouble
  -&gt; CDouble
@@ -655,17 +666,17 @@ forall a ca x1 cx1 x2 cx2 x3 cx3 x4 cx4 x5 cx5 x6 cx6 y cy.
 -&gt; ForeignPtr TensorList
 -&gt; IO CppOptimizerRef
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">LibTorch.adamw</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728888"><span class="hs-identifier hs-var">adamwLr</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Double, Double) -&gt; Double
+</span><a href="#local-6989586621679739304"><span class="hs-identifier hs-var">adamwLr</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Double, Double) -&gt; Double
 forall a b. (a, b) -&gt; a
 </span><span class="hs-identifier hs-var">fst</span></span><span> </span><span class="annot"><span class="annottext">(Double, Double)
-</span><a href="#local-6989586621679728887"><span class="hs-identifier hs-var">adamwBetas</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Double, Double) -&gt; Double
+</span><a href="#local-6989586621679739303"><span class="hs-identifier hs-var">adamwBetas</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Double, Double) -&gt; Double
 forall a b. (a, b) -&gt; b
 </span><span class="hs-identifier hs-var">snd</span></span><span> </span><span class="annot"><span class="annottext">(Double, Double)
-</span><a href="#local-6989586621679728887"><span class="hs-identifier hs-var">adamwBetas</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728886"><span class="hs-identifier hs-var">adamwEps</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728885"><span class="hs-identifier hs-var">adamwWeightDecay</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679728884"><span class="hs-identifier hs-var">adamwAmsgrad</span></a></span><span> </span><span class="annot"><span class="annottext">[Tensor]
-</span><a href="#local-6989586621679728880"><span class="hs-identifier hs-var">initParams'</span></a></span><span>
+</span><a href="#local-6989586621679739303"><span class="hs-identifier hs-var">adamwBetas</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679739302"><span class="hs-identifier hs-var">adamwEps</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679739301"><span class="hs-identifier hs-var">adamwWeightDecay</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679739300"><span class="hs-identifier hs-var">adamwAmsgrad</span></a></span><span> </span><span class="annot"><span class="annottext">[Tensor]
+</span><a href="#local-6989586621679739296"><span class="hs-identifier hs-var">initParams'</span></a></span><span>
 </span><span id="line-151"></span><span>    </span><span class="annot"><span class="annottext">CppOptimizerState AdamwOptions
 -&gt; IO (CppOptimizerState AdamwOptions)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
@@ -678,11 +689,11 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 forall option.
 option -&gt; CppOptimizerRef -&gt; CppOptimizerState option
 </span><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-var">CppOptimizerState</span></a></span><span> </span><span class="annot"><span class="annottext">AdamwOptions
-</span><a href="#local-6989586621679728889"><span class="hs-identifier hs-var">opt</span></a></span><span> </span><span class="annot"><span class="annottext">CppOptimizerRef
-</span><a href="#local-6989586621679728882"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><a href="#local-6989586621679739305"><span class="hs-identifier hs-var">opt</span></a></span><span> </span><span class="annot"><span class="annottext">CppOptimizerRef
+</span><a href="#local-6989586621679739298"><span class="hs-identifier hs-var">v</span></a></span><span>
 </span><span id="line-152"></span><span>    </span><span class="hs-keyword">where</span><span>
-</span><span id="line-153"></span><span>      </span><span id="local-6989586621679728880"><span class="annot"><span class="annottext">initParams' :: [Tensor]
-</span><a href="#local-6989586621679728880"><span class="hs-identifier hs-var hs-var">initParams'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(IndependentTensor -&gt; Tensor) -&gt; [IndependentTensor] -&gt; [Tensor]
+</span><span id="line-153"></span><span>      </span><span id="local-6989586621679739296"><span class="annot"><span class="annottext">initParams' :: [Tensor]
+</span><a href="#local-6989586621679739296"><span class="hs-identifier hs-var hs-var">initParams'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(IndependentTensor -&gt; Tensor) -&gt; [IndependentTensor] -&gt; [Tensor]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 </span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">IndependentTensor -&gt; Tensor
 </span><a href="Torch.Autograd.html#toDependent"><span class="hs-identifier hs-var hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">([IndependentTensor] -&gt; [Tensor])
@@ -691,7 +702,7 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">model -&gt; [IndependentTensor]
 forall f. Parameterized f =&gt; f -&gt; [IndependentTensor]
 </span><a href="Torch.NN.html#flattenParameters"><span class="hs-identifier hs-var">flattenParameters</span></a></span><span> </span><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679728883"><span class="hs-identifier hs-var">initParams</span></a></span><span>
+</span><a href="#local-6989586621679739299"><span class="hs-identifier hs-var">initParams</span></a></span><span>
 </span><span id="line-154"></span><span>
 </span><span id="line-155"></span><span class="hs-keyword">data</span><span> </span><span id="LbfgsOptions"><span class="annot"><a href="Torch.Optim.CppOptim.html#LbfgsOptions"><span class="hs-identifier hs-var">LbfgsOptions</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="LbfgsOptions"><span class="annot"><a href="Torch.Optim.CppOptim.html#LbfgsOptions"><span class="hs-identifier hs-var">LbfgsOptions</span></a></span></span><span>
 </span><span id="line-156"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="lbfgsLr"><span class="annot"><span class="annottext">LbfgsOptions -&gt; Double
@@ -709,7 +720,7 @@ forall f. Parameterized f =&gt; f -&gt; [IndependentTensor]
 </span><span id="line-162"></span><span>    </span><span id="lbfgsLineSearchFn"><span class="annot"><span class="annottext">LbfgsOptions -&gt; Maybe [Char]
 </span><a href="Torch.Optim.CppOptim.html#lbfgsLineSearchFn"><span class="hs-identifier hs-var hs-var">lbfgsLineSearchFn</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
 </span><span id="line-163"></span><span>  </span><span class="hs-special">}</span><span>
-</span><span id="line-164"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679728865"><span id="local-6989586621679728867"><span id="local-6989586621679728869"><span class="annot"><span class="annottext">Int -&gt; LbfgsOptions -&gt; ShowS
+</span><span id="line-164"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679739271"><span id="local-6989586621679739273"><span id="local-6989586621679739286"><span class="annot"><span class="annottext">Int -&gt; LbfgsOptions -&gt; ShowS
 [LbfgsOptions] -&gt; ShowS
 LbfgsOptions -&gt; [Char]
 (Int -&gt; LbfgsOptions -&gt; ShowS)
@@ -724,7 +735,7 @@ show :: LbfgsOptions -&gt; [Char]
 $cshow :: LbfgsOptions -&gt; [Char]
 showsPrec :: Int -&gt; LbfgsOptions -&gt; ShowS
 $cshowsPrec :: Int -&gt; LbfgsOptions -&gt; ShowS
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679728861"><span id="local-6989586621679728863"><span class="annot"><span class="annottext">LbfgsOptions -&gt; LbfgsOptions -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679739254"><span id="local-6989586621679739266"><span class="annot"><span class="annottext">LbfgsOptions -&gt; LbfgsOptions -&gt; Bool
 (LbfgsOptions -&gt; LbfgsOptions -&gt; Bool)
 -&gt; (LbfgsOptions -&gt; LbfgsOptions -&gt; Bool) -&gt; Eq LbfgsOptions
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -734,9 +745,9 @@ $c/= :: LbfgsOptions -&gt; LbfgsOptions -&gt; Bool
 $c== :: LbfgsOptions -&gt; LbfgsOptions -&gt; Bool
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
 </span><span id="line-165"></span><span>
-</span><span id="line-166"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="../file:///nix/store/nq0mv4n2x1rmslkzdxaic3kqahcr5rdl-data-default-class-lib-data-default-class-0.1.2.0-haddock-doc/share/doc/data-default-class/html/src"><span class="hs-identifier hs-type">Default</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#LbfgsOptions"><span class="hs-identifier hs-type">LbfgsOptions</span></a></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-167"></span><span>  </span><span id="local-6989586621679728859"><span class="annot"><span class="annottext">def :: LbfgsOptions
-</span><a href="#local-6989586621679728859"><span class="hs-identifier hs-var hs-var hs-var hs-var">def</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-166"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="../file:///nix/store/3f06v2shlanrp4l2bn8jw511ym6wqx7p-data-default-class-lib-data-default-class-0.1.2.0-haddock-doc/share/doc/data-default-class/html/src"><span class="hs-identifier hs-type">Default</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#LbfgsOptions"><span class="hs-identifier hs-type">LbfgsOptions</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-167"></span><span>  </span><span id="local-6989586621679739241"><span class="annot"><span class="annottext">def :: LbfgsOptions
+</span><a href="#local-6989586621679739241"><span class="hs-identifier hs-var hs-var hs-var hs-var">def</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-168"></span><span>    </span><span class="annot"><span class="annottext">LbfgsOptions :: Double
 -&gt; Int
 -&gt; Int
@@ -776,10 +787,12 @@ forall a. Maybe a
 </span><span class="hs-identifier hs-var">Nothing</span></span><span>
 </span><span id="line-176"></span><span>      </span><span class="hs-special">}</span><span>
 </span><span id="line-177"></span><span>
-</span><span id="line-178"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679728854"><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizer"><span class="hs-identifier hs-type">CppOptimizer</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#LbfgsOptions"><span class="hs-identifier hs-type">LbfgsOptions</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-179"></span><span>  </span><span id="local-6989586621679728853"><span class="annot"><span class="annottext">initOptimizer :: LbfgsOptions -&gt; model -&gt; IO (CppOptimizerState LbfgsOptions)
-</span><a href="#local-6989586621679728853"><span class="hs-identifier hs-var hs-var hs-var hs-var">initOptimizer</span></a></span></span><span> </span><span id="local-6989586621679728852"><span class="annot"><span class="annottext">opt :: LbfgsOptions
-</span><a href="#local-6989586621679728852"><span class="hs-identifier hs-var">opt</span></a></span></span><span class="hs-glyph">@</span><span class="annot"><a href="Torch.Optim.CppOptim.html#LbfgsOptions"><span class="hs-identifier hs-type">LbfgsOptions</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679728845"><span id="local-6989586621679728846"><span id="local-6989586621679728847"><span id="local-6989586621679728848"><span id="local-6989586621679728849"><span id="local-6989586621679728850"><span id="local-6989586621679728851"><span class="annot"><span class="annottext">Double
+</span><span id="line-178"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679739236"><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizer"><span class="hs-identifier hs-type">CppOptimizer</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#LbfgsOptions"><span class="hs-identifier hs-type">LbfgsOptions</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-179"></span><span>  </span><span id="local-6989586621679739218"><span class="annot"><span class="annottext">initOptimizer :: forall model.
+Parameterized model =&gt;
+LbfgsOptions -&gt; model -&gt; IO (CppOptimizerState LbfgsOptions)
+</span><a href="#local-6989586621679739218"><span class="hs-identifier hs-var hs-var hs-var hs-var">initOptimizer</span></a></span></span><span> </span><span id="local-6989586621679739217"><span class="annot"><span class="annottext">opt :: LbfgsOptions
+</span><a href="#local-6989586621679739217"><span class="hs-identifier hs-var">opt</span></a></span></span><span class="hs-glyph">@</span><span class="annot"><a href="Torch.Optim.CppOptim.html#LbfgsOptions"><span class="hs-identifier hs-type">LbfgsOptions</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679739210"><span id="local-6989586621679739211"><span id="local-6989586621679739212"><span id="local-6989586621679739213"><span id="local-6989586621679739214"><span id="local-6989586621679739215"><span id="local-6989586621679739216"><span class="annot"><span class="annottext">Double
 Int
 Maybe [Char]
 lbfgsLineSearchFn :: Maybe [Char]
@@ -796,10 +809,10 @@ lbfgsToleranceGrad :: LbfgsOptions -&gt; Double
 lbfgsMaxEval :: LbfgsOptions -&gt; Int
 lbfgsMaxIter :: LbfgsOptions -&gt; Int
 lbfgsLr :: LbfgsOptions -&gt; Double
-</span><a href="#local-6989586621679728845"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span></span></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679728844"><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679728844"><span class="hs-identifier hs-var">initParams</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-180"></span><span>    </span><span id="local-6989586621679728843"><span class="annot"><span class="annottext">CppOptimizerRef
-</span><a href="#local-6989586621679728843"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(CDouble
+</span><a href="#local-6989586621679739210"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span></span></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679739209"><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679739209"><span class="hs-identifier hs-var">initParams</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-180"></span><span>    </span><span id="local-6989586621679739208"><span class="annot"><span class="annottext">CppOptimizerRef
+</span><a href="#local-6989586621679739208"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(CDouble
  -&gt; CInt
  -&gt; CInt
  -&gt; CDouble
@@ -833,14 +846,14 @@ forall a ca x1 cx1 x2 cx2 x3 cx3 x4 cx4 x5 cx5 x6 cx6 x7 cx7 y cy.
 -&gt; ForeignPtr TensorList
 -&gt; IO CppOptimizerRef
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">LibTorch.lbfgs</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728851"><span class="hs-identifier hs-var">lbfgsLr</span></a></span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679728850"><span class="hs-identifier hs-var">lbfgsMaxIter</span></a></span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679728849"><span class="hs-identifier hs-var">lbfgsMaxEval</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728848"><span class="hs-identifier hs-var">lbfgsToleranceGrad</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728847"><span class="hs-identifier hs-var">lbfgsToleranceChange</span></a></span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679728846"><span class="hs-identifier hs-var">lbfgsHistorySize</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe [Char]
-</span><a href="#local-6989586621679728845"><span class="hs-identifier hs-var">lbfgsLineSearchFn</span></a></span><span> </span><span class="annot"><span class="annottext">[Tensor]
-</span><a href="#local-6989586621679728840"><span class="hs-identifier hs-var">initParams'</span></a></span><span>
+</span><a href="#local-6989586621679739216"><span class="hs-identifier hs-var">lbfgsLr</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679739215"><span class="hs-identifier hs-var">lbfgsMaxIter</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679739214"><span class="hs-identifier hs-var">lbfgsMaxEval</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679739213"><span class="hs-identifier hs-var">lbfgsToleranceGrad</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679739212"><span class="hs-identifier hs-var">lbfgsToleranceChange</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679739211"><span class="hs-identifier hs-var">lbfgsHistorySize</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe [Char]
+</span><a href="#local-6989586621679739210"><span class="hs-identifier hs-var">lbfgsLineSearchFn</span></a></span><span> </span><span class="annot"><span class="annottext">[Tensor]
+</span><a href="#local-6989586621679739205"><span class="hs-identifier hs-var">initParams'</span></a></span><span>
 </span><span id="line-181"></span><span>    </span><span class="annot"><span class="annottext">CppOptimizerState LbfgsOptions
 -&gt; IO (CppOptimizerState LbfgsOptions)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
@@ -853,11 +866,11 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 forall option.
 option -&gt; CppOptimizerRef -&gt; CppOptimizerState option
 </span><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-var">CppOptimizerState</span></a></span><span> </span><span class="annot"><span class="annottext">LbfgsOptions
-</span><a href="#local-6989586621679728852"><span class="hs-identifier hs-var">opt</span></a></span><span> </span><span class="annot"><span class="annottext">CppOptimizerRef
-</span><a href="#local-6989586621679728843"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><a href="#local-6989586621679739217"><span class="hs-identifier hs-var">opt</span></a></span><span> </span><span class="annot"><span class="annottext">CppOptimizerRef
+</span><a href="#local-6989586621679739208"><span class="hs-identifier hs-var">v</span></a></span><span>
 </span><span id="line-182"></span><span>    </span><span class="hs-keyword">where</span><span>
-</span><span id="line-183"></span><span>      </span><span id="local-6989586621679728840"><span class="annot"><span class="annottext">initParams' :: [Tensor]
-</span><a href="#local-6989586621679728840"><span class="hs-identifier hs-var hs-var">initParams'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(IndependentTensor -&gt; Tensor) -&gt; [IndependentTensor] -&gt; [Tensor]
+</span><span id="line-183"></span><span>      </span><span id="local-6989586621679739205"><span class="annot"><span class="annottext">initParams' :: [Tensor]
+</span><a href="#local-6989586621679739205"><span class="hs-identifier hs-var hs-var">initParams'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(IndependentTensor -&gt; Tensor) -&gt; [IndependentTensor] -&gt; [Tensor]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 </span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">IndependentTensor -&gt; Tensor
 </span><a href="Torch.Autograd.html#toDependent"><span class="hs-identifier hs-var hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">([IndependentTensor] -&gt; [Tensor])
@@ -866,7 +879,7 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">model -&gt; [IndependentTensor]
 forall f. Parameterized f =&gt; f -&gt; [IndependentTensor]
 </span><a href="Torch.NN.html#flattenParameters"><span class="hs-identifier hs-var">flattenParameters</span></a></span><span> </span><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679728844"><span class="hs-identifier hs-var">initParams</span></a></span><span>
+</span><a href="#local-6989586621679739209"><span class="hs-identifier hs-var">initParams</span></a></span><span>
 </span><span id="line-184"></span><span>
 </span><span id="line-185"></span><span class="hs-keyword">data</span><span> </span><span id="RmspropOptions"><span class="annot"><a href="Torch.Optim.CppOptim.html#RmspropOptions"><span class="hs-identifier hs-var">RmspropOptions</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="RmspropOptions"><span class="annot"><a href="Torch.Optim.CppOptim.html#RmspropOptions"><span class="hs-identifier hs-var">RmspropOptions</span></a></span></span><span>
 </span><span id="line-186"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="rmspropLr"><span class="annot"><span class="annottext">RmspropOptions -&gt; Double
@@ -882,7 +895,7 @@ forall f. Parameterized f =&gt; f -&gt; [IndependentTensor]
 </span><span id="line-191"></span><span>    </span><span id="rmspropCentered"><span class="annot"><span class="annottext">RmspropOptions -&gt; Bool
 </span><a href="Torch.Optim.CppOptim.html#rmspropCentered"><span class="hs-identifier hs-var hs-var">rmspropCentered</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
 </span><span id="line-192"></span><span>  </span><span class="hs-special">}</span><span>
-</span><span id="line-193"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679728827"><span id="local-6989586621679728829"><span id="local-6989586621679728831"><span class="annot"><span class="annottext">Int -&gt; RmspropOptions -&gt; ShowS
+</span><span id="line-193"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679739185"><span id="local-6989586621679739187"><span id="local-6989586621679739196"><span class="annot"><span class="annottext">Int -&gt; RmspropOptions -&gt; ShowS
 [RmspropOptions] -&gt; ShowS
 RmspropOptions -&gt; [Char]
 (Int -&gt; RmspropOptions -&gt; ShowS)
@@ -897,7 +910,7 @@ show :: RmspropOptions -&gt; [Char]
 $cshow :: RmspropOptions -&gt; [Char]
 showsPrec :: Int -&gt; RmspropOptions -&gt; ShowS
 $cshowsPrec :: Int -&gt; RmspropOptions -&gt; ShowS
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679728823"><span id="local-6989586621679728825"><span class="annot"><span class="annottext">RmspropOptions -&gt; RmspropOptions -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679739175"><span id="local-6989586621679739183"><span class="annot"><span class="annottext">RmspropOptions -&gt; RmspropOptions -&gt; Bool
 (RmspropOptions -&gt; RmspropOptions -&gt; Bool)
 -&gt; (RmspropOptions -&gt; RmspropOptions -&gt; Bool) -&gt; Eq RmspropOptions
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -907,9 +920,9 @@ $c/= :: RmspropOptions -&gt; RmspropOptions -&gt; Bool
 $c== :: RmspropOptions -&gt; RmspropOptions -&gt; Bool
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
 </span><span id="line-194"></span><span>
-</span><span id="line-195"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="../file:///nix/store/nq0mv4n2x1rmslkzdxaic3kqahcr5rdl-data-default-class-lib-data-default-class-0.1.2.0-haddock-doc/share/doc/data-default-class/html/src"><span class="hs-identifier hs-type">Default</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#RmspropOptions"><span class="hs-identifier hs-type">RmspropOptions</span></a></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-196"></span><span>  </span><span id="local-6989586621679728821"><span class="annot"><span class="annottext">def :: RmspropOptions
-</span><a href="#local-6989586621679728821"><span class="hs-identifier hs-var hs-var hs-var hs-var">def</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-195"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="../file:///nix/store/3f06v2shlanrp4l2bn8jw511ym6wqx7p-data-default-class-lib-data-default-class-0.1.2.0-haddock-doc/share/doc/data-default-class/html/src"><span class="hs-identifier hs-type">Default</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#RmspropOptions"><span class="hs-identifier hs-type">RmspropOptions</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-196"></span><span>  </span><span id="local-6989586621679739172"><span class="annot"><span class="annottext">def :: RmspropOptions
+</span><a href="#local-6989586621679739172"><span class="hs-identifier hs-var hs-var hs-var hs-var">def</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-197"></span><span>    </span><span class="annot"><span class="annottext">RmspropOptions :: Double
 -&gt; Double -&gt; Double -&gt; Double -&gt; Double -&gt; Bool -&gt; RmspropOptions
 </span><a href="Torch.Optim.CppOptim.html#RmspropOptions"><span class="hs-identifier hs-type">RmspropOptions</span></a></span><span>
@@ -933,10 +946,12 @@ $c== :: RmspropOptions -&gt; RmspropOptions -&gt; Bool
 </span><span class="hs-identifier hs-var">False</span></span><span>
 </span><span id="line-204"></span><span>      </span><span class="hs-special">}</span><span>
 </span><span id="line-205"></span><span>
-</span><span id="line-206"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679728818"><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizer"><span class="hs-identifier hs-type">CppOptimizer</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#RmspropOptions"><span class="hs-identifier hs-type">RmspropOptions</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-207"></span><span>  </span><span id="local-6989586621679728817"><span class="annot"><span class="annottext">initOptimizer :: RmspropOptions -&gt; model -&gt; IO (CppOptimizerState RmspropOptions)
-</span><a href="#local-6989586621679728817"><span class="hs-identifier hs-var hs-var hs-var hs-var">initOptimizer</span></a></span></span><span> </span><span id="local-6989586621679728816"><span class="annot"><span class="annottext">opt :: RmspropOptions
-</span><a href="#local-6989586621679728816"><span class="hs-identifier hs-var">opt</span></a></span></span><span class="hs-glyph">@</span><span class="annot"><a href="Torch.Optim.CppOptim.html#RmspropOptions"><span class="hs-identifier hs-type">RmspropOptions</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679728810"><span id="local-6989586621679728811"><span id="local-6989586621679728812"><span id="local-6989586621679728813"><span id="local-6989586621679728814"><span id="local-6989586621679728815"><span class="annot"><span class="annottext">Bool
+</span><span id="line-206"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679739169"><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizer"><span class="hs-identifier hs-type">CppOptimizer</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#RmspropOptions"><span class="hs-identifier hs-type">RmspropOptions</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-207"></span><span>  </span><span id="local-6989586621679739156"><span class="annot"><span class="annottext">initOptimizer :: forall model.
+Parameterized model =&gt;
+RmspropOptions -&gt; model -&gt; IO (CppOptimizerState RmspropOptions)
+</span><a href="#local-6989586621679739156"><span class="hs-identifier hs-var hs-var hs-var hs-var">initOptimizer</span></a></span></span><span> </span><span id="local-6989586621679739155"><span class="annot"><span class="annottext">opt :: RmspropOptions
+</span><a href="#local-6989586621679739155"><span class="hs-identifier hs-var">opt</span></a></span></span><span class="hs-glyph">@</span><span class="annot"><a href="Torch.Optim.CppOptim.html#RmspropOptions"><span class="hs-identifier hs-type">RmspropOptions</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679739149"><span id="local-6989586621679739150"><span id="local-6989586621679739151"><span id="local-6989586621679739152"><span id="local-6989586621679739153"><span id="local-6989586621679739154"><span class="annot"><span class="annottext">Bool
 Double
 rmspropCentered :: Bool
 rmspropMomentum :: Double
@@ -950,10 +965,10 @@ rmspropWeightDecay :: RmspropOptions -&gt; Double
 rmspropEps :: RmspropOptions -&gt; Double
 rmspropAlpha :: RmspropOptions -&gt; Double
 rmspropLr :: RmspropOptions -&gt; Double
-</span><a href="#local-6989586621679728810"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679728809"><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679728809"><span class="hs-identifier hs-var">initParams</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-208"></span><span>    </span><span id="local-6989586621679728808"><span class="annot"><span class="annottext">CppOptimizerRef
-</span><a href="#local-6989586621679728808"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(CDouble
+</span><a href="#local-6989586621679739149"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679739148"><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679739148"><span class="hs-identifier hs-var">initParams</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-208"></span><span>    </span><span id="local-6989586621679739147"><span class="annot"><span class="annottext">CppOptimizerRef
+</span><a href="#local-6989586621679739147"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(CDouble
  -&gt; CDouble
  -&gt; CDouble
  -&gt; CDouble
@@ -984,13 +999,13 @@ forall a ca x1 cx1 x2 cx2 x3 cx3 x4 cx4 x5 cx5 x6 cx6 y cy.
 -&gt; ForeignPtr TensorList
 -&gt; IO CppOptimizerRef
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">LibTorch.rmsprop</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728815"><span class="hs-identifier hs-var">rmspropLr</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728814"><span class="hs-identifier hs-var">rmspropAlpha</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728813"><span class="hs-identifier hs-var">rmspropEps</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728812"><span class="hs-identifier hs-var">rmspropWeightDecay</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728811"><span class="hs-identifier hs-var">rmspropMomentum</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679728810"><span class="hs-identifier hs-var">rmspropCentered</span></a></span><span> </span><span class="annot"><span class="annottext">[Tensor]
-</span><a href="#local-6989586621679728806"><span class="hs-identifier hs-var">initParams'</span></a></span><span>
+</span><a href="#local-6989586621679739154"><span class="hs-identifier hs-var">rmspropLr</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679739153"><span class="hs-identifier hs-var">rmspropAlpha</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679739152"><span class="hs-identifier hs-var">rmspropEps</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679739151"><span class="hs-identifier hs-var">rmspropWeightDecay</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679739150"><span class="hs-identifier hs-var">rmspropMomentum</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679739149"><span class="hs-identifier hs-var">rmspropCentered</span></a></span><span> </span><span class="annot"><span class="annottext">[Tensor]
+</span><a href="#local-6989586621679739145"><span class="hs-identifier hs-var">initParams'</span></a></span><span>
 </span><span id="line-209"></span><span>    </span><span class="annot"><span class="annottext">CppOptimizerState RmspropOptions
 -&gt; IO (CppOptimizerState RmspropOptions)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
@@ -1004,11 +1019,11 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 forall option.
 option -&gt; CppOptimizerRef -&gt; CppOptimizerState option
 </span><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-var">CppOptimizerState</span></a></span><span> </span><span class="annot"><span class="annottext">RmspropOptions
-</span><a href="#local-6989586621679728816"><span class="hs-identifier hs-var">opt</span></a></span><span> </span><span class="annot"><span class="annottext">CppOptimizerRef
-</span><a href="#local-6989586621679728808"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><a href="#local-6989586621679739155"><span class="hs-identifier hs-var">opt</span></a></span><span> </span><span class="annot"><span class="annottext">CppOptimizerRef
+</span><a href="#local-6989586621679739147"><span class="hs-identifier hs-var">v</span></a></span><span>
 </span><span id="line-210"></span><span>    </span><span class="hs-keyword">where</span><span>
-</span><span id="line-211"></span><span>      </span><span id="local-6989586621679728806"><span class="annot"><span class="annottext">initParams' :: [Tensor]
-</span><a href="#local-6989586621679728806"><span class="hs-identifier hs-var hs-var">initParams'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(IndependentTensor -&gt; Tensor) -&gt; [IndependentTensor] -&gt; [Tensor]
+</span><span id="line-211"></span><span>      </span><span id="local-6989586621679739145"><span class="annot"><span class="annottext">initParams' :: [Tensor]
+</span><a href="#local-6989586621679739145"><span class="hs-identifier hs-var hs-var">initParams'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(IndependentTensor -&gt; Tensor) -&gt; [IndependentTensor] -&gt; [Tensor]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 </span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">IndependentTensor -&gt; Tensor
 </span><a href="Torch.Autograd.html#toDependent"><span class="hs-identifier hs-var hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">([IndependentTensor] -&gt; [Tensor])
@@ -1017,7 +1032,7 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">model -&gt; [IndependentTensor]
 forall f. Parameterized f =&gt; f -&gt; [IndependentTensor]
 </span><a href="Torch.NN.html#flattenParameters"><span class="hs-identifier hs-var">flattenParameters</span></a></span><span> </span><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679728809"><span class="hs-identifier hs-var">initParams</span></a></span><span>
+</span><a href="#local-6989586621679739148"><span class="hs-identifier hs-var">initParams</span></a></span><span>
 </span><span id="line-212"></span><span>
 </span><span id="line-213"></span><span class="hs-keyword">data</span><span> </span><span id="SGDOptions"><span class="annot"><a href="Torch.Optim.CppOptim.html#SGDOptions"><span class="hs-identifier hs-var">SGDOptions</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="SGDOptions"><span class="annot"><a href="Torch.Optim.CppOptim.html#SGDOptions"><span class="hs-identifier hs-var">SGDOptions</span></a></span></span><span>
 </span><span id="line-214"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="sgdLr"><span class="annot"><span class="annottext">SGDOptions -&gt; Double
@@ -1031,7 +1046,7 @@ forall f. Parameterized f =&gt; f -&gt; [IndependentTensor]
 </span><span id="line-218"></span><span>    </span><span id="sgdNesterov"><span class="annot"><span class="annottext">SGDOptions -&gt; Bool
 </span><a href="Torch.Optim.CppOptim.html#sgdNesterov"><span class="hs-identifier hs-var hs-var">sgdNesterov</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
 </span><span id="line-219"></span><span>  </span><span class="hs-special">}</span><span>
-</span><span id="line-220"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679728794"><span id="local-6989586621679728796"><span id="local-6989586621679728798"><span class="annot"><span class="annottext">Int -&gt; SGDOptions -&gt; ShowS
+</span><span id="line-220"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679739127"><span id="local-6989586621679739129"><span id="local-6989586621679739137"><span class="annot"><span class="annottext">Int -&gt; SGDOptions -&gt; ShowS
 [SGDOptions] -&gt; ShowS
 SGDOptions -&gt; [Char]
 (Int -&gt; SGDOptions -&gt; ShowS)
@@ -1046,7 +1061,7 @@ show :: SGDOptions -&gt; [Char]
 $cshow :: SGDOptions -&gt; [Char]
 showsPrec :: Int -&gt; SGDOptions -&gt; ShowS
 $cshowsPrec :: Int -&gt; SGDOptions -&gt; ShowS
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679728790"><span id="local-6989586621679728792"><span class="annot"><span class="annottext">SGDOptions -&gt; SGDOptions -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679739118"><span id="local-6989586621679739125"><span class="annot"><span class="annottext">SGDOptions -&gt; SGDOptions -&gt; Bool
 (SGDOptions -&gt; SGDOptions -&gt; Bool)
 -&gt; (SGDOptions -&gt; SGDOptions -&gt; Bool) -&gt; Eq SGDOptions
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -1056,9 +1071,9 @@ $c/= :: SGDOptions -&gt; SGDOptions -&gt; Bool
 $c== :: SGDOptions -&gt; SGDOptions -&gt; Bool
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
 </span><span id="line-221"></span><span>
-</span><span id="line-222"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="../file:///nix/store/nq0mv4n2x1rmslkzdxaic3kqahcr5rdl-data-default-class-lib-data-default-class-0.1.2.0-haddock-doc/share/doc/data-default-class/html/src"><span class="hs-identifier hs-type">Default</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#SGDOptions"><span class="hs-identifier hs-type">SGDOptions</span></a></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-223"></span><span>  </span><span id="local-6989586621679728788"><span class="annot"><span class="annottext">def :: SGDOptions
-</span><a href="#local-6989586621679728788"><span class="hs-identifier hs-var hs-var hs-var hs-var">def</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-222"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="../file:///nix/store/3f06v2shlanrp4l2bn8jw511ym6wqx7p-data-default-class-lib-data-default-class-0.1.2.0-haddock-doc/share/doc/data-default-class/html/src"><span class="hs-identifier hs-type">Default</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#SGDOptions"><span class="hs-identifier hs-type">SGDOptions</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-223"></span><span>  </span><span id="local-6989586621679739115"><span class="annot"><span class="annottext">def :: SGDOptions
+</span><a href="#local-6989586621679739115"><span class="hs-identifier hs-var hs-var hs-var hs-var">def</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-224"></span><span>    </span><span class="annot"><span class="annottext">SGDOptions :: Double -&gt; Double -&gt; Double -&gt; Double -&gt; Bool -&gt; SGDOptions
 </span><a href="Torch.Optim.CppOptim.html#SGDOptions"><span class="hs-identifier hs-type">SGDOptions</span></a></span><span>
 </span><span id="line-225"></span><span>      </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">sgdLr :: Double
@@ -1078,10 +1093,12 @@ $c== :: SGDOptions -&gt; SGDOptions -&gt; Bool
 </span><span class="hs-identifier hs-var">False</span></span><span>
 </span><span id="line-230"></span><span>      </span><span class="hs-special">}</span><span>
 </span><span id="line-231"></span><span>
-</span><span id="line-232"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679728785"><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizer"><span class="hs-identifier hs-type">CppOptimizer</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#SGDOptions"><span class="hs-identifier hs-type">SGDOptions</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-233"></span><span>  </span><span id="local-6989586621679728784"><span class="annot"><span class="annottext">initOptimizer :: SGDOptions -&gt; model -&gt; IO (CppOptimizerState SGDOptions)
-</span><a href="#local-6989586621679728784"><span class="hs-identifier hs-var hs-var hs-var hs-var">initOptimizer</span></a></span></span><span> </span><span id="local-6989586621679728783"><span class="annot"><span class="annottext">opt :: SGDOptions
-</span><a href="#local-6989586621679728783"><span class="hs-identifier hs-var">opt</span></a></span></span><span class="hs-glyph">@</span><span class="annot"><a href="Torch.Optim.CppOptim.html#SGDOptions"><span class="hs-identifier hs-type">SGDOptions</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679728778"><span id="local-6989586621679728779"><span id="local-6989586621679728780"><span id="local-6989586621679728781"><span id="local-6989586621679728782"><span class="annot"><span class="annottext">Bool
+</span><span id="line-232"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679739112"><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizer"><span class="hs-identifier hs-type">CppOptimizer</span></a></span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#SGDOptions"><span class="hs-identifier hs-type">SGDOptions</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-233"></span><span>  </span><span id="local-6989586621679739100"><span class="annot"><span class="annottext">initOptimizer :: forall model.
+Parameterized model =&gt;
+SGDOptions -&gt; model -&gt; IO (CppOptimizerState SGDOptions)
+</span><a href="#local-6989586621679739100"><span class="hs-identifier hs-var hs-var hs-var hs-var">initOptimizer</span></a></span></span><span> </span><span id="local-6989586621679739099"><span class="annot"><span class="annottext">opt :: SGDOptions
+</span><a href="#local-6989586621679739099"><span class="hs-identifier hs-var">opt</span></a></span></span><span class="hs-glyph">@</span><span class="annot"><a href="Torch.Optim.CppOptim.html#SGDOptions"><span class="hs-identifier hs-type">SGDOptions</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679739094"><span id="local-6989586621679739095"><span id="local-6989586621679739096"><span id="local-6989586621679739097"><span id="local-6989586621679739098"><span class="annot"><span class="annottext">Bool
 Double
 sgdNesterov :: Bool
 sgdWeightDecay :: Double
@@ -1093,10 +1110,10 @@ sgdWeightDecay :: SGDOptions -&gt; Double
 sgdDampening :: SGDOptions -&gt; Double
 sgdMomentum :: SGDOptions -&gt; Double
 sgdLr :: SGDOptions -&gt; Double
-</span><a href="#local-6989586621679728778"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679728777"><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679728777"><span class="hs-identifier hs-var">initParams</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-234"></span><span>    </span><span id="local-6989586621679728776"><span class="annot"><span class="annottext">CppOptimizerRef
-</span><a href="#local-6989586621679728776"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(CDouble
+</span><a href="#local-6989586621679739094"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679739093"><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679739093"><span class="hs-identifier hs-var">initParams</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-234"></span><span>    </span><span id="local-6989586621679739092"><span class="annot"><span class="annottext">CppOptimizerRef
+</span><a href="#local-6989586621679739092"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(CDouble
  -&gt; CDouble
  -&gt; CDouble
  -&gt; CDouble
@@ -1123,12 +1140,12 @@ forall a ca x1 cx1 x2 cx2 x3 cx3 x4 cx4 x5 cx5 y cy.
 -&gt; ForeignPtr TensorList
 -&gt; IO CppOptimizerRef
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">LibTorch.sgd</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728782"><span class="hs-identifier hs-var">sgdLr</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728781"><span class="hs-identifier hs-var">sgdMomentum</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728780"><span class="hs-identifier hs-var">sgdDampening</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679728779"><span class="hs-identifier hs-var">sgdWeightDecay</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679728778"><span class="hs-identifier hs-var">sgdNesterov</span></a></span><span> </span><span class="annot"><span class="annottext">[Tensor]
-</span><a href="#local-6989586621679728774"><span class="hs-identifier hs-var">initParams'</span></a></span><span>
+</span><a href="#local-6989586621679739098"><span class="hs-identifier hs-var">sgdLr</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679739097"><span class="hs-identifier hs-var">sgdMomentum</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679739096"><span class="hs-identifier hs-var">sgdDampening</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679739095"><span class="hs-identifier hs-var">sgdWeightDecay</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679739094"><span class="hs-identifier hs-var">sgdNesterov</span></a></span><span> </span><span class="annot"><span class="annottext">[Tensor]
+</span><a href="#local-6989586621679739090"><span class="hs-identifier hs-var">initParams'</span></a></span><span>
 </span><span id="line-235"></span><span>    </span><span class="annot"><span class="annottext">CppOptimizerState SGDOptions -&gt; IO (CppOptimizerState SGDOptions)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(CppOptimizerState SGDOptions -&gt; IO (CppOptimizerState SGDOptions))
@@ -1139,11 +1156,11 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 forall option.
 option -&gt; CppOptimizerRef -&gt; CppOptimizerState option
 </span><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-var">CppOptimizerState</span></a></span><span> </span><span class="annot"><span class="annottext">SGDOptions
-</span><a href="#local-6989586621679728783"><span class="hs-identifier hs-var">opt</span></a></span><span> </span><span class="annot"><span class="annottext">CppOptimizerRef
-</span><a href="#local-6989586621679728776"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><a href="#local-6989586621679739099"><span class="hs-identifier hs-var">opt</span></a></span><span> </span><span class="annot"><span class="annottext">CppOptimizerRef
+</span><a href="#local-6989586621679739092"><span class="hs-identifier hs-var">v</span></a></span><span>
 </span><span id="line-236"></span><span>    </span><span class="hs-keyword">where</span><span>
-</span><span id="line-237"></span><span>      </span><span id="local-6989586621679728774"><span class="annot"><span class="annottext">initParams' :: [Tensor]
-</span><a href="#local-6989586621679728774"><span class="hs-identifier hs-var hs-var">initParams'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(IndependentTensor -&gt; Tensor) -&gt; [IndependentTensor] -&gt; [Tensor]
+</span><span id="line-237"></span><span>      </span><span id="local-6989586621679739090"><span class="annot"><span class="annottext">initParams' :: [Tensor]
+</span><a href="#local-6989586621679739090"><span class="hs-identifier hs-var hs-var">initParams'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(IndependentTensor -&gt; Tensor) -&gt; [IndependentTensor] -&gt; [Tensor]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 </span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">IndependentTensor -&gt; Tensor
 </span><a href="Torch.Autograd.html#toDependent"><span class="hs-identifier hs-var hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">([IndependentTensor] -&gt; [Tensor])
@@ -1152,35 +1169,35 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">model -&gt; [IndependentTensor]
 forall f. Parameterized f =&gt; f -&gt; [IndependentTensor]
 </span><a href="Torch.NN.html#flattenParameters"><span class="hs-identifier hs-var">flattenParameters</span></a></span><span> </span><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679728777"><span class="hs-identifier hs-var">initParams</span></a></span><span>
+</span><a href="#local-6989586621679739093"><span class="hs-identifier hs-var">initParams</span></a></span><span>
 </span><span id="line-238"></span><span>
-</span><span id="line-239"></span><span id="local-6989586621679728773"><span class="annot"><a href="Torch.Optim.CppOptim.html#saveState"><span class="hs-identifier hs-type">saveState</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-type">CppOptimizerState</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679728773"><span class="hs-identifier hs-type">option</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FilePath</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span></span><span>
-</span><span id="line-240"></span><span id="saveState"><span class="annot"><span class="annottext">saveState :: CppOptimizerState option -&gt; [Char] -&gt; IO ()
+</span><span id="line-239"></span><span id="local-6989586621679739649"><span class="annot"><a href="Torch.Optim.CppOptim.html#saveState"><span class="hs-identifier hs-type">saveState</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-type">CppOptimizerState</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679739649"><span class="hs-identifier hs-type">option</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FilePath</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span></span><span>
+</span><span id="line-240"></span><span id="saveState"><span class="annot"><span class="annottext">saveState :: forall option. CppOptimizerState option -&gt; [Char] -&gt; IO ()
 </span><a href="Torch.Optim.CppOptim.html#saveState"><span class="hs-identifier hs-var hs-var">saveState</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-type">CppOptimizerState</span></a></span><span> </span><span class="annot"><span class="annottext">option
-</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679728770"><span class="annot"><span class="annottext">CppOptimizerRef
-</span><a href="#local-6989586621679728770"><span class="hs-identifier hs-var">optimizer</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679728769"><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679728769"><span class="hs-identifier hs-var">file</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(CppOptimizerRef -&gt; ForeignPtr StdString -&gt; IO ())
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679739084"><span class="annot"><span class="annottext">CppOptimizerRef
+</span><a href="#local-6989586621679739084"><span class="hs-identifier hs-var">optimizer</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679739083"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679739083"><span class="hs-identifier hs-var">file</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(CppOptimizerRef -&gt; ForeignPtr StdString -&gt; IO ())
 -&gt; CppOptimizerRef -&gt; [Char] -&gt; IO ()
 forall a ca x1 cx1 y cy.
 (Castable a ca, Castable x1 cx1, Castable y cy) =&gt;
 (ca -&gt; cx1 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; IO y
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">cast2</span></a></span><span> </span><span class="annot"><span class="annottext">CppOptimizerRef -&gt; ForeignPtr StdString -&gt; IO ()
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">LibTorch.save</span></a></span><span> </span><span class="annot"><span class="annottext">CppOptimizerRef
-</span><a href="#local-6989586621679728770"><span class="hs-identifier hs-var">optimizer</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679728769"><span class="hs-identifier hs-var">file</span></a></span><span>
+</span><a href="#local-6989586621679739084"><span class="hs-identifier hs-var">optimizer</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679739083"><span class="hs-identifier hs-var">file</span></a></span><span>
 </span><span id="line-241"></span><span>
-</span><span id="line-242"></span><span id="local-6989586621679728766"><span class="annot"><a href="Torch.Optim.CppOptim.html#loadState"><span class="hs-identifier hs-type">loadState</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-type">CppOptimizerState</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679728766"><span class="hs-identifier hs-type">option</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FilePath</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span></span><span>
-</span><span id="line-243"></span><span id="loadState"><span class="annot"><span class="annottext">loadState :: CppOptimizerState option -&gt; [Char] -&gt; IO ()
+</span><span id="line-242"></span><span id="local-6989586621679739080"><span class="annot"><a href="Torch.Optim.CppOptim.html#loadState"><span class="hs-identifier hs-type">loadState</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-type">CppOptimizerState</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679739080"><span class="hs-identifier hs-type">option</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FilePath</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span></span><span>
+</span><span id="line-243"></span><span id="loadState"><span class="annot"><span class="annottext">loadState :: forall option. CppOptimizerState option -&gt; [Char] -&gt; IO ()
 </span><a href="Torch.Optim.CppOptim.html#loadState"><span class="hs-identifier hs-var hs-var">loadState</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Optim.CppOptim.html#CppOptimizerState"><span class="hs-identifier hs-type">CppOptimizerState</span></a></span><span> </span><span class="annot"><span class="annottext">option
-</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679728764"><span class="annot"><span class="annottext">CppOptimizerRef
-</span><a href="#local-6989586621679728764"><span class="hs-identifier hs-var">optimizer</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679728763"><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679728763"><span class="hs-identifier hs-var">file</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(CppOptimizerRef -&gt; ForeignPtr StdString -&gt; IO ())
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679739075"><span class="annot"><span class="annottext">CppOptimizerRef
+</span><a href="#local-6989586621679739075"><span class="hs-identifier hs-var">optimizer</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679739074"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679739074"><span class="hs-identifier hs-var">file</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(CppOptimizerRef -&gt; ForeignPtr StdString -&gt; IO ())
 -&gt; CppOptimizerRef -&gt; [Char] -&gt; IO ()
 forall a ca x1 cx1 y cy.
 (Castable a ca, Castable x1 cx1, Castable y cy) =&gt;
 (ca -&gt; cx1 -&gt; IO cy) -&gt; a -&gt; x1 -&gt; IO y
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">cast2</span></a></span><span> </span><span class="annot"><span class="annottext">CppOptimizerRef -&gt; ForeignPtr StdString -&gt; IO ()
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">LibTorch.load</span></a></span><span> </span><span class="annot"><span class="annottext">CppOptimizerRef
-</span><a href="#local-6989586621679728764"><span class="hs-identifier hs-var">optimizer</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621679728763"><span class="hs-identifier hs-var">file</span></a></span><span>
+</span><a href="#local-6989586621679739075"><span class="hs-identifier hs-var">optimizer</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621679739074"><span class="hs-identifier hs-var">file</span></a></span><span>
 </span><span id="line-244"></span></pre></body></html>
