@@ -229,31 +229,31 @@ module Torch.GraduallyTyped.NN.Type
 data HasBias
 WithBias :: HasBias
 WithoutBias :: HasBias
-type family WithBiasSym0 :: HasBias
-type family WithoutBiasSym0 :: HasBias
-data SHasBias :: HasBias -> Type
+type WithBiasSym0 = 'WithBias :: HasBias
+type WithoutBiasSym0 = 'WithoutBias :: HasBias
+data SHasBias z_azFx
 [SWithBias] :: SHasBias ('WithBias :: HasBias)
 [SWithoutBias] :: SHasBias ('WithoutBias :: HasBias)
 data HasDropout
 WithDropout :: HasDropout
 WithoutDropout :: HasDropout
-type family WithDropoutSym0 :: HasDropout
-type family WithoutDropoutSym0 :: HasDropout
-data SHasDropout :: HasDropout -> Type
+type WithDropoutSym0 = 'WithDropout :: HasDropout
+type WithoutDropoutSym0 = 'WithoutDropout :: HasDropout
+data SHasDropout z_azNg
 [SWithDropout] :: SHasDropout ('WithDropout :: HasDropout)
 [SWithoutDropout] :: SHasDropout ('WithoutDropout :: HasDropout)
 instance GHC.Show.Show (Torch.GraduallyTyped.NN.Type.SHasDropout hasDropout)
-instance Data.Singletons.SingKind Torch.GraduallyTyped.NN.Type.HasDropout
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.NN.Type.WithDropout
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.NN.Type.WithoutDropout
+instance Data.Singletons.Internal.SingKind Torch.GraduallyTyped.NN.Type.HasDropout
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.NN.Type.WithDropout
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.NN.Type.WithoutDropout
 instance GHC.Generics.Generic Torch.GraduallyTyped.NN.Type.HasDropout
 instance GHC.Show.Show Torch.GraduallyTyped.NN.Type.HasDropout
 instance GHC.Classes.Ord Torch.GraduallyTyped.NN.Type.HasDropout
 instance GHC.Classes.Eq Torch.GraduallyTyped.NN.Type.HasDropout
 instance GHC.Show.Show (Torch.GraduallyTyped.NN.Type.SHasBias hasBias)
-instance Data.Singletons.SingKind Torch.GraduallyTyped.NN.Type.HasBias
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.NN.Type.WithBias
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.NN.Type.WithoutBias
+instance Data.Singletons.Internal.SingKind Torch.GraduallyTyped.NN.Type.HasBias
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.NN.Type.WithBias
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.NN.Type.WithoutBias
 instance GHC.Generics.Generic Torch.GraduallyTyped.NN.Type.HasBias
 instance GHC.Show.Show Torch.GraduallyTyped.NN.Type.HasBias
 instance GHC.Classes.Ord Torch.GraduallyTyped.NN.Type.HasBias
@@ -284,7 +284,7 @@ Text :: Symbol -> ErrorMessage
 ShowType :: t -> ErrorMessage
 (:<>:) :: ErrorMessage -> ErrorMessage -> ErrorMessage
 (:$$:) :: ErrorMessage -> ErrorMessage -> ErrorMessage
-data SList (a1 :: [a])
+data SList (z :: [a])
 [SNil] :: forall a. SList ('[] :: [a])
 [SCons] :: forall a (n1 :: a) (n2 :: [a]). Sing n1 -> Sing n2 -> SList (n1 : n2)
 infixr 5 `SCons`
@@ -465,9 +465,9 @@ Dense :: LayoutType
 
 -- | The memory layout of the tensor is sparse.
 Sparse :: LayoutType
-type family DenseSym0 :: LayoutType
-type family SparseSym0 :: LayoutType
-data SLayoutType :: LayoutType -> Type
+type DenseSym0 = 'Dense :: LayoutType
+type SparseSym0 = 'Sparse :: LayoutType
+data SLayoutType z_aDiv
 [SDense] :: SLayoutType ('Dense :: LayoutType)
 [SSparse] :: SLayoutType ('Sparse :: LayoutType)
 class KnownLayoutType (layoutType :: LayoutType)
@@ -493,13 +493,13 @@ instance GHC.Show.Show (Torch.GraduallyTyped.Layout.SLayoutType layoutType)
 instance GHC.Show.Show (Torch.GraduallyTyped.Layout.SLayout layout)
 instance Torch.GraduallyTyped.Layout.KnownLayout 'Torch.GraduallyTyped.Layout.UncheckedLayout
 instance Torch.GraduallyTyped.Layout.KnownLayoutType layoutType => Torch.GraduallyTyped.Layout.KnownLayout ('Torch.GraduallyTyped.Layout.Layout layoutType)
-instance Data.Singletons.SingI layoutType => Data.Singletons.SingI ('Torch.GraduallyTyped.Layout.Layout layoutType)
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.Layout.Layout Torch.GraduallyTyped.Layout.LayoutType)
+instance Data.Singletons.Internal.SingI layoutType => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Layout.Layout layoutType)
+instance Data.Singletons.Internal.SingKind (Torch.GraduallyTyped.Layout.Layout Torch.GraduallyTyped.Layout.LayoutType)
 instance Torch.GraduallyTyped.Layout.KnownLayoutType 'Torch.GraduallyTyped.Layout.Dense
 instance Torch.GraduallyTyped.Layout.KnownLayoutType 'Torch.GraduallyTyped.Layout.Sparse
-instance Data.Singletons.SingKind Torch.GraduallyTyped.Layout.LayoutType
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.Layout.Dense
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.Layout.Sparse
+instance Data.Singletons.Internal.SingKind Torch.GraduallyTyped.Layout.LayoutType
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.Layout.Dense
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.Layout.Sparse
 instance Torch.Internal.Class.Castable Torch.GraduallyTyped.Layout.LayoutType Torch.Internal.Type.Layout
 instance GHC.Classes.Eq Torch.GraduallyTyped.Layout.LayoutType
 instance GHC.Show.Show Torch.GraduallyTyped.Layout.LayoutType
@@ -518,9 +518,9 @@ newtype DemotedIndex
 DemotedIndex :: Integer -> DemotedIndex
 instance GHC.Show.Show index => GHC.Show.Show (Torch.GraduallyTyped.Index.Type.Index index)
 instance GHC.Show.Show (Torch.GraduallyTyped.Index.Type.SIndex index)
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.Index.Type.Index GHC.Types.Nat)
-instance GHC.TypeNats.KnownNat index => Data.Singletons.SingI ('Torch.GraduallyTyped.Index.Type.Index index)
-instance GHC.TypeNats.KnownNat index => Data.Singletons.SingI ('Torch.GraduallyTyped.Index.Type.NegativeIndex index)
+instance Data.Singletons.Internal.SingKind (Torch.GraduallyTyped.Index.Type.Index GHC.Types.Nat)
+instance GHC.TypeNats.KnownNat index => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Index.Type.Index index)
+instance GHC.TypeNats.KnownNat index => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Index.Type.NegativeIndex index)
 
 module Torch.GraduallyTyped.Device
 
@@ -562,13 +562,13 @@ instance GHC.Show.Show (Torch.GraduallyTyped.Device.SDeviceType deviceType)
 instance GHC.Show.Show (Torch.GraduallyTyped.Device.SDevice device)
 instance Torch.GraduallyTyped.Device.KnownDevice 'Torch.GraduallyTyped.Device.UncheckedDevice
 instance Torch.GraduallyTyped.Device.KnownDeviceType deviceType => Torch.GraduallyTyped.Device.KnownDevice ('Torch.GraduallyTyped.Device.Device deviceType)
-instance Data.Singletons.SingI deviceType => Data.Singletons.SingI ('Torch.GraduallyTyped.Device.Device deviceType)
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.Device.Device (Torch.GraduallyTyped.Device.DeviceType GHC.Types.Nat))
+instance Data.Singletons.Internal.SingI deviceType => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Device.Device deviceType)
+instance Data.Singletons.Internal.SingKind (Torch.GraduallyTyped.Device.Device (Torch.GraduallyTyped.Device.DeviceType GHC.Types.Nat))
 instance Torch.GraduallyTyped.Device.KnownDeviceType 'Torch.GraduallyTyped.Device.CPU
 instance GHC.TypeNats.KnownNat deviceId => Torch.GraduallyTyped.Device.KnownDeviceType ('Torch.GraduallyTyped.Device.CUDA deviceId)
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.Device.DeviceType GHC.Types.Nat)
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.Device.CPU
-instance GHC.TypeNats.KnownNat deviceId => Data.Singletons.SingI ('Torch.GraduallyTyped.Device.CUDA deviceId)
+instance Data.Singletons.Internal.SingKind (Torch.GraduallyTyped.Device.DeviceType GHC.Types.Nat)
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.Device.CPU
+instance GHC.TypeNats.KnownNat deviceId => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Device.CUDA deviceId)
 
 module Torch.GraduallyTyped.DType
 data DType
@@ -620,23 +620,23 @@ QInt32 :: DType
 
 -- | BFloat16
 BFloat16 :: DType
-type family BoolSym0 :: DType
-type family UInt8Sym0 :: DType
-type family Int8Sym0 :: DType
-type family Int16Sym0 :: DType
-type family Int32Sym0 :: DType
-type family Int64Sym0 :: DType
-type family HalfSym0 :: DType
-type family FloatSym0 :: DType
-type family DoubleSym0 :: DType
-type family ComplexHalfSym0 :: DType
-type family ComplexFloatSym0 :: DType
-type family ComplexDoubleSym0 :: DType
-type family QInt8Sym0 :: DType
-type family QUInt8Sym0 :: DType
-type family QInt32Sym0 :: DType
-type family BFloat16Sym0 :: DType
-data SDType :: DType -> Type
+type BoolSym0 = 'Bool :: DType
+type UInt8Sym0 = 'UInt8 :: DType
+type Int8Sym0 = 'Int8 :: DType
+type Int16Sym0 = 'Int16 :: DType
+type Int32Sym0 = 'Int32 :: DType
+type Int64Sym0 = 'Int64 :: DType
+type HalfSym0 = 'Half :: DType
+type FloatSym0 = 'Float :: DType
+type DoubleSym0 = 'Double :: DType
+type ComplexHalfSym0 = 'ComplexHalf :: DType
+type ComplexFloatSym0 = 'ComplexFloat :: DType
+type ComplexDoubleSym0 = 'ComplexDouble :: DType
+type QInt8Sym0 = 'QInt8 :: DType
+type QUInt8Sym0 = 'QUInt8 :: DType
+type QInt32Sym0 = 'QInt32 :: DType
+type BFloat16Sym0 = 'BFloat16 :: DType
+data SDType z_aH2C
 [SBool] :: SDType ('Bool :: DType)
 [SUInt8] :: SDType ('UInt8 :: DType)
 [SInt8] :: SDType ('Int8 :: DType)
@@ -676,8 +676,8 @@ instance GHC.Show.Show (Torch.GraduallyTyped.DType.SDType dType)
 instance GHC.Show.Show (Torch.GraduallyTyped.DType.SDataType dataType)
 instance Torch.GraduallyTyped.DType.KnownDataType 'Torch.GraduallyTyped.DType.UncheckedDataType
 instance Torch.GraduallyTyped.DType.KnownDType dType => Torch.GraduallyTyped.DType.KnownDataType ('Torch.GraduallyTyped.DType.DataType dType)
-instance Data.Singletons.SingI dType => Data.Singletons.SingI ('Torch.GraduallyTyped.DType.DataType dType)
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.DType.DataType Torch.GraduallyTyped.DType.DType)
+instance Data.Singletons.Internal.SingI dType => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.DType.DataType dType)
+instance Data.Singletons.Internal.SingKind (Torch.GraduallyTyped.DType.DataType Torch.GraduallyTyped.DType.DType)
 instance Torch.GraduallyTyped.DType.KnownDType 'Torch.GraduallyTyped.DType.Bool
 instance Torch.GraduallyTyped.DType.KnownDType 'Torch.GraduallyTyped.DType.UInt8
 instance Torch.GraduallyTyped.DType.KnownDType 'Torch.GraduallyTyped.DType.Int8
@@ -687,23 +687,23 @@ instance Torch.GraduallyTyped.DType.KnownDType 'Torch.GraduallyTyped.DType.Int64
 instance Torch.GraduallyTyped.DType.KnownDType 'Torch.GraduallyTyped.DType.Half
 instance Torch.GraduallyTyped.DType.KnownDType 'Torch.GraduallyTyped.DType.Float
 instance Torch.GraduallyTyped.DType.KnownDType 'Torch.GraduallyTyped.DType.Double
-instance Data.Singletons.SingKind Torch.GraduallyTyped.DType.DType
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.DType.Bool
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.DType.UInt8
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.DType.Int8
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.DType.Int16
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.DType.Int32
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.DType.Int64
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.DType.Half
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.DType.Float
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.DType.Double
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.DType.ComplexHalf
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.DType.ComplexFloat
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.DType.ComplexDouble
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.DType.QInt8
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.DType.QUInt8
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.DType.QInt32
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.DType.BFloat16
+instance Data.Singletons.Internal.SingKind Torch.GraduallyTyped.DType.DType
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.DType.Bool
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.DType.UInt8
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.DType.Int8
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.DType.Int16
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.DType.Int32
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.DType.Int64
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.DType.Half
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.DType.Float
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.DType.Double
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.DType.ComplexHalf
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.DType.ComplexFloat
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.DType.ComplexDouble
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.DType.QInt8
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.DType.QUInt8
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.DType.QInt32
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.DType.BFloat16
 instance Torch.Internal.Class.Castable Torch.GraduallyTyped.DType.DType Torch.Internal.Type.ScalarType
 instance GHC.Read.Read Torch.GraduallyTyped.DType.DType
 instance GHC.Show.Show Torch.GraduallyTyped.DType.DType
@@ -720,9 +720,9 @@ WithGradient :: RequiresGradient
 
 -- | Gradient computations for this tensor are disabled.
 WithoutGradient :: RequiresGradient
-type family WithGradientSym0 :: RequiresGradient
-type family WithoutGradientSym0 :: RequiresGradient
-data SRequiresGradient :: RequiresGradient -> Type
+type WithGradientSym0 = 'WithGradient :: RequiresGradient
+type WithoutGradientSym0 = 'WithoutGradient :: RequiresGradient
+data SRequiresGradient z_aJA8
 [SWithGradient] :: SRequiresGradient ('WithGradient :: RequiresGradient)
 [SWithoutGradient] :: SRequiresGradient ('WithoutGradient :: RequiresGradient)
 class KnownRequiresGradient (requiresGradient :: RequiresGradient)
@@ -750,13 +750,13 @@ instance GHC.Show.Show (Torch.GraduallyTyped.RequiresGradient.SRequiresGradient 
 instance GHC.Show.Show (Torch.GraduallyTyped.RequiresGradient.SGradient requiresGradient)
 instance Torch.GraduallyTyped.RequiresGradient.KnownGradient 'Torch.GraduallyTyped.RequiresGradient.UncheckedGradient
 instance Torch.GraduallyTyped.RequiresGradient.KnownRequiresGradient requiresGradient => Torch.GraduallyTyped.RequiresGradient.KnownGradient ('Torch.GraduallyTyped.RequiresGradient.Gradient requiresGradient)
-instance Data.Singletons.SingI requiresGradient => Data.Singletons.SingI ('Torch.GraduallyTyped.RequiresGradient.Gradient requiresGradient)
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.RequiresGradient.Gradient Torch.GraduallyTyped.RequiresGradient.RequiresGradient)
+instance Data.Singletons.Internal.SingI requiresGradient => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.RequiresGradient.Gradient requiresGradient)
+instance Data.Singletons.Internal.SingKind (Torch.GraduallyTyped.RequiresGradient.Gradient Torch.GraduallyTyped.RequiresGradient.RequiresGradient)
 instance Torch.GraduallyTyped.RequiresGradient.KnownRequiresGradient 'Torch.GraduallyTyped.RequiresGradient.WithGradient
 instance Torch.GraduallyTyped.RequiresGradient.KnownRequiresGradient 'Torch.GraduallyTyped.RequiresGradient.WithoutGradient
-instance Data.Singletons.SingKind Torch.GraduallyTyped.RequiresGradient.RequiresGradient
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.RequiresGradient.WithGradient
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.RequiresGradient.WithoutGradient
+instance Data.Singletons.Internal.SingKind Torch.GraduallyTyped.RequiresGradient.RequiresGradient
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.RequiresGradient.WithGradient
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.RequiresGradient.WithoutGradient
 instance GHC.Classes.Eq Torch.GraduallyTyped.RequiresGradient.RequiresGradient
 instance GHC.Show.Show Torch.GraduallyTyped.RequiresGradient.RequiresGradient
 
@@ -765,11 +765,11 @@ class (Castable a (ForeignPtr Scalar)) => Scalar a
 instance Torch.GraduallyTyped.Scalar.Scalar GHC.Types.Float
 instance Torch.GraduallyTyped.Scalar.Scalar GHC.Types.Double
 instance Torch.GraduallyTyped.Scalar.Scalar GHC.Types.Int
-instance Torch.GraduallyTyped.Scalar.Scalar GHC.Num.Integer.Integer
+instance Torch.GraduallyTyped.Scalar.Scalar GHC.Integer.Type.Integer
 instance Torch.Internal.Class.Castable GHC.Types.Float (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Scalar)
 instance Torch.Internal.Class.Castable GHC.Types.Double (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Scalar)
 instance Torch.Internal.Class.Castable GHC.Types.Int (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Scalar)
-instance Torch.Internal.Class.Castable GHC.Num.Integer.Integer (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Scalar)
+instance Torch.Internal.Class.Castable GHC.Integer.Type.Integer (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Scalar)
 
 module Torch.GraduallyTyped.Shape.Type
 data Size (size :: Type)
@@ -874,38 +874,38 @@ instance GHC.Show.Show (Torch.GraduallyTyped.Shape.Type.SShape shape)
 instance Torch.GraduallyTyped.Shape.Type.KnownShape 'Torch.GraduallyTyped.Shape.Type.UncheckedShape
 instance Torch.GraduallyTyped.Shape.Type.KnownShape ('Torch.GraduallyTyped.Shape.Type.Shape '[])
 instance (Torch.GraduallyTyped.Shape.Type.KnownShape ('Torch.GraduallyTyped.Shape.Type.Shape dims), Torch.GraduallyTyped.Shape.Type.KnownDim dim) => Torch.GraduallyTyped.Shape.Type.KnownShape ('Torch.GraduallyTyped.Shape.Type.Shape (dim : dims))
-instance Data.Singletons.SingI dims => Data.Singletons.SingI ('Torch.GraduallyTyped.Shape.Type.Shape dims)
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.Shape.Type.Shape [Torch.GraduallyTyped.Shape.Type.Dim (Torch.GraduallyTyped.Shape.Type.Name GHC.Types.Symbol) (Torch.GraduallyTyped.Shape.Type.Size GHC.Types.Nat)])
+instance Data.Singletons.Internal.SingI dims => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Shape.Type.Shape dims)
+instance Data.Singletons.Internal.SingKind (Torch.GraduallyTyped.Shape.Type.Shape [Torch.GraduallyTyped.Shape.Type.Dim (Torch.GraduallyTyped.Shape.Type.Name GHC.Types.Symbol) (Torch.GraduallyTyped.Shape.Type.Size GHC.Types.Nat)])
 instance Torch.GraduallyTyped.Shape.Type.KnownSelectDims 'Torch.GraduallyTyped.Shape.Type.UncheckedSelectDims
 instance Torch.GraduallyTyped.Shape.Type.KnownSelectDims ('Torch.GraduallyTyped.Shape.Type.SelectDims '[])
 instance (Torch.GraduallyTyped.Shape.Type.KnownBy by, Torch.GraduallyTyped.Shape.Type.KnownSelectDims ('Torch.GraduallyTyped.Shape.Type.SelectDims bys)) => Torch.GraduallyTyped.Shape.Type.KnownSelectDims ('Torch.GraduallyTyped.Shape.Type.SelectDims (by : bys))
-instance Data.Singletons.SingI bys => Data.Singletons.SingI ('Torch.GraduallyTyped.Shape.Type.SelectDims bys)
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.Shape.Type.SelectDims [Torch.GraduallyTyped.Shape.Type.By GHC.Types.Symbol GHC.Types.Nat])
+instance Data.Singletons.Internal.SingI bys => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Shape.Type.SelectDims bys)
+instance Data.Singletons.Internal.SingKind (Torch.GraduallyTyped.Shape.Type.SelectDims [Torch.GraduallyTyped.Shape.Type.By GHC.Types.Symbol GHC.Types.Nat])
 instance Torch.GraduallyTyped.Shape.Type.KnownSelectDim 'Torch.GraduallyTyped.Shape.Type.UncheckedSelectDim
 instance Torch.GraduallyTyped.Shape.Type.KnownBy by => Torch.GraduallyTyped.Shape.Type.KnownSelectDim ('Torch.GraduallyTyped.Shape.Type.SelectDim by)
-instance Data.Singletons.SingI by => Data.Singletons.SingI ('Torch.GraduallyTyped.Shape.Type.SelectDim by)
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.Shape.Type.SelectDim (Torch.GraduallyTyped.Shape.Type.By GHC.Types.Symbol GHC.Types.Nat))
+instance Data.Singletons.Internal.SingI by => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Shape.Type.SelectDim by)
+instance Data.Singletons.Internal.SingKind (Torch.GraduallyTyped.Shape.Type.SelectDim (Torch.GraduallyTyped.Shape.Type.By GHC.Types.Symbol GHC.Types.Nat))
 instance GHC.TypeLits.KnownSymbol name => Torch.GraduallyTyped.Shape.Type.KnownBy ('Torch.GraduallyTyped.Shape.Type.ByName name)
 instance GHC.TypeNats.KnownNat index => Torch.GraduallyTyped.Shape.Type.KnownBy ('Torch.GraduallyTyped.Shape.Type.ByIndex index)
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.Shape.Type.By GHC.Types.Symbol GHC.Types.Nat)
-instance GHC.TypeLits.KnownSymbol name => Data.Singletons.SingI ('Torch.GraduallyTyped.Shape.Type.ByName name)
-instance GHC.TypeNats.KnownNat index => Data.Singletons.SingI ('Torch.GraduallyTyped.Shape.Type.ByIndex index)
+instance Data.Singletons.Internal.SingKind (Torch.GraduallyTyped.Shape.Type.By GHC.Types.Symbol GHC.Types.Nat)
+instance GHC.TypeLits.KnownSymbol name => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Shape.Type.ByName name)
+instance GHC.TypeNats.KnownNat index => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Shape.Type.ByIndex index)
 instance (Torch.GraduallyTyped.Shape.Type.KnownName name, Torch.GraduallyTyped.Shape.Type.KnownSize size) => Torch.GraduallyTyped.Shape.Type.KnownDim ('Torch.GraduallyTyped.Shape.Type.Dim name size)
-instance (GHC.TypeLits.KnownSymbol name, GHC.TypeNats.KnownNat size) => Data.Singletons.SingI ('Torch.GraduallyTyped.Shape.Type.Dim ('Torch.GraduallyTyped.Shape.Type.Name name) ('Torch.GraduallyTyped.Shape.Type.Size size))
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.Shape.Type.Dim (Torch.GraduallyTyped.Shape.Type.Name GHC.Types.Symbol) (Torch.GraduallyTyped.Shape.Type.Size GHC.Types.Nat))
+instance (GHC.TypeLits.KnownSymbol name, GHC.TypeNats.KnownNat size) => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Shape.Type.Dim ('Torch.GraduallyTyped.Shape.Type.Name name) ('Torch.GraduallyTyped.Shape.Type.Size size))
+instance Data.Singletons.Internal.SingKind (Torch.GraduallyTyped.Shape.Type.Dim (Torch.GraduallyTyped.Shape.Type.Name GHC.Types.Symbol) (Torch.GraduallyTyped.Shape.Type.Size GHC.Types.Nat))
 instance Data.Bifunctor.Bifunctor Torch.GraduallyTyped.Shape.Type.Dim
 instance Torch.GraduallyTyped.Shape.Type.KnownName 'Torch.GraduallyTyped.Shape.Type.UncheckedName
 instance GHC.TypeLits.KnownSymbol name => Torch.GraduallyTyped.Shape.Type.KnownName ('Torch.GraduallyTyped.Shape.Type.Name name)
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.Shape.Type.Name GHC.Types.Symbol)
-instance GHC.TypeLits.KnownSymbol name => Data.Singletons.SingI ('Torch.GraduallyTyped.Shape.Type.Name name)
+instance Data.Singletons.Internal.SingKind (Torch.GraduallyTyped.Shape.Type.Name GHC.Types.Symbol)
+instance GHC.TypeLits.KnownSymbol name => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Shape.Type.Name name)
 instance Torch.GraduallyTyped.Shape.Type.KnownSize 'Torch.GraduallyTyped.Shape.Type.UncheckedSize
 instance GHC.TypeNats.KnownNat size => Torch.GraduallyTyped.Shape.Type.KnownSize ('Torch.GraduallyTyped.Shape.Type.Size size)
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.Shape.Type.Size GHC.Types.Nat)
-instance GHC.TypeNats.KnownNat size => Data.Singletons.SingI ('Torch.GraduallyTyped.Shape.Type.Size size)
+instance Data.Singletons.Internal.SingKind (Torch.GraduallyTyped.Shape.Type.Size GHC.Types.Nat)
+instance GHC.TypeNats.KnownNat size => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Shape.Type.Size size)
 instance Torch.Internal.Class.Castable GHC.Base.String (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Dimname)
 instance Torch.Internal.Class.Castable [GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Dimname] (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.DimnameList)
 instance Torch.Internal.Class.Castable [GHC.Base.String] (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.DimnameList)
-instance Torch.Internal.Class.Castable [GHC.Num.Integer.Integer] (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.IntArray)
+instance Torch.Internal.Class.Castable [GHC.Integer.Type.Integer] (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.IntArray)
 
 module Torch.GraduallyTyped.Internal.TensorOptions
 newtype TensorOptions
@@ -1830,11 +1830,11 @@ instance Torch.GraduallyTyped.Tensor.Type.TensorLike GHC.Types.Bool 'Torch.Gradu
 instance Torch.GraduallyTyped.Tensor.Type.TensorLike GHC.Types.Int 'Torch.GraduallyTyped.DType.Int64 '[]
 instance Torch.GraduallyTyped.Tensor.Type.TensorLike GHC.Types.Float 'Torch.GraduallyTyped.DType.Float '[]
 instance Torch.GraduallyTyped.Tensor.Type.TensorLike GHC.Types.Double 'Torch.GraduallyTyped.DType.Double '[]
-instance (Torch.GraduallyTyped.Tensor.Type.TensorLike a dType dims, Torch.GraduallyTyped.Tensor.Type.TensorLike b dType dims', Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw b, Data.Singletons.SingI dType, Torch.GraduallyTyped.Tensor.Type.SGetDims dimsOut, 'Torch.GraduallyTyped.Shape.Type.Shape dimsOut GHC.Types.~ Torch.GraduallyTyped.Shape.Class.InsertDimF ('Torch.GraduallyTyped.Shape.Type.SelectDim ('Torch.GraduallyTyped.Shape.Type.ByIndex 0)) ('Torch.GraduallyTyped.Shape.Type.Shape (dims Torch.GraduallyTyped.Unify.<+> dims')) ('Torch.GraduallyTyped.Shape.Type.Dim ('Torch.GraduallyTyped.Shape.Type.Name "*") ('Torch.GraduallyTyped.Shape.Type.Size 2))) => Torch.GraduallyTyped.Tensor.Type.TensorLike (a, b) dType dimsOut
-instance (Torch.GraduallyTyped.Tensor.Type.TensorLike a dType dims, Torch.GraduallyTyped.Tensor.Type.TensorLike b dType dims', Torch.GraduallyTyped.Tensor.Type.TensorLike c dType dims', Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw b, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw c, Data.Singletons.SingI dType, Torch.GraduallyTyped.Tensor.Type.SGetDims dimsOut, 'Torch.GraduallyTyped.Shape.Type.Shape dimsOut GHC.Types.~ Torch.GraduallyTyped.Shape.Class.InsertDimF ('Torch.GraduallyTyped.Shape.Type.SelectDim ('Torch.GraduallyTyped.Shape.Type.ByIndex 0)) ('Torch.GraduallyTyped.Shape.Type.Shape (dims Torch.GraduallyTyped.Unify.<+> dims')) ('Torch.GraduallyTyped.Shape.Type.Dim ('Torch.GraduallyTyped.Shape.Type.Name "*") ('Torch.GraduallyTyped.Shape.Type.Size 3))) => Torch.GraduallyTyped.Tensor.Type.TensorLike (a, b, c) dType dimsOut
-instance (Torch.GraduallyTyped.Tensor.Type.TensorLike a dType dims, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a, Data.Singletons.SingI dType, Torch.GraduallyTyped.Tensor.Type.SGetDims dimsOut, 'Torch.GraduallyTyped.Shape.Type.Shape dimsOut GHC.Types.~ Torch.GraduallyTyped.Shape.Class.InsertDimF ('Torch.GraduallyTyped.Shape.Type.SelectDim ('Torch.GraduallyTyped.Shape.Type.ByIndex 0)) ('Torch.GraduallyTyped.Shape.Type.Shape dims) ('Torch.GraduallyTyped.Shape.Type.Dim ('Torch.GraduallyTyped.Shape.Type.Name "*") 'Torch.GraduallyTyped.Shape.Type.UncheckedSize)) => Torch.GraduallyTyped.Tensor.Type.TensorLike [a] dType dimsOut
-instance (Torch.GraduallyTyped.Tensor.Type.TensorLike a dType dims, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a, Data.Singletons.SingI dType, Torch.GraduallyTyped.Tensor.Type.SGetDims dimsOut, 'Torch.GraduallyTyped.Shape.Type.Shape dimsOut GHC.Types.~ Torch.GraduallyTyped.Shape.Class.InsertDimF ('Torch.GraduallyTyped.Shape.Type.SelectDim ('Torch.GraduallyTyped.Shape.Type.ByIndex 0)) ('Torch.GraduallyTyped.Shape.Type.Shape dims) ('Torch.GraduallyTyped.Shape.Type.Dim ('Torch.GraduallyTyped.Shape.Type.Name "*") 'Torch.GraduallyTyped.Shape.Type.UncheckedSize)) => Torch.GraduallyTyped.Tensor.Type.TensorLike (Data.Vector.Vector a) dType dimsOut
-instance (GHC.TypeNats.KnownNat n, Torch.GraduallyTyped.Tensor.Type.TensorLike a dType dims, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a, Data.Singletons.SingI dType, Torch.GraduallyTyped.Tensor.Type.SGetDims dimsOut, 'Torch.GraduallyTyped.Shape.Type.Shape dimsOut GHC.Types.~ Torch.GraduallyTyped.Shape.Class.InsertDimF ('Torch.GraduallyTyped.Shape.Type.SelectDim ('Torch.GraduallyTyped.Shape.Type.ByIndex 0)) ('Torch.GraduallyTyped.Shape.Type.Shape dims) ('Torch.GraduallyTyped.Shape.Type.Dim ('Torch.GraduallyTyped.Shape.Type.Name "*") ('Torch.GraduallyTyped.Shape.Type.Size n))) => Torch.GraduallyTyped.Tensor.Type.TensorLike (Data.Vector.Sized.Vector n a) dType dimsOut
+instance (Torch.GraduallyTyped.Tensor.Type.TensorLike a dType dims, Torch.GraduallyTyped.Tensor.Type.TensorLike b dType dims', Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw b, Data.Singletons.Internal.SingI dType, Torch.GraduallyTyped.Tensor.Type.SGetDims dimsOut, 'Torch.GraduallyTyped.Shape.Type.Shape dimsOut GHC.Types.~ Torch.GraduallyTyped.Shape.Class.InsertDimF ('Torch.GraduallyTyped.Shape.Type.SelectDim ('Torch.GraduallyTyped.Shape.Type.ByIndex 0)) ('Torch.GraduallyTyped.Shape.Type.Shape (dims Torch.GraduallyTyped.Unify.<+> dims')) ('Torch.GraduallyTyped.Shape.Type.Dim ('Torch.GraduallyTyped.Shape.Type.Name "*") ('Torch.GraduallyTyped.Shape.Type.Size 2))) => Torch.GraduallyTyped.Tensor.Type.TensorLike (a, b) dType dimsOut
+instance (Torch.GraduallyTyped.Tensor.Type.TensorLike a dType dims, Torch.GraduallyTyped.Tensor.Type.TensorLike b dType dims', Torch.GraduallyTyped.Tensor.Type.TensorLike c dType dims', Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw b, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw c, Data.Singletons.Internal.SingI dType, Torch.GraduallyTyped.Tensor.Type.SGetDims dimsOut, 'Torch.GraduallyTyped.Shape.Type.Shape dimsOut GHC.Types.~ Torch.GraduallyTyped.Shape.Class.InsertDimF ('Torch.GraduallyTyped.Shape.Type.SelectDim ('Torch.GraduallyTyped.Shape.Type.ByIndex 0)) ('Torch.GraduallyTyped.Shape.Type.Shape (dims Torch.GraduallyTyped.Unify.<+> dims')) ('Torch.GraduallyTyped.Shape.Type.Dim ('Torch.GraduallyTyped.Shape.Type.Name "*") ('Torch.GraduallyTyped.Shape.Type.Size 3))) => Torch.GraduallyTyped.Tensor.Type.TensorLike (a, b, c) dType dimsOut
+instance (Torch.GraduallyTyped.Tensor.Type.TensorLike a dType dims, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a, Data.Singletons.Internal.SingI dType, Torch.GraduallyTyped.Tensor.Type.SGetDims dimsOut, 'Torch.GraduallyTyped.Shape.Type.Shape dimsOut GHC.Types.~ Torch.GraduallyTyped.Shape.Class.InsertDimF ('Torch.GraduallyTyped.Shape.Type.SelectDim ('Torch.GraduallyTyped.Shape.Type.ByIndex 0)) ('Torch.GraduallyTyped.Shape.Type.Shape dims) ('Torch.GraduallyTyped.Shape.Type.Dim ('Torch.GraduallyTyped.Shape.Type.Name "*") 'Torch.GraduallyTyped.Shape.Type.UncheckedSize)) => Torch.GraduallyTyped.Tensor.Type.TensorLike [a] dType dimsOut
+instance (Torch.GraduallyTyped.Tensor.Type.TensorLike a dType dims, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a, Data.Singletons.Internal.SingI dType, Torch.GraduallyTyped.Tensor.Type.SGetDims dimsOut, 'Torch.GraduallyTyped.Shape.Type.Shape dimsOut GHC.Types.~ Torch.GraduallyTyped.Shape.Class.InsertDimF ('Torch.GraduallyTyped.Shape.Type.SelectDim ('Torch.GraduallyTyped.Shape.Type.ByIndex 0)) ('Torch.GraduallyTyped.Shape.Type.Shape dims) ('Torch.GraduallyTyped.Shape.Type.Dim ('Torch.GraduallyTyped.Shape.Type.Name "*") 'Torch.GraduallyTyped.Shape.Type.UncheckedSize)) => Torch.GraduallyTyped.Tensor.Type.TensorLike (Data.Vector.Vector a) dType dimsOut
+instance (GHC.TypeNats.KnownNat n, Torch.GraduallyTyped.Tensor.Type.TensorLike a dType dims, Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw a, Data.Singletons.Internal.SingI dType, Torch.GraduallyTyped.Tensor.Type.SGetDims dimsOut, 'Torch.GraduallyTyped.Shape.Type.Shape dimsOut GHC.Types.~ Torch.GraduallyTyped.Shape.Class.InsertDimF ('Torch.GraduallyTyped.Shape.Type.SelectDim ('Torch.GraduallyTyped.Shape.Type.ByIndex 0)) ('Torch.GraduallyTyped.Shape.Type.Shape dims) ('Torch.GraduallyTyped.Shape.Type.Dim ('Torch.GraduallyTyped.Shape.Type.Name "*") ('Torch.GraduallyTyped.Shape.Type.Size n))) => Torch.GraduallyTyped.Tensor.Type.TensorLike (Data.Vector.Sized.Vector n a) dType dimsOut
 instance Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw GHC.Types.Bool
 instance Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw GHC.Types.Int
 instance Torch.GraduallyTyped.Tensor.Type.TensorLikeRaw GHC.Types.Float
@@ -1855,7 +1855,7 @@ instance Torch.GraduallyTyped.Tensor.Type.SGetDims '[]
 instance Torch.GraduallyTyped.Tensor.Type.SGetShape 'Torch.GraduallyTyped.Shape.Type.UncheckedShape
 instance GHC.Exception.Type.Exception Torch.GraduallyTyped.Tensor.Type.DataTypeError
 instance Torch.GraduallyTyped.Tensor.Type.SGetDataType 'Torch.GraduallyTyped.DType.UncheckedDataType
-instance Data.Singletons.SingI dType => Torch.GraduallyTyped.Tensor.Type.SGetDataType ('Torch.GraduallyTyped.DType.DataType dType)
+instance Data.Singletons.Internal.SingI dType => Torch.GraduallyTyped.Tensor.Type.SGetDataType ('Torch.GraduallyTyped.DType.DataType dType)
 instance GHC.Exception.Type.Exception Torch.GraduallyTyped.Tensor.Type.DeviceError
 instance Torch.GraduallyTyped.Tensor.Type.SGetDevice 'Torch.GraduallyTyped.Device.UncheckedDevice
 instance Torch.GraduallyTyped.Tensor.Type.SGetDevice ('Torch.GraduallyTyped.Device.Device 'Torch.GraduallyTyped.Device.CPU)
@@ -2604,7 +2604,7 @@ instance GHC.Show.Show Torch.GraduallyTyped.Tensor.IndexingSlicingJoining.IndexO
 instance GHC.Exception.Type.Exception Torch.GraduallyTyped.Tensor.IndexingSlicingJoining.IndexOutOfBoundError
 instance GHC.Exception.Type.Exception Torch.GraduallyTyped.Tensor.IndexingSlicingJoining.TransposeError
 instance (Torch.Internal.Class.Castable (Torch.GraduallyTyped.Tensor.IndexingSlicingJoining.CatHListF selectDim tensors) (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Tensor), Torch.Internal.Class.Castable (Torch.HList.HList tensors) (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.TensorList)) => Torch.GraduallyTyped.Tensor.IndexingSlicingJoining.HasCat selectDim [*] Torch.HList.HList tensors
-instance Torch.Internal.Class.Castable (Torch.GraduallyTyped.Tensor.IndexingSlicingJoining.CatListF selectDim (Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout device dataType shape)) (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Tensor) => Torch.GraduallyTyped.Tensor.IndexingSlicingJoining.HasCat selectDim (*) [] (Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout device dataType shape)
+instance Torch.Internal.Class.Castable (Torch.GraduallyTyped.Tensor.IndexingSlicingJoining.CatListF selectDim (Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout device dataType shape)) (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Tensor) => Torch.GraduallyTyped.Tensor.IndexingSlicingJoining.HasCat selectDim * [] (Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout device dataType shape)
 
 module Torch.GraduallyTyped.Tensor.Indexing
 data IndexType a
@@ -2620,19 +2620,19 @@ SliceFromUpTo :: a -> a -> IndexType a
 SliceFromWithStep :: a -> a -> IndexType a
 SliceUpToWithStep :: a -> a -> IndexType a
 SliceFromUpToWithStep :: a -> a -> a -> IndexType a
-data SIndexType :: forall (a_a1jxN :: Type). IndexType a_a1jxN -> Type
-[SNewAxis] :: forall (a_a1jxN :: Type). () => SIndexType ('NewAxis :: IndexType (a_a1jxN :: Type))
-[SEllipsis] :: forall (a_a1jxN :: Type). () => SIndexType ('Ellipsis :: IndexType (a_a1jxN :: Type))
-[SSliceAll] :: forall (a_a1jxN :: Type). () => SIndexType ('SliceAll :: IndexType (a_a1jxN :: Type))
-[SSliceAt] :: forall (a_a1jxN :: Type) (n_a1jOy :: a_a1jxN). () => Sing n_a1jOy -> SIndexType ('SliceAt n_a1jOy :: IndexType (a_a1jxN :: Type))
-[SSliceBool] :: forall (a_a1jxN :: Type) (n_a1jOA :: Bool). () => Sing n_a1jOA -> SIndexType ('SliceBool n_a1jOA :: IndexType (a_a1jxN :: Type))
-[SSliceFrom] :: forall (a_a1jxN :: Type) (n_a1jOC :: a_a1jxN). () => Sing n_a1jOC -> SIndexType ('SliceFrom n_a1jOC :: IndexType (a_a1jxN :: Type))
-[SSliceUpTo] :: forall (a_a1jxN :: Type) (n_a1jOE :: a_a1jxN). () => Sing n_a1jOE -> SIndexType ('SliceUpTo n_a1jOE :: IndexType (a_a1jxN :: Type))
-[SSliceWithStep] :: forall (a_a1jxN :: Type) (n_a1jOG :: a_a1jxN). () => Sing n_a1jOG -> SIndexType ('SliceWithStep n_a1jOG :: IndexType (a_a1jxN :: Type))
-[SSliceFromUpTo] :: forall (a_a1jxN :: Type) (n_a1jOI :: a_a1jxN) (n_a1jOJ :: a_a1jxN). () => Sing n_a1jOI -> Sing n_a1jOJ -> SIndexType ('SliceFromUpTo n_a1jOI n_a1jOJ :: IndexType (a_a1jxN :: Type))
-[SSliceFromWithStep] :: forall (a_a1jxN :: Type) (n_a1jOM :: a_a1jxN) (n_a1jON :: a_a1jxN). () => Sing n_a1jOM -> Sing n_a1jON -> SIndexType ('SliceFromWithStep n_a1jOM n_a1jON :: IndexType (a_a1jxN :: Type))
-[SSliceUpToWithStep] :: forall (a_a1jxN :: Type) (n_a1jOQ :: a_a1jxN) (n_a1jOR :: a_a1jxN). () => Sing n_a1jOQ -> Sing n_a1jOR -> SIndexType ('SliceUpToWithStep n_a1jOQ n_a1jOR :: IndexType (a_a1jxN :: Type))
-[SSliceFromUpToWithStep] :: forall (a_a1jxN :: Type) (n_a1jOU :: a_a1jxN) (n_a1jOV :: a_a1jxN) (n_a1jOW :: a_a1jxN). () => Sing n_a1jOU -> Sing n_a1jOV -> Sing n_a1jOW -> SIndexType ('SliceFromUpToWithStep n_a1jOU n_a1jOV n_a1jOW :: IndexType (a_a1jxN :: Type))
+data SIndexType z_a1kwL
+[SNewAxis] :: forall (a_a1kdH :: Type). () => SIndexType ('NewAxis :: IndexType (a_a1kdH :: Type))
+[SEllipsis] :: forall (a_a1kdH :: Type). () => SIndexType ('Ellipsis :: IndexType (a_a1kdH :: Type))
+[SSliceAll] :: forall (a_a1kdH :: Type). () => SIndexType ('SliceAll :: IndexType (a_a1kdH :: Type))
+[SSliceAt] :: forall (a_a1kdH :: Type) (n_a1kvB :: a_a1kdH). () => Sing n_a1kvB -> SIndexType ('SliceAt n_a1kvB :: IndexType (a_a1kdH :: Type))
+[SSliceBool] :: forall (a_a1kdH :: Type) (n_a1kvD :: Bool). () => Sing n_a1kvD -> SIndexType ('SliceBool n_a1kvD :: IndexType (a_a1kdH :: Type))
+[SSliceFrom] :: forall (a_a1kdH :: Type) (n_a1kvF :: a_a1kdH). () => Sing n_a1kvF -> SIndexType ('SliceFrom n_a1kvF :: IndexType (a_a1kdH :: Type))
+[SSliceUpTo] :: forall (a_a1kdH :: Type) (n_a1kvH :: a_a1kdH). () => Sing n_a1kvH -> SIndexType ('SliceUpTo n_a1kvH :: IndexType (a_a1kdH :: Type))
+[SSliceWithStep] :: forall (a_a1kdH :: Type) (n_a1kvJ :: a_a1kdH). () => Sing n_a1kvJ -> SIndexType ('SliceWithStep n_a1kvJ :: IndexType (a_a1kdH :: Type))
+[SSliceFromUpTo] :: forall (a_a1kdH :: Type) (n_a1kvL :: a_a1kdH) (n_a1kvM :: a_a1kdH). () => Sing n_a1kvL -> Sing n_a1kvM -> SIndexType ('SliceFromUpTo n_a1kvL n_a1kvM :: IndexType (a_a1kdH :: Type))
+[SSliceFromWithStep] :: forall (a_a1kdH :: Type) (n_a1kvP :: a_a1kdH) (n_a1kvQ :: a_a1kdH). () => Sing n_a1kvP -> Sing n_a1kvQ -> SIndexType ('SliceFromWithStep n_a1kvP n_a1kvQ :: IndexType (a_a1kdH :: Type))
+[SSliceUpToWithStep] :: forall (a_a1kdH :: Type) (n_a1kvT :: a_a1kdH) (n_a1kvU :: a_a1kdH). () => Sing n_a1kvT -> Sing n_a1kvU -> SIndexType ('SliceUpToWithStep n_a1kvT n_a1kvU :: IndexType (a_a1kdH :: Type))
+[SSliceFromUpToWithStep] :: forall (a_a1kdH :: Type) (n_a1kvX :: a_a1kdH) (n_a1kvY :: a_a1kdH) (n_a1kvZ :: a_a1kdH). () => Sing n_a1kvX -> Sing n_a1kvY -> Sing n_a1kvZ -> SIndexType ('SliceFromUpToWithStep n_a1kvX n_a1kvY n_a1kvZ :: IndexType (a_a1kdH :: Type))
 data Indices (indexTypes :: Type)
 [UncheckedIndices] :: forall indexTypes. Indices indexTypes
 [Indices] :: forall indexTypes. indexTypes -> Indices indexTypes
@@ -2646,49 +2646,49 @@ type family IndexDims indices shape
 --   take the odd-numberPed element of tensor with `tensor[1::2]` in
 --   python, you can write `tensor ! [slice|1::2|]` in hasktorch.
 slice :: QuasiQuoter
-instance Data.Singletons.SingI indexTypes => Data.Singletons.SingI ('Torch.GraduallyTyped.Tensor.Indexing.Indices indexTypes)
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.Tensor.Indexing.Indices [Torch.GraduallyTyped.Tensor.Indexing.IndexType (Torch.GraduallyTyped.Index.Type.Index GHC.Types.Nat)])
-instance Data.Singletons.SingKind a => Data.Singletons.SingKind (Torch.GraduallyTyped.Tensor.Indexing.IndexType a)
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.Tensor.Indexing.NewAxis
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.Tensor.Indexing.Ellipsis
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.Tensor.Indexing.SliceAll
-instance forall a (n :: a). Data.Singletons.SingI n => Data.Singletons.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceAt n)
-instance Data.Singletons.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceAtSym0
-instance Data.Singletons.SingI n => Data.Singletons.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceBool n)
-instance Data.Singletons.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceBoolSym0
-instance forall a (n :: a). Data.Singletons.SingI n => Data.Singletons.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceFrom n)
-instance Data.Singletons.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceFromSym0
-instance forall a (n :: a). Data.Singletons.SingI n => Data.Singletons.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceUpTo n)
-instance Data.Singletons.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceUpToSym0
-instance forall a (n :: a). Data.Singletons.SingI n => Data.Singletons.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceWithStep n)
-instance Data.Singletons.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceWithStepSym0
-instance forall a (n1 :: a) (n2 :: a). (Data.Singletons.SingI n1, Data.Singletons.SingI n2) => Data.Singletons.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpTo n1 n2)
-instance Data.Singletons.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym0
-instance forall a (d :: a). Data.Singletons.SingI d => Data.Singletons.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym1 d)
-instance forall a (n1 :: a) (n2 :: a). (Data.Singletons.SingI n1, Data.Singletons.SingI n2) => Data.Singletons.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStep n1 n2)
-instance Data.Singletons.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStepSym0
-instance forall a (d :: a). Data.Singletons.SingI d => Data.Singletons.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStepSym1 d)
-instance forall a (n1 :: a) (n2 :: a). (Data.Singletons.SingI n1, Data.Singletons.SingI n2) => Data.Singletons.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStep n1 n2)
-instance Data.Singletons.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStepSym0
-instance forall a (d :: a). Data.Singletons.SingI d => Data.Singletons.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStepSym1 d)
-instance forall a (n1 :: a) (n2 :: a) (n3 :: a). (Data.Singletons.SingI n1, Data.Singletons.SingI n2, Data.Singletons.SingI n3) => Data.Singletons.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStep n1 n2 n3)
-instance Data.Singletons.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym0
-instance forall a (d :: a). Data.Singletons.SingI d => Data.Singletons.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym1 d)
-instance forall a (d1 :: a) (d2 :: a). (Data.Singletons.SingI d1, Data.Singletons.SingI d2) => Data.Singletons.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym2 d1 d2)
-instance Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym0
-instance forall a (a6989586621679324287 :: a). Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym1 a6989586621679324287)
-instance forall a (a6989586621679324287 :: a) (a6989586621679324288 :: a). Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym2 a6989586621679324287 a6989586621679324288)
-instance Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStepSym0
-instance forall a (a6989586621679324284 :: a). Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStepSym1 a6989586621679324284)
-instance Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStepSym0
-instance forall a (a6989586621679324281 :: a). Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStepSym1 a6989586621679324281)
-instance Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym0
-instance forall a (a6989586621679324278 :: a). Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym1 a6989586621679324278)
-instance Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceWithStepSym0
-instance Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceUpToSym0
-instance Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromSym0
-instance Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceBoolSym0
-instance Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceAtSym0
+instance Data.Singletons.Internal.SingI indexTypes => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Tensor.Indexing.Indices indexTypes)
+instance Data.Singletons.Internal.SingKind (Torch.GraduallyTyped.Tensor.Indexing.Indices [Torch.GraduallyTyped.Tensor.Indexing.IndexType (Torch.GraduallyTyped.Index.Type.Index GHC.Types.Nat)])
+instance Data.Singletons.Internal.SingKind a => Data.Singletons.Internal.SingKind (Torch.GraduallyTyped.Tensor.Indexing.IndexType a)
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.Tensor.Indexing.NewAxis
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.Tensor.Indexing.Ellipsis
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.Tensor.Indexing.SliceAll
+instance forall a (n :: a). Data.Singletons.Internal.SingI n => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceAt n)
+instance Data.Singletons.Internal.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceAtSym0
+instance Data.Singletons.Internal.SingI n => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceBool n)
+instance Data.Singletons.Internal.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceBoolSym0
+instance forall a (n :: a). Data.Singletons.Internal.SingI n => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceFrom n)
+instance Data.Singletons.Internal.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceFromSym0
+instance forall a (n :: a). Data.Singletons.Internal.SingI n => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceUpTo n)
+instance Data.Singletons.Internal.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceUpToSym0
+instance forall a (n :: a). Data.Singletons.Internal.SingI n => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceWithStep n)
+instance Data.Singletons.Internal.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceWithStepSym0
+instance forall a (n1 :: a) (n2 :: a). (Data.Singletons.Internal.SingI n1, Data.Singletons.Internal.SingI n2) => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpTo n1 n2)
+instance Data.Singletons.Internal.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym0
+instance forall a (d :: a). Data.Singletons.Internal.SingI d => Data.Singletons.Internal.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym1 d)
+instance forall a (n1 :: a) (n2 :: a). (Data.Singletons.Internal.SingI n1, Data.Singletons.Internal.SingI n2) => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStep n1 n2)
+instance Data.Singletons.Internal.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStepSym0
+instance forall a (d :: a). Data.Singletons.Internal.SingI d => Data.Singletons.Internal.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStepSym1 d)
+instance forall a (n1 :: a) (n2 :: a). (Data.Singletons.Internal.SingI n1, Data.Singletons.Internal.SingI n2) => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStep n1 n2)
+instance Data.Singletons.Internal.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStepSym0
+instance forall a (d :: a). Data.Singletons.Internal.SingI d => Data.Singletons.Internal.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStepSym1 d)
+instance forall a (n1 :: a) (n2 :: a) (n3 :: a). (Data.Singletons.Internal.SingI n1, Data.Singletons.Internal.SingI n2, Data.Singletons.Internal.SingI n3) => Data.Singletons.Internal.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStep n1 n2 n3)
+instance Data.Singletons.Internal.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym0
+instance forall a (d :: a). Data.Singletons.Internal.SingI d => Data.Singletons.Internal.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym1 d)
+instance forall a (d1 :: a) (d2 :: a). (Data.Singletons.Internal.SingI d1, Data.Singletons.Internal.SingI d2) => Data.Singletons.Internal.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym2 d1 d2)
+instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym0
+instance forall a (a6989586621679326956 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym1 a6989586621679326956)
+instance forall a (a6989586621679326956 :: a) (a6989586621679326957 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym2 a6989586621679326956 a6989586621679326957)
+instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStepSym0
+instance forall a (a6989586621679326953 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStepSym1 a6989586621679326953)
+instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStepSym0
+instance forall a (a6989586621679326950 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStepSym1 a6989586621679326950)
+instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym0
+instance forall a (a6989586621679326947 :: a). Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym1 a6989586621679326947)
+instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceWithStepSym0
+instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceUpToSym0
+instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromSym0
+instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceBoolSym0
+instance Data.Singletons.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceAtSym0
 instance GHC.Base.Functor Torch.GraduallyTyped.Tensor.Indexing.IndexType
 instance GHC.Classes.Eq a => GHC.Classes.Eq (Torch.GraduallyTyped.Tensor.Indexing.IndexType a)
 instance GHC.Show.Show a => GHC.Show.Show (Torch.GraduallyTyped.Tensor.Indexing.IndexType a)
@@ -3950,15 +3950,15 @@ RoBERTa :: TransformerStyle
 -- | <tt>GPT2</tt> transformer style, see
 --   <a>https://openai.com/blog/better-language-models/</a>
 GPT2 :: TransformerStyle
-type family T5Sym0 :: TransformerStyle
-type family ByT5Sym0 :: TransformerStyle
-type family BARTSym0 :: TransformerStyle
-type family MBARTSym0 :: TransformerStyle
-type family PegasusSym0 :: TransformerStyle
-type family BERTSym0 :: TransformerStyle
-type family RoBERTaSym0 :: TransformerStyle
-type family GPT2Sym0 :: TransformerStyle
-data STransformerStyle :: TransformerStyle -> Type
+type T5Sym0 = 'T5 :: TransformerStyle
+type ByT5Sym0 = 'ByT5 :: TransformerStyle
+type BARTSym0 = 'BART :: TransformerStyle
+type MBARTSym0 = 'MBART :: TransformerStyle
+type PegasusSym0 = 'Pegasus :: TransformerStyle
+type BERTSym0 = 'BERT :: TransformerStyle
+type RoBERTaSym0 = 'RoBERTa :: TransformerStyle
+type GPT2Sym0 = 'GPT2 :: TransformerStyle
+data STransformerStyle z_a1RW5
 [ST5] :: STransformerStyle ('T5 :: TransformerStyle)
 [SByT5] :: STransformerStyle ('ByT5 :: TransformerStyle)
 [SBART] :: STransformerStyle ('BART :: TransformerStyle)
@@ -3972,9 +3972,9 @@ data STransformerStyle :: TransformerStyle -> Type
 data TransformerHead
 WithoutHead :: TransformerHead
 WithLMHead :: TransformerHead
-type family WithoutHeadSym0 :: TransformerHead
-type family WithLMHeadSym0 :: TransformerHead
-data STransformerHead :: TransformerHead -> Type
+type WithoutHeadSym0 = 'WithoutHead :: TransformerHead
+type WithLMHeadSym0 = 'WithLMHead :: TransformerHead
+data STransformerHead z_a1S3q
 [SWithoutHead] :: STransformerHead ('WithoutHead :: TransformerHead)
 [SWithLMHead] :: STransformerHead ('WithLMHead :: TransformerHead)
 padded :: Integral n => n -> a -> [a] -> [a]
@@ -4104,18 +4104,18 @@ instance Torch.GraduallyTyped.NN.Transformer.Type.MkRelPosC device shape seqDim 
 instance Torch.GraduallyTyped.NN.Class.HasInitialize Torch.GraduallyTyped.NN.Transformer.Type.MkAbsPos generatorDevice Torch.GraduallyTyped.NN.Transformer.Type.MkAbsPos generatorDevice
 instance Torch.GraduallyTyped.NN.Class.HasStateDict Torch.GraduallyTyped.NN.Transformer.Type.MkAbsPos
 instance Torch.GraduallyTyped.NN.Transformer.Type.MkPosC device shape seqDim seqName seqSize output => Torch.GraduallyTyped.NN.Class.HasForward Torch.GraduallyTyped.NN.Transformer.Type.MkAbsPos (Torch.GraduallyTyped.Tensor.Type.Tensor gradient layout device dataType shape) generatorDevice (Torch.GraduallyTyped.Tensor.Type.Tensor ('Torch.GraduallyTyped.RequiresGradient.Gradient 'Torch.GraduallyTyped.RequiresGradient.WithoutGradient) ('Torch.GraduallyTyped.Layout.Layout 'Torch.GraduallyTyped.Layout.Dense) device ('Torch.GraduallyTyped.DType.DataType 'Torch.GraduallyTyped.DType.Int64) ('Torch.GraduallyTyped.Shape.Type.Shape '[ 'Torch.GraduallyTyped.Shape.Type.Dim ('Torch.GraduallyTyped.Shape.Type.Name "*") seqSize])) generatorDevice
-instance Data.Singletons.SingKind Torch.GraduallyTyped.NN.Transformer.Type.TransformerHead
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.NN.Transformer.Type.WithoutHead
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.NN.Transformer.Type.WithLMHead
-instance Data.Singletons.SingKind Torch.GraduallyTyped.NN.Transformer.Type.TransformerStyle
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.NN.Transformer.Type.T5
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.NN.Transformer.Type.ByT5
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.NN.Transformer.Type.BART
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.NN.Transformer.Type.MBART
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.NN.Transformer.Type.Pegasus
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.NN.Transformer.Type.BERT
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.NN.Transformer.Type.RoBERTa
-instance Data.Singletons.SingI 'Torch.GraduallyTyped.NN.Transformer.Type.GPT2
+instance Data.Singletons.Internal.SingKind Torch.GraduallyTyped.NN.Transformer.Type.TransformerHead
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.NN.Transformer.Type.WithoutHead
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.NN.Transformer.Type.WithLMHead
+instance Data.Singletons.Internal.SingKind Torch.GraduallyTyped.NN.Transformer.Type.TransformerStyle
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.NN.Transformer.Type.T5
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.NN.Transformer.Type.ByT5
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.NN.Transformer.Type.BART
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.NN.Transformer.Type.MBART
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.NN.Transformer.Type.Pegasus
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.NN.Transformer.Type.BERT
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.NN.Transformer.Type.RoBERTa
+instance Data.Singletons.Internal.SingI 'Torch.GraduallyTyped.NN.Transformer.Type.GPT2
 instance GHC.Classes.Eq Torch.GraduallyTyped.NN.Transformer.Type.TransformerStyle
 instance GHC.Show.Show Torch.GraduallyTyped.NN.Transformer.Type.TransformerStyle
 
