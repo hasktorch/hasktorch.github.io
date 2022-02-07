@@ -3538,7 +3538,9 @@ someDType :: DType -> SomeDType
 data SomeDevice
 [SomeDevice] :: forall (device :: (DeviceType, Nat)). KnownDevice device => Proxy device -> SomeDevice
 someDevice :: Device -> SomeDevice
-withTensor :: Tensor -> (forall shape dtype device. KnownShape shape => Tensor device dtype shape -> r) -> r
+withTensor :: Tensor -> (forall shape dtype device. (KnownDevice device, KnownDType dtype, KnownShape shape) => Tensor device dtype shape -> r) -> r
+withTensorShape :: forall device dtype r. (KnownDevice device, KnownDType dtype) => Tensor -> (forall shape. KnownShape shape => Tensor device dtype shape -> r) -> r
+withNat :: Int -> (forall n. KnownNat n => Proxy n -> r) -> r
 type family ComputeBroadcast (reversedShape :: [Nat]) (reversedShape' :: [Nat]) :: Maybe [Nat]
 type family CheckBroadcast (shape :: [Nat]) (shape' :: [Nat]) (result :: Maybe [Nat]) :: [Nat]
 type Broadcast shape shape' = CheckBroadcast shape shape' (ComputeBroadcast (Reverse shape) (Reverse shape'))
@@ -7800,7 +7802,9 @@ getFiniteI :: Finite n -> Int
 someShape :: [Int] -> SomeShape
 someDType :: DType -> SomeDType
 someDevice :: Device -> SomeDevice
-withTensor :: Tensor -> (forall shape dtype device. KnownShape shape => Tensor device dtype shape -> r) -> r
+withTensor :: Tensor -> (forall shape dtype device. (KnownDevice device, KnownDType dtype, KnownShape shape) => Tensor device dtype shape -> r) -> r
+withTensorShape :: forall device dtype r. (KnownDevice device, KnownDType dtype) => Tensor -> (forall shape. KnownShape shape => Tensor device dtype shape -> r) -> r
+withNat :: Int -> (forall n. KnownNat n => Proxy n -> r) -> r
 add :: forall shape'' shape shape' dtype dtype' dtype'' device. (dtype'' ~ DTypePromotion dtype dtype', shape'' ~ Broadcast shape shape', BasicArithmeticDTypeIsValid device dtype, BasicArithmeticDTypeIsValid device dtype', BasicArithmeticDTypeIsValid device dtype'') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device dtype'' shape''
 sub :: forall shape'' shape shape' dtype dtype' dtype'' device. (dtype'' ~ DTypePromotion dtype dtype', shape'' ~ Broadcast shape shape', BasicArithmeticDTypeIsValid device dtype, BasicArithmeticDTypeIsValid device dtype', BasicArithmeticDTypeIsValid device dtype'') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device dtype'' shape''
 mul :: forall shape'' shape shape' dtype dtype' dtype'' device. (dtype'' ~ DTypePromotion dtype dtype', shape'' ~ Broadcast shape shape', BasicArithmeticDTypeIsValid device dtype, BasicArithmeticDTypeIsValid device dtype', BasicArithmeticDTypeIsValid device dtype'') => Tensor device dtype shape -> Tensor device dtype' shape' -> Tensor device dtype'' shape''
