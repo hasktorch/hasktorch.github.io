@@ -79,6 +79,7 @@ QInt32 :: DType
 -- | BFloat16
 BFloat16 :: DType
 isIntegral :: DType -> Bool
+isComplex :: DType -> Bool
 byteLength :: DType -> Int
 instance GHC.Read.Read Torch.DType.DType
 instance GHC.Show.Show Torch.DType.DType
@@ -95,10 +96,18 @@ instance Data.Reflection.Reifies 'Torch.DType.Int32 Torch.DType.DType
 instance Data.Reflection.Reifies GHC.Types.Int Torch.DType.DType
 instance Data.Reflection.Reifies GHC.Int.Int64 Torch.DType.DType
 instance Data.Reflection.Reifies 'Torch.DType.Int64 Torch.DType.DType
+instance Data.Reflection.Reifies Numeric.Half.Internal.Half Torch.DType.DType
+instance Data.Reflection.Reifies 'Torch.DType.Half Torch.DType.DType
 instance Data.Reflection.Reifies GHC.Types.Float Torch.DType.DType
 instance Data.Reflection.Reifies 'Torch.DType.Float Torch.DType.DType
 instance Data.Reflection.Reifies GHC.Types.Double Torch.DType.DType
 instance Data.Reflection.Reifies 'Torch.DType.Double Torch.DType.DType
+instance Data.Reflection.Reifies (Data.Complex.Complex Numeric.Half.Internal.Half) Torch.DType.DType
+instance Data.Reflection.Reifies 'Torch.DType.ComplexHalf Torch.DType.DType
+instance Data.Reflection.Reifies (Data.Complex.Complex GHC.Types.Float) Torch.DType.DType
+instance Data.Reflection.Reifies 'Torch.DType.ComplexFloat Torch.DType.DType
+instance Data.Reflection.Reifies (Data.Complex.Complex GHC.Types.Double) Torch.DType.DType
+instance Data.Reflection.Reifies 'Torch.DType.ComplexDouble Torch.DType.DType
 instance Torch.Internal.Class.Castable Torch.DType.DType Torch.Internal.Type.ScalarType
 
 module Torch.Data.Internal
@@ -730,6 +739,7 @@ device :: Tensor -> Device
 
 -- | Returns the data type of the input tensor
 dtype :: Tensor -> DType
+toComplex :: Tensor -> Complex Double
 toDouble :: Tensor -> Double
 toInt :: Tensor -> Int
 
