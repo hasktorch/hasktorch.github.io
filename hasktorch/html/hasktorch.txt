@@ -3402,6 +3402,14 @@ loadBinary :: RawFile a => Handle -> a -> IO a
 saveBinary :: RawFile a => Handle -> a -> IO ()
 instance Torch.Serialize.RawFile Torch.Tensor.Tensor
 
+module Torch.Jit
+newtype ScriptCache
+ScriptCache :: TVar (Maybe ScriptModule) -> ScriptCache
+[unScriptCache] :: ScriptCache -> TVar (Maybe ScriptModule)
+newScriptCache :: IO ScriptCache
+jitIO :: ScriptCache -> ([Tensor] -> IO [Tensor]) -> [Tensor] -> IO [Tensor]
+jit :: ScriptCache -> ([Tensor] -> [Tensor]) -> [Tensor] -> [Tensor]
+
 module Torch.Random
 mkGenerator :: Device -> Word64 -> IO Generator
 data Generator
