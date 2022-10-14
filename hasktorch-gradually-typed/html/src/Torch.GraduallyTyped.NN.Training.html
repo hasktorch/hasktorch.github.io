@@ -6,13 +6,13 @@
 </span><span id="line-6"></span><span>
 </span><span id="line-7"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.GraduallyTyped.NN.Training</span><span> </span><span class="hs-keyword">where</span><span>
 </span><span id="line-8"></span><span>
-</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.IO.Class</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">MonadIO</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/3ycfwwijbrf8v83xf6pykjlpfxnm5si2-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier">Pipes</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">P</span></span><span>
-</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/3ycfwwijbrf8v83xf6pykjlpfxnm5si2-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier">Pipes.Prelude</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">P</span></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier">Control.Monad.IO.Class</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier">MonadIO</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/r2ay4w6la8q4rp0ipi6v7hbf4sx4ncq1-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier">Pipes</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">P</span></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/r2ay4w6la8q4rp0ipi6v7hbf4sx4ncq1-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier">Pipes.Prelude</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">P</span></span><span>
 </span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Class</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier">HasForward</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier">HasStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier">ModelSpec</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html"><span class="hs-identifier">Torch.GraduallyTyped.Optim</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#Optimizer"><span class="hs-identifier">Optimizer</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#stepWithGenerator"><span class="hs-identifier">stepWithGenerator</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html"><span class="hs-identifier">Torch.GraduallyTyped.Prelude</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Catch"><span class="hs-identifier">Catch</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.List.html"><span class="hs-identifier">Torch.GraduallyTyped.Prelude.List</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/44d7539k7gqlplsaxjj66fck1zc772zc-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier">SList</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.List.html"><span class="hs-identifier">Torch.GraduallyTyped.Prelude.List</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/w7p32025xzx3kb91vv9756i6xfksn3ip-singletons-base-lib-singletons-base-3.0-haddock-doc/share/doc/singletons-base/html/src"><span class="hs-identifier">SList</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
 </span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html"><span class="hs-identifier">Torch.GraduallyTyped.Random</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier">Generator</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#SGetGeneratorDevice"><span class="hs-identifier">SGetGeneratorDevice</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html"><span class="hs-identifier">Torch.GraduallyTyped.RequiresGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier">Gradient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#RequiresGradient"><span class="hs-identifier">RequiresGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier">SGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#SRequiresGradient"><span class="hs-identifier">SRequiresGradient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
 </span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html"><span class="hs-identifier">Torch.GraduallyTyped.Shape.Type</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#SShape"><span class="hs-identifier">SShape</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier">Shape</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
@@ -22,33 +22,59 @@
 </span><span id="line-22"></span><span>
 </span><span id="line-23"></span><span class="hs-comment">-- | Train the model for one epoch.</span><span>
 </span><span id="line-24"></span><span class="annot"><a href="Torch.GraduallyTyped.NN.Training.html#train"><span class="hs-identifier hs-type">train</span></a></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-25"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679693987"><span class="annot"><a href="#local-6989586621679693987"><span class="hs-identifier hs-type">m</span></a></span></span><span> </span><span id="local-6989586621679693986"><span class="annot"><a href="#local-6989586621679693986"><span class="hs-identifier hs-type">model</span></a></span></span><span> </span><span id="local-6989586621679693985"><span class="annot"><a href="#local-6989586621679693985"><span class="hs-identifier hs-type">input</span></a></span></span><span> </span><span id="local-6989586621679693984"><span class="annot"><a href="#local-6989586621679693984"><span class="hs-identifier hs-type">generatorDevice</span></a></span></span><span> </span><span id="local-6989586621679693983"><span class="annot"><a href="#local-6989586621679693983"><span class="hs-identifier hs-type">lossGradient</span></a></span></span><span> </span><span id="local-6989586621679693982"><span class="annot"><a href="#local-6989586621679693982"><span class="hs-identifier hs-type">lossLayout</span></a></span></span><span> </span><span id="local-6989586621679693981"><span class="annot"><a href="#local-6989586621679693981"><span class="hs-identifier hs-type">lossDataType</span></a></span></span><span> </span><span id="local-6989586621679693980"><span class="annot"><a href="#local-6989586621679693980"><span class="hs-identifier hs-type">lossDevice</span></a></span></span><span> </span><span id="local-6989586621679693979"><span class="annot"><a href="#local-6989586621679693979"><span class="hs-identifier hs-type">lossShape</span></a></span></span><span> </span><span id="local-6989586621679693978"><span class="annot"><a href="#local-6989586621679693978"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span></span><span class="hs-operator">.</span><span>
-</span><span id="line-26"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadIO</span></span><span> </span><span class="annot"><a href="#local-6989586621679693987"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-27"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693986"><span class="hs-identifier hs-type">model</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-28"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693986"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693985"><span class="hs-identifier hs-type">input</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693984"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693983"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693982"><span class="hs-identifier hs-type">lossLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693981"><span class="hs-identifier hs-type">lossDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693980"><span class="hs-identifier hs-type">lossDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693979"><span class="hs-identifier hs-type">lossShape</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679693978"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-29"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693986"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693985"><span class="hs-identifier hs-type">input</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693978"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693983"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693982"><span class="hs-identifier hs-type">lossLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693981"><span class="hs-identifier hs-type">lossDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693980"><span class="hs-identifier hs-type">lossDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693979"><span class="hs-identifier hs-type">lossShape</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679693978"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-30"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#SGetGeneratorDevice"><span class="hs-identifier hs-type">SGetGeneratorDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693984"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-31"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#SGetGeneratorDevice"><span class="hs-identifier hs-type">SGetGeneratorDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693978"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-32"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#SGetGradient"><span class="hs-identifier hs-type">SGetGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693983"><span class="hs-identifier hs-type">lossGradient</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-33"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#SGetShape"><span class="hs-identifier hs-type">SGetShape</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693979"><span class="hs-identifier hs-type">lossShape</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-34"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Catch"><span class="hs-identifier hs-type">Catch</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679693979"><span class="hs-identifier hs-type">lossShape</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier hs-type">Shape</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
-</span><span id="line-35"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Catch"><span class="hs-identifier hs-type">Catch</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679693983"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier hs-type">Gradient</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#WithGradient"><span class="hs-identifier hs-type">WithGradient</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679741697"><span class="annot"><a href="#local-6989586621679741697"><span class="hs-identifier hs-type">m</span></a></span></span><span> </span><span id="local-6989586621679741695"><span class="annot"><a href="#local-6989586621679741695"><span class="hs-identifier hs-type">model</span></a></span></span><span> </span><span id="local-6989586621679741693"><span class="annot"><a href="#local-6989586621679741693"><span class="hs-identifier hs-type">input</span></a></span></span><span> </span><span id="local-6989586621679741692"><span class="annot"><a href="#local-6989586621679741692"><span class="hs-identifier hs-type">generatorDevice</span></a></span></span><span> </span><span id="local-6989586621679741691"><span class="annot"><a href="#local-6989586621679741691"><span class="hs-identifier hs-type">lossGradient</span></a></span></span><span> </span><span id="local-6989586621679741690"><span class="annot"><a href="#local-6989586621679741690"><span class="hs-identifier hs-type">lossLayout</span></a></span></span><span> </span><span id="local-6989586621679741689"><span class="annot"><a href="#local-6989586621679741689"><span class="hs-identifier hs-type">lossDataType</span></a></span></span><span> </span><span id="local-6989586621679741688"><span class="annot"><a href="#local-6989586621679741688"><span class="hs-identifier hs-type">lossDevice</span></a></span></span><span> </span><span id="local-6989586621679741687"><span class="annot"><a href="#local-6989586621679741687"><span class="hs-identifier hs-type">lossShape</span></a></span></span><span> </span><span id="local-6989586621679741685"><span class="annot"><a href="#local-6989586621679741685"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-type">MonadIO</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741697"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741695"><span class="hs-identifier hs-type">model</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-28"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741695"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741693"><span class="hs-identifier hs-type">input</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741692"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741691"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741690"><span class="hs-identifier hs-type">lossLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741689"><span class="hs-identifier hs-type">lossDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741688"><span class="hs-identifier hs-type">lossDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741687"><span class="hs-identifier hs-type">lossShape</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679741685"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-29"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741695"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741693"><span class="hs-identifier hs-type">input</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741685"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741691"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741690"><span class="hs-identifier hs-type">lossLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741689"><span class="hs-identifier hs-type">lossDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741688"><span class="hs-identifier hs-type">lossDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741687"><span class="hs-identifier hs-type">lossShape</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679741685"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-30"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#SGetGeneratorDevice"><span class="hs-identifier hs-type">SGetGeneratorDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741692"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-31"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#SGetGeneratorDevice"><span class="hs-identifier hs-type">SGetGeneratorDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741685"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-32"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#SGetGradient"><span class="hs-identifier hs-type">SGetGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741691"><span class="hs-identifier hs-type">lossGradient</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-33"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#SGetShape"><span class="hs-identifier hs-type">SGetShape</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741687"><span class="hs-identifier hs-type">lossShape</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-34"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Catch"><span class="hs-identifier hs-type">Catch</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679741687"><span class="hs-identifier hs-type">lossShape</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier hs-type">Shape</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-35"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Catch"><span class="hs-identifier hs-type">Catch</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679741691"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier hs-type">Gradient</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#WithGradient"><span class="hs-identifier hs-type">WithGradient</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-36"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
 </span><span id="line-37"></span><span>  </span><span class="hs-comment">-- | optimizer for the model</span><span>
-</span><span id="line-38"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#Optimizer"><span class="hs-identifier hs-type">Optimizer</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693986"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-38"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#Optimizer"><span class="hs-identifier hs-type">Optimizer</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741695"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-39"></span><span>  </span><span class="hs-comment">-- | model specification</span><span>
-</span><span id="line-40"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier hs-type">ModelSpec</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693986"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-40"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier hs-type">ModelSpec</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741695"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-41"></span><span>  </span><span class="hs-comment">-- | stream of training examples</span><span>
-</span><span id="line-42"></span><span>  </span><span class="annot"><a href="../file:///nix/store/3ycfwwijbrf8v83xf6pykjlpfxnm5si2-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-type">P.ListT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693987"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693985"><span class="hs-identifier hs-type">input</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-42"></span><span>  </span><span class="annot"><a href="../file:///nix/store/r2ay4w6la8q4rp0ipi6v7hbf4sx4ncq1-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-type">P.ListT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741697"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741693"><span class="hs-identifier hs-type">input</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-43"></span><span>  </span><span class="hs-comment">-- | random generator</span><span>
-</span><span id="line-44"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693984"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-44"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741692"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-45"></span><span>  </span><span class="hs-comment">-- | returned is either the original generator or the average training loss and a new generator</span><span>
-</span><span id="line-46"></span><span>  </span><span class="annot"><a href="#local-6989586621679693987"><span class="hs-identifier hs-type">m</span></a></span><span>
-</span><span id="line-47"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span>
-</span><span id="line-48"></span><span>        </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693984"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-49"></span><span>        </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier hs-type">Gradient</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#WithoutGradient"><span class="hs-identifier hs-type">WithoutGradient</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679693982"><span class="hs-identifier hs-type">lossLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693981"><span class="hs-identifier hs-type">lossDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693980"><span class="hs-identifier hs-type">lossDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier hs-type">Shape</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693978"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-46"></span><span>  </span><span class="annot"><a href="#local-6989586621679741697"><span class="hs-identifier hs-type">m</span></a></span><span>
+</span><span id="line-47"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-type">Either</span></a></span><span>
+</span><span id="line-48"></span><span>        </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741692"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span>        </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier hs-type">Gradient</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#WithoutGradient"><span class="hs-identifier hs-type">WithoutGradient</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679741690"><span class="hs-identifier hs-type">lossLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741689"><span class="hs-identifier hs-type">lossDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741688"><span class="hs-identifier hs-type">lossDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier hs-type">Shape</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741685"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-50"></span><span>    </span><span class="hs-special">)</span><span>
-</span><span id="line-51"></span><span id="train"><span class="annot"><span class="annottext">train :: Optimizer model
+</span><span id="line-51"></span><span id="train"><span class="annot"><span class="annottext">train :: forall (m :: * -&gt; *) model input
+       (generatorDevice :: Device (DeviceType Nat))
+       (lossGradient :: Gradient RequiresGradient)
+       (lossLayout :: Layout LayoutType)
+       (lossDataType :: Device (DeviceType Nat))
+       (lossDevice :: DataType DType)
+       (lossShape :: Shape [Dim (Name Symbol) (Size Nat)])
+       (generatorOutputDevice :: Device (DeviceType Nat)).
+(MonadIO m, HasStateDict model,
+ HasForward
+   model
+   input
+   generatorDevice
+   (Tensor lossGradient lossLayout lossDataType lossDevice lossShape)
+   generatorOutputDevice,
+ HasForward
+   model
+   input
+   generatorOutputDevice
+   (Tensor lossGradient lossLayout lossDataType lossDevice lossShape)
+   generatorOutputDevice,
+ SGetGeneratorDevice generatorDevice,
+ SGetGeneratorDevice generatorOutputDevice,
+ SGetGradient lossGradient, SGetShape lossShape,
+ Catch (lossShape &lt;+&gt; 'Shape '[]),
+ Catch (lossGradient &lt;+&gt; 'Gradient 'WithGradient)) =&gt;
+Optimizer model
 -&gt; ModelSpec model
 -&gt; ListT m input
 -&gt; Generator generatorDevice
@@ -61,37 +87,37 @@
            lossDevice
            ('Shape '[]),
          Generator generatorOutputDevice))
-</span><a href="Torch.GraduallyTyped.NN.Training.html#train"><span class="hs-identifier hs-var hs-var">train</span></a></span></span><span> </span><span id="local-6989586621679693977"><span class="annot"><span class="annottext">Optimizer model
-</span><a href="#local-6989586621679693977"><span class="hs-identifier hs-var">optim</span></a></span></span><span> </span><span id="local-6989586621679693976"><span class="annot"><span class="annottext">ModelSpec model
-</span><a href="#local-6989586621679693976"><span class="hs-identifier hs-var">modelSpec</span></a></span></span><span> </span><span id="local-6989586621679693975"><span class="annot"><span class="annottext">ListT m input
-</span><a href="#local-6989586621679693975"><span class="hs-identifier hs-var">examples</span></a></span></span><span> </span><span id="local-6989586621679693974"><span class="annot"><span class="annottext">Generator generatorDevice
-</span><a href="#local-6989586621679693974"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-52"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679693973"><span class="annot"><span class="annottext">producer :: Proxy X () () (input, Int) m ()
-</span><a href="#local-6989586621679693973"><span class="hs-identifier hs-var hs-var">producer</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Producer input m ()
+</span><a href="Torch.GraduallyTyped.NN.Training.html#train"><span class="hs-identifier hs-var hs-var">train</span></a></span></span><span> </span><span id="local-6989586621679741432"><span class="annot"><span class="annottext">Optimizer model
+</span><a href="#local-6989586621679741432"><span class="hs-identifier hs-var">optim</span></a></span></span><span> </span><span id="local-6989586621679741431"><span class="annot"><span class="annottext">ModelSpec model
+</span><a href="#local-6989586621679741431"><span class="hs-identifier hs-var">modelSpec</span></a></span></span><span> </span><span id="local-6989586621679741430"><span class="annot"><span class="annottext">ListT m input
+</span><a href="#local-6989586621679741430"><span class="hs-identifier hs-var">examples</span></a></span></span><span> </span><span id="local-6989586621679741429"><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679741429"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-52"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679741428"><span class="annot"><span class="annottext">producer :: Proxy X () () (input, Int) m ()
+</span><a href="#local-6989586621679741428"><span class="hs-identifier hs-var hs-var">producer</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Producer input m ()
 -&gt; Producer Int m () -&gt; Proxy X () () (input, Int) m ()
 forall (m :: * -&gt; *) a r b x' x.
 Monad m =&gt;
 Producer a m r -&gt; Producer b m r -&gt; Proxy x' x () (a, b) m r
-</span><a href="../file:///nix/store/3ycfwwijbrf8v83xf6pykjlpfxnm5si2-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.zip</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ListT m input -&gt; Producer input m ()
+</span><a href="../file:///nix/store/r2ay4w6la8q4rp0ipi6v7hbf4sx4ncq1-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.zip</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ListT m input -&gt; Producer input m ()
 forall (m :: * -&gt; *) a. ListT m a -&gt; Producer a m ()
-</span><a href="../file:///nix/store/3ycfwwijbrf8v83xf6pykjlpfxnm5si2-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var hs-var">P.enumerate</span></a></span><span> </span><span class="annot"><span class="annottext">ListT m input
-</span><a href="#local-6989586621679693975"><span class="hs-identifier hs-var">examples</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Int] -&gt; Producer Int m ()
+</span><a href="../file:///nix/store/r2ay4w6la8q4rp0ipi6v7hbf4sx4ncq1-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var hs-var">P.enumerate</span></a></span><span> </span><span class="annot"><span class="annottext">ListT m input
+</span><a href="#local-6989586621679741430"><span class="hs-identifier hs-var">examples</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Int] -&gt; Producer Int m ()
 forall (m :: * -&gt; *) (f :: * -&gt; *) a x' x.
 (Functor m, Foldable f) =&gt;
 f a -&gt; Proxy x' x () a m ()
-</span><a href="../file:///nix/store/3ycfwwijbrf8v83xf6pykjlpfxnm5si2-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.each</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">..</span><span class="hs-special">]</span><span class="hs-special">)</span><span>
-</span><span id="line-53"></span><span>  </span><span id="local-6989586621679693969"><span class="annot"><span class="annottext">Either () ((input, Int), Proxy X () () (input, Int) m ())
-</span><a href="#local-6989586621679693969"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
+</span><a href="../file:///nix/store/r2ay4w6la8q4rp0ipi6v7hbf4sx4ncq1-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.each</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-identifier hs-type">Int</span></a></span><span> </span><span class="hs-glyph">..</span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span>  </span><span id="local-6989586621679741424"><span class="annot"><span class="annottext">Either () ((input, Int), Proxy X () () (input, Int) m ())
+</span><a href="#local-6989586621679741424"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
 -&gt; m (Either () ((input, Int), Proxy X () () (input, Int) m ()))
 forall (m :: * -&gt; *) a r.
 Monad m =&gt;
 Producer a m r -&gt; m (Either r (a, Producer a m r))
-</span><a href="../file:///nix/store/3ycfwwijbrf8v83xf6pykjlpfxnm5si2-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.next</span></a></span><span> </span><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
-</span><a href="#local-6989586621679693973"><span class="hs-identifier hs-var">producer</span></a></span><span>
+</span><a href="../file:///nix/store/r2ay4w6la8q4rp0ipi6v7hbf4sx4ncq1-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.next</span></a></span><span> </span><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
+</span><a href="#local-6989586621679741428"><span class="hs-identifier hs-var">producer</span></a></span><span>
 </span><span id="line-54"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Either () ((input, Int), Proxy X () () (input, Int) m ())
-</span><a href="#local-6989586621679693969"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-55"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span class="annot"><span class="annottext">()
+</span><a href="#local-6989586621679741424"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-55"></span><span>    </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-type">Left</span></a></span><span> </span><span class="annot"><span class="annottext">()
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either
   (Generator generatorDevice)
   (Tensor
@@ -111,7 +137,7 @@ Producer a m r -&gt; m (Either r (a, Producer a m r))
            ('Shape '[]),
          Generator generatorOutputDevice))
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
-</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">(Either
    (Generator generatorDevice)
    (Tensor
       ('Gradient 'WithoutGradient)
@@ -150,7 +176,7 @@ forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
            ('Shape '[]),
          Generator generatorOutputDevice))
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
-</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
 -&gt; Either
      (Generator generatorDevice)
      (Tensor
@@ -161,7 +187,7 @@ forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
         ('Shape '[]),
       Generator generatorOutputDevice)
 forall a b. a -&gt; Either a b
-</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(Generator generatorDevice
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">Left</span></a></span><span> </span><span class="annot"><span class="annottext">(Generator generatorDevice
  -&gt; m (Either
          (Generator generatorDevice)
          (Tensor
@@ -182,13 +208,13 @@ forall a b. a -&gt; Either a b
            ('Shape '[]),
          Generator generatorOutputDevice))
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
-</span><a href="#local-6989586621679693974"><span class="hs-identifier hs-var">g</span></a></span><span>
-</span><span id="line-56"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span id="local-6989586621679693966"><span class="annot"><span class="annottext">input
-</span><a href="#local-6989586621679693966"><span class="hs-identifier hs-var">input</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679693965"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679693965"><span class="hs-identifier hs-var">iter</span></a></span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span id="local-6989586621679693964"><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
-</span><a href="#local-6989586621679693964"><span class="hs-identifier hs-var">producer'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-57"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679693963"><span class="annot"><span class="annottext">step :: ((Tensor
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679741429"><span class="hs-identifier hs-var">g</span></a></span><span>
+</span><span id="line-56"></span><span>    </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-type">Right</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span id="local-6989586621679741421"><span class="annot"><span class="annottext">input
+</span><a href="#local-6989586621679741421"><span class="hs-identifier hs-var">input</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679741420"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679741420"><span class="hs-identifier hs-var">iter</span></a></span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span id="local-6989586621679741419"><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
+</span><a href="#local-6989586621679741419"><span class="hs-identifier hs-var">producer'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-57"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679741418"><span class="annot"><span class="annottext">step :: ((Tensor
     ('Gradient 'WithoutGradient)
     lossLayout
     lossDataType
@@ -205,17 +231,17 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
          ('Shape '[]),
        Int),
       Generator generatorOutputDevice)
-</span><a href="#local-6989586621679693963"><span class="hs-identifier hs-var hs-var">step</span></a></span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span id="local-6989586621679693962"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679741418"><span class="hs-identifier hs-var hs-var">step</span></a></span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span id="local-6989586621679741417"><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithoutGradient)
   lossLayout
   lossDataType
   lossDevice
   ('Shape '[])
-</span><a href="#local-6989586621679693962"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span id="local-6989586621679693961"><span class="annot"><span class="annottext">Generator generatorOutputDevice
-</span><a href="#local-6989586621679693961"><span class="hs-identifier hs-var">g'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679693960"><span class="annot"><span class="annottext">input
-</span><a href="#local-6989586621679693960"><span class="hs-identifier hs-var">input'</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679693959"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679693959"><span class="hs-identifier hs-var">iter'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO
+</span><a href="#local-6989586621679741417"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span id="local-6989586621679741416"><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679741416"><span class="hs-identifier hs-var">g'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679741415"><span class="annot"><span class="annottext">input
+</span><a href="#local-6989586621679741415"><span class="hs-identifier hs-var">input'</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679741414"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679741414"><span class="hs-identifier hs-var">iter'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO
   ((Tensor
       ('Gradient 'WithoutGradient)
       lossLayout
@@ -233,7 +259,7 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
        Int),
       Generator generatorOutputDevice)
 forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
-</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">(IO
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">liftIO</span></a></span><span> </span><span class="annot"><span class="annottext">(IO
    ((Tensor
        ('Gradient 'WithoutGradient)
        lossLayout
@@ -268,8 +294,8 @@ forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
        Int),
       Generator generatorOutputDevice)
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-58"></span><span>            </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679693957"><span class="annot"><span class="annottext">forward' :: model
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-58"></span><span>            </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679741412"><span class="annot"><span class="annottext">forward' :: model
 -&gt; Generator generatorOutputDevice
 -&gt; IO
      (Tensor
@@ -279,12 +305,12 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
         lossDevice
         ('Shape '[]),
       Generator generatorOutputDevice)
-</span><a href="#local-6989586621679693957"><span class="hs-identifier hs-var hs-var">forward'</span></a></span></span><span> </span><span id="local-6989586621679693956"><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679693956"><span class="hs-identifier hs-var">model</span></a></span></span><span> </span><span id="local-6989586621679693955"><span class="annot"><span class="annottext">Generator generatorOutputDevice
-</span><a href="#local-6989586621679693955"><span class="hs-identifier hs-var">g''</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-59"></span><span>                  </span><span class="hs-special">(</span><span id="local-6989586621679693954"><span class="annot"><span class="annottext">Tensor lossGradient lossLayout lossDataType lossDevice lossShape
-</span><a href="#local-6989586621679693954"><span class="hs-identifier hs-var">loss'</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679693953"><span class="annot"><span class="annottext">Generator generatorOutputDevice
-</span><a href="#local-6989586621679693953"><span class="hs-identifier hs-var">g'''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679741412"><span class="hs-identifier hs-var hs-var">forward'</span></a></span></span><span> </span><span id="local-6989586621679741411"><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679741411"><span class="hs-identifier hs-var">model</span></a></span></span><span> </span><span id="local-6989586621679741410"><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679741410"><span class="hs-identifier hs-var">g''</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-59"></span><span>                  </span><span class="hs-special">(</span><span id="local-6989586621679741409"><span class="annot"><span class="annottext">Tensor lossGradient lossLayout lossDataType lossDevice lossShape
+</span><a href="#local-6989586621679741409"><span class="hs-identifier hs-var">loss'</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679741408"><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679741408"><span class="hs-identifier hs-var">g'''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">model
 -&gt; input
 -&gt; Generator generatorOutputDevice
 -&gt; IO
@@ -301,16 +327,16 @@ model
 -&gt; Generator generatorDevice
 -&gt; m (output, Generator generatorOutputDevice)
 </span><a href="Torch.GraduallyTyped.NN.Class.html#forward"><span class="hs-identifier hs-var">forward</span></a></span><span> </span><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679693956"><span class="hs-identifier hs-var">model</span></a></span><span> </span><span class="annot"><span class="annottext">input
-</span><a href="#local-6989586621679693960"><span class="hs-identifier hs-var">input'</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
-</span><a href="#local-6989586621679693955"><span class="hs-identifier hs-var">g''</span></a></span><span>
-</span><span id="line-60"></span><span>                  </span><span id="local-6989586621679693951"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679741411"><span class="hs-identifier hs-var">model</span></a></span><span> </span><span class="annot"><span class="annottext">input
+</span><a href="#local-6989586621679741415"><span class="hs-identifier hs-var">input'</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679741410"><span class="hs-identifier hs-var">g''</span></a></span><span>
+</span><span id="line-60"></span><span>                  </span><span id="local-6989586621679741406"><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithGradient)
   lossLayout
   lossDataType
   lossDevice
   ('Shape '[])
-</span><a href="#local-6989586621679693951"><span class="hs-identifier hs-var">loss''</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">SShape ('Shape '[])
+</span><a href="#local-6989586621679741406"><span class="hs-identifier hs-var">loss''</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">SShape ('Shape '[])
 -&gt; Tensor
      ('Gradient 'WithGradient)
      lossLayout
@@ -338,7 +364,7 @@ forall (dims :: [Dim (Name Symbol) (Size Nat)]).
 SList dims -&gt; SShape ('Shape dims)
 </span><a href="Torch.GraduallyTyped.Shape.Type.html#SShape"><span class="hs-identifier hs-var">SShape</span></a></span><span> </span><span class="annot"><span class="annottext">SList '[]
 forall a. SList '[]
-</span><a href="../file:///nix/store/44d7539k7gqlplsaxjj66fck1zc772zc-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier hs-var">SNil</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Tensor
+</span><a href="../file:///nix/store/w7p32025xzx3kb91vv9756i6xfksn3ip-singletons-base-lib-singletons-base-3.0-haddock-doc/share/doc/singletons-base/html/src"><span class="hs-identifier hs-var">SNil</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Tensor
    ('Gradient 'WithGradient)
    lossLayout
    lossDataType
@@ -366,7 +392,7 @@ forall a. SList '[]
         lossDevice
         ('Shape '[]))
 forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
-</span><span class="hs-operator hs-var">=&lt;&lt;</span></span><span> </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithGradient)
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">=&lt;&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithGradient)
 -&gt; Tensor lossGradient lossLayout lossDataType lossDevice lossShape
 -&gt; IO
      (Tensor
@@ -392,7 +418,7 @@ SRequiresGradient requiresGradient
 -&gt; SGradient ('Gradient requiresGradient)
 </span><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-var">SGradient</span></a></span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithGradient
 </span><a href="Torch.GraduallyTyped.RequiresGradient.html#SWithGradient"><span class="hs-identifier hs-var">SWithGradient</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Tensor lossGradient lossLayout lossDataType lossDevice lossShape
-</span><a href="#local-6989586621679693954"><span class="hs-identifier hs-var">loss'</span></a></span><span>
+</span><a href="#local-6989586621679741409"><span class="hs-identifier hs-var">loss'</span></a></span><span>
 </span><span id="line-61"></span><span>                  </span><span class="annot"><span class="annottext">(Tensor
    ('Gradient 'WithGradient)
    lossLayout
@@ -409,22 +435,22 @@ SRequiresGradient requiresGradient
         ('Shape '[]),
       Generator generatorOutputDevice)
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
-</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithGradient)
   lossLayout
   lossDataType
   lossDevice
   ('Shape '[])
-</span><a href="#local-6989586621679693951"><span class="hs-identifier hs-var">loss''</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
-</span><a href="#local-6989586621679693953"><span class="hs-identifier hs-var">g'''</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-62"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679693945"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679741406"><span class="hs-identifier hs-var">loss''</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679741408"><span class="hs-identifier hs-var">g'''</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-62"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679741400"><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithGradient)
   lossLayout
   lossDataType
   lossDevice
   ('Shape '[])
-</span><a href="#local-6989586621679693945"><span class="hs-identifier hs-var">loss'</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679693944"><span class="annot"><span class="annottext">Generator generatorOutputDevice
-</span><a href="#local-6989586621679693944"><span class="hs-identifier hs-var">g''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Optimizer model
+</span><a href="#local-6989586621679741400"><span class="hs-identifier hs-var">loss'</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679741399"><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679741399"><span class="hs-identifier hs-var">g''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Optimizer model
 -&gt; ModelSpec model
 -&gt; (model
     -&gt; Generator generatorOutputDevice
@@ -468,8 +494,8 @@ Optimizer model
      (Tensor lossGradient lossLayout lossDataType lossDevice lossShape,
       Generator generatorOutputDevice)
 </span><a href="Torch.GraduallyTyped.Optim.html#stepWithGenerator"><span class="hs-identifier hs-var">stepWithGenerator</span></a></span><span> </span><span class="annot"><span class="annottext">Optimizer model
-</span><a href="#local-6989586621679693977"><span class="hs-identifier hs-var">optim</span></a></span><span> </span><span class="annot"><span class="annottext">ModelSpec model
-</span><a href="#local-6989586621679693976"><span class="hs-identifier hs-var">modelSpec</span></a></span><span> </span><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679741432"><span class="hs-identifier hs-var">optim</span></a></span><span> </span><span class="annot"><span class="annottext">ModelSpec model
+</span><a href="#local-6989586621679741431"><span class="hs-identifier hs-var">modelSpec</span></a></span><span> </span><span class="annot"><span class="annottext">model
 -&gt; Generator generatorOutputDevice
 -&gt; IO
      (Tensor
@@ -479,15 +505,15 @@ Optimizer model
         lossDevice
         ('Shape '[]),
       Generator generatorOutputDevice)
-</span><a href="#local-6989586621679693957"><span class="hs-identifier hs-var">forward'</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
-</span><a href="#local-6989586621679693961"><span class="hs-identifier hs-var">g'</span></a></span><span>
-</span><span id="line-63"></span><span>            </span><span id="local-6989586621679693943"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679741412"><span class="hs-identifier hs-var">forward'</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679741416"><span class="hs-identifier hs-var">g'</span></a></span><span>
+</span><span id="line-63"></span><span>            </span><span id="local-6989586621679741398"><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithoutGradient)
   lossLayout
   lossDataType
   lossDevice
   ('Shape '[])
-</span><a href="#local-6989586621679693943"><span class="hs-identifier hs-var">loss''</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679741398"><span class="hs-identifier hs-var">loss''</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithGradient)
   lossLayout
   lossDataType
@@ -513,7 +539,7 @@ Tensor gradient layout device dataType shape
   lossDataType
   lossDevice
   ('Shape '[])
-</span><a href="#local-6989586621679693945"><span class="hs-identifier hs-var">loss'</span></a></span><span>
+</span><a href="#local-6989586621679741400"><span class="hs-identifier hs-var">loss'</span></a></span><span>
 </span><span id="line-64"></span><span>            </span><span class="annot"><span class="annottext">((Tensor
     ('Gradient 'WithoutGradient)
     lossLayout
@@ -532,13 +558,13 @@ Tensor gradient layout device dataType shape
        Int),
       Generator generatorOutputDevice)
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
-</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithoutGradient)
   lossLayout
   lossDataType
   lossDevice
   ('Shape '[])
-</span><a href="#local-6989586621679693962"><span class="hs-identifier hs-var">loss</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679741417"><span class="hs-identifier hs-var">loss</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithoutGradient)
   lossLayout
   lossDataType
@@ -557,16 +583,16 @@ forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
      lossDevice
      ('Shape '[])
 forall a. Num a =&gt; a -&gt; a -&gt; a
-</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">+</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithoutGradient)
   lossLayout
   lossDataType
   lossDevice
   ('Shape '[])
-</span><a href="#local-6989586621679693943"><span class="hs-identifier hs-var">loss''</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679693959"><span class="hs-identifier hs-var">iter'</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
-</span><a href="#local-6989586621679693944"><span class="hs-identifier hs-var">g''</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-65"></span><span>          </span><span id="local-6989586621679693941"><span class="annot"><span class="annottext">init' :: m ((Tensor
+</span><a href="#local-6989586621679741398"><span class="hs-identifier hs-var">loss''</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679741414"><span class="hs-identifier hs-var">iter'</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679741399"><span class="hs-identifier hs-var">g''</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-65"></span><span>          </span><span id="local-6989586621679741396"><span class="annot"><span class="annottext">init' :: m ((Tensor
       ('Gradient 'WithoutGradient)
       lossLayout
       lossDataType
@@ -574,7 +600,7 @@ forall a. Num a =&gt; a -&gt; a -&gt; a
       ('Shape '[]),
     Int),
    Generator generatorOutputDevice)
-</span><a href="#local-6989586621679693941"><span class="hs-identifier hs-var hs-var">init'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO
+</span><a href="#local-6989586621679741396"><span class="hs-identifier hs-var hs-var">init'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO
   ((Tensor
       ('Gradient 'WithoutGradient)
       lossLayout
@@ -592,7 +618,7 @@ forall a. Num a =&gt; a -&gt; a -&gt; a
        Int),
       Generator generatorOutputDevice)
 forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
-</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">(IO
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">liftIO</span></a></span><span> </span><span class="annot"><span class="annottext">(IO
    ((Tensor
        ('Gradient 'WithoutGradient)
        lossLayout
@@ -627,8 +653,8 @@ forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
        Int),
       Generator generatorOutputDevice)
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-66"></span><span>            </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679693940"><span class="annot"><span class="annottext">forward' :: model
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-66"></span><span>            </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679741395"><span class="annot"><span class="annottext">forward' :: model
 -&gt; Generator generatorDevice
 -&gt; IO
      (Tensor
@@ -638,12 +664,12 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
         lossDevice
         ('Shape '[]),
       Generator generatorOutputDevice)
-</span><a href="#local-6989586621679693940"><span class="hs-identifier hs-var hs-var">forward'</span></a></span></span><span> </span><span id="local-6989586621679693939"><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679693939"><span class="hs-identifier hs-var">model</span></a></span></span><span> </span><span id="local-6989586621679693938"><span class="annot"><span class="annottext">Generator generatorDevice
-</span><a href="#local-6989586621679693938"><span class="hs-identifier hs-var">g'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-67"></span><span>                  </span><span class="hs-special">(</span><span id="local-6989586621679693937"><span class="annot"><span class="annottext">Tensor lossGradient lossLayout lossDataType lossDevice lossShape
-</span><a href="#local-6989586621679693937"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679693936"><span class="annot"><span class="annottext">Generator generatorOutputDevice
-</span><a href="#local-6989586621679693936"><span class="hs-identifier hs-var">g''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679741395"><span class="hs-identifier hs-var hs-var">forward'</span></a></span></span><span> </span><span id="local-6989586621679741394"><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679741394"><span class="hs-identifier hs-var">model</span></a></span></span><span> </span><span id="local-6989586621679741393"><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679741393"><span class="hs-identifier hs-var">g'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-67"></span><span>                  </span><span class="hs-special">(</span><span id="local-6989586621679741392"><span class="annot"><span class="annottext">Tensor lossGradient lossLayout lossDataType lossDevice lossShape
+</span><a href="#local-6989586621679741392"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679741391"><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679741391"><span class="hs-identifier hs-var">g''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">model
 -&gt; input
 -&gt; Generator generatorDevice
 -&gt; IO
@@ -660,16 +686,16 @@ model
 -&gt; Generator generatorDevice
 -&gt; m (output, Generator generatorOutputDevice)
 </span><a href="Torch.GraduallyTyped.NN.Class.html#forward"><span class="hs-identifier hs-var">forward</span></a></span><span> </span><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679693939"><span class="hs-identifier hs-var">model</span></a></span><span> </span><span class="annot"><span class="annottext">input
-</span><a href="#local-6989586621679693966"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
-</span><a href="#local-6989586621679693938"><span class="hs-identifier hs-var">g'</span></a></span><span>
-</span><span id="line-68"></span><span>                  </span><span id="local-6989586621679693935"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679741394"><span class="hs-identifier hs-var">model</span></a></span><span> </span><span class="annot"><span class="annottext">input
+</span><a href="#local-6989586621679741421"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679741393"><span class="hs-identifier hs-var">g'</span></a></span><span>
+</span><span id="line-68"></span><span>                  </span><span id="local-6989586621679741390"><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithGradient)
   lossLayout
   lossDataType
   lossDevice
   ('Shape '[])
-</span><a href="#local-6989586621679693935"><span class="hs-identifier hs-var">loss'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">SShape ('Shape '[])
+</span><a href="#local-6989586621679741390"><span class="hs-identifier hs-var">loss'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">SShape ('Shape '[])
 -&gt; Tensor
      ('Gradient 'WithGradient)
      lossLayout
@@ -697,7 +723,7 @@ forall (dims :: [Dim (Name Symbol) (Size Nat)]).
 SList dims -&gt; SShape ('Shape dims)
 </span><a href="Torch.GraduallyTyped.Shape.Type.html#SShape"><span class="hs-identifier hs-var">SShape</span></a></span><span> </span><span class="annot"><span class="annottext">SList '[]
 forall a. SList '[]
-</span><a href="../file:///nix/store/44d7539k7gqlplsaxjj66fck1zc772zc-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier hs-var">SNil</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Tensor
+</span><a href="../file:///nix/store/w7p32025xzx3kb91vv9756i6xfksn3ip-singletons-base-lib-singletons-base-3.0-haddock-doc/share/doc/singletons-base/html/src"><span class="hs-identifier hs-var">SNil</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Tensor
    ('Gradient 'WithGradient)
    lossLayout
    lossDataType
@@ -725,7 +751,7 @@ forall a. SList '[]
         lossDevice
         ('Shape '[]))
 forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
-</span><span class="hs-operator hs-var">=&lt;&lt;</span></span><span> </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithGradient)
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">=&lt;&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithGradient)
 -&gt; Tensor lossGradient lossLayout lossDataType lossDevice lossShape
 -&gt; IO
      (Tensor
@@ -751,7 +777,7 @@ SRequiresGradient requiresGradient
 -&gt; SGradient ('Gradient requiresGradient)
 </span><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-var">SGradient</span></a></span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithGradient
 </span><a href="Torch.GraduallyTyped.RequiresGradient.html#SWithGradient"><span class="hs-identifier hs-var">SWithGradient</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Tensor lossGradient lossLayout lossDataType lossDevice lossShape
-</span><a href="#local-6989586621679693937"><span class="hs-identifier hs-var">loss</span></a></span><span>
+</span><a href="#local-6989586621679741392"><span class="hs-identifier hs-var">loss</span></a></span><span>
 </span><span id="line-69"></span><span>                  </span><span class="annot"><span class="annottext">(Tensor
    ('Gradient 'WithGradient)
    lossLayout
@@ -768,22 +794,22 @@ SRequiresGradient requiresGradient
         ('Shape '[]),
       Generator generatorOutputDevice)
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
-</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithGradient)
   lossLayout
   lossDataType
   lossDevice
   ('Shape '[])
-</span><a href="#local-6989586621679693935"><span class="hs-identifier hs-var">loss'</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
-</span><a href="#local-6989586621679693936"><span class="hs-identifier hs-var">g''</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-70"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679693934"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679741390"><span class="hs-identifier hs-var">loss'</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679741391"><span class="hs-identifier hs-var">g''</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-70"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679741389"><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithGradient)
   lossLayout
   lossDataType
   lossDevice
   ('Shape '[])
-</span><a href="#local-6989586621679693934"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679693933"><span class="annot"><span class="annottext">Generator generatorOutputDevice
-</span><a href="#local-6989586621679693933"><span class="hs-identifier hs-var">g'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Optimizer model
+</span><a href="#local-6989586621679741389"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679741388"><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679741388"><span class="hs-identifier hs-var">g'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Optimizer model
 -&gt; ModelSpec model
 -&gt; (model
     -&gt; Generator generatorDevice
@@ -827,8 +853,8 @@ Optimizer model
      (Tensor lossGradient lossLayout lossDataType lossDevice lossShape,
       Generator generatorOutputDevice)
 </span><a href="Torch.GraduallyTyped.Optim.html#stepWithGenerator"><span class="hs-identifier hs-var">stepWithGenerator</span></a></span><span> </span><span class="annot"><span class="annottext">Optimizer model
-</span><a href="#local-6989586621679693977"><span class="hs-identifier hs-var">optim</span></a></span><span> </span><span class="annot"><span class="annottext">ModelSpec model
-</span><a href="#local-6989586621679693976"><span class="hs-identifier hs-var">modelSpec</span></a></span><span> </span><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679741432"><span class="hs-identifier hs-var">optim</span></a></span><span> </span><span class="annot"><span class="annottext">ModelSpec model
+</span><a href="#local-6989586621679741431"><span class="hs-identifier hs-var">modelSpec</span></a></span><span> </span><span class="annot"><span class="annottext">model
 -&gt; Generator generatorDevice
 -&gt; IO
      (Tensor
@@ -838,15 +864,15 @@ Optimizer model
         lossDevice
         ('Shape '[]),
       Generator generatorOutputDevice)
-</span><a href="#local-6989586621679693940"><span class="hs-identifier hs-var">forward'</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
-</span><a href="#local-6989586621679693974"><span class="hs-identifier hs-var">g</span></a></span><span>
-</span><span id="line-71"></span><span>            </span><span id="local-6989586621679693932"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679741395"><span class="hs-identifier hs-var">forward'</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679741429"><span class="hs-identifier hs-var">g</span></a></span><span>
+</span><span id="line-71"></span><span>            </span><span id="local-6989586621679741387"><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithoutGradient)
   lossLayout
   lossDataType
   lossDevice
   ('Shape '[])
-</span><a href="#local-6989586621679693932"><span class="hs-identifier hs-var">loss'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679741387"><span class="hs-identifier hs-var">loss'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithGradient)
   lossLayout
   lossDataType
@@ -872,7 +898,7 @@ Tensor gradient layout device dataType shape
   lossDataType
   lossDevice
   ('Shape '[])
-</span><a href="#local-6989586621679693934"><span class="hs-identifier hs-var">loss</span></a></span><span>
+</span><a href="#local-6989586621679741389"><span class="hs-identifier hs-var">loss</span></a></span><span>
 </span><span id="line-72"></span><span>            </span><span class="annot"><span class="annottext">((Tensor
     ('Gradient 'WithoutGradient)
     lossLayout
@@ -891,40 +917,40 @@ Tensor gradient layout device dataType shape
        Int),
       Generator generatorOutputDevice)
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
-</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithoutGradient)
   lossLayout
   lossDataType
   lossDevice
   ('Shape '[])
-</span><a href="#local-6989586621679693932"><span class="hs-identifier hs-var">loss'</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679693965"><span class="hs-identifier hs-var">iter</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
-</span><a href="#local-6989586621679693933"><span class="hs-identifier hs-var">g'</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-73"></span><span>          </span><span id="local-6989586621679693931"><span class="annot"><span class="annottext">done :: ((Tensor gradient layout device dataType shape, divisor), b)
+</span><a href="#local-6989586621679741387"><span class="hs-identifier hs-var">loss'</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679741420"><span class="hs-identifier hs-var">iter</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679741388"><span class="hs-identifier hs-var">g'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-73"></span><span>          </span><span id="local-6989586621679741382"><span class="annot"><span class="annottext">done :: ((Tensor gradient layout device dataType shape, divisor), b)
 -&gt; f (Either a (Tensor gradient layout device dataType shape, b))
-</span><a href="#local-6989586621679693931"><span class="hs-identifier hs-var hs-var">done</span></a></span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span id="local-6989586621679693930"><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
-</span><a href="#local-6989586621679693930"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679693929"><span class="annot"><span class="annottext">divisor
-</span><a href="#local-6989586621679693929"><span class="hs-identifier hs-var">iter'</span></a></span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span id="local-6989586621679693928"><span class="annot"><span class="annottext">b
-</span><a href="#local-6989586621679693928"><span class="hs-identifier hs-var">g''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Either a (Tensor gradient layout device dataType shape, b)
+</span><a href="#local-6989586621679741382"><span class="hs-identifier hs-var hs-var">done</span></a></span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span id="local-6989586621679741381"><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679741381"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679741380"><span class="annot"><span class="annottext">divisor
+</span><a href="#local-6989586621679741380"><span class="hs-identifier hs-var">iter'</span></a></span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span id="local-6989586621679741379"><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679741379"><span class="hs-identifier hs-var">g''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Either a (Tensor gradient layout device dataType shape, b)
 -&gt; f (Either a (Tensor gradient layout device dataType shape, b))
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
-</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either a (Tensor gradient layout device dataType shape, b)
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">(Either a (Tensor gradient layout device dataType shape, b)
  -&gt; f (Either a (Tensor gradient layout device dataType shape, b)))
 -&gt; ((Tensor gradient layout device dataType shape, b)
     -&gt; Either a (Tensor gradient layout device dataType shape, b))
 -&gt; (Tensor gradient layout device dataType shape, b)
 -&gt; f (Either a (Tensor gradient layout device dataType shape, b))
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
-</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(Tensor gradient layout device dataType shape, b)
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor gradient layout device dataType shape, b)
 -&gt; Either a (Tensor gradient layout device dataType shape, b)
 forall a b. b -&gt; Either a b
-</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">((Tensor gradient layout device dataType shape, b)
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="annot"><span class="annottext">((Tensor gradient layout device dataType shape, b)
  -&gt; f (Either a (Tensor gradient layout device dataType shape, b)))
 -&gt; (Tensor gradient layout device dataType shape, b)
 -&gt; f (Either a (Tensor gradient layout device dataType shape, b))
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
-</span><a href="#local-6989586621679693930"><span class="hs-identifier hs-var">loss</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679741381"><span class="hs-identifier hs-var">loss</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
 -&gt; divisor -&gt; Tensor gradient layout device dataType shape
 forall divisor (gradient :: Gradient RequiresGradient)
        (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
@@ -934,8 +960,8 @@ Scalar divisor =&gt;
 Tensor gradient layout device dataType shape
 -&gt; divisor -&gt; Tensor gradient layout device dataType shape
 </span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Pointwise.html#divScalar"><span class="hs-operator hs-var">`divScalar`</span></a></span><span> </span><span class="annot"><span class="annottext">divisor
-</span><a href="#local-6989586621679693929"><span class="hs-identifier hs-var">iter'</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">b
-</span><a href="#local-6989586621679693928"><span class="hs-identifier hs-var">g''</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679741380"><span class="hs-identifier hs-var">iter'</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679741379"><span class="hs-identifier hs-var">g''</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-74"></span><span>      </span><span class="annot"><span class="annottext">(((Tensor
      ('Gradient 'WithoutGradient)
      lossLayout
@@ -991,7 +1017,7 @@ Tensor gradient layout device dataType shape
 forall (m :: * -&gt; *) x a b.
 Monad m =&gt;
 (x -&gt; a -&gt; m x) -&gt; m x -&gt; (x -&gt; m b) -&gt; Producer a m () -&gt; m b
-</span><a href="../file:///nix/store/3ycfwwijbrf8v83xf6pykjlpfxnm5si2-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.foldM</span></a></span><span> </span><span class="annot"><span class="annottext">((Tensor
+</span><a href="../file:///nix/store/r2ay4w6la8q4rp0ipi6v7hbf4sx4ncq1-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.foldM</span></a></span><span> </span><span class="annot"><span class="annottext">((Tensor
     ('Gradient 'WithoutGradient)
     lossLayout
     lossDataType
@@ -1008,7 +1034,7 @@ Monad m =&gt;
          ('Shape '[]),
        Int),
       Generator generatorOutputDevice)
-</span><a href="#local-6989586621679693963"><span class="hs-identifier hs-var">step</span></a></span><span> </span><span class="annot"><span class="annottext">m ((Tensor
+</span><a href="#local-6989586621679741418"><span class="hs-identifier hs-var">step</span></a></span><span> </span><span class="annot"><span class="annottext">m ((Tensor
       ('Gradient 'WithoutGradient)
       lossLayout
       lossDataType
@@ -1016,7 +1042,7 @@ Monad m =&gt;
       ('Shape '[]),
     Int),
    Generator generatorOutputDevice)
-</span><a href="#local-6989586621679693941"><span class="hs-identifier hs-var">init'</span></a></span><span> </span><span class="annot"><span class="annottext">((Tensor
+</span><a href="#local-6989586621679741396"><span class="hs-identifier hs-var">init'</span></a></span><span> </span><span class="annot"><span class="annottext">((Tensor
     ('Gradient 'WithoutGradient)
     lossLayout
     lossDataType
@@ -1033,41 +1059,65 @@ Monad m =&gt;
            lossDevice
            ('Shape '[]),
          Generator generatorOutputDevice))
-forall (f :: * -&gt; *) divisor
-       (gradient :: Gradient RequiresGradient)
-       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
-       (dataType :: DataType DType)
-       (shape :: Shape [Dim (Name Symbol) (Size Nat)]) b a.
+forall {f :: * -&gt; *} {divisor}
+       {gradient :: Gradient RequiresGradient}
+       {layout :: Layout LayoutType} {device :: Device (DeviceType Nat)}
+       {dataType :: DataType DType}
+       {shape :: Shape [Dim (Name Symbol) (Size Nat)]} {b} {a}.
 (Applicative f, Scalar divisor) =&gt;
 ((Tensor gradient layout device dataType shape, divisor), b)
 -&gt; f (Either a (Tensor gradient layout device dataType shape, b))
-</span><a href="#local-6989586621679693931"><span class="hs-identifier hs-var">done</span></a></span><span> </span><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
-</span><a href="#local-6989586621679693964"><span class="hs-identifier hs-var">producer'</span></a></span><span>
+</span><a href="#local-6989586621679741382"><span class="hs-identifier hs-var">done</span></a></span><span> </span><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
+</span><a href="#local-6989586621679741419"><span class="hs-identifier hs-var">producer'</span></a></span><span>
 </span><span id="line-75"></span><span>
 </span><span id="line-76"></span><span class="hs-comment">-- | Evaluate the model on the given examples.</span><span>
-</span><span id="line-77"></span><span id="local-6989586621679693917"><span id="local-6989586621679693918"><span id="local-6989586621679693919"><span id="local-6989586621679693920"><span id="local-6989586621679693921"><span id="local-6989586621679693922"><span id="local-6989586621679693923"><span id="local-6989586621679693924"><span id="local-6989586621679693925"><span id="local-6989586621679693926"><span class="annot"><a href="Torch.GraduallyTyped.NN.Training.html#eval"><span class="hs-identifier hs-type">eval</span></a></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-78"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadIO</span></span><span> </span><span class="annot"><a href="#local-6989586621679693926"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-79"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693925"><span class="hs-identifier hs-type">model</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-80"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693925"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693924"><span class="hs-identifier hs-type">input</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693923"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693922"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693921"><span class="hs-identifier hs-type">lossLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693920"><span class="hs-identifier hs-type">lossDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693919"><span class="hs-identifier hs-type">lossDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693918"><span class="hs-identifier hs-type">lossShape</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679693917"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-81"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693925"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693924"><span class="hs-identifier hs-type">input</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693917"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693922"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693921"><span class="hs-identifier hs-type">lossLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693920"><span class="hs-identifier hs-type">lossDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693919"><span class="hs-identifier hs-type">lossDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693918"><span class="hs-identifier hs-type">lossShape</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679693917"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-82"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#SGetGradient"><span class="hs-identifier hs-type">SGetGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693922"><span class="hs-identifier hs-type">lossGradient</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-83"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#SGetShape"><span class="hs-identifier hs-type">SGetShape</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693918"><span class="hs-identifier hs-type">lossShape</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-84"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Catch"><span class="hs-identifier hs-type">Catch</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679693918"><span class="hs-identifier hs-type">lossShape</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier hs-type">Shape</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
-</span><span id="line-85"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Catch"><span class="hs-identifier hs-type">Catch</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679693922"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier hs-type">Gradient</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#WithoutGradient"><span class="hs-identifier hs-type">WithoutGradient</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-77"></span><span id="local-6989586621679741548"><span id="local-6989586621679741549"><span id="local-6989586621679741550"><span id="local-6989586621679741551"><span id="local-6989586621679741552"><span id="local-6989586621679741553"><span id="local-6989586621679741554"><span id="local-6989586621679741555"><span id="local-6989586621679741556"><span id="local-6989586621679741557"><span class="annot"><a href="Torch.GraduallyTyped.NN.Training.html#eval"><span class="hs-identifier hs-type">eval</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-78"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-type">MonadIO</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741557"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-79"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741556"><span class="hs-identifier hs-type">model</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-80"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741556"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741555"><span class="hs-identifier hs-type">input</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741554"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741553"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741552"><span class="hs-identifier hs-type">lossLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741551"><span class="hs-identifier hs-type">lossDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741550"><span class="hs-identifier hs-type">lossDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741549"><span class="hs-identifier hs-type">lossShape</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679741548"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-81"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741556"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741555"><span class="hs-identifier hs-type">input</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741548"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741553"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741552"><span class="hs-identifier hs-type">lossLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741551"><span class="hs-identifier hs-type">lossDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741550"><span class="hs-identifier hs-type">lossDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741549"><span class="hs-identifier hs-type">lossShape</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679741548"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-82"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#SGetGradient"><span class="hs-identifier hs-type">SGetGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741553"><span class="hs-identifier hs-type">lossGradient</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-83"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#SGetShape"><span class="hs-identifier hs-type">SGetShape</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741549"><span class="hs-identifier hs-type">lossShape</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-84"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Catch"><span class="hs-identifier hs-type">Catch</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679741549"><span class="hs-identifier hs-type">lossShape</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier hs-type">Shape</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-85"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Catch"><span class="hs-identifier hs-type">Catch</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679741553"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier hs-type">Gradient</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#WithoutGradient"><span class="hs-identifier hs-type">WithoutGradient</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-86"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
 </span><span id="line-87"></span><span>  </span><span class="hs-comment">-- | model</span><span>
-</span><span id="line-88"></span><span>  </span><span class="annot"><a href="#local-6989586621679693925"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-88"></span><span>  </span><span class="annot"><a href="#local-6989586621679741556"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-89"></span><span>  </span><span class="hs-comment">-- | stream of examples</span><span>
-</span><span id="line-90"></span><span>  </span><span class="annot"><a href="../file:///nix/store/3ycfwwijbrf8v83xf6pykjlpfxnm5si2-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-type">P.ListT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693926"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693924"><span class="hs-identifier hs-type">input</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-90"></span><span>  </span><span class="annot"><a href="../file:///nix/store/r2ay4w6la8q4rp0ipi6v7hbf4sx4ncq1-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-type">P.ListT</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741557"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741555"><span class="hs-identifier hs-type">input</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-91"></span><span>  </span><span class="hs-comment">-- | random generator</span><span>
-</span><span id="line-92"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693923"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-92"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741554"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-93"></span><span>  </span><span class="hs-comment">-- | returned is either the original generator or the average evaluation loss and a new generator</span><span>
-</span><span id="line-94"></span><span>  </span><span class="annot"><a href="#local-6989586621679693926"><span class="hs-identifier hs-type">m</span></a></span><span>
-</span><span id="line-95"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span>
-</span><span id="line-96"></span><span>        </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693923"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-97"></span><span>        </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier hs-type">Gradient</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#WithoutGradient"><span class="hs-identifier hs-type">WithoutGradient</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679693921"><span class="hs-identifier hs-type">lossLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693920"><span class="hs-identifier hs-type">lossDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693919"><span class="hs-identifier hs-type">lossDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier hs-type">Shape</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679693917"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-94"></span><span>  </span><span class="annot"><a href="#local-6989586621679741557"><span class="hs-identifier hs-type">m</span></a></span><span>
+</span><span id="line-95"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-type">Either</span></a></span><span>
+</span><span id="line-96"></span><span>        </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741554"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-97"></span><span>        </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier hs-type">Gradient</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#WithoutGradient"><span class="hs-identifier hs-type">WithoutGradient</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679741552"><span class="hs-identifier hs-type">lossLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741551"><span class="hs-identifier hs-type">lossDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741550"><span class="hs-identifier hs-type">lossDevice</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier hs-type">Shape</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679741548"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-98"></span><span>    </span><span class="hs-special">)</span></span></span></span></span></span></span></span></span></span></span><span>
-</span><span id="line-99"></span><span id="eval"><span class="annot"><span class="annottext">eval :: model
+</span><span id="line-99"></span><span id="eval"><span class="annot"><span class="annottext">eval :: forall (m :: * -&gt; *) model input
+       (generatorDevice :: Device (DeviceType Nat))
+       (lossGradient :: Gradient RequiresGradient)
+       (lossLayout :: Layout LayoutType)
+       (lossDataType :: Device (DeviceType Nat))
+       (lossDevice :: DataType DType)
+       (lossShape :: Shape [Dim (Name Symbol) (Size Nat)])
+       (generatorOutputDevice :: Device (DeviceType Nat)).
+(MonadIO m, HasStateDict model,
+ HasForward
+   model
+   input
+   generatorDevice
+   (Tensor lossGradient lossLayout lossDataType lossDevice lossShape)
+   generatorOutputDevice,
+ HasForward
+   model
+   input
+   generatorOutputDevice
+   (Tensor lossGradient lossLayout lossDataType lossDevice lossShape)
+   generatorOutputDevice,
+ SGetGradient lossGradient, SGetShape lossShape,
+ Catch (lossShape &lt;+&gt; 'Shape '[]),
+ Catch (lossGradient &lt;+&gt; 'Gradient 'WithoutGradient)) =&gt;
+model
 -&gt; ListT m input
 -&gt; Generator generatorDevice
 -&gt; m (Either
@@ -1079,36 +1129,36 @@ forall (f :: * -&gt; *) divisor
            lossDevice
            ('Shape '[]),
          Generator generatorOutputDevice))
-</span><a href="Torch.GraduallyTyped.NN.Training.html#eval"><span class="hs-identifier hs-var hs-var">eval</span></a></span></span><span> </span><span id="local-6989586621679693915"><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679693915"><span class="hs-identifier hs-var">model</span></a></span></span><span> </span><span id="local-6989586621679693914"><span class="annot"><span class="annottext">ListT m input
-</span><a href="#local-6989586621679693914"><span class="hs-identifier hs-var">examples</span></a></span></span><span> </span><span id="local-6989586621679693913"><span class="annot"><span class="annottext">Generator generatorDevice
-</span><a href="#local-6989586621679693913"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-100"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679693912"><span class="annot"><span class="annottext">producer :: Proxy X () () (input, Int) m ()
-</span><a href="#local-6989586621679693912"><span class="hs-identifier hs-var hs-var">producer</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Producer input m ()
+</span><a href="Torch.GraduallyTyped.NN.Training.html#eval"><span class="hs-identifier hs-var hs-var">eval</span></a></span></span><span> </span><span id="local-6989586621679741318"><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679741318"><span class="hs-identifier hs-var">model</span></a></span></span><span> </span><span id="local-6989586621679741317"><span class="annot"><span class="annottext">ListT m input
+</span><a href="#local-6989586621679741317"><span class="hs-identifier hs-var">examples</span></a></span></span><span> </span><span id="local-6989586621679741316"><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679741316"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-100"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679741315"><span class="annot"><span class="annottext">producer :: Proxy X () () (input, Int) m ()
+</span><a href="#local-6989586621679741315"><span class="hs-identifier hs-var hs-var">producer</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Producer input m ()
 -&gt; Producer Int m () -&gt; Proxy X () () (input, Int) m ()
 forall (m :: * -&gt; *) a r b x' x.
 Monad m =&gt;
 Producer a m r -&gt; Producer b m r -&gt; Proxy x' x () (a, b) m r
-</span><a href="../file:///nix/store/3ycfwwijbrf8v83xf6pykjlpfxnm5si2-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.zip</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ListT m input -&gt; Producer input m ()
+</span><a href="../file:///nix/store/r2ay4w6la8q4rp0ipi6v7hbf4sx4ncq1-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.zip</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ListT m input -&gt; Producer input m ()
 forall (m :: * -&gt; *) a. ListT m a -&gt; Producer a m ()
-</span><a href="../file:///nix/store/3ycfwwijbrf8v83xf6pykjlpfxnm5si2-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var hs-var">P.enumerate</span></a></span><span> </span><span class="annot"><span class="annottext">ListT m input
-</span><a href="#local-6989586621679693914"><span class="hs-identifier hs-var">examples</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Int] -&gt; Producer Int m ()
+</span><a href="../file:///nix/store/r2ay4w6la8q4rp0ipi6v7hbf4sx4ncq1-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var hs-var">P.enumerate</span></a></span><span> </span><span class="annot"><span class="annottext">ListT m input
+</span><a href="#local-6989586621679741317"><span class="hs-identifier hs-var">examples</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Int] -&gt; Producer Int m ()
 forall (m :: * -&gt; *) (f :: * -&gt; *) a x' x.
 (Functor m, Foldable f) =&gt;
 f a -&gt; Proxy x' x () a m ()
-</span><a href="../file:///nix/store/3ycfwwijbrf8v83xf6pykjlpfxnm5si2-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.each</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
-</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">..</span><span class="hs-special">]</span><span class="hs-special">)</span><span>
-</span><span id="line-101"></span><span>  </span><span id="local-6989586621679693911"><span class="annot"><span class="annottext">Either () ((input, Int), Proxy X () () (input, Int) m ())
-</span><a href="#local-6989586621679693911"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
+</span><a href="../file:///nix/store/r2ay4w6la8q4rp0ipi6v7hbf4sx4ncq1-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.each</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-identifier hs-type">Int</span></a></span><span> </span><span class="hs-glyph">..</span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-101"></span><span>  </span><span id="local-6989586621679741314"><span class="annot"><span class="annottext">Either () ((input, Int), Proxy X () () (input, Int) m ())
+</span><a href="#local-6989586621679741314"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
 -&gt; m (Either () ((input, Int), Proxy X () () (input, Int) m ()))
 forall (m :: * -&gt; *) a r.
 Monad m =&gt;
 Producer a m r -&gt; m (Either r (a, Producer a m r))
-</span><a href="../file:///nix/store/3ycfwwijbrf8v83xf6pykjlpfxnm5si2-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.next</span></a></span><span> </span><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
-</span><a href="#local-6989586621679693912"><span class="hs-identifier hs-var">producer</span></a></span><span>
+</span><a href="../file:///nix/store/r2ay4w6la8q4rp0ipi6v7hbf4sx4ncq1-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.next</span></a></span><span> </span><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
+</span><a href="#local-6989586621679741315"><span class="hs-identifier hs-var">producer</span></a></span><span>
 </span><span id="line-102"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Either () ((input, Int), Proxy X () () (input, Int) m ())
-</span><a href="#local-6989586621679693911"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-103"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span class="annot"><span class="annottext">()
+</span><a href="#local-6989586621679741314"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-103"></span><span>    </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-type">Left</span></a></span><span> </span><span class="annot"><span class="annottext">()
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either
   (Generator generatorDevice)
   (Tensor
@@ -1128,7 +1178,7 @@ Producer a m r -&gt; m (Either r (a, Producer a m r))
            ('Shape '[]),
          Generator generatorOutputDevice))
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
-</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">(Either
    (Generator generatorDevice)
    (Tensor
       ('Gradient 'WithoutGradient)
@@ -1167,7 +1217,7 @@ forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
            ('Shape '[]),
          Generator generatorOutputDevice))
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
-</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
 -&gt; Either
      (Generator generatorDevice)
      (Tensor
@@ -1178,7 +1228,7 @@ forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
         ('Shape '[]),
       Generator generatorOutputDevice)
 forall a b. a -&gt; Either a b
-</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(Generator generatorDevice
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">Left</span></a></span><span> </span><span class="annot"><span class="annottext">(Generator generatorDevice
  -&gt; m (Either
          (Generator generatorDevice)
          (Tensor
@@ -1199,13 +1249,13 @@ forall a b. a -&gt; Either a b
            ('Shape '[]),
          Generator generatorOutputDevice))
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
-</span><a href="#local-6989586621679693913"><span class="hs-identifier hs-var">g</span></a></span><span>
-</span><span id="line-104"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span id="local-6989586621679693910"><span class="annot"><span class="annottext">input
-</span><a href="#local-6989586621679693910"><span class="hs-identifier hs-var">input</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679693909"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679693909"><span class="hs-identifier hs-var">iter</span></a></span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span id="local-6989586621679693908"><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
-</span><a href="#local-6989586621679693908"><span class="hs-identifier hs-var">producer'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-105"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679693907"><span class="annot"><span class="annottext">step :: ((Tensor
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679741316"><span class="hs-identifier hs-var">g</span></a></span><span>
+</span><span id="line-104"></span><span>    </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-type">Right</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span id="local-6989586621679741313"><span class="annot"><span class="annottext">input
+</span><a href="#local-6989586621679741313"><span class="hs-identifier hs-var">input</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679741312"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679741312"><span class="hs-identifier hs-var">iter</span></a></span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span id="local-6989586621679741311"><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
+</span><a href="#local-6989586621679741311"><span class="hs-identifier hs-var">producer'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-105"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679741310"><span class="annot"><span class="annottext">step :: ((Tensor
     ('Gradient 'WithoutGradient)
     lossLayout
     lossDataType
@@ -1222,17 +1272,17 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
          ('Shape '[]),
        Int),
       Generator generatorOutputDevice)
-</span><a href="#local-6989586621679693907"><span class="hs-identifier hs-var hs-var">step</span></a></span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span id="local-6989586621679693906"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679741310"><span class="hs-identifier hs-var hs-var">step</span></a></span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span id="local-6989586621679741309"><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithoutGradient)
   lossLayout
   lossDataType
   lossDevice
   ('Shape '[])
-</span><a href="#local-6989586621679693906"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span id="local-6989586621679693905"><span class="annot"><span class="annottext">Generator generatorOutputDevice
-</span><a href="#local-6989586621679693905"><span class="hs-identifier hs-var">g'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679693904"><span class="annot"><span class="annottext">input
-</span><a href="#local-6989586621679693904"><span class="hs-identifier hs-var">input'</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679693903"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679693903"><span class="hs-identifier hs-var">iter'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO
+</span><a href="#local-6989586621679741309"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span id="local-6989586621679741308"><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679741308"><span class="hs-identifier hs-var">g'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679741307"><span class="annot"><span class="annottext">input
+</span><a href="#local-6989586621679741307"><span class="hs-identifier hs-var">input'</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679741306"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679741306"><span class="hs-identifier hs-var">iter'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO
   ((Tensor
       ('Gradient 'WithoutGradient)
       lossLayout
@@ -1250,7 +1300,7 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
        Int),
       Generator generatorOutputDevice)
 forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
-</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">(IO
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">liftIO</span></a></span><span> </span><span class="annot"><span class="annottext">(IO
    ((Tensor
        ('Gradient 'WithoutGradient)
        lossLayout
@@ -1285,10 +1335,10 @@ forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
        Int),
       Generator generatorOutputDevice)
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-106"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679693902"><span class="annot"><span class="annottext">Tensor lossGradient lossLayout lossDataType lossDevice lossShape
-</span><a href="#local-6989586621679693902"><span class="hs-identifier hs-var">loss'</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679693901"><span class="annot"><span class="annottext">Generator generatorOutputDevice
-</span><a href="#local-6989586621679693901"><span class="hs-identifier hs-var">g''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">model
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-106"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679741305"><span class="annot"><span class="annottext">Tensor lossGradient lossLayout lossDataType lossDevice lossShape
+</span><a href="#local-6989586621679741305"><span class="hs-identifier hs-var">loss'</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679741304"><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679741304"><span class="hs-identifier hs-var">g''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">model
 -&gt; input
 -&gt; Generator generatorOutputDevice
 -&gt; IO
@@ -1305,16 +1355,16 @@ model
 -&gt; Generator generatorDevice
 -&gt; m (output, Generator generatorOutputDevice)
 </span><a href="Torch.GraduallyTyped.NN.Class.html#forward"><span class="hs-identifier hs-var">forward</span></a></span><span> </span><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679693915"><span class="hs-identifier hs-var">model</span></a></span><span> </span><span class="annot"><span class="annottext">input
-</span><a href="#local-6989586621679693904"><span class="hs-identifier hs-var">input'</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
-</span><a href="#local-6989586621679693905"><span class="hs-identifier hs-var">g'</span></a></span><span>
-</span><span id="line-107"></span><span>            </span><span id="local-6989586621679693900"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679741318"><span class="hs-identifier hs-var">model</span></a></span><span> </span><span class="annot"><span class="annottext">input
+</span><a href="#local-6989586621679741307"><span class="hs-identifier hs-var">input'</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679741308"><span class="hs-identifier hs-var">g'</span></a></span><span>
+</span><span id="line-107"></span><span>            </span><span id="local-6989586621679741303"><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithoutGradient)
   lossLayout
   lossDataType
   lossDevice
   ('Shape '[])
-</span><a href="#local-6989586621679693900"><span class="hs-identifier hs-var">loss''</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">SShape ('Shape '[])
+</span><a href="#local-6989586621679741303"><span class="hs-identifier hs-var">loss''</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">SShape ('Shape '[])
 -&gt; Tensor
      ('Gradient 'WithoutGradient)
      lossLayout
@@ -1342,7 +1392,7 @@ forall (dims :: [Dim (Name Symbol) (Size Nat)]).
 SList dims -&gt; SShape ('Shape dims)
 </span><a href="Torch.GraduallyTyped.Shape.Type.html#SShape"><span class="hs-identifier hs-var">SShape</span></a></span><span> </span><span class="annot"><span class="annottext">SList '[]
 forall a. SList '[]
-</span><a href="../file:///nix/store/44d7539k7gqlplsaxjj66fck1zc772zc-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier hs-var">SNil</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Tensor
+</span><a href="../file:///nix/store/w7p32025xzx3kb91vv9756i6xfksn3ip-singletons-base-lib-singletons-base-3.0-haddock-doc/share/doc/singletons-base/html/src"><span class="hs-identifier hs-var">SNil</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Tensor
    ('Gradient 'WithoutGradient)
    lossLayout
    lossDataType
@@ -1370,7 +1420,7 @@ forall a. SList '[]
         lossDevice
         ('Shape '[]))
 forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
-</span><span class="hs-operator hs-var">=&lt;&lt;</span></span><span> </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithoutGradient)
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">=&lt;&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithoutGradient)
 -&gt; Tensor lossGradient lossLayout lossDataType lossDevice lossShape
 -&gt; IO
      (Tensor
@@ -1396,7 +1446,7 @@ SRequiresGradient requiresGradient
 -&gt; SGradient ('Gradient requiresGradient)
 </span><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-var">SGradient</span></a></span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
 </span><a href="Torch.GraduallyTyped.RequiresGradient.html#SWithoutGradient"><span class="hs-identifier hs-var">SWithoutGradient</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Tensor lossGradient lossLayout lossDataType lossDevice lossShape
-</span><a href="#local-6989586621679693902"><span class="hs-identifier hs-var">loss'</span></a></span><span>
+</span><a href="#local-6989586621679741305"><span class="hs-identifier hs-var">loss'</span></a></span><span>
 </span><span id="line-108"></span><span>            </span><span class="annot"><span class="annottext">((Tensor
     ('Gradient 'WithoutGradient)
     lossLayout
@@ -1415,13 +1465,13 @@ SRequiresGradient requiresGradient
        Int),
       Generator generatorOutputDevice)
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
-</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithoutGradient)
   lossLayout
   lossDataType
   lossDevice
   ('Shape '[])
-</span><a href="#local-6989586621679693906"><span class="hs-identifier hs-var">loss</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679741309"><span class="hs-identifier hs-var">loss</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithoutGradient)
   lossLayout
   lossDataType
@@ -1440,16 +1490,16 @@ forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
      lossDevice
      ('Shape '[])
 forall a. Num a =&gt; a -&gt; a -&gt; a
-</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Tensor
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">+</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithoutGradient)
   lossLayout
   lossDataType
   lossDevice
   ('Shape '[])
-</span><a href="#local-6989586621679693900"><span class="hs-identifier hs-var">loss''</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679693903"><span class="hs-identifier hs-var">iter'</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
-</span><a href="#local-6989586621679693901"><span class="hs-identifier hs-var">g''</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-109"></span><span>          </span><span id="local-6989586621679693898"><span class="annot"><span class="annottext">init' :: m ((Tensor
+</span><a href="#local-6989586621679741303"><span class="hs-identifier hs-var">loss''</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679741306"><span class="hs-identifier hs-var">iter'</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679741304"><span class="hs-identifier hs-var">g''</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-109"></span><span>          </span><span id="local-6989586621679741301"><span class="annot"><span class="annottext">init' :: m ((Tensor
       ('Gradient 'WithoutGradient)
       lossLayout
       lossDataType
@@ -1457,7 +1507,7 @@ forall a. Num a =&gt; a -&gt; a -&gt; a
       ('Shape '[]),
     Int),
    Generator generatorOutputDevice)
-</span><a href="#local-6989586621679693898"><span class="hs-identifier hs-var hs-var">init'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO
+</span><a href="#local-6989586621679741301"><span class="hs-identifier hs-var hs-var">init'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO
   ((Tensor
       ('Gradient 'WithoutGradient)
       lossLayout
@@ -1475,7 +1525,7 @@ forall a. Num a =&gt; a -&gt; a -&gt; a
        Int),
       Generator generatorOutputDevice)
 forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
-</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">(IO
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">liftIO</span></a></span><span> </span><span class="annot"><span class="annottext">(IO
    ((Tensor
        ('Gradient 'WithoutGradient)
        lossLayout
@@ -1510,10 +1560,10 @@ forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
        Int),
       Generator generatorOutputDevice)
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-110"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679693897"><span class="annot"><span class="annottext">Tensor lossGradient lossLayout lossDataType lossDevice lossShape
-</span><a href="#local-6989586621679693897"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679693896"><span class="annot"><span class="annottext">Generator generatorOutputDevice
-</span><a href="#local-6989586621679693896"><span class="hs-identifier hs-var">g'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">model
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-110"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679741300"><span class="annot"><span class="annottext">Tensor lossGradient lossLayout lossDataType lossDevice lossShape
+</span><a href="#local-6989586621679741300"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679741299"><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679741299"><span class="hs-identifier hs-var">g'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">model
 -&gt; input
 -&gt; Generator generatorDevice
 -&gt; IO
@@ -1530,16 +1580,16 @@ model
 -&gt; Generator generatorDevice
 -&gt; m (output, Generator generatorOutputDevice)
 </span><a href="Torch.GraduallyTyped.NN.Class.html#forward"><span class="hs-identifier hs-var">forward</span></a></span><span> </span><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679693915"><span class="hs-identifier hs-var">model</span></a></span><span> </span><span class="annot"><span class="annottext">input
-</span><a href="#local-6989586621679693910"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
-</span><a href="#local-6989586621679693913"><span class="hs-identifier hs-var">g</span></a></span><span>
-</span><span id="line-111"></span><span>            </span><span id="local-6989586621679693895"><span class="annot"><span class="annottext">Tensor
+</span><a href="#local-6989586621679741318"><span class="hs-identifier hs-var">model</span></a></span><span> </span><span class="annot"><span class="annottext">input
+</span><a href="#local-6989586621679741313"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679741316"><span class="hs-identifier hs-var">g</span></a></span><span>
+</span><span id="line-111"></span><span>            </span><span id="local-6989586621679741298"><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithoutGradient)
   lossLayout
   lossDataType
   lossDevice
   ('Shape '[])
-</span><a href="#local-6989586621679693895"><span class="hs-identifier hs-var">loss'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">SShape ('Shape '[])
+</span><a href="#local-6989586621679741298"><span class="hs-identifier hs-var">loss'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">SShape ('Shape '[])
 -&gt; Tensor
      ('Gradient 'WithoutGradient)
      lossLayout
@@ -1567,7 +1617,7 @@ forall (dims :: [Dim (Name Symbol) (Size Nat)]).
 SList dims -&gt; SShape ('Shape dims)
 </span><a href="Torch.GraduallyTyped.Shape.Type.html#SShape"><span class="hs-identifier hs-var">SShape</span></a></span><span> </span><span class="annot"><span class="annottext">SList '[]
 forall a. SList '[]
-</span><a href="../file:///nix/store/44d7539k7gqlplsaxjj66fck1zc772zc-singletons-lib-singletons-2.7-haddock-doc/share/doc/singletons/html/src"><span class="hs-identifier hs-var">SNil</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Tensor
+</span><a href="../file:///nix/store/w7p32025xzx3kb91vv9756i6xfksn3ip-singletons-base-lib-singletons-base-3.0-haddock-doc/share/doc/singletons-base/html/src"><span class="hs-identifier hs-var">SNil</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Tensor
    ('Gradient 'WithoutGradient)
    lossLayout
    lossDataType
@@ -1595,7 +1645,7 @@ forall a. SList '[]
         lossDevice
         ('Shape '[]))
 forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
-</span><span class="hs-operator hs-var">=&lt;&lt;</span></span><span> </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithoutGradient)
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">=&lt;&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">SGradient ('Gradient 'WithoutGradient)
 -&gt; Tensor lossGradient lossLayout lossDataType lossDevice lossShape
 -&gt; IO
      (Tensor
@@ -1621,7 +1671,7 @@ SRequiresGradient requiresGradient
 -&gt; SGradient ('Gradient requiresGradient)
 </span><a href="Torch.GraduallyTyped.RequiresGradient.html#SGradient"><span class="hs-identifier hs-var">SGradient</span></a></span><span> </span><span class="annot"><span class="annottext">SRequiresGradient 'WithoutGradient
 </span><a href="Torch.GraduallyTyped.RequiresGradient.html#SWithoutGradient"><span class="hs-identifier hs-var">SWithoutGradient</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Tensor lossGradient lossLayout lossDataType lossDevice lossShape
-</span><a href="#local-6989586621679693897"><span class="hs-identifier hs-var">loss</span></a></span><span>
+</span><a href="#local-6989586621679741300"><span class="hs-identifier hs-var">loss</span></a></span><span>
 </span><span id="line-112"></span><span>            </span><span class="annot"><span class="annottext">((Tensor
     ('Gradient 'WithoutGradient)
     lossLayout
@@ -1640,40 +1690,40 @@ SRequiresGradient requiresGradient
        Int),
       Generator generatorOutputDevice)
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
-</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor
   ('Gradient 'WithoutGradient)
   lossLayout
   lossDataType
   lossDevice
   ('Shape '[])
-</span><a href="#local-6989586621679693895"><span class="hs-identifier hs-var">loss'</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679693909"><span class="hs-identifier hs-var">iter</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
-</span><a href="#local-6989586621679693896"><span class="hs-identifier hs-var">g'</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-113"></span><span>          </span><span id="local-6989586621679693894"><span class="annot"><span class="annottext">done :: ((Tensor gradient layout device dataType shape, divisor), b)
+</span><a href="#local-6989586621679741298"><span class="hs-identifier hs-var">loss'</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679741312"><span class="hs-identifier hs-var">iter</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Generator generatorOutputDevice
+</span><a href="#local-6989586621679741299"><span class="hs-identifier hs-var">g'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-113"></span><span>          </span><span id="local-6989586621679741293"><span class="annot"><span class="annottext">done :: ((Tensor gradient layout device dataType shape, divisor), b)
 -&gt; f (Either a (Tensor gradient layout device dataType shape, b))
-</span><a href="#local-6989586621679693894"><span class="hs-identifier hs-var hs-var">done</span></a></span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span id="local-6989586621679693893"><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
-</span><a href="#local-6989586621679693893"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679693892"><span class="annot"><span class="annottext">divisor
-</span><a href="#local-6989586621679693892"><span class="hs-identifier hs-var">iter'</span></a></span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span id="local-6989586621679693891"><span class="annot"><span class="annottext">b
-</span><a href="#local-6989586621679693891"><span class="hs-identifier hs-var">g''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Either a (Tensor gradient layout device dataType shape, b)
+</span><a href="#local-6989586621679741293"><span class="hs-identifier hs-var hs-var">done</span></a></span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span id="local-6989586621679741292"><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679741292"><span class="hs-identifier hs-var">loss</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679741291"><span class="annot"><span class="annottext">divisor
+</span><a href="#local-6989586621679741291"><span class="hs-identifier hs-var">iter'</span></a></span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span id="local-6989586621679741290"><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679741290"><span class="hs-identifier hs-var">g''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Either a (Tensor gradient layout device dataType shape, b)
 -&gt; f (Either a (Tensor gradient layout device dataType shape, b))
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
-</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either a (Tensor gradient layout device dataType shape, b)
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">(Either a (Tensor gradient layout device dataType shape, b)
  -&gt; f (Either a (Tensor gradient layout device dataType shape, b)))
 -&gt; ((Tensor gradient layout device dataType shape, b)
     -&gt; Either a (Tensor gradient layout device dataType shape, b))
 -&gt; (Tensor gradient layout device dataType shape, b)
 -&gt; f (Either a (Tensor gradient layout device dataType shape, b))
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
-</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(Tensor gradient layout device dataType shape, b)
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor gradient layout device dataType shape, b)
 -&gt; Either a (Tensor gradient layout device dataType shape, b)
 forall a b. b -&gt; Either a b
-</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">((Tensor gradient layout device dataType shape, b)
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="annot"><span class="annottext">((Tensor gradient layout device dataType shape, b)
  -&gt; f (Either a (Tensor gradient layout device dataType shape, b)))
 -&gt; (Tensor gradient layout device dataType shape, b)
 -&gt; f (Either a (Tensor gradient layout device dataType shape, b))
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
-</span><a href="#local-6989586621679693893"><span class="hs-identifier hs-var">loss</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
+</span><a href="#local-6989586621679741292"><span class="hs-identifier hs-var">loss</span></a></span><span> </span><span class="annot"><span class="annottext">Tensor gradient layout device dataType shape
 -&gt; divisor -&gt; Tensor gradient layout device dataType shape
 forall divisor (gradient :: Gradient RequiresGradient)
        (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
@@ -1683,8 +1733,8 @@ Scalar divisor =&gt;
 Tensor gradient layout device dataType shape
 -&gt; divisor -&gt; Tensor gradient layout device dataType shape
 </span><a href="Torch.GraduallyTyped.Tensor.MathOperations.Pointwise.html#divScalar"><span class="hs-operator hs-var">`divScalar`</span></a></span><span> </span><span class="annot"><span class="annottext">divisor
-</span><a href="#local-6989586621679693892"><span class="hs-identifier hs-var">iter'</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">b
-</span><a href="#local-6989586621679693891"><span class="hs-identifier hs-var">g''</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679741291"><span class="hs-identifier hs-var">iter'</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679741290"><span class="hs-identifier hs-var">g''</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-114"></span><span>      </span><span class="annot"><span class="annottext">(((Tensor
      ('Gradient 'WithoutGradient)
      lossLayout
@@ -1740,7 +1790,7 @@ Tensor gradient layout device dataType shape
 forall (m :: * -&gt; *) x a b.
 Monad m =&gt;
 (x -&gt; a -&gt; m x) -&gt; m x -&gt; (x -&gt; m b) -&gt; Producer a m () -&gt; m b
-</span><a href="../file:///nix/store/3ycfwwijbrf8v83xf6pykjlpfxnm5si2-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.foldM</span></a></span><span> </span><span class="annot"><span class="annottext">((Tensor
+</span><a href="../file:///nix/store/r2ay4w6la8q4rp0ipi6v7hbf4sx4ncq1-pipes-lib-pipes-4.3.16-haddock-doc/share/doc/pipes/html/src"><span class="hs-identifier hs-var">P.foldM</span></a></span><span> </span><span class="annot"><span class="annottext">((Tensor
     ('Gradient 'WithoutGradient)
     lossLayout
     lossDataType
@@ -1757,7 +1807,7 @@ Monad m =&gt;
          ('Shape '[]),
        Int),
       Generator generatorOutputDevice)
-</span><a href="#local-6989586621679693907"><span class="hs-identifier hs-var">step</span></a></span><span> </span><span class="annot"><span class="annottext">m ((Tensor
+</span><a href="#local-6989586621679741310"><span class="hs-identifier hs-var">step</span></a></span><span> </span><span class="annot"><span class="annottext">m ((Tensor
       ('Gradient 'WithoutGradient)
       lossLayout
       lossDataType
@@ -1765,7 +1815,7 @@ Monad m =&gt;
       ('Shape '[]),
     Int),
    Generator generatorOutputDevice)
-</span><a href="#local-6989586621679693898"><span class="hs-identifier hs-var">init'</span></a></span><span> </span><span class="annot"><span class="annottext">((Tensor
+</span><a href="#local-6989586621679741301"><span class="hs-identifier hs-var">init'</span></a></span><span> </span><span class="annot"><span class="annottext">((Tensor
     ('Gradient 'WithoutGradient)
     lossLayout
     lossDataType
@@ -1782,14 +1832,14 @@ Monad m =&gt;
            lossDevice
            ('Shape '[]),
          Generator generatorOutputDevice))
-forall (f :: * -&gt; *) divisor
-       (gradient :: Gradient RequiresGradient)
-       (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
-       (dataType :: DataType DType)
-       (shape :: Shape [Dim (Name Symbol) (Size Nat)]) b a.
+forall {f :: * -&gt; *} {divisor}
+       {gradient :: Gradient RequiresGradient}
+       {layout :: Layout LayoutType} {device :: Device (DeviceType Nat)}
+       {dataType :: DataType DType}
+       {shape :: Shape [Dim (Name Symbol) (Size Nat)]} {b} {a}.
 (Applicative f, Scalar divisor) =&gt;
 ((Tensor gradient layout device dataType shape, divisor), b)
 -&gt; f (Either a (Tensor gradient layout device dataType shape, b))
-</span><a href="#local-6989586621679693894"><span class="hs-identifier hs-var">done</span></a></span><span> </span><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
-</span><a href="#local-6989586621679693908"><span class="hs-identifier hs-var">producer'</span></a></span><span>
+</span><a href="#local-6989586621679741293"><span class="hs-identifier hs-var">done</span></a></span><span> </span><span class="annot"><span class="annottext">Proxy X () () (input, Int) m ()
+</span><a href="#local-6989586621679741311"><span class="hs-identifier hs-var">producer'</span></a></span><span>
 </span><span id="line-115"></span></pre></body></html>

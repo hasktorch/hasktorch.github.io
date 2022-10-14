@@ -9,10 +9,10 @@
 </span><span id="line-9"></span><span>
 </span><span id="line-10"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.GraduallyTyped.Optim</span><span> </span><span class="hs-keyword">where</span><span>
 </span><span id="line-11"></span><span>
-</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Concurrent.STM.TVar</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">newTVarIO</span></span><span class="hs-special">)</span><span>
-</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.State</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">evalStateT</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">execStateT</span></span><span class="hs-special">)</span><span>
-</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Map</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Map</span></span><span>
-</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Foreign.ForeignPtr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">ForeignPtr</span></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/stm-2.5.0.0/src"><span class="hs-identifier">Control.Concurrent.STM.TVar</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier">newTVarIO</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/mtl-2.2.2/src"><span class="hs-identifier">Control.Monad.State</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/transformers-0.5.6.2/src"><span class="hs-identifier">evalStateT</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/transformers-0.5.6.2/src"><span class="hs-identifier">execStateT</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/containers-0.6.4.1/src"><span class="hs-identifier">Data.Map</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Map</span></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier">Foreign.ForeignPtr</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier">ForeignPtr</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html"><span class="hs-identifier">Torch.GraduallyTyped.NN.Class</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier">HasStateDict</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier">ModelSpec</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#StateDict"><span class="hs-identifier">StateDict</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#StateDictKey"><span class="hs-identifier">StateDictKey</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html"><span class="hs-identifier">Torch.GraduallyTyped.Prelude</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Catch"><span class="hs-identifier">Catch</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html"><span class="hs-identifier">Torch.GraduallyTyped.Random</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier">Generator</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#SGetGeneratorDevice"><span class="hs-identifier">SGetGeneratorDevice</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#getGenPtr"><span class="hs-identifier">getGenPtr</span></a></span><span class="hs-special">)</span><span>
@@ -29,22 +29,22 @@
 </span><span id="line-29"></span><span class="hs-keyword">data</span><span> </span><span id="AdamOptions"><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#AdamOptions"><span class="hs-identifier hs-var">AdamOptions</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="AdamOptions"><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#AdamOptions"><span class="hs-identifier hs-var">AdamOptions</span></a></span></span><span>
 </span><span id="line-30"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="hs-comment">-- | learning rate</span><span>
 </span><span id="line-31"></span><span>    </span><span id="learningRate"><span class="annot"><span class="annottext">AdamOptions -&gt; Double
-</span><a href="Torch.GraduallyTyped.Optim.html#learningRate"><span class="hs-identifier hs-var hs-var">learningRate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><a href="Torch.GraduallyTyped.Optim.html#learningRate"><span class="hs-identifier hs-var hs-var">learningRate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
 </span><span id="line-32"></span><span>    </span><span class="hs-comment">-- | beta1</span><span>
 </span><span id="line-33"></span><span>    </span><span id="beta1"><span class="annot"><span class="annottext">AdamOptions -&gt; Double
-</span><a href="Torch.GraduallyTyped.Optim.html#beta1"><span class="hs-identifier hs-var hs-var">beta1</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><a href="Torch.GraduallyTyped.Optim.html#beta1"><span class="hs-identifier hs-var hs-var">beta1</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
 </span><span id="line-34"></span><span>    </span><span class="hs-comment">-- | beta2</span><span>
 </span><span id="line-35"></span><span>    </span><span id="beta2"><span class="annot"><span class="annottext">AdamOptions -&gt; Double
-</span><a href="Torch.GraduallyTyped.Optim.html#beta2"><span class="hs-identifier hs-var hs-var">beta2</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><a href="Torch.GraduallyTyped.Optim.html#beta2"><span class="hs-identifier hs-var hs-var">beta2</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
 </span><span id="line-36"></span><span>    </span><span class="hs-comment">-- | epsilon</span><span>
 </span><span id="line-37"></span><span>    </span><span id="epsilon"><span class="annot"><span class="annottext">AdamOptions -&gt; Double
-</span><a href="Torch.GraduallyTyped.Optim.html#epsilon"><span class="hs-identifier hs-var hs-var">epsilon</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><a href="Torch.GraduallyTyped.Optim.html#epsilon"><span class="hs-identifier hs-var hs-var">epsilon</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
 </span><span id="line-38"></span><span>    </span><span class="hs-comment">-- | weight decay</span><span>
 </span><span id="line-39"></span><span>    </span><span id="weightDecay"><span class="annot"><span class="annottext">AdamOptions -&gt; Double
-</span><a href="Torch.GraduallyTyped.Optim.html#weightDecay"><span class="hs-identifier hs-var hs-var">weightDecay</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><a href="Torch.GraduallyTyped.Optim.html#weightDecay"><span class="hs-identifier hs-var hs-var">weightDecay</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
 </span><span id="line-40"></span><span>    </span><span class="hs-comment">-- | use amsgrad</span><span>
 </span><span id="line-41"></span><span>    </span><span id="amsgrad"><span class="annot"><span class="annottext">AdamOptions -&gt; Bool
-</span><a href="Torch.GraduallyTyped.Optim.html#amsgrad"><span class="hs-identifier hs-var hs-var">amsgrad</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><a href="Torch.GraduallyTyped.Optim.html#amsgrad"><span class="hs-identifier hs-var hs-var">amsgrad</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-identifier hs-type">Bool</span></a></span><span>
 </span><span id="line-42"></span><span>  </span><span class="hs-special">}</span><span>
 </span><span id="line-43"></span><span>
 </span><span id="line-44"></span><span class="hs-comment">-- | Default Adam options.</span><span>
@@ -71,105 +71,109 @@
 </span><span class="hs-number">0.0</span></span><span class="hs-special">,</span><span>
 </span><span id="line-53"></span><span>      </span><span class="annot"><span class="annottext">amsgrad :: Bool
 </span><a href="Torch.GraduallyTyped.Optim.html#amsgrad"><span class="hs-identifier hs-var">amsgrad</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
-</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-identifier hs-var">False</span></a></span><span>
 </span><span id="line-54"></span><span>    </span><span class="hs-special">}</span><span>
 </span><span id="line-55"></span><span>
 </span><span id="line-56"></span><span class="hs-comment">-- | Optimizer data type.</span><span>
-</span><span id="line-57"></span><span class="hs-keyword">data</span><span> </span><span id="Optimizer"><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#Optimizer"><span class="hs-identifier hs-var">Optimizer</span></a></span></span><span> </span><span id="local-6989586621679692476"><span class="annot"><a href="#local-6989586621679692476"><span class="hs-identifier hs-type">model</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-57"></span><span class="hs-keyword">data</span><span> </span><span id="Optimizer"><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#Optimizer"><span class="hs-identifier hs-var">Optimizer</span></a></span></span><span> </span><span id="local-6989586621679738664"><span class="annot"><a href="#local-6989586621679738664"><span class="hs-identifier hs-type">model</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
 </span><span id="line-58"></span><span>  </span><span id="UnsafeOptimizer"><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#UnsafeOptimizer"><span class="hs-identifier hs-var">UnsafeOptimizer</span></a></span></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-59"></span><span>    </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679692612"><span class="annot"><a href="#local-6989586621679692612"><span class="hs-identifier hs-type">model</span></a></span></span><span class="hs-operator">.</span><span>
-</span><span id="line-60"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="optimizerStateDictKeys"><span class="annot"><span class="annottext">Optimizer model -&gt; [StateDictKey]
+</span><span id="line-59"></span><span>    </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679738831"><span class="annot"><a href="#local-6989586621679738831"><span class="hs-identifier hs-type">model</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-60"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="optimizerStateDictKeys"><span class="annot"><span class="annottext">forall model. Optimizer model -&gt; [StateDictKey]
 </span><a href="Torch.GraduallyTyped.Optim.html#optimizerStateDictKeys"><span class="hs-identifier hs-var hs-var">optimizerStateDictKeys</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#StateDictKey"><span class="hs-identifier hs-type">StateDictKey</span></a></span><span class="hs-special">]</span><span class="hs-special">,</span><span>
-</span><span id="line-61"></span><span>      </span><span id="optimizerPtr"><span class="annot"><span class="annottext">Optimizer model -&gt; ForeignPtr Optimizer
-</span><a href="Torch.GraduallyTyped.Optim.html#optimizerPtr"><span class="hs-identifier hs-var hs-var">optimizerPtr</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Optimizer</span></a></span><span>
+</span><span id="line-61"></span><span>      </span><span id="optimizerPtr"><span class="annot"><span class="annottext">forall model. Optimizer model -&gt; ForeignPtr Optimizer
+</span><a href="Torch.GraduallyTyped.Optim.html#optimizerPtr"><span class="hs-identifier hs-var hs-var">optimizerPtr</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-type">ForeignPtr</span></a></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Optimizer</span></a></span><span>
 </span><span id="line-62"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-63"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#Optimizer"><span class="hs-identifier hs-type">Optimizer</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692612"><span class="hs-identifier hs-type">model</span></a></span><span>
+</span><span id="line-63"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#Optimizer"><span class="hs-identifier hs-type">Optimizer</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738831"><span class="hs-identifier hs-type">model</span></a></span><span>
 </span><span id="line-64"></span><span>
 </span><span id="line-65"></span><span class="hs-keyword">type</span><span> </span><span class="hs-keyword">role</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#Optimizer"><span class="hs-identifier hs-type">Optimizer</span></a></span><span> </span><span class="annot"><span class="hs-identifier">nominal</span></span><span>
 </span><span id="line-66"></span><span>
 </span><span id="line-67"></span><span class="hs-comment">-- | Get the model state dictionary from an optimizer.</span><span>
 </span><span id="line-68"></span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#getStateDict"><span class="hs-identifier hs-type">getStateDict</span></a></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-69"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679692589"><span class="annot"><a href="#local-6989586621679692589"><span class="hs-identifier hs-type">model</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#Optimizer"><span class="hs-identifier hs-type">Optimizer</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692589"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#StateDict"><span class="hs-identifier hs-type">StateDict</span></a></span><span>
-</span><span id="line-70"></span><span id="getStateDict"><span class="annot"><span class="annottext">getStateDict :: Optimizer model -&gt; IO StateDict
-</span><a href="Torch.GraduallyTyped.Optim.html#getStateDict"><span class="hs-identifier hs-var hs-var">getStateDict</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#UnsafeOptimizer"><span class="hs-identifier hs-type">UnsafeOptimizer</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679692470"><span id="local-6989586621679692471"><span class="annot"><span class="annottext">[StateDictKey]
+</span><span id="line-69"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679738824"><span class="annot"><a href="#local-6989586621679738824"><span class="hs-identifier hs-type">model</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#Optimizer"><span class="hs-identifier hs-type">Optimizer</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738824"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#StateDict"><span class="hs-identifier hs-type">StateDict</span></a></span><span>
+</span><span id="line-70"></span><span id="getStateDict"><span class="annot"><span class="annottext">getStateDict :: forall model. Optimizer model -&gt; IO StateDict
+</span><a href="Torch.GraduallyTyped.Optim.html#getStateDict"><span class="hs-identifier hs-var hs-var">getStateDict</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#UnsafeOptimizer"><span class="hs-identifier hs-type">UnsafeOptimizer</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679738648"><span id="local-6989586621679738649"><span class="annot"><span class="annottext">[StateDictKey]
 ForeignPtr Optimizer
 optimizerPtr :: ForeignPtr Optimizer
 optimizerStateDictKeys :: [StateDictKey]
 optimizerPtr :: forall model. Optimizer model -&gt; ForeignPtr Optimizer
 optimizerStateDictKeys :: forall model. Optimizer model -&gt; [StateDictKey]
-</span><a href="#local-6989586621679692470"><span class="hs-glyph hs-var hs-var hs-var hs-var">..</span></a></span></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="#local-6989586621679738648"><span class="hs-glyph hs-var hs-var hs-var hs-var">..</span></a></span></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-71"></span><span>  </span><span class="hs-keyword">do</span><span>
-</span><span id="line-72"></span><span>    </span><span id="local-6989586621679692469"><span class="annot"><span class="annottext">[ForeignPtr Tensor]
-</span><a href="#local-6989586621679692469"><span class="hs-identifier hs-var">tPtrs</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Tensor</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(ForeignPtr Optimizer -&gt; IO (ForeignPtr TensorList))
+</span><span id="line-72"></span><span>    </span><span id="local-6989586621679738647"><span class="annot"><span class="annottext">[ForeignPtr Tensor]
+</span><a href="#local-6989586621679738647"><span class="hs-identifier hs-var">tPtrs</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-type">ForeignPtr</span></a></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Tensor</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(ForeignPtr Optimizer -&gt; IO (ForeignPtr TensorList))
 -&gt; ForeignPtr Optimizer -&gt; IO [ForeignPtr Tensor]
 forall a ca y cy.
 (Castable a ca, Castable y cy) =&gt;
 (ca -&gt; IO cy) -&gt; a -&gt; IO y
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.cast1</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Optimizer -&gt; IO (ForeignPtr TensorList)
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.getParams</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Optimizer
-</span><a href="#local-6989586621679692470"><span class="hs-identifier hs-var">optimizerPtr</span></a></span><span>
+</span><a href="#local-6989586621679738648"><span class="hs-identifier hs-var">optimizerPtr</span></a></span><span>
 </span><span id="line-73"></span><span>    </span><span class="annot"><span class="annottext">StateDict -&gt; IO StateDict
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
-</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(StateDict -&gt; IO StateDict)
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">(StateDict -&gt; IO StateDict)
 -&gt; ([(StateDictKey, ForeignPtr Tensor)] -&gt; StateDict)
 -&gt; [(StateDictKey, ForeignPtr Tensor)]
 -&gt; IO StateDict
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
-</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">[(StateDictKey, ForeignPtr Tensor)] -&gt; StateDict
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">[(StateDictKey, ForeignPtr Tensor)] -&gt; StateDict
 forall k a. Ord k =&gt; [(k, a)] -&gt; Map k a
-</span><span class="hs-identifier hs-var">Map.fromList</span></span><span> </span><span class="annot"><span class="annottext">([(StateDictKey, ForeignPtr Tensor)] -&gt; IO StateDict)
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/containers-0.6.4.1/src"><span class="hs-identifier hs-var">Map.fromList</span></a></span><span> </span><span class="annot"><span class="annottext">([(StateDictKey, ForeignPtr Tensor)] -&gt; IO StateDict)
 -&gt; [(StateDictKey, ForeignPtr Tensor)] -&gt; IO StateDict
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[StateDictKey]
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">[StateDictKey]
 -&gt; [ForeignPtr Tensor] -&gt; [(StateDictKey, ForeignPtr Tensor)]
 forall a b. [a] -&gt; [b] -&gt; [(a, b)]
-</span><span class="hs-identifier hs-var">zip</span></span><span> </span><span class="annot"><span class="annottext">[StateDictKey]
-</span><a href="#local-6989586621679692471"><span class="hs-identifier hs-var">optimizerStateDictKeys</span></a></span><span> </span><span class="annot"><span class="annottext">[ForeignPtr Tensor]
-</span><a href="#local-6989586621679692469"><span class="hs-identifier hs-var">tPtrs</span></a></span><span>
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">zip</span></a></span><span> </span><span class="annot"><span class="annottext">[StateDictKey]
+</span><a href="#local-6989586621679738649"><span class="hs-identifier hs-var">optimizerStateDictKeys</span></a></span><span> </span><span class="annot"><span class="annottext">[ForeignPtr Tensor]
+</span><a href="#local-6989586621679738647"><span class="hs-identifier hs-var">tPtrs</span></a></span><span>
 </span><span id="line-74"></span><span>
 </span><span id="line-75"></span><span class="hs-comment">-- | Extract a model from an optimizer.</span><span>
 </span><span id="line-76"></span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#getModel"><span class="hs-identifier hs-type">getModel</span></a></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-77"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679692463"><span class="annot"><a href="#local-6989586621679692463"><span class="hs-identifier hs-type">model</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692463"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier hs-type">ModelSpec</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692463"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#Optimizer"><span class="hs-identifier hs-type">Optimizer</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692463"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679692463"><span class="hs-identifier hs-type">model</span></a></span><span>
-</span><span id="line-78"></span><span id="getModel"><span class="annot"><span class="annottext">getModel :: ModelSpec model -&gt; Optimizer model -&gt; IO model
-</span><a href="Torch.GraduallyTyped.Optim.html#getModel"><span class="hs-identifier hs-var hs-var">getModel</span></a></span></span><span> </span><span id="local-6989586621679692462"><span class="annot"><span class="annottext">ModelSpec model
-</span><a href="#local-6989586621679692462"><span class="hs-identifier hs-var">modelSpec</span></a></span></span><span> </span><span id="local-6989586621679692461"><span class="annot"><span class="annottext">Optimizer model
-</span><a href="#local-6989586621679692461"><span class="hs-identifier hs-var">optimizer</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-79"></span><span>  </span><span id="local-6989586621679692460"><span class="annot"><span class="annottext">StateDict
-</span><a href="#local-6989586621679692460"><span class="hs-identifier hs-var">stateDict</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Optimizer model -&gt; IO StateDict
+</span><span id="line-77"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679738800"><span class="annot"><a href="#local-6989586621679738800"><span class="hs-identifier hs-type">model</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738800"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier hs-type">ModelSpec</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738800"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#Optimizer"><span class="hs-identifier hs-type">Optimizer</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738800"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738800"><span class="hs-identifier hs-type">model</span></a></span><span>
+</span><span id="line-78"></span><span id="getModel"><span class="annot"><span class="annottext">getModel :: forall model.
+HasStateDict model =&gt;
+ModelSpec model -&gt; Optimizer model -&gt; IO model
+</span><a href="Torch.GraduallyTyped.Optim.html#getModel"><span class="hs-identifier hs-var hs-var">getModel</span></a></span></span><span> </span><span id="local-6989586621679738625"><span class="annot"><span class="annottext">ModelSpec model
+</span><a href="#local-6989586621679738625"><span class="hs-identifier hs-var">modelSpec</span></a></span></span><span> </span><span id="local-6989586621679738624"><span class="annot"><span class="annottext">Optimizer model
+</span><a href="#local-6989586621679738624"><span class="hs-identifier hs-var">optimizer</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-79"></span><span>  </span><span id="local-6989586621679738623"><span class="annot"><span class="annottext">StateDict
+</span><a href="#local-6989586621679738623"><span class="hs-identifier hs-var">stateDict</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Optimizer model -&gt; IO StateDict
 forall model. Optimizer model -&gt; IO StateDict
 </span><a href="Torch.GraduallyTyped.Optim.html#getStateDict"><span class="hs-identifier hs-var">getStateDict</span></a></span><span> </span><span class="annot"><span class="annottext">Optimizer model
-</span><a href="#local-6989586621679692461"><span class="hs-identifier hs-var">optimizer</span></a></span><span>
+</span><a href="#local-6989586621679738624"><span class="hs-identifier hs-var">optimizer</span></a></span><span>
 </span><span id="line-80"></span><span>  </span><span class="annot"><span class="annottext">(StateT StateDict IO model -&gt; StateDict -&gt; IO model)
 -&gt; StateDict -&gt; StateT StateDict IO model -&gt; IO model
 forall a b c. (a -&gt; b -&gt; c) -&gt; b -&gt; a -&gt; c
-</span><span class="hs-identifier hs-var">flip</span></span><span> </span><span class="annot"><span class="annottext">StateT StateDict IO model -&gt; StateDict -&gt; IO model
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">flip</span></a></span><span> </span><span class="annot"><span class="annottext">StateT StateDict IO model -&gt; StateDict -&gt; IO model
 forall (m :: * -&gt; *) s a. Monad m =&gt; StateT s m a -&gt; s -&gt; m a
-</span><span class="hs-identifier hs-var">evalStateT</span></span><span> </span><span class="annot"><span class="annottext">StateDict
-</span><a href="#local-6989586621679692460"><span class="hs-identifier hs-var">stateDict</span></a></span><span> </span><span class="annot"><span class="annottext">(StateT StateDict IO model -&gt; IO model)
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/transformers-0.5.6.2/src"><span class="hs-identifier hs-var">evalStateT</span></a></span><span> </span><span class="annot"><span class="annottext">StateDict
+</span><a href="#local-6989586621679738623"><span class="hs-identifier hs-var">stateDict</span></a></span><span> </span><span class="annot"><span class="annottext">(StateT StateDict IO model -&gt; IO model)
 -&gt; StateT StateDict IO model -&gt; IO model
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ModelSpec model -&gt; StateDictKey -&gt; StateT StateDict IO model
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">ModelSpec model -&gt; StateDictKey -&gt; StateT StateDict IO model
 forall model (m :: * -&gt; *).
 (HasStateDict model, MonadIO m, MonadThrow m,
  MonadState StateDict m) =&gt;
 ModelSpec model -&gt; StateDictKey -&gt; m model
 </span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var">fromStateDict</span></a></span><span> </span><span class="annot"><span class="annottext">ModelSpec model
-</span><a href="#local-6989586621679692462"><span class="hs-identifier hs-var">modelSpec</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679738625"><span class="hs-identifier hs-var">modelSpec</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey
 forall a. Monoid a =&gt; a
-</span><span class="hs-identifier hs-var">mempty</span></span><span>
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">mempty</span></a></span><span>
 </span><span id="line-81"></span><span>
 </span><span id="line-82"></span><span class="hs-comment">-- | Create a new Adam optimizer from a model.</span><span>
 </span><span id="line-83"></span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#mkAdam"><span class="hs-identifier hs-type">mkAdam</span></a></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-84"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679692456"><span class="annot"><a href="#local-6989586621679692456"><span class="hs-identifier hs-type">model</span></a></span></span><span class="hs-operator">.</span><span>
-</span><span id="line-85"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692456"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-84"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679738777"><span class="annot"><a href="#local-6989586621679738777"><span class="hs-identifier hs-type">model</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-85"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738777"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span>
 </span><span id="line-86"></span><span>  </span><span class="hs-comment">-- | Adam options</span><span>
 </span><span id="line-87"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#AdamOptions"><span class="hs-identifier hs-type">AdamOptions</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-88"></span><span>  </span><span class="hs-comment">-- | initial model</span><span>
-</span><span id="line-89"></span><span>  </span><span class="annot"><a href="#local-6989586621679692456"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-89"></span><span>  </span><span class="annot"><a href="#local-6989586621679738777"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-90"></span><span>  </span><span class="hs-comment">-- | Adam optimizer</span><span>
-</span><span id="line-91"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#Optimizer"><span class="hs-identifier hs-type">Optimizer</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692456"><span class="hs-identifier hs-type">model</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-92"></span><span id="mkAdam"><span class="annot"><span class="annottext">mkAdam :: AdamOptions -&gt; model -&gt; IO (Optimizer model)
-</span><a href="Torch.GraduallyTyped.Optim.html#mkAdam"><span class="hs-identifier hs-var hs-var">mkAdam</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#AdamOptions"><span class="hs-identifier hs-type">AdamOptions</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679692450"><span id="local-6989586621679692451"><span id="local-6989586621679692452"><span id="local-6989586621679692453"><span id="local-6989586621679692454"><span id="local-6989586621679692455"><span class="annot"><span class="annottext">Bool
+</span><span id="line-91"></span><span>  </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#Optimizer"><span class="hs-identifier hs-type">Optimizer</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738777"><span class="hs-identifier hs-type">model</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-92"></span><span id="mkAdam"><span class="annot"><span class="annottext">mkAdam :: forall model.
+HasStateDict model =&gt;
+AdamOptions -&gt; model -&gt; IO (Optimizer model)
+</span><a href="Torch.GraduallyTyped.Optim.html#mkAdam"><span class="hs-identifier hs-var hs-var">mkAdam</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#AdamOptions"><span class="hs-identifier hs-type">AdamOptions</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679738594"><span id="local-6989586621679738595"><span id="local-6989586621679738596"><span id="local-6989586621679738597"><span id="local-6989586621679738598"><span id="local-6989586621679738599"><span class="annot"><span class="annottext">Bool
 Double
 amsgrad :: Bool
 weightDecay :: Double
@@ -183,50 +187,50 @@ epsilon :: AdamOptions -&gt; Double
 beta2 :: AdamOptions -&gt; Double
 beta1 :: AdamOptions -&gt; Double
 learningRate :: AdamOptions -&gt; Double
-</span><a href="#local-6989586621679692450"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679692449"><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679692449"><span class="hs-identifier hs-var">model</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-93"></span><span>  </span><span id="local-6989586621679692448"><span class="annot"><span class="annottext">StateDict
-</span><a href="#local-6989586621679692448"><span class="hs-identifier hs-var">stateDict</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(StateT StateDict IO () -&gt; StateDict -&gt; IO StateDict)
+</span><a href="#local-6989586621679738594"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679738593"><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679738593"><span class="hs-identifier hs-var">model</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-93"></span><span>  </span><span id="local-6989586621679738592"><span class="annot"><span class="annottext">StateDict
+</span><a href="#local-6989586621679738592"><span class="hs-identifier hs-var">stateDict</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(StateT StateDict IO () -&gt; StateDict -&gt; IO StateDict)
 -&gt; StateDict -&gt; StateT StateDict IO () -&gt; IO StateDict
 forall a b c. (a -&gt; b -&gt; c) -&gt; b -&gt; a -&gt; c
-</span><span class="hs-identifier hs-var">flip</span></span><span> </span><span class="annot"><span class="annottext">StateT StateDict IO () -&gt; StateDict -&gt; IO StateDict
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">flip</span></a></span><span> </span><span class="annot"><span class="annottext">StateT StateDict IO () -&gt; StateDict -&gt; IO StateDict
 forall (m :: * -&gt; *) s a. Monad m =&gt; StateT s m a -&gt; s -&gt; m s
-</span><span class="hs-identifier hs-var">execStateT</span></span><span> </span><span class="annot"><span class="annottext">StateDict
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/transformers-0.5.6.2/src"><span class="hs-identifier hs-var">execStateT</span></a></span><span> </span><span class="annot"><span class="annottext">StateDict
 forall k a. Map k a
-</span><span class="hs-identifier hs-var">Map.empty</span></span><span> </span><span class="annot"><span class="annottext">(StateT StateDict IO () -&gt; IO StateDict)
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/containers-0.6.4.1/src"><span class="hs-identifier hs-var">Map.empty</span></a></span><span> </span><span class="annot"><span class="annottext">(StateT StateDict IO () -&gt; IO StateDict)
 -&gt; StateT StateDict IO () -&gt; IO StateDict
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">StateDictKey -&gt; model -&gt; StateT StateDict IO ()
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey -&gt; model -&gt; StateT StateDict IO ()
 forall model (m :: * -&gt; *).
 (HasStateDict model, MonadThrow m, MonadState StateDict m) =&gt;
 StateDictKey -&gt; model -&gt; m ()
 </span><a href="Torch.GraduallyTyped.NN.Class.html#toStateDict"><span class="hs-identifier hs-var">toStateDict</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey
 forall a. Monoid a =&gt; a
-</span><span class="hs-identifier hs-var">mempty</span></span><span> </span><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679692449"><span class="hs-identifier hs-var">model</span></a></span><span>
-</span><span id="line-94"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679692445"><span class="annot"><span class="annottext">[StateDictKey]
-</span><a href="#local-6989586621679692445"><span class="hs-identifier hs-var">stateDictKeys</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679692444"><span class="annot"><span class="annottext">[ForeignPtr Tensor]
-</span><a href="#local-6989586621679692444"><span class="hs-identifier hs-var">tPtrs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[(StateDictKey, ForeignPtr Tensor)]
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">mempty</span></a></span><span> </span><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679738593"><span class="hs-identifier hs-var">model</span></a></span><span>
+</span><span id="line-94"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679738589"><span class="annot"><span class="annottext">[StateDictKey]
+</span><a href="#local-6989586621679738589"><span class="hs-identifier hs-var">stateDictKeys</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679738588"><span class="annot"><span class="annottext">[ForeignPtr Tensor]
+</span><a href="#local-6989586621679738588"><span class="hs-identifier hs-var">tPtrs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[(StateDictKey, ForeignPtr Tensor)]
 -&gt; ([StateDictKey], [ForeignPtr Tensor])
 forall a b. [(a, b)] -&gt; ([a], [b])
-</span><span class="hs-identifier hs-var">unzip</span></span><span> </span><span class="annot"><span class="annottext">([(StateDictKey, ForeignPtr Tensor)]
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">unzip</span></a></span><span> </span><span class="annot"><span class="annottext">([(StateDictKey, ForeignPtr Tensor)]
  -&gt; ([StateDictKey], [ForeignPtr Tensor]))
 -&gt; [(StateDictKey, ForeignPtr Tensor)]
 -&gt; ([StateDictKey], [ForeignPtr Tensor])
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">StateDict -&gt; [(StateDictKey, ForeignPtr Tensor)]
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">StateDict -&gt; [(StateDictKey, ForeignPtr Tensor)]
 forall k a. Map k a -&gt; [(k, a)]
-</span><span class="hs-identifier hs-var">Map.toList</span></span><span> </span><span class="annot"><span class="annottext">StateDict
-</span><a href="#local-6989586621679692448"><span class="hs-identifier hs-var">stateDict</span></a></span><span>
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/containers-0.6.4.1/src"><span class="hs-identifier hs-var">Map.toList</span></a></span><span> </span><span class="annot"><span class="annottext">StateDict
+</span><a href="#local-6989586621679738592"><span class="hs-identifier hs-var">stateDict</span></a></span><span>
 </span><span id="line-95"></span><span>  </span><span class="annot"><span class="annottext">[StateDictKey] -&gt; ForeignPtr Optimizer -&gt; Optimizer model
 forall model.
 [StateDictKey] -&gt; ForeignPtr Optimizer -&gt; Optimizer model
 </span><a href="Torch.GraduallyTyped.Optim.html#UnsafeOptimizer"><span class="hs-identifier hs-var">UnsafeOptimizer</span></a></span><span> </span><span class="annot"><span class="annottext">[StateDictKey]
-</span><a href="#local-6989586621679692445"><span class="hs-identifier hs-var">stateDictKeys</span></a></span><span>
+</span><a href="#local-6989586621679738589"><span class="hs-identifier hs-var">stateDictKeys</span></a></span><span>
 </span><span id="line-96"></span><span>    </span><span class="annot"><span class="annottext">(ForeignPtr Optimizer -&gt; Optimizer model)
 -&gt; IO (ForeignPtr Optimizer) -&gt; IO (Optimizer model)
 forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
-</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">(CDouble
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">&lt;$&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">(CDouble
  -&gt; CDouble
  -&gt; CDouble
  -&gt; CDouble
@@ -257,40 +261,51 @@ forall a ca x1 cx1 x2 cx2 x3 cx3 x4 cx4 x5 cx5 x6 cx6 y cy.
 -&gt; ForeignPtr TensorList
 -&gt; IO (ForeignPtr Optimizer)
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.adam</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679692455"><span class="hs-identifier hs-var">learningRate</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679692454"><span class="hs-identifier hs-var">beta1</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679692453"><span class="hs-identifier hs-var">beta2</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679692452"><span class="hs-identifier hs-var">epsilon</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621679692451"><span class="hs-identifier hs-var">weightDecay</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679692450"><span class="hs-identifier hs-var">amsgrad</span></a></span><span> </span><span class="annot"><span class="annottext">[ForeignPtr Tensor]
-</span><a href="#local-6989586621679692444"><span class="hs-identifier hs-var">tPtrs</span></a></span><span>
+</span><a href="#local-6989586621679738599"><span class="hs-identifier hs-var">learningRate</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679738598"><span class="hs-identifier hs-var">beta1</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679738597"><span class="hs-identifier hs-var">beta2</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679738596"><span class="hs-identifier hs-var">epsilon</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621679738595"><span class="hs-identifier hs-var">weightDecay</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679738594"><span class="hs-identifier hs-var">amsgrad</span></a></span><span> </span><span class="annot"><span class="annottext">[ForeignPtr Tensor]
+</span><a href="#local-6989586621679738588"><span class="hs-identifier hs-var">tPtrs</span></a></span><span>
 </span><span id="line-97"></span><span>
 </span><span id="line-98"></span><span class="hs-comment">-- | Perform one step of optimization.</span><span>
 </span><span id="line-99"></span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#stepWithGenerator"><span class="hs-identifier hs-type">stepWithGenerator</span></a></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-100"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679692437"><span class="annot"><a href="#local-6989586621679692437"><span class="hs-identifier hs-type">model</span></a></span></span><span> </span><span id="local-6989586621679692436"><span class="annot"><a href="#local-6989586621679692436"><span class="hs-identifier hs-type">generatorDevice</span></a></span></span><span> </span><span id="local-6989586621679692435"><span class="annot"><a href="#local-6989586621679692435"><span class="hs-identifier hs-type">lossGradient</span></a></span></span><span> </span><span id="local-6989586621679692434"><span class="annot"><a href="#local-6989586621679692434"><span class="hs-identifier hs-type">lossLayout</span></a></span></span><span> </span><span id="local-6989586621679692433"><span class="annot"><a href="#local-6989586621679692433"><span class="hs-identifier hs-type">lossDataType</span></a></span></span><span> </span><span id="local-6989586621679692432"><span class="annot"><a href="#local-6989586621679692432"><span class="hs-identifier hs-type">lossDevice</span></a></span></span><span> </span><span id="local-6989586621679692431"><span class="annot"><a href="#local-6989586621679692431"><span class="hs-identifier hs-type">lossShape</span></a></span></span><span> </span><span id="local-6989586621679692430"><span class="annot"><a href="#local-6989586621679692430"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span></span><span class="hs-operator">.</span><span>
-</span><span id="line-101"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692437"><span class="hs-identifier hs-type">model</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-102"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#SGetGeneratorDevice"><span class="hs-identifier hs-type">SGetGeneratorDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692436"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-103"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#SGetGeneratorDevice"><span class="hs-identifier hs-type">SGetGeneratorDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692430"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-104"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Catch"><span class="hs-identifier hs-type">Catch</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679692431"><span class="hs-identifier hs-type">lossShape</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier hs-type">Shape</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
-</span><span id="line-105"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Catch"><span class="hs-identifier hs-type">Catch</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679692435"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier hs-type">Gradient</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#WithGradient"><span class="hs-identifier hs-type">WithGradient</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-100"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679738732"><span class="annot"><a href="#local-6989586621679738732"><span class="hs-identifier hs-type">model</span></a></span></span><span> </span><span id="local-6989586621679738731"><span class="annot"><a href="#local-6989586621679738731"><span class="hs-identifier hs-type">generatorDevice</span></a></span></span><span> </span><span id="local-6989586621679738724"><span class="annot"><a href="#local-6989586621679738724"><span class="hs-identifier hs-type">lossGradient</span></a></span></span><span> </span><span id="local-6989586621679738720"><span class="annot"><a href="#local-6989586621679738720"><span class="hs-identifier hs-type">lossLayout</span></a></span></span><span> </span><span id="local-6989586621679738719"><span class="annot"><a href="#local-6989586621679738719"><span class="hs-identifier hs-type">lossDataType</span></a></span></span><span> </span><span id="local-6989586621679738718"><span class="annot"><a href="#local-6989586621679738718"><span class="hs-identifier hs-type">lossDevice</span></a></span></span><span> </span><span id="local-6989586621679738728"><span class="annot"><a href="#local-6989586621679738728"><span class="hs-identifier hs-type">lossShape</span></a></span></span><span> </span><span id="local-6989586621679738729"><span class="annot"><a href="#local-6989586621679738729"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-101"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#HasStateDict"><span class="hs-identifier hs-type">HasStateDict</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738732"><span class="hs-identifier hs-type">model</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-102"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#SGetGeneratorDevice"><span class="hs-identifier hs-type">SGetGeneratorDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738731"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-103"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#SGetGeneratorDevice"><span class="hs-identifier hs-type">SGetGeneratorDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738729"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-104"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Catch"><span class="hs-identifier hs-type">Catch</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679738728"><span class="hs-identifier hs-type">lossShape</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.Shape.Type.html#Shape"><span class="hs-identifier hs-type">Shape</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-105"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Prelude.html#Catch"><span class="hs-identifier hs-type">Catch</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679738724"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Unify.html#%3C%2B%3E"><span class="hs-operator hs-type">&lt;+&gt;</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#Gradient"><span class="hs-identifier hs-type">Gradient</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Torch.GraduallyTyped.RequiresGradient.html#WithGradient"><span class="hs-identifier hs-type">WithGradient</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-106"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
 </span><span id="line-107"></span><span>  </span><span class="hs-comment">-- | optimizer for the model</span><span>
-</span><span id="line-108"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#Optimizer"><span class="hs-identifier hs-type">Optimizer</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692437"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-108"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#Optimizer"><span class="hs-identifier hs-type">Optimizer</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738732"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-109"></span><span>  </span><span class="hs-comment">-- | model specification</span><span>
-</span><span id="line-110"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier hs-type">ModelSpec</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692437"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-110"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#ModelSpec"><span class="hs-identifier hs-type">ModelSpec</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738732"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-111"></span><span>  </span><span class="hs-comment">-- | loss function to minimize</span><span>
-</span><span id="line-112"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="#local-6989586621679692437"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-113"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692436"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-114"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span>
-</span><span id="line-115"></span><span>      </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692435"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692434"><span class="hs-identifier hs-type">lossLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692433"><span class="hs-identifier hs-type">lossDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692432"><span class="hs-identifier hs-type">lossDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692431"><span class="hs-identifier hs-type">lossShape</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-116"></span><span>        </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692430"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span>
+</span><span id="line-112"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="#local-6989586621679738732"><span class="hs-identifier hs-type">model</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-113"></span><span>    </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738731"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-114"></span><span>    </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-identifier hs-type">IO</span></a></span><span>
+</span><span id="line-115"></span><span>      </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738724"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738720"><span class="hs-identifier hs-type">lossLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738719"><span class="hs-identifier hs-type">lossDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738718"><span class="hs-identifier hs-type">lossDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738728"><span class="hs-identifier hs-type">lossShape</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-116"></span><span>        </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738729"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span>
 </span><span id="line-117"></span><span>      </span><span class="hs-special">)</span><span>
 </span><span id="line-118"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-119"></span><span>  </span><span class="hs-comment">-- | random generator</span><span>
-</span><span id="line-120"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692436"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-120"></span><span>  </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738731"><span class="hs-identifier hs-type">generatorDevice</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-121"></span><span>  </span><span class="hs-comment">-- | loss and updated generator</span><span>
-</span><span id="line-122"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692435"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692434"><span class="hs-identifier hs-type">lossLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692433"><span class="hs-identifier hs-type">lossDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692432"><span class="hs-identifier hs-type">lossDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692431"><span class="hs-identifier hs-type">lossShape</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679692430"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-123"></span><span id="stepWithGenerator"><span class="annot"><span class="annottext">stepWithGenerator :: Optimizer model
+</span><span id="line-122"></span><span>  </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738724"><span class="hs-identifier hs-type">lossGradient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738720"><span class="hs-identifier hs-type">lossLayout</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738719"><span class="hs-identifier hs-type">lossDataType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738718"><span class="hs-identifier hs-type">lossDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738728"><span class="hs-identifier hs-type">lossShape</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#Generator"><span class="hs-identifier hs-type">Generator</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679738729"><span class="hs-identifier hs-type">generatorOutputDevice</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-123"></span><span id="stepWithGenerator"><span class="annot"><span class="annottext">stepWithGenerator :: forall model (generatorDevice :: Device (DeviceType Nat))
+       (lossGradient :: Gradient RequiresGradient)
+       (lossLayout :: Layout LayoutType)
+       (lossDataType :: Device (DeviceType Nat))
+       (lossDevice :: DataType DType)
+       (lossShape :: Shape [Dim (Name Symbol) (Size Nat)])
+       (generatorOutputDevice :: Device (DeviceType Nat)).
+(HasStateDict model, SGetGeneratorDevice generatorDevice,
+ SGetGeneratorDevice generatorOutputDevice,
+ Catch (lossShape &lt;+&gt; 'Shape '[]),
+ Catch (lossGradient &lt;+&gt; 'Gradient 'WithGradient)) =&gt;
+Optimizer model
 -&gt; ModelSpec model
 -&gt; (model
     -&gt; Generator generatorDevice
@@ -301,24 +316,24 @@ forall a ca x1 cx1 x2 cx2 x3 cx3 x4 cx4 x5 cx5 x6 cx6 y cy.
 -&gt; IO
      (Tensor lossGradient lossLayout lossDataType lossDevice lossShape,
       Generator generatorOutputDevice)
-</span><a href="Torch.GraduallyTyped.Optim.html#stepWithGenerator"><span class="hs-identifier hs-var hs-var">stepWithGenerator</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#UnsafeOptimizer"><span class="hs-identifier hs-type">UnsafeOptimizer</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679692428"><span id="local-6989586621679692429"><span class="annot"><span class="annottext">[StateDictKey]
+</span><a href="Torch.GraduallyTyped.Optim.html#stepWithGenerator"><span class="hs-identifier hs-var hs-var">stepWithGenerator</span></a></span></span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Optim.html#UnsafeOptimizer"><span class="hs-identifier hs-type">UnsafeOptimizer</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679738539"><span id="local-6989586621679738540"><span class="annot"><span class="annottext">[StateDictKey]
 ForeignPtr Optimizer
 optimizerPtr :: ForeignPtr Optimizer
 optimizerStateDictKeys :: [StateDictKey]
 optimizerPtr :: forall model. Optimizer model -&gt; ForeignPtr Optimizer
 optimizerStateDictKeys :: forall model. Optimizer model -&gt; [StateDictKey]
-</span><a href="#local-6989586621679692428"><span class="hs-glyph hs-var hs-var hs-var hs-var">..</span></a></span></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679692427"><span class="annot"><span class="annottext">ModelSpec model
-</span><a href="#local-6989586621679692427"><span class="hs-identifier hs-var">modelSpec</span></a></span></span><span> </span><span id="local-6989586621679692426"><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679738539"><span class="hs-glyph hs-var hs-var hs-var hs-var">..</span></a></span></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679738538"><span class="annot"><span class="annottext">ModelSpec model
+</span><a href="#local-6989586621679738538"><span class="hs-identifier hs-var">modelSpec</span></a></span></span><span> </span><span id="local-6989586621679738537"><span class="annot"><span class="annottext">model
 -&gt; Generator generatorDevice
 -&gt; IO
      (Tensor lossGradient lossLayout lossDataType lossDevice lossShape,
       Generator generatorOutputDevice)
-</span><a href="#local-6989586621679692426"><span class="hs-identifier hs-var">lossFn</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#UnsafeGenerator"><span class="hs-identifier hs-type">UnsafeGenerator</span></a></span><span> </span><span id="local-6989586621679692424"><span class="annot"><span class="annottext">TVar
+</span><a href="#local-6989586621679738537"><span class="hs-identifier hs-var">lossFn</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#UnsafeGenerator"><span class="hs-identifier hs-type">UnsafeGenerator</span></a></span><span> </span><span id="local-6989586621679738535"><span class="annot"><span class="annottext">TVar
   (Either (SDevice generatorDevice, Word64) (ForeignPtr Generator))
-</span><a href="#local-6989586621679692424"><span class="hs-identifier hs-var">tvar</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="#local-6989586621679738535"><span class="hs-identifier hs-var">tvar</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-124"></span><span>  </span><span class="hs-keyword">do</span><span>
-</span><span id="line-125"></span><span>    </span><span id="local-6989586621679692423"><span class="annot"><span class="annottext">ForeignPtr Generator
-</span><a href="#local-6989586621679692423"><span class="hs-identifier hs-var">genPtr</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TVar
+</span><span id="line-125"></span><span>    </span><span id="local-6989586621679738534"><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><a href="#local-6989586621679738534"><span class="hs-identifier hs-var">genPtr</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TVar
   (Either (SDevice generatorDevice, Word64) (ForeignPtr Generator))
 -&gt; IO (ForeignPtr Generator)
 forall (device :: Device (DeviceType Nat)).
@@ -327,16 +342,16 @@ TVar (Either (SDevice device, Word64) (ForeignPtr Generator))
 -&gt; IO (ForeignPtr Generator)
 </span><a href="Torch.GraduallyTyped.Random.html#getGenPtr"><span class="hs-identifier hs-var">getGenPtr</span></a></span><span> </span><span class="annot"><span class="annottext">TVar
   (Either (SDevice generatorDevice, Word64) (ForeignPtr Generator))
-</span><a href="#local-6989586621679692424"><span class="hs-identifier hs-var">tvar</span></a></span><span>
-</span><span id="line-126"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span class="annot"><a href="#local-6989586621679692422"><span class="hs-identifier hs-type">rawLossFn</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.StdTuple</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">(</span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-127"></span><span>        </span><span id="local-6989586621679692422"><span class="annot"><span class="annottext">rawLossFn :: ForeignPtr TensorList
+</span><a href="#local-6989586621679738535"><span class="hs-identifier hs-var">tvar</span></a></span><span>
+</span><span id="line-126"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span class="annot"><a href="#local-6989586621679738533"><span class="hs-identifier hs-type">rawLossFn</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-type">ForeignPtr</span></a></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.TensorList</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-type">ForeignPtr</span></a></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-type">ForeignPtr</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.StdTuple</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">(</span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Tensor</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-127"></span><span>        </span><span id="local-6989586621679738533"><span class="annot"><span class="annottext">rawLossFn :: ForeignPtr TensorList
 -&gt; ForeignPtr Generator
 -&gt; IO (ForeignPtr (StdTuple '(Tensor, Generator)))
-</span><a href="#local-6989586621679692422"><span class="hs-identifier hs-var hs-var">rawLossFn</span></a></span></span><span> </span><span id="local-6989586621679692421"><span class="annot"><span class="annottext">ForeignPtr TensorList
-</span><a href="#local-6989586621679692421"><span class="hs-identifier hs-var">tlPtr</span></a></span></span><span> </span><span id="local-6989586621679692420"><span class="annot"><span class="annottext">ForeignPtr Generator
-</span><a href="#local-6989586621679692420"><span class="hs-identifier hs-var">genPtr''</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-128"></span><span>          </span><span id="local-6989586621679692419"><span class="annot"><span class="annottext">Generator generatorDevice
-</span><a href="#local-6989586621679692419"><span class="hs-identifier hs-var">g''</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TVar
+</span><a href="#local-6989586621679738533"><span class="hs-identifier hs-var hs-var">rawLossFn</span></a></span></span><span> </span><span id="local-6989586621679738532"><span class="annot"><span class="annottext">ForeignPtr TensorList
+</span><a href="#local-6989586621679738532"><span class="hs-identifier hs-var">tlPtr</span></a></span></span><span> </span><span id="local-6989586621679738531"><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><a href="#local-6989586621679738531"><span class="hs-identifier hs-var">genPtr''</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-128"></span><span>          </span><span id="local-6989586621679738530"><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679738530"><span class="hs-identifier hs-var">g''</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TVar
   (Either (SDevice generatorDevice, Word64) (ForeignPtr Generator))
 -&gt; Generator generatorDevice
 forall (device :: Device (DeviceType Nat)).
@@ -350,74 +365,74 @@ TVar (Either (SDevice device, Word64) (ForeignPtr Generator))
         (Either (SDevice generatorDevice, Word64) (ForeignPtr Generator)))
 -&gt; IO (Generator generatorDevice)
 forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
-</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Either (SDevice generatorDevice, Word64) (ForeignPtr Generator)
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">&lt;$&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Either (SDevice generatorDevice, Word64) (ForeignPtr Generator)
 -&gt; IO
      (TVar
         (Either (SDevice generatorDevice, Word64) (ForeignPtr Generator)))
 forall a. a -&gt; IO (TVar a)
-</span><span class="hs-identifier hs-var">newTVarIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">newTVarIO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ForeignPtr Generator
 -&gt; Either (SDevice generatorDevice, Word64) (ForeignPtr Generator)
 forall a b. b -&gt; Either a b
-</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
-</span><a href="#local-6989586621679692420"><span class="hs-identifier hs-var">genPtr''</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-129"></span><span>          </span><span id="local-6989586621679692418"><span class="annot"><span class="annottext">StateDict
-</span><a href="#local-6989586621679692418"><span class="hs-identifier hs-var">stateDict'</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#StateDict"><span class="hs-identifier hs-type">StateDict</span></a></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><a href="#local-6989586621679738531"><span class="hs-identifier hs-var">genPtr''</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-129"></span><span>          </span><span id="local-6989586621679738529"><span class="annot"><span class="annottext">StateDict
+</span><a href="#local-6989586621679738529"><span class="hs-identifier hs-var">stateDict'</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.NN.Class.html#StateDict"><span class="hs-identifier hs-type">StateDict</span></a></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
 -&gt; ([ForeignPtr Tensor] -&gt; IO StateDict) -&gt; IO StateDict
 forall a b r. Castable a b =&gt; b -&gt; (a -&gt; IO r) -&gt; IO r
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.uncast</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
-</span><a href="#local-6989586621679692421"><span class="hs-identifier hs-var">tlPtr</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">StateDict -&gt; IO StateDict
+</span><a href="#local-6989586621679738532"><span class="hs-identifier hs-var">tlPtr</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">StateDict -&gt; IO StateDict
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
-</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(StateDict -&gt; IO StateDict)
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">(StateDict -&gt; IO StateDict)
 -&gt; ([ForeignPtr Tensor] -&gt; StateDict)
 -&gt; [ForeignPtr Tensor]
 -&gt; IO StateDict
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
-</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">[(StateDictKey, ForeignPtr Tensor)] -&gt; StateDict
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">[(StateDictKey, ForeignPtr Tensor)] -&gt; StateDict
 forall k a. Ord k =&gt; [(k, a)] -&gt; Map k a
-</span><span class="hs-identifier hs-var">Map.fromList</span></span><span> </span><span class="annot"><span class="annottext">([(StateDictKey, ForeignPtr Tensor)] -&gt; StateDict)
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/containers-0.6.4.1/src"><span class="hs-identifier hs-var">Map.fromList</span></a></span><span> </span><span class="annot"><span class="annottext">([(StateDictKey, ForeignPtr Tensor)] -&gt; StateDict)
 -&gt; ([ForeignPtr Tensor] -&gt; [(StateDictKey, ForeignPtr Tensor)])
 -&gt; [ForeignPtr Tensor]
 -&gt; StateDict
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
-</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">[StateDictKey]
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">[StateDictKey]
 -&gt; [ForeignPtr Tensor] -&gt; [(StateDictKey, ForeignPtr Tensor)]
 forall a b. [a] -&gt; [b] -&gt; [(a, b)]
-</span><span class="hs-identifier hs-var">zip</span></span><span> </span><span class="annot"><span class="annottext">[StateDictKey]
-</span><a href="#local-6989586621679692429"><span class="hs-identifier hs-var">optimizerStateDictKeys</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-130"></span><span>          </span><span id="local-6989586621679692416"><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679692416"><span class="hs-identifier hs-var">model</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(StateT StateDict IO model -&gt; StateDict -&gt; IO model)
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">zip</span></a></span><span> </span><span class="annot"><span class="annottext">[StateDictKey]
+</span><a href="#local-6989586621679738540"><span class="hs-identifier hs-var">optimizerStateDictKeys</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-130"></span><span>          </span><span id="local-6989586621679738527"><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679738527"><span class="hs-identifier hs-var">model</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(StateT StateDict IO model -&gt; StateDict -&gt; IO model)
 -&gt; StateDict -&gt; StateT StateDict IO model -&gt; IO model
 forall a b c. (a -&gt; b -&gt; c) -&gt; b -&gt; a -&gt; c
-</span><span class="hs-identifier hs-var">flip</span></span><span> </span><span class="annot"><span class="annottext">StateT StateDict IO model -&gt; StateDict -&gt; IO model
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">flip</span></a></span><span> </span><span class="annot"><span class="annottext">StateT StateDict IO model -&gt; StateDict -&gt; IO model
 forall (m :: * -&gt; *) s a. Monad m =&gt; StateT s m a -&gt; s -&gt; m a
-</span><span class="hs-identifier hs-var">evalStateT</span></span><span> </span><span class="annot"><span class="annottext">StateDict
-</span><a href="#local-6989586621679692418"><span class="hs-identifier hs-var">stateDict'</span></a></span><span> </span><span class="annot"><span class="annottext">(StateT StateDict IO model -&gt; IO model)
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/transformers-0.5.6.2/src"><span class="hs-identifier hs-var">evalStateT</span></a></span><span> </span><span class="annot"><span class="annottext">StateDict
+</span><a href="#local-6989586621679738529"><span class="hs-identifier hs-var">stateDict'</span></a></span><span> </span><span class="annot"><span class="annottext">(StateT StateDict IO model -&gt; IO model)
 -&gt; StateT StateDict IO model -&gt; IO model
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ModelSpec model -&gt; StateDictKey -&gt; StateT StateDict IO model
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">ModelSpec model -&gt; StateDictKey -&gt; StateT StateDict IO model
 forall model (m :: * -&gt; *).
 (HasStateDict model, MonadIO m, MonadThrow m,
  MonadState StateDict m) =&gt;
 ModelSpec model -&gt; StateDictKey -&gt; m model
 </span><a href="Torch.GraduallyTyped.NN.Class.html#fromStateDict"><span class="hs-identifier hs-var">fromStateDict</span></a></span><span> </span><span class="annot"><span class="annottext">ModelSpec model
-</span><a href="#local-6989586621679692427"><span class="hs-identifier hs-var">modelSpec</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey
+</span><a href="#local-6989586621679738538"><span class="hs-identifier hs-var">modelSpec</span></a></span><span> </span><span class="annot"><span class="annottext">StateDictKey
 forall a. Monoid a =&gt; a
-</span><span class="hs-identifier hs-var">mempty</span></span><span>
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">mempty</span></a></span><span>
 </span><span id="line-131"></span><span>          </span><span class="hs-comment">-- model &lt;- getModel modelSpec optim</span><span>
-</span><span id="line-132"></span><span>          </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#UnsafeTensor"><span class="hs-identifier hs-type">UnsafeTensor</span></a></span><span> </span><span id="local-6989586621679692414"><span class="annot"><span class="annottext">ForeignPtr Tensor
-</span><a href="#local-6989586621679692414"><span class="hs-identifier hs-var">tPtr</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#UnsafeGenerator"><span class="hs-identifier hs-type">UnsafeGenerator</span></a></span><span> </span><span id="local-6989586621679692413"><span class="annot"><span class="annottext">TVar
+</span><span id="line-132"></span><span>          </span><span class="hs-special">(</span><span class="annot"><a href="Torch.GraduallyTyped.Tensor.Type.html#UnsafeTensor"><span class="hs-identifier hs-type">UnsafeTensor</span></a></span><span> </span><span id="local-6989586621679738525"><span class="annot"><span class="annottext">ForeignPtr Tensor
+</span><a href="#local-6989586621679738525"><span class="hs-identifier hs-var">tPtr</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.GraduallyTyped.Random.html#UnsafeGenerator"><span class="hs-identifier hs-type">UnsafeGenerator</span></a></span><span> </span><span id="local-6989586621679738524"><span class="annot"><span class="annottext">TVar
   (Either
      (SDevice generatorOutputDevice, Word64) (ForeignPtr Generator))
-</span><a href="#local-6989586621679692413"><span class="hs-identifier hs-var">tvar'''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679738524"><span class="hs-identifier hs-var">tvar'''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">model
 -&gt; Generator generatorDevice
 -&gt; IO
      (Tensor lossGradient lossLayout lossDataType lossDevice lossShape,
       Generator generatorOutputDevice)
-</span><a href="#local-6989586621679692426"><span class="hs-identifier hs-var">lossFn</span></a></span><span> </span><span class="annot"><span class="annottext">model
-</span><a href="#local-6989586621679692416"><span class="hs-identifier hs-var">model</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
-</span><a href="#local-6989586621679692419"><span class="hs-identifier hs-var">g''</span></a></span><span>
-</span><span id="line-133"></span><span>          </span><span id="local-6989586621679692412"><span class="annot"><span class="annottext">ForeignPtr Generator
-</span><a href="#local-6989586621679692412"><span class="hs-identifier hs-var">genPtr'''</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TVar
+</span><a href="#local-6989586621679738537"><span class="hs-identifier hs-var">lossFn</span></a></span><span> </span><span class="annot"><span class="annottext">model
+</span><a href="#local-6989586621679738527"><span class="hs-identifier hs-var">model</span></a></span><span> </span><span class="annot"><span class="annottext">Generator generatorDevice
+</span><a href="#local-6989586621679738530"><span class="hs-identifier hs-var">g''</span></a></span><span>
+</span><span id="line-133"></span><span>          </span><span id="local-6989586621679738523"><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><a href="#local-6989586621679738523"><span class="hs-identifier hs-var">genPtr'''</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TVar
   (Either
      (SDevice generatorOutputDevice, Word64) (ForeignPtr Generator))
 -&gt; IO (ForeignPtr Generator)
@@ -428,21 +443,21 @@ TVar (Either (SDevice device, Word64) (ForeignPtr Generator))
 </span><a href="Torch.GraduallyTyped.Random.html#getGenPtr"><span class="hs-identifier hs-var">getGenPtr</span></a></span><span> </span><span class="annot"><span class="annottext">TVar
   (Either
      (SDevice generatorOutputDevice, Word64) (ForeignPtr Generator))
-</span><a href="#local-6989586621679692413"><span class="hs-identifier hs-var">tvar'''</span></a></span><span>
+</span><a href="#local-6989586621679738524"><span class="hs-identifier hs-var">tvar'''</span></a></span><span>
 </span><span id="line-134"></span><span>          </span><span class="annot"><span class="annottext">(ForeignPtr Tensor, ForeignPtr Generator)
 -&gt; (ForeignPtr (StdTuple '(Tensor, Generator))
     -&gt; IO (ForeignPtr (StdTuple '(Tensor, Generator))))
 -&gt; IO (ForeignPtr (StdTuple '(Tensor, Generator)))
 forall a b r. Castable a b =&gt; a -&gt; (b -&gt; IO r) -&gt; IO r
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.cast</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ForeignPtr Tensor
-</span><a href="#local-6989586621679692414"><span class="hs-identifier hs-var">tPtr</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
-</span><a href="#local-6989586621679692412"><span class="hs-identifier hs-var">genPtr'''</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ForeignPtr (StdTuple '(Tensor, Generator))
+</span><a href="#local-6989586621679738525"><span class="hs-identifier hs-var">tPtr</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><a href="#local-6989586621679738523"><span class="hs-identifier hs-var">genPtr'''</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ForeignPtr (StdTuple '(Tensor, Generator))
 -&gt; IO (ForeignPtr (StdTuple '(Tensor, Generator)))
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
-</span><span class="hs-identifier hs-var">pure</span></span><span>
-</span><span id="line-135"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679692410"><span class="annot"><span class="annottext">ForeignPtr Tensor
-</span><a href="#local-6989586621679692410"><span class="hs-identifier hs-var">lossPtr</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679692409"><span class="annot"><span class="annottext">ForeignPtr Generator
-</span><a href="#local-6989586621679692409"><span class="hs-identifier hs-var">genPtr'</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ForeignPtr</span></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(ForeignPtr Optimizer
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">pure</span></a></span><span>
+</span><span id="line-135"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679738521"><span class="annot"><span class="annottext">ForeignPtr Tensor
+</span><a href="#local-6989586621679738521"><span class="hs-identifier hs-var">lossPtr</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679738520"><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><a href="#local-6989586621679738520"><span class="hs-identifier hs-var">genPtr'</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-type">ForeignPtr</span></a></span><span> </span><span class="annot"><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-type">ATen.Generator</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(ForeignPtr Optimizer
  -&gt; ForeignPtr Generator
  -&gt; (ForeignPtr TensorList
      -&gt; ForeignPtr Generator
@@ -464,34 +479,34 @@ forall a ca x1 cx1 x2 cx2 y cy.
     -&gt; IO (ForeignPtr (StdTuple '(Tensor, Generator))))
 -&gt; IO (ForeignPtr (StdTuple '(Tensor, Generator)))
 </span><a href="../../../../libtorch-ffi/html/src"><span class="hs-identifier hs-var">ATen.stepWithGenerator</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Optimizer
-</span><a href="#local-6989586621679692428"><span class="hs-identifier hs-var">optimizerPtr</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
-</span><a href="#local-6989586621679692423"><span class="hs-identifier hs-var">genPtr</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
+</span><a href="#local-6989586621679738539"><span class="hs-identifier hs-var">optimizerPtr</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><a href="#local-6989586621679738534"><span class="hs-identifier hs-var">genPtr</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr TensorList
 -&gt; ForeignPtr Generator
 -&gt; IO (ForeignPtr (StdTuple '(Tensor, Generator)))
-</span><a href="#local-6989586621679692422"><span class="hs-identifier hs-var">rawLossFn</span></a></span><span>
-</span><span id="line-136"></span><span>    </span><span id="local-6989586621679692406"><span class="annot"><span class="annottext">TVar
+</span><a href="#local-6989586621679738533"><span class="hs-identifier hs-var">rawLossFn</span></a></span><span>
+</span><span id="line-136"></span><span>    </span><span id="local-6989586621679738517"><span class="annot"><span class="annottext">TVar
   (Either
      (SDevice generatorOutputDevice, Word64) (ForeignPtr Generator))
-</span><a href="#local-6989586621679692406"><span class="hs-identifier hs-var">g'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Either
+</span><a href="#local-6989586621679738517"><span class="hs-identifier hs-var">g'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Either
   (SDevice generatorOutputDevice, Word64) (ForeignPtr Generator)
 -&gt; IO
      (TVar
         (Either
            (SDevice generatorOutputDevice, Word64) (ForeignPtr Generator)))
 forall a. a -&gt; IO (TVar a)
-</span><span class="hs-identifier hs-var">newTVarIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">newTVarIO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ForeignPtr Generator
 -&gt; Either
      (SDevice generatorOutputDevice, Word64) (ForeignPtr Generator)
 forall a b. b -&gt; Either a b
-</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
-</span><a href="#local-6989586621679692409"><span class="hs-identifier hs-var">genPtr'</span></a></span><span class="hs-special">)</span><span>
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Generator
+</span><a href="#local-6989586621679738520"><span class="hs-identifier hs-var">genPtr'</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-137"></span><span>    </span><span class="annot"><span class="annottext">(Tensor lossGradient lossLayout lossDataType lossDevice lossShape,
  Generator generatorOutputDevice)
 -&gt; IO
      (Tensor lossGradient lossLayout lossDataType lossDevice lossShape,
       Generator generatorOutputDevice)
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
-</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ForeignPtr Tensor
+</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ForeignPtr Tensor
 -&gt; Tensor lossGradient lossLayout lossDataType lossDevice lossShape
 forall (gradient :: Gradient RequiresGradient)
        (layout :: Layout LayoutType) (device :: Device (DeviceType Nat))
@@ -499,7 +514,7 @@ forall (gradient :: Gradient RequiresGradient)
        (shape :: Shape [Dim (Name Symbol) (Size Nat)]).
 ForeignPtr Tensor -&gt; Tensor gradient layout device dataType shape
 </span><a href="Torch.GraduallyTyped.Tensor.Type.html#UnsafeTensor"><span class="hs-identifier hs-var">UnsafeTensor</span></a></span><span> </span><span class="annot"><span class="annottext">ForeignPtr Tensor
-</span><a href="#local-6989586621679692410"><span class="hs-identifier hs-var">lossPtr</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">TVar
+</span><a href="#local-6989586621679738521"><span class="hs-identifier hs-var">lossPtr</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">TVar
   (Either
      (SDevice generatorOutputDevice, Word64) (ForeignPtr Generator))
 -&gt; Generator generatorOutputDevice
@@ -509,5 +524,5 @@ TVar (Either (SDevice device, Word64) (ForeignPtr Generator))
 </span><a href="Torch.GraduallyTyped.Random.html#UnsafeGenerator"><span class="hs-identifier hs-var">UnsafeGenerator</span></a></span><span> </span><span class="annot"><span class="annottext">TVar
   (Either
      (SDevice generatorOutputDevice, Word64) (ForeignPtr Generator))
-</span><a href="#local-6989586621679692406"><span class="hs-identifier hs-var">g'</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679738517"><span class="hs-identifier hs-var">g'</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-138"></span></pre></body></html>

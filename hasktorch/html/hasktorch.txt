@@ -835,7 +835,7 @@ instance GHC.Real.Integral a => Torch.Tensor.TensorIndex (Torch.Tensor.Slice (To
 instance GHC.Real.Integral a => Torch.Tensor.TensorIndex (Torch.Tensor.Slice (Torch.Tensor.None, a))
 instance Torch.Tensor.TensorIndex (Torch.Tensor.Slice ())
 instance Torch.Tensor.TensorIndex GHC.Types.Int
-instance Torch.Tensor.TensorIndex GHC.Integer.Type.Integer
+instance Torch.Tensor.TensorIndex GHC.Num.Integer.Integer
 instance Torch.Tensor.TensorIndex Torch.Tensor.Tensor
 instance Torch.Tensor.TensorIndex ()
 instance (Torch.Tensor.TensorIndex a, Torch.Tensor.TensorIndex b) => Torch.Tensor.TensorIndex (a, b)
@@ -7007,7 +7007,7 @@ instance Torch.NN.HasForward Torch.Typed.NN.Dropout.Dropout (Torch.Typed.Tensor.
 instance Torch.NN.Randomizable Torch.Typed.NN.Dropout.DropoutSpec Torch.Typed.NN.Dropout.Dropout
 
 module Torch.Typed.NN.Transformer
-residual :: forall (device :: (DeviceType, Nat)) (dtype :: DType) (dtype' :: DType) m (shape :: [Nat]) (shape' :: [Nat]) b. (BasicArithmeticDTypeIsValid device dtype, BasicArithmeticDTypeIsValid device dtype', BasicArithmeticDTypeIsValid device (DTypePromotionImpl dtype dtype' (CmpDType dtype dtype')), Monad m) => (Tensor device dtype shape -> m (Tensor device dtype' shape')) -> (Tensor device (DTypePromotionImpl dtype dtype' (CmpDType dtype dtype')) (CheckBroadcast shape shape' (ComputeBroadcast (ReverseImpl shape ('[] :: [Nat])) (ReverseImpl shape' ('[] :: [Nat])))) -> m b) -> Tensor device dtype shape -> m b
+residual :: forall {device :: (DeviceType, Nat)} {dtype :: DType} {dtype' :: DType} {m} {shape :: [Nat]} {shape' :: [Nat]} {b}. (BasicArithmeticDTypeIsValid device dtype, BasicArithmeticDTypeIsValid device dtype', BasicArithmeticDTypeIsValid device (DTypePromotionImpl dtype dtype' (CmpDType dtype dtype')), Monad m) => (Tensor device dtype shape -> m (Tensor device dtype' shape')) -> (Tensor device (DTypePromotionImpl dtype dtype' (CmpDType dtype dtype')) (CheckBroadcast shape shape' (ComputeBroadcast (ReverseImpl shape ('[] :: [Nat])) (ReverseImpl shape' ('[] :: [Nat])))) -> m b) -> Tensor device dtype shape -> m b
 data MultiheadAttentionSpec (embedDim :: Nat) (kEmbedDim :: Nat) (vEmbedDim :: Nat) (numHeads :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
 [MultiheadAttentionSpec] :: DropoutSpec -> MultiheadAttentionSpec embedDim kEmbedDim vEmbedDim numHeads dtype device
 data MultiheadAttention (embedDim :: Nat) (kEmbedDim :: Nat) (vEmbedDim :: Nat) (numHeads :: Nat) (dtype :: DType) (device :: (DeviceType, Nat))
@@ -8034,7 +8034,7 @@ MNIST :: Int -> MnistData -> MNIST (m :: * -> *)
 [mnistData] :: MNIST (m :: * -> *) -> MnistData
 getLabels' :: Int -> MnistData -> [Int] -> Tensor
 getImages' :: Int -> Int -> MnistData -> [Int] -> Tensor
-grayScale10 :: [Char]
+grayScale10 :: String
 grayScale70 :: [Char]
 dispImage :: Tensor -> IO ()
 data PixelFormat
