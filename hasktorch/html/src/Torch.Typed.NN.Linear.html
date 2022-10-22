@@ -12,8 +12,8 @@
 </span><span id="line-12"></span><span>
 </span><span id="line-13"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Torch.Typed.NN.Linear</span><span> </span><span class="hs-keyword">where</span><span>
 </span><span id="line-14"></span><span>
-</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier">GHC.Generics</span></a></span><span>
-</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier">GHC.TypeLits</span></a></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/base-4.16.3.0/src"><span class="hs-identifier">GHC.Generics</span></a></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/base-4.16.3.0/src"><span class="hs-identifier">GHC.TypeLits</span></a></span><span>
 </span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.DType.html"><span class="hs-identifier">Torch.DType</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
 </span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Torch.Device.html"><span class="hs-identifier">Torch.Device</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">D</span></span><span>
 </span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Torch.NN.html"><span class="hs-identifier">Torch.NN</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.NN.html#HasForward"><span class="hs-identifier">HasForward</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Torch.NN.html#Randomizable"><span class="hs-identifier">Randomizable</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
@@ -24,23 +24,13 @@
 </span><span id="line-24"></span><span>
 </span><span id="line-25"></span><span class="hs-keyword">data</span><span>
 </span><span id="line-26"></span><span>  </span><span id="LinearSpec"><span class="annot"><a href="Torch.Typed.NN.Linear.html#LinearSpec"><span class="hs-identifier hs-var">LinearSpec</span></a></span></span><span>
-</span><span id="line-27"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679801431"><span class="annot"><a href="#local-6989586621679801431"><span class="hs-identifier hs-type">inputFeatures</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-identifier hs-type">Nat</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-28"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679801430"><span class="annot"><a href="#local-6989586621679801430"><span class="hs-identifier hs-type">outputFeatures</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-identifier hs-type">Nat</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-29"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679801429"><span class="annot"><a href="#local-6989586621679801429"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.DType.html#DType"><span class="hs-identifier hs-type">D.DType</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-30"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679801428"><span class="annot"><a href="#local-6989586621679801428"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Device.html#DeviceType"><span class="hs-identifier hs-type">D.DeviceType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-identifier hs-type">Nat</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679735450"><span class="annot"><a href="#local-6989586621679735450"><span class="hs-identifier hs-type">inputFeatures</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/base-4.16.3.0/src"><span class="hs-identifier hs-type">Nat</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679735449"><span class="annot"><a href="#local-6989586621679735449"><span class="hs-identifier hs-type">outputFeatures</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/base-4.16.3.0/src"><span class="hs-identifier hs-type">Nat</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679735448"><span class="annot"><a href="#local-6989586621679735448"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.DType.html#DType"><span class="hs-identifier hs-type">D.DType</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679735447"><span class="annot"><a href="#local-6989586621679735447"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Device.html#DeviceType"><span class="hs-identifier hs-type">D.DeviceType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/base-4.16.3.0/src"><span class="hs-identifier hs-type">Nat</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
 </span><span id="line-31"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="LinearSpec"><span class="annot"><a href="Torch.Typed.NN.Linear.html#LinearSpec"><span class="hs-identifier hs-var">LinearSpec</span></a></span></span><span>
-</span><span id="line-32"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679801261"><span id="local-6989586621679801263"><span id="local-6989586621679801265"><span class="annot"><span class="annottext">Int
+</span><span id="line-32"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679735280"><span id="local-6989586621679735282"><span id="local-6989586621679735284"><span class="annot"><span class="annottext">Int
 -&gt; LinearSpec inputFeatures outputFeatures dtype device -&gt; ShowS
-[LinearSpec inputFeatures outputFeatures dtype device] -&gt; ShowS
-LinearSpec inputFeatures outputFeatures dtype device -&gt; String
-(Int
- -&gt; LinearSpec inputFeatures outputFeatures dtype device -&gt; ShowS)
--&gt; (LinearSpec inputFeatures outputFeatures dtype device -&gt; String)
--&gt; ([LinearSpec inputFeatures outputFeatures dtype device]
-    -&gt; ShowS)
--&gt; Show (LinearSpec inputFeatures outputFeatures dtype device)
-forall a.
-(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
 forall (inputFeatures :: Nat) (outputFeatures :: Nat)
        (dtype :: DType) (device :: (DeviceType, Nat)).
 Int
@@ -51,6 +41,8 @@ forall (inputFeatures :: Nat) (outputFeatures :: Nat)
 forall (inputFeatures :: Nat) (outputFeatures :: Nat)
        (dtype :: DType) (device :: (DeviceType, Nat)).
 LinearSpec inputFeatures outputFeatures dtype device -&gt; String
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
 showList :: [LinearSpec inputFeatures outputFeatures dtype device] -&gt; ShowS
 $cshowList :: forall (inputFeatures :: Nat) (outputFeatures :: Nat)
        (dtype :: DType) (device :: (DeviceType, Nat)).
@@ -65,18 +57,13 @@ $cshowsPrec :: forall (inputFeatures :: Nat) (outputFeatures :: Nat)
        (dtype :: DType) (device :: (DeviceType, Nat)).
 Int
 -&gt; LinearSpec inputFeatures outputFeatures dtype device -&gt; ShowS
-</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679801256"><span id="local-6989586621679801258"><span class="annot"><span class="annottext">LinearSpec inputFeatures outputFeatures dtype device
+</span><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/base-4.16.3.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679735275"><span id="local-6989586621679735277"><span class="annot"><span class="annottext">LinearSpec inputFeatures outputFeatures dtype device
 -&gt; LinearSpec inputFeatures outputFeatures dtype device -&gt; Bool
-(LinearSpec inputFeatures outputFeatures dtype device
- -&gt; LinearSpec inputFeatures outputFeatures dtype device -&gt; Bool)
--&gt; (LinearSpec inputFeatures outputFeatures dtype device
-    -&gt; LinearSpec inputFeatures outputFeatures dtype device -&gt; Bool)
--&gt; Eq (LinearSpec inputFeatures outputFeatures dtype device)
-forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
 forall (inputFeatures :: Nat) (outputFeatures :: Nat)
        (dtype :: DType) (device :: (DeviceType, Nat)).
 LinearSpec inputFeatures outputFeatures dtype device
 -&gt; LinearSpec inputFeatures outputFeatures dtype device -&gt; Bool
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
 /= :: LinearSpec inputFeatures outputFeatures dtype device
 -&gt; LinearSpec inputFeatures outputFeatures dtype device -&gt; Bool
 $c/= :: forall (inputFeatures :: Nat) (outputFeatures :: Nat)
@@ -89,38 +76,30 @@ $c== :: forall (inputFeatures :: Nat) (outputFeatures :: Nat)
        (dtype :: DType) (device :: (DeviceType, Nat)).
 LinearSpec inputFeatures outputFeatures dtype device
 -&gt; LinearSpec inputFeatures outputFeatures dtype device -&gt; Bool
-</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/ghc-prim-0.8.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
 </span><span id="line-33"></span><span>
-</span><span id="line-34"></span><span id="local-6989586621679801253"><span id="local-6989586621679801254"></span></span><span class="hs-keyword">data</span><span>
+</span><span id="line-34"></span><span id="local-6989586621679735272"><span id="local-6989586621679735273"></span></span><span class="hs-keyword">data</span><span>
 </span><span id="line-35"></span><span>  </span><span id="Linear"><span class="annot"><a href="Torch.Typed.NN.Linear.html#Linear"><span class="hs-identifier hs-var">Linear</span></a></span></span><span>
-</span><span id="line-36"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679801405"><span class="annot"><a href="#local-6989586621679801405"><span class="hs-identifier hs-type">inputFeatures</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-identifier hs-type">Nat</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-37"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679801404"><span class="annot"><a href="#local-6989586621679801404"><span class="hs-identifier hs-type">outputFeatures</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-identifier hs-type">Nat</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-38"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679801403"><span class="annot"><a href="#local-6989586621679801403"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.DType.html#DType"><span class="hs-identifier hs-type">D.DType</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-39"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679801402"><span class="annot"><a href="#local-6989586621679801402"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Device.html#DeviceType"><span class="hs-identifier hs-type">D.DeviceType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-identifier hs-type">Nat</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679735424"><span class="annot"><a href="#local-6989586621679735424"><span class="hs-identifier hs-type">inputFeatures</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/base-4.16.3.0/src"><span class="hs-identifier hs-type">Nat</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679735423"><span class="annot"><a href="#local-6989586621679735423"><span class="hs-identifier hs-type">outputFeatures</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/base-4.16.3.0/src"><span class="hs-identifier hs-type">Nat</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679735422"><span class="annot"><a href="#local-6989586621679735422"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.DType.html#DType"><span class="hs-identifier hs-type">D.DType</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-39"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679735421"><span class="annot"><a href="#local-6989586621679735421"><span class="hs-identifier hs-type">device</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Device.html#DeviceType"><span class="hs-identifier hs-type">D.DeviceType</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/base-4.16.3.0/src"><span class="hs-identifier hs-type">Nat</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
 </span><span id="line-40"></span><span>  </span><span class="hs-keyword">where</span><span>
 </span><span id="line-41"></span><span>  </span><span id="Linear"><span class="annot"><a href="Torch.Typed.NN.Linear.html#Linear"><span class="hs-identifier hs-var">Linear</span></a></span></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-42"></span><span>    </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679801420"><span class="annot"><a href="#local-6989586621679801420"><span class="hs-identifier hs-type">inputFeatures</span></a></span></span><span> </span><span id="local-6989586621679801419"><span class="annot"><a href="#local-6989586621679801419"><span class="hs-identifier hs-type">outputFeatures</span></a></span></span><span> </span><span id="local-6989586621679801418"><span class="annot"><a href="#local-6989586621679801418"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span id="local-6989586621679801417"><span class="annot"><a href="#local-6989586621679801417"><span class="hs-identifier hs-type">device</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-42"></span><span>    </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679735439"><span class="annot"><a href="#local-6989586621679735439"><span class="hs-identifier hs-type">inputFeatures</span></a></span></span><span> </span><span id="local-6989586621679735438"><span class="annot"><a href="#local-6989586621679735438"><span class="hs-identifier hs-type">outputFeatures</span></a></span></span><span> </span><span id="local-6989586621679735437"><span class="annot"><a href="#local-6989586621679735437"><span class="hs-identifier hs-type">dtype</span></a></span></span><span> </span><span id="local-6989586621679735436"><span class="annot"><a href="#local-6989586621679735436"><span class="hs-identifier hs-type">device</span></a></span></span><span class="hs-operator">.</span><span>
 </span><span id="line-43"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="linearWeight"><span class="annot"><span class="annottext">forall (inputFeatures :: Nat) (outputFeatures :: Nat)
        (dtype :: DType) (device :: (DeviceType, Nat)).
 Linear inputFeatures outputFeatures dtype device
 -&gt; Parameter device dtype '[outputFeatures, inputFeatures]
-</span><a href="Torch.Typed.NN.Linear.html#linearWeight"><span class="hs-identifier hs-var hs-var">linearWeight</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Typed.Parameter.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801417"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801418"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679801419"><span class="hs-identifier hs-type">outputFeatures</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679801420"><span class="hs-identifier hs-type">inputFeatures</span></a></span><span class="hs-special">]</span><span class="hs-special">,</span><span>
+</span><a href="Torch.Typed.NN.Linear.html#linearWeight"><span class="hs-identifier hs-var hs-var">linearWeight</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Typed.Parameter.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735436"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735437"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679735438"><span class="hs-identifier hs-type">outputFeatures</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679735439"><span class="hs-identifier hs-type">inputFeatures</span></a></span><span class="hs-special">]</span><span class="hs-special">,</span><span>
 </span><span id="line-44"></span><span>      </span><span id="linearBias"><span class="annot"><span class="annottext">forall (inputFeatures :: Nat) (outputFeatures :: Nat)
        (dtype :: DType) (device :: (DeviceType, Nat)).
 Linear inputFeatures outputFeatures dtype device
 -&gt; Parameter device dtype '[outputFeatures]
-</span><a href="Torch.Typed.NN.Linear.html#linearBias"><span class="hs-identifier hs-var hs-var">linearBias</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Typed.Parameter.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801417"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801418"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679801419"><span class="hs-identifier hs-type">outputFeatures</span></a></span><span class="hs-special">]</span><span>
+</span><a href="Torch.Typed.NN.Linear.html#linearBias"><span class="hs-identifier hs-var hs-var">linearBias</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Torch.Typed.Parameter.html#Parameter"><span class="hs-identifier hs-type">Parameter</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735436"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735437"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679735438"><span class="hs-identifier hs-type">outputFeatures</span></a></span><span class="hs-special">]</span><span>
 </span><span id="line-45"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-46"></span><span>    </span><span class="annot"><a href="Torch.Typed.NN.Linear.html#Linear"><span class="hs-identifier hs-type">Linear</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801420"><span class="hs-identifier hs-type">inputFeatures</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801419"><span class="hs-identifier hs-type">outputFeatures</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801418"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801417"><span class="hs-identifier hs-type">device</span></a></span><span>
-</span><span id="line-47"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679801239"><span id="local-6989586621679801241"><span id="local-6989586621679801248"><span class="annot"><span class="annottext">Int -&gt; Linear inputFeatures outputFeatures dtype device -&gt; ShowS
-[Linear inputFeatures outputFeatures dtype device] -&gt; ShowS
-Linear inputFeatures outputFeatures dtype device -&gt; String
-(Int -&gt; Linear inputFeatures outputFeatures dtype device -&gt; ShowS)
--&gt; (Linear inputFeatures outputFeatures dtype device -&gt; String)
--&gt; ([Linear inputFeatures outputFeatures dtype device] -&gt; ShowS)
--&gt; Show (Linear inputFeatures outputFeatures dtype device)
-forall a.
-(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+</span><span id="line-46"></span><span>    </span><span class="annot"><a href="Torch.Typed.NN.Linear.html#Linear"><span class="hs-identifier hs-type">Linear</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735439"><span class="hs-identifier hs-type">inputFeatures</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735438"><span class="hs-identifier hs-type">outputFeatures</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735437"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735436"><span class="hs-identifier hs-type">device</span></a></span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679735258"><span id="local-6989586621679735260"><span id="local-6989586621679735267"><span class="annot"><span class="annottext">Int -&gt; Linear inputFeatures outputFeatures dtype device -&gt; ShowS
 forall (inputFeatures :: Nat) (outputFeatures :: Nat)
        (dtype :: DType) (device :: (DeviceType, Nat)).
 Int -&gt; Linear inputFeatures outputFeatures dtype device -&gt; ShowS
@@ -130,6 +109,8 @@ forall (inputFeatures :: Nat) (outputFeatures :: Nat)
 forall (inputFeatures :: Nat) (outputFeatures :: Nat)
        (dtype :: DType) (device :: (DeviceType, Nat)).
 Linear inputFeatures outputFeatures dtype device -&gt; String
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
 showList :: [Linear inputFeatures outputFeatures dtype device] -&gt; ShowS
 $cshowList :: forall (inputFeatures :: Nat) (outputFeatures :: Nat)
        (dtype :: DType) (device :: (DeviceType, Nat)).
@@ -142,29 +123,16 @@ showsPrec :: Int -&gt; Linear inputFeatures outputFeatures dtype device -&gt; Sh
 $cshowsPrec :: forall (inputFeatures :: Nat) (outputFeatures :: Nat)
        (dtype :: DType) (device :: (DeviceType, Nat)).
 Int -&gt; Linear inputFeatures outputFeatures dtype device -&gt; ShowS
-</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(forall x.
- Linear inputFeatures outputFeatures dtype device
- -&gt; Rep (Linear inputFeatures outputFeatures dtype device) x)
--&gt; (forall x.
-    Rep (Linear inputFeatures outputFeatures dtype device) x
-    -&gt; Linear inputFeatures outputFeatures dtype device)
--&gt; Generic (Linear inputFeatures outputFeatures dtype device)
-forall x.
+</span><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/base-4.16.3.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">forall (inputFeatures :: Nat) (outputFeatures :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)) x.
 Rep (Linear inputFeatures outputFeatures dtype device) x
 -&gt; Linear inputFeatures outputFeatures dtype device
-forall x.
+forall (inputFeatures :: Nat) (outputFeatures :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)) x.
 Linear inputFeatures outputFeatures dtype device
 -&gt; Rep (Linear inputFeatures outputFeatures dtype device) x
 forall a.
 (forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
-forall (inputFeatures :: Nat) (outputFeatures :: Nat)
-       (dtype :: DType) (device :: (DeviceType, Nat)) x.
-Rep (Linear inputFeatures outputFeatures dtype device) x
--&gt; Linear inputFeatures outputFeatures dtype device
-forall (inputFeatures :: Nat) (outputFeatures :: Nat)
-       (dtype :: DType) (device :: (DeviceType, Nat)) x.
-Linear inputFeatures outputFeatures dtype device
--&gt; Rep (Linear inputFeatures outputFeatures dtype device) x
 $cto :: forall (inputFeatures :: Nat) (outputFeatures :: Nat)
        (dtype :: DType) (device :: (DeviceType, Nat)) x.
 Rep (Linear inputFeatures outputFeatures dtype device) x
@@ -173,35 +141,20 @@ $cfrom :: forall (inputFeatures :: Nat) (outputFeatures :: Nat)
        (dtype :: DType) (device :: (DeviceType, Nat)) x.
 Linear inputFeatures outputFeatures dtype device
 -&gt; Rep (Linear inputFeatures outputFeatures dtype device) x
-</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></a></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679801232"><span id="local-6989586621679801234"><span class="annot"><span class="annottext">Linear inputFeatures outputFeatures dtype device
+</span><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/base-4.16.3.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></a></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679735251"><span id="local-6989586621679735253"><span class="annot"><span class="annottext">forall (inputFeatures :: Nat) (outputFeatures :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)).
+Linear inputFeatures outputFeatures dtype device
 -&gt; HList
      (Parameters (Linear inputFeatures outputFeatures dtype device))
+forall (inputFeatures :: Nat) (outputFeatures :: Nat)
+       (dtype :: DType) (device :: (DeviceType, Nat)).
 Linear inputFeatures outputFeatures dtype device
 -&gt; HList
      (Parameters (Linear inputFeatures outputFeatures dtype device))
 -&gt; Linear inputFeatures outputFeatures dtype device
-(Linear inputFeatures outputFeatures dtype device
- -&gt; HList
-      (Parameters (Linear inputFeatures outputFeatures dtype device)))
--&gt; (Linear inputFeatures outputFeatures dtype device
-    -&gt; HList
-         (Parameters (Linear inputFeatures outputFeatures dtype device))
-    -&gt; Linear inputFeatures outputFeatures dtype device)
--&gt; Parameterized (Linear inputFeatures outputFeatures dtype device)
 forall f.
 (f -&gt; HList (Parameters f))
 -&gt; (f -&gt; HList (Parameters f) -&gt; f) -&gt; Parameterized f
-forall (inputFeatures :: Nat) (outputFeatures :: Nat)
-       (dtype :: DType) (device :: (DeviceType, Nat)).
-Linear inputFeatures outputFeatures dtype device
--&gt; HList
-     (Parameters (Linear inputFeatures outputFeatures dtype device))
-forall (inputFeatures :: Nat) (outputFeatures :: Nat)
-       (dtype :: DType) (device :: (DeviceType, Nat)).
-Linear inputFeatures outputFeatures dtype device
--&gt; HList
-     (Parameters (Linear inputFeatures outputFeatures dtype device))
--&gt; Linear inputFeatures outputFeatures dtype device
 replaceParameters :: Linear inputFeatures outputFeatures dtype device
 -&gt; HList
      (Parameters (Linear inputFeatures outputFeatures dtype device))
@@ -261,7 +214,7 @@ Linear inputFeatures outputFeatures dtype device
                  (ComputeMatMul
                     (ReverseImpl shape '[]) '[outputFeatures, inputFeatures]))
               '[])))
-</span><a href="Torch.Typed.NN.Linear.html#linearForward"><span class="hs-identifier hs-var hs-var">linearForward</span></a></span></span><span> </span><span class="annot"><a href="Torch.Typed.NN.Linear.html#Linear"><span class="hs-identifier hs-type">Linear</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679801224"><span id="local-6989586621679801225"><span class="annot"><span class="annottext">Parameter w w '[outputFeatures, inputFeatures]
+</span><a href="Torch.Typed.NN.Linear.html#linearForward"><span class="hs-identifier hs-var hs-var">linearForward</span></a></span></span><span> </span><span class="annot"><a href="Torch.Typed.NN.Linear.html#Linear"><span class="hs-identifier hs-type">Linear</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679735244"><span id="local-6989586621679735245"><span class="annot"><span class="annottext">Parameter w w '[outputFeatures, inputFeatures]
 Parameter w w '[outputFeatures]
 linearBias :: Parameter w w '[outputFeatures]
 linearWeight :: Parameter w w '[outputFeatures, inputFeatures]
@@ -273,40 +226,8 @@ linearWeight :: forall (inputFeatures :: Nat) (outputFeatures :: Nat)
        (dtype :: DType) (device :: (DeviceType, Nat)).
 Linear inputFeatures outputFeatures dtype device
 -&gt; Parameter device dtype '[outputFeatures, inputFeatures]
-</span><a href="#local-6989586621679801224"><span class="hs-glyph hs-var hs-var hs-var hs-var">..</span></a></span></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679801223"><span class="annot"><span class="annottext">Tensor w w shape
-</span><a href="#local-6989586621679801223"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Tensor w w '[outputFeatures, inputFeatures]
--&gt; Tensor w w '[outputFeatures]
--&gt; Tensor w w shape
--&gt; Tensor
-     w
-     w
-     (CheckBroadcast
-        (CheckMatMul
-           shape
-           '[inputFeatures, outputFeatures]
-           (ComputeMatMul
-              (ReverseImpl shape '[]) '[outputFeatures, inputFeatures]))
-        (CheckMatMul
-           shape
-           '[inputFeatures, outputFeatures]
-           (ComputeMatMul
-              (ReverseImpl shape '[]) '[outputFeatures, inputFeatures]))
-        (ComputeBroadcast
-           (ReverseImpl
-              (CheckMatMul
-                 shape
-                 '[inputFeatures, outputFeatures]
-                 (ComputeMatMul
-                    (ReverseImpl shape '[]) '[outputFeatures, inputFeatures]))
-              '[])
-           (ReverseImpl
-              (CheckMatMul
-                 shape
-                 '[inputFeatures, outputFeatures]
-                 (ComputeMatMul
-                    (ReverseImpl shape '[]) '[outputFeatures, inputFeatures]))
-              '[])))
-forall (inputFeatures :: Nat) (outputFeatures :: Nat)
+</span><a href="#local-6989586621679735244"><span class="hs-glyph hs-var hs-var hs-var hs-var">..</span></a></span></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679735243"><span class="annot"><span class="annottext">Tensor w w shape
+</span><a href="#local-6989586621679735243"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">forall (inputFeatures :: Nat) (outputFeatures :: Nat)
        (shape :: [Nat]) (shape' :: [Nat]) (dtype :: DType)
        (device :: (DeviceType, Nat)) (shape'' :: [Nat]).
 (shape'' ~ MatMul shape '[inputFeatures, outputFeatures],
@@ -315,31 +236,26 @@ Tensor device dtype '[outputFeatures, inputFeatures]
 -&gt; Tensor device dtype '[outputFeatures]
 -&gt; Tensor device dtype shape
 -&gt; Tensor device dtype shape'
-</span><a href="Torch.Typed.Functional.html#linear%27"><span class="hs-identifier hs-var">linear'</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parameter w w '[outputFeatures, inputFeatures]
--&gt; Tensor w w '[outputFeatures, inputFeatures]
-forall (shape :: [Nat]) (dtype :: DType)
+</span><a href="Torch.Typed.Functional.html#linear%27"><span class="hs-identifier hs-var">linear'</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">forall (shape :: [Nat]) (dtype :: DType)
        (device :: (DeviceType, Nat)).
 Parameter device dtype shape -&gt; Tensor device dtype shape
 </span><a href="Torch.Typed.Parameter.html#toDependent"><span class="hs-identifier hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">Parameter w w '[outputFeatures, inputFeatures]
-</span><a href="#local-6989586621679801225"><span class="hs-identifier hs-var">linearWeight</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parameter w w '[outputFeatures] -&gt; Tensor w w '[outputFeatures]
-forall (shape :: [Nat]) (dtype :: DType)
+</span><a href="#local-6989586621679735245"><span class="hs-identifier hs-var">linearWeight</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">forall (shape :: [Nat]) (dtype :: DType)
        (device :: (DeviceType, Nat)).
 Parameter device dtype shape -&gt; Tensor device dtype shape
 </span><a href="Torch.Typed.Parameter.html#toDependent"><span class="hs-identifier hs-var">toDependent</span></a></span><span> </span><span class="annot"><span class="annottext">Parameter w w '[outputFeatures]
-</span><a href="#local-6989586621679801224"><span class="hs-identifier hs-var">linearBias</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Tensor w w shape
-</span><a href="#local-6989586621679801223"><span class="hs-identifier hs-var">input</span></a></span><span>
+</span><a href="#local-6989586621679735244"><span class="hs-identifier hs-var">linearBias</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Tensor w w shape
+</span><a href="#local-6989586621679735243"><span class="hs-identifier hs-var">input</span></a></span><span>
 </span><span id="line-58"></span><span>
-</span><span id="line-59"></span><span id="local-6989586621679801358"><span id="local-6989586621679801359"><span id="local-6989586621679801360"><span id="local-6989586621679801361"><span id="local-6989586621679801362"><span id="local-6989586621679801363"><span id="local-6989586621679801364"><span class="hs-keyword">instance</span><span>
-</span><span id="line-60"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="#local-6989586621679801364"><span class="hs-identifier hs-type">shape''</span></a></span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-operator hs-type">~</span></a></span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#MatMul"><span class="hs-identifier hs-type">MatMul</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801363"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679801362"><span class="hs-identifier hs-type">inputFeatures</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679801361"><span class="hs-identifier hs-type">outputFeatures</span></a></span><span class="hs-special">]</span><span class="hs-special">,</span><span>
-</span><span id="line-61"></span><span>    </span><span class="annot"><a href="#local-6989586621679801360"><span class="hs-identifier hs-type">shape'</span></a></span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/ghc-prim-0.7.0/src"><span class="hs-operator hs-type">~</span></a></span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#Broadcast"><span class="hs-identifier hs-type">Broadcast</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801364"><span class="hs-identifier hs-type">shape''</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801364"><span class="hs-identifier hs-type">shape''</span></a></span><span>
+</span><span id="line-59"></span><span class="hs-keyword">instance</span><span>
+</span><span id="line-60"></span><span>  </span><span id="local-6989586621679735377"><span id="local-6989586621679735378"><span id="local-6989586621679735379"><span id="local-6989586621679735380"><span id="local-6989586621679735381"><span id="local-6989586621679735382"><span id="local-6989586621679735383"><span class="hs-special">(</span><span> </span><span class="annot"><a href="#local-6989586621679735383"><span class="hs-identifier hs-type">shape''</span></a></span><span> </span><span class="annot"><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/ghc-prim-0.8.0/src"><span class="hs-operator hs-type">~</span></a></span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#MatMul"><span class="hs-identifier hs-type">MatMul</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735382"><span class="hs-identifier hs-type">shape</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679735381"><span class="hs-identifier hs-type">inputFeatures</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679735380"><span class="hs-identifier hs-type">outputFeatures</span></a></span><span class="hs-special">]</span><span class="hs-special">,</span><span>
+</span><span id="line-61"></span><span>    </span><span class="annot"><a href="#local-6989586621679735379"><span class="hs-identifier hs-type">shape'</span></a></span><span> </span><span class="annot"><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/ghc-prim-0.8.0/src"><span class="hs-operator hs-type">~</span></a></span><span> </span><span class="annot"><a href="Torch.Typed.Tensor.html#Broadcast"><span class="hs-identifier hs-type">Broadcast</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735383"><span class="hs-identifier hs-type">shape''</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735383"><span class="hs-identifier hs-type">shape''</span></a></span><span>
 </span><span id="line-62"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
-</span><span id="line-63"></span><span>  </span><span class="annot"><a href="Torch.NN.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.NN.Linear.html#Linear"><span class="hs-identifier hs-type">Linear</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801362"><span class="hs-identifier hs-type">inputFeatures</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801361"><span class="hs-identifier hs-type">outputFeatures</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801359"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801358"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801358"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801359"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801363"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801358"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801359"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801360"><span class="hs-identifier hs-type">shape'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-63"></span><span>  </span><span class="annot"><a href="Torch.NN.html#HasForward"><span class="hs-identifier hs-type">HasForward</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.NN.Linear.html#Linear"><span class="hs-identifier hs-type">Linear</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735381"><span class="hs-identifier hs-type">inputFeatures</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735380"><span class="hs-identifier hs-type">outputFeatures</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735378"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735377"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735377"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735378"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735382"><span class="hs-identifier hs-type">shape</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.Tensor.html#Tensor"><span class="hs-identifier hs-type">Tensor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735377"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735378"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735379"><span class="hs-identifier hs-type">shape'</span></a></span><span class="hs-special">)</span></span></span></span></span></span></span></span><span>
 </span><span id="line-64"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-65"></span><span>  </span><span id="local-6989586621679801202"><span class="annot"><span class="annottext">forward :: Linear inputFeatures outputFeatures dtype device
+</span><span id="line-65"></span><span>  </span><span id="local-6989586621679735228"><span class="annot"><span class="annottext">forward :: Linear inputFeatures outputFeatures dtype device
 -&gt; Tensor device dtype shape -&gt; Tensor device dtype shape'
-</span><a href="Torch.NN.html#forward"><span class="hs-identifier hs-var hs-var hs-var hs-var">forward</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Linear inputFeatures outputFeatures dtype device
--&gt; Tensor device dtype shape -&gt; Tensor device dtype shape'
-forall {inputFeatures :: Nat} {outputFeatures :: Nat} {w :: DType}
+</span><a href="Torch.NN.html#forward"><span class="hs-identifier hs-var hs-var hs-var hs-var">forward</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">forall {inputFeatures :: Nat} {outputFeatures :: Nat} {w :: DType}
        {w :: (DeviceType, Nat)} {shape :: [Nat]}.
 Linear inputFeatures outputFeatures w w
 -&gt; Tensor w w shape
@@ -373,96 +289,53 @@ Linear inputFeatures outputFeatures w w
                     (ReverseImpl shape '[]) '[outputFeatures, inputFeatures]))
               '[])))
 </span><a href="Torch.Typed.NN.Linear.html#linearForward"><span class="hs-identifier hs-var">linearForward</span></a></span><span>
-</span><span id="line-66"></span><span>  </span><span id="local-6989586621679801194"><span class="annot"><span class="annottext">forwardStoch :: Linear inputFeatures outputFeatures dtype device
+</span><span id="line-66"></span><span>  </span><span id="local-6989586621679735220"><span class="annot"><span class="annottext">forwardStoch :: Linear inputFeatures outputFeatures dtype device
 -&gt; Tensor device dtype shape -&gt; IO (Tensor device dtype shape')
-</span><a href="Torch.NN.html#forwardStoch"><span class="hs-identifier hs-var hs-var hs-var hs-var">forwardStoch</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor device dtype shape' -&gt; IO (Tensor device dtype shape')
-forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
-</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor device dtype shape' -&gt; IO (Tensor device dtype shape'))
--&gt; (Tensor device dtype shape -&gt; Tensor device dtype shape')
--&gt; Tensor device dtype shape
--&gt; IO (Tensor device dtype shape')
-forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
-</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">.</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">((Tensor device dtype shape -&gt; Tensor device dtype shape')
- -&gt; Tensor device dtype shape -&gt; IO (Tensor device dtype shape'))
--&gt; (Linear inputFeatures outputFeatures dtype device
-    -&gt; Tensor device dtype shape -&gt; Tensor device dtype shape')
--&gt; Linear inputFeatures outputFeatures dtype device
--&gt; Tensor device dtype shape
--&gt; IO (Tensor device dtype shape')
-forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
-</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">Linear inputFeatures outputFeatures dtype device
--&gt; Tensor device dtype shape -&gt; Tensor device dtype shape'
-forall f a b. HasForward f a b =&gt; f -&gt; a -&gt; b
-</span><a href="Torch.NN.html#forward"><span class="hs-identifier hs-var">forward</span></a></span></span></span></span></span></span></span></span><span>
+</span><a href="Torch.NN.html#forwardStoch"><span class="hs-identifier hs-var hs-var hs-var hs-var">forwardStoch</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/base-4.16.3.0/src"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/base-4.16.3.0/src"><span class="hs-operator hs-var">.</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/base-4.16.3.0/src"><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">forall f a b. HasForward f a b =&gt; f -&gt; a -&gt; b
+</span><a href="Torch.NN.html#forward"><span class="hs-identifier hs-var">forward</span></a></span><span>
 </span><span id="line-67"></span><span>
-</span><span id="line-68"></span><span id="local-6989586621679801339"><span id="local-6989586621679801340"><span id="local-6989586621679801341"><span id="local-6989586621679801342"><span class="hs-keyword">instance</span><span>
-</span><span id="line-69"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-type">KnownNat</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801342"><span class="hs-identifier hs-type">inputFeatures</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-70"></span><span>    </span><span class="annot"><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-identifier hs-type">KnownNat</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801341"><span class="hs-identifier hs-type">outputFeatures</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-71"></span><span>    </span><span class="annot"><a href="Torch.Typed.Tensor.html#KnownDType"><span class="hs-identifier hs-type">KnownDType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801340"><span class="hs-identifier hs-type">dtype</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-72"></span><span>    </span><span class="annot"><a href="Torch.Typed.Tensor.html#KnownDevice"><span class="hs-identifier hs-type">KnownDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801339"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-73"></span><span>    </span><span class="annot"><a href="Torch.Typed.Factories.html#RandDTypeIsValid"><span class="hs-identifier hs-type">RandDTypeIsValid</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801339"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801340"><span class="hs-identifier hs-type">dtype</span></a></span><span>
+</span><span id="line-68"></span><span class="hs-keyword">instance</span><span>
+</span><span id="line-69"></span><span>  </span><span id="local-6989586621679735358"><span id="local-6989586621679735359"><span id="local-6989586621679735360"><span id="local-6989586621679735361"><span class="hs-special">(</span><span> </span><span class="annot"><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/base-4.16.3.0/src"><span class="hs-identifier hs-type">KnownNat</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735361"><span class="hs-identifier hs-type">inputFeatures</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-70"></span><span>    </span><span class="annot"><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/base-4.16.3.0/src"><span class="hs-identifier hs-type">KnownNat</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735360"><span class="hs-identifier hs-type">outputFeatures</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-71"></span><span>    </span><span class="annot"><a href="Torch.Typed.Tensor.html#KnownDType"><span class="hs-identifier hs-type">KnownDType</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735359"><span class="hs-identifier hs-type">dtype</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-72"></span><span>    </span><span class="annot"><a href="Torch.Typed.Tensor.html#KnownDevice"><span class="hs-identifier hs-type">KnownDevice</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735358"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-73"></span><span>    </span><span class="annot"><a href="Torch.Typed.Factories.html#RandDTypeIsValid"><span class="hs-identifier hs-type">RandDTypeIsValid</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735358"><span class="hs-identifier hs-type">device</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735359"><span class="hs-identifier hs-type">dtype</span></a></span><span>
 </span><span id="line-74"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
 </span><span id="line-75"></span><span>  </span><span class="annot"><a href="Torch.NN.html#Randomizable"><span class="hs-identifier hs-type">Randomizable</span></a></span><span>
-</span><span id="line-76"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.NN.Linear.html#LinearSpec"><span class="hs-identifier hs-type">LinearSpec</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801342"><span class="hs-identifier hs-type">inputFeatures</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801341"><span class="hs-identifier hs-type">outputFeatures</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801340"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801339"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-77"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.NN.Linear.html#Linear"><span class="hs-identifier hs-type">Linear</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801342"><span class="hs-identifier hs-type">inputFeatures</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801341"><span class="hs-identifier hs-type">outputFeatures</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801340"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679801339"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-76"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.NN.Linear.html#LinearSpec"><span class="hs-identifier hs-type">LinearSpec</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735361"><span class="hs-identifier hs-type">inputFeatures</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735360"><span class="hs-identifier hs-type">outputFeatures</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735359"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735358"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-77"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Torch.Typed.NN.Linear.html#Linear"><span class="hs-identifier hs-type">Linear</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735361"><span class="hs-identifier hs-type">inputFeatures</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735360"><span class="hs-identifier hs-type">outputFeatures</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735359"><span class="hs-identifier hs-type">dtype</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679735358"><span class="hs-identifier hs-type">device</span></a></span><span class="hs-special">)</span></span></span></span></span><span>
 </span><span id="line-78"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-79"></span><span>  </span><span id="local-6989586621679801166"><span class="annot"><span class="annottext">sample :: LinearSpec inputFeatures outputFeatures dtype device
+</span><span id="line-79"></span><span>  </span><span id="local-6989586621679735195"><span class="annot"><span class="annottext">sample :: LinearSpec inputFeatures outputFeatures dtype device
 -&gt; IO (Linear inputFeatures outputFeatures dtype device)
 </span><a href="Torch.NN.html#sample"><span class="hs-identifier hs-var hs-var hs-var hs-var">sample</span></a></span></span><span> </span><span class="annot"><span class="annottext">LinearSpec inputFeatures outputFeatures dtype device
 </span><a href="Torch.Typed.NN.Linear.html#LinearSpec"><span class="hs-identifier hs-var">LinearSpec</span></a></span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-80"></span><span>    </span><span class="annot"><span class="annottext">Parameter device dtype '[outputFeatures, inputFeatures]
--&gt; Parameter device dtype '[outputFeatures]
--&gt; Linear inputFeatures outputFeatures dtype device
-forall (inputFeatures :: Nat) (outputFeatures :: Nat)
+</span><span id="line-80"></span><span>    </span><span class="annot"><span class="annottext">forall (inputFeatures :: Nat) (outputFeatures :: Nat)
        (dtype :: DType) (device :: (DeviceType, Nat)).
 Parameter device dtype '[outputFeatures, inputFeatures]
 -&gt; Parameter device dtype '[outputFeatures]
 -&gt; Linear inputFeatures outputFeatures dtype device
-</span><a href="Torch.Typed.NN.Linear.html#Linear"><span class="hs-identifier hs-var">Linear</span></a></span><span> </span><span class="annot"><span class="annottext">(Parameter device dtype '[outputFeatures, inputFeatures]
- -&gt; Parameter device dtype '[outputFeatures]
- -&gt; Linear inputFeatures outputFeatures dtype device)
--&gt; IO (Parameter device dtype '[outputFeatures, inputFeatures])
--&gt; IO
-     (Parameter device dtype '[outputFeatures]
-      -&gt; Linear inputFeatures outputFeatures dtype device)
-forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
-</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">&lt;$&gt;</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor device dtype '[outputFeatures, inputFeatures]
--&gt; IO (Parameter device dtype '[outputFeatures, inputFeatures])
-forall (shape :: [Nat]) (dtype :: DType)
+</span><a href="Torch.Typed.NN.Linear.html#Linear"><span class="hs-identifier hs-var">Linear</span></a></span><span> </span><span class="annot"><span class="annottext">forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/base-4.16.3.0/src"><span class="hs-operator hs-var">&lt;$&gt;</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">forall (shape :: [Nat]) (dtype :: DType)
        (device :: (DeviceType, Nat)).
 Tensor device dtype shape -&gt; IO (Parameter device dtype shape)
-</span><a href="Torch.Typed.Parameter.html#makeIndependent"><span class="hs-identifier hs-var">makeIndependent</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor device dtype '[outputFeatures, inputFeatures]
- -&gt; IO (Parameter device dtype '[outputFeatures, inputFeatures]))
--&gt; IO (Tensor device dtype '[outputFeatures, inputFeatures])
--&gt; IO (Parameter device dtype '[outputFeatures, inputFeatures])
-forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
-</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">=&lt;&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">IO (Tensor device dtype '[outputFeatures, inputFeatures])
-forall (shape :: [Nat]) (dtype :: DType)
+</span><a href="Torch.Typed.Parameter.html#makeIndependent"><span class="hs-identifier hs-var">makeIndependent</span></a></span><span> </span><span class="annot"><span class="annottext">forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
+</span><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/base-4.16.3.0/src"><span class="hs-operator hs-var">=&lt;&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">forall (shape :: [Nat]) (dtype :: DType)
        (device :: (DeviceType, Nat)).
 (TensorOptions shape dtype device,
  RandDTypeIsValid device dtype) =&gt;
 IO (Tensor device dtype shape)
-</span><a href="Torch.Typed.Factories.html#randn"><span class="hs-identifier hs-var">randn</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">IO
-  (Parameter device dtype '[outputFeatures]
-   -&gt; Linear inputFeatures outputFeatures dtype device)
--&gt; IO (Parameter device dtype '[outputFeatures])
--&gt; IO (Linear inputFeatures outputFeatures dtype device)
-forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
-</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">&lt;*&gt;</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Tensor device dtype '[outputFeatures]
--&gt; IO (Parameter device dtype '[outputFeatures])
-forall (shape :: [Nat]) (dtype :: DType)
+</span><a href="Torch.Typed.Factories.html#randn"><span class="hs-identifier hs-var">randn</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/base-4.16.3.0/src"><span class="hs-operator hs-var">&lt;*&gt;</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">forall (shape :: [Nat]) (dtype :: DType)
        (device :: (DeviceType, Nat)).
 Tensor device dtype shape -&gt; IO (Parameter device dtype shape)
-</span><a href="Torch.Typed.Parameter.html#makeIndependent"><span class="hs-identifier hs-var">makeIndependent</span></a></span><span> </span><span class="annot"><span class="annottext">(Tensor device dtype '[outputFeatures]
- -&gt; IO (Parameter device dtype '[outputFeatures]))
--&gt; IO (Tensor device dtype '[outputFeatures])
--&gt; IO (Parameter device dtype '[outputFeatures])
-forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
-</span><a href="../file:///nix/store/x3gpcfbfmnj29qsjqcir8xf4ia6lc9sw-ghc-9.0.2-doc/share/doc/ghc/html/libraries/base-4.15.1.0/src"><span class="hs-operator hs-var">=&lt;&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">IO (Tensor device dtype '[outputFeatures])
-forall (shape :: [Nat]) (dtype :: DType)
+</span><a href="Torch.Typed.Parameter.html#makeIndependent"><span class="hs-identifier hs-var">makeIndependent</span></a></span><span> </span><span class="annot"><span class="annottext">forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
+</span><a href="../file:///nix/store/9z106fx3296sgdwa5s05xi381ayi6qfk-ghc-9.2.4-doc/share/doc/ghc/html/libraries/base-4.16.3.0/src"><span class="hs-operator hs-var">=&lt;&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">forall (shape :: [Nat]) (dtype :: DType)
        (device :: (DeviceType, Nat)).
 (TensorOptions shape dtype device,
  RandDTypeIsValid device dtype) =&gt;
 IO (Tensor device dtype shape)
-</span><a href="Torch.Typed.Factories.html#randn"><span class="hs-identifier hs-var">randn</span></a></span><span class="hs-special">)</span></span></span></span></span><span>
+</span><a href="Torch.Typed.Factories.html#randn"><span class="hs-identifier hs-var">randn</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-81"></span></pre></body></html>

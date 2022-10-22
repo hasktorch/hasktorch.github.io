@@ -271,7 +271,7 @@ module Torch.GraduallyTyped.Prelude
 
 -- | The kind of types with lifted values. For example <tt>Int ::
 --   Type</tt>.
-type Type = Type
+type Type = TYPE LiftedRep
 
 -- | The kind of constraints, like <tt>Show a</tt>
 data Constraint
@@ -316,20 +316,6 @@ infixr 2 ||
 --   False a b</tt> ==&gt; <tt>b</tt>
 type family If (cond :: Bool) (tru :: k) (fls :: k) :: k
 
--- | (Kind) This is the kind of type-level natural numbers.
-data Nat
-
--- | Addition of type-level naturals.
-type family (a :: Nat) + (b :: Nat) :: Nat
-infixl 6 +
-
--- | Multiplication of type-level naturals.
-type family (a :: Nat) * (b :: Nat) :: Nat
-infixl 7 *
-
--- | Comparison of type-level naturals, as a function.
-type family CmpNat (a :: Nat) (b :: Nat) :: Ordering
-
 -- | The type-level equivalent of <a>error</a>.
 --   
 --   The polymorphic kind of this type allows it to be used in several
@@ -356,6 +342,17 @@ type family CmpNat (a :: Nat) (b :: Nat) :: Ordering
 --   </pre>
 type family TypeError (a :: ErrorMessage) :: b
 
+-- | Addition of type-level naturals.
+type family (a :: Natural) + (b :: Natural) :: Natural
+infixl 6 +
+
+-- | Multiplication of type-level naturals.
+type family (a :: Natural) * (b :: Natural) :: Natural
+infixl 7 *
+
+-- | Comparison of type-level naturals, as a function.
+type family CmpNat (a :: Natural) (b :: Natural) :: Ordering
+
 -- | A description of a custom type error.
 data ErrorMessage
 
@@ -372,6 +369,12 @@ ShowType :: t -> ErrorMessage
 (:$$:) :: ErrorMessage -> ErrorMessage -> ErrorMessage
 infixl 5 :$$:
 infixl 6 :<>:
+
+-- | A type synonym for <a>Natural</a>.
+--   
+--   Prevously, this was an opaque data type, but it was changed to a type
+--   synonym.
+type Nat = Natural
 data SList (a1 :: [a])
 [SNil] :: forall a. SList ('[] :: [a])
 [SCons] :: forall a (n1 :: a) (n2 :: [a]). Sing n1 -> Sing n2 -> SList (n1 : n2)
@@ -387,7 +390,7 @@ pattern (:|:) :: forall a as. Sing a -> SList as -> SList (a : as)
 infixr 8 :|:
 type family All (c :: k -> Constraint) (xs :: [k]) :: Constraint
 class KnownElem k x where {
-    type family ElemValF k :: Type;
+    type ElemValF k :: Type;
 }
 elemVal :: KnownElem k x => ElemValF k
 class KnownList k (xs :: [k])
@@ -606,7 +609,7 @@ newtype DemotedIndex
 DemotedIndex :: Integer -> DemotedIndex
 instance GHC.Show.Show index => GHC.Show.Show (Torch.GraduallyTyped.Index.Type.Index index)
 instance GHC.Show.Show (Torch.GraduallyTyped.Index.Type.SIndex index)
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.Index.Type.Index GHC.Types.Nat)
+instance Data.Singletons.SingKind (Torch.GraduallyTyped.Index.Type.Index GHC.TypeNats.Nat)
 instance GHC.TypeNats.KnownNat index => Data.Singletons.SingI ('Torch.GraduallyTyped.Index.Type.Index index)
 instance GHC.TypeNats.KnownNat index => Data.Singletons.SingI ('Torch.GraduallyTyped.Index.Type.NegativeIndex index)
 
@@ -651,10 +654,10 @@ instance GHC.Show.Show (Torch.GraduallyTyped.Device.SDevice device)
 instance Torch.GraduallyTyped.Device.KnownDevice 'Torch.GraduallyTyped.Device.UncheckedDevice
 instance Torch.GraduallyTyped.Device.KnownDeviceType deviceType => Torch.GraduallyTyped.Device.KnownDevice ('Torch.GraduallyTyped.Device.Device deviceType)
 instance Data.Singletons.SingI deviceType => Data.Singletons.SingI ('Torch.GraduallyTyped.Device.Device deviceType)
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.Device.Device (Torch.GraduallyTyped.Device.DeviceType GHC.Types.Nat))
+instance Data.Singletons.SingKind (Torch.GraduallyTyped.Device.Device (Torch.GraduallyTyped.Device.DeviceType GHC.TypeNats.Nat))
 instance Torch.GraduallyTyped.Device.KnownDeviceType 'Torch.GraduallyTyped.Device.CPU
 instance GHC.TypeNats.KnownNat deviceId => Torch.GraduallyTyped.Device.KnownDeviceType ('Torch.GraduallyTyped.Device.CUDA deviceId)
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.Device.DeviceType GHC.Types.Nat)
+instance Data.Singletons.SingKind (Torch.GraduallyTyped.Device.DeviceType GHC.TypeNats.Nat)
 instance Data.Singletons.SingI 'Torch.GraduallyTyped.Device.CPU
 instance GHC.TypeNats.KnownNat deviceId => Data.Singletons.SingI ('Torch.GraduallyTyped.Device.CUDA deviceId)
 
@@ -880,9 +883,9 @@ type family NameF (name :: Name Symbol) :: Symbol
 class KnownName (name :: Name Symbol)
 nameVal :: KnownName name => Name String
 data Dim (name :: Type) (size :: Type)
-[Dim] :: forall name size. {dimName :: name, dimSize :: size} -> Dim name size
+[Dim] :: forall name size. name -> size -> Dim name size
 data SDim (dim :: Dim (Name Symbol) (Size Nat))
-[SDim] :: forall name size. {sDimName :: SName name, sDimSize :: SSize size} -> SDim ('Dim name size)
+[SDim] :: forall name size. SName name -> SSize size -> SDim ('Dim name size)
 pattern (:&:) :: forall (name :: Name Symbol) (size :: Size Nat). SName name -> SSize size -> SDim ('Dim name size)
 infix 9 :&:
 class KnownDim (dim :: Dim (Name Symbol) (Size Nat))
@@ -963,24 +966,24 @@ instance Torch.GraduallyTyped.Shape.Type.KnownShape 'Torch.GraduallyTyped.Shape.
 instance Torch.GraduallyTyped.Shape.Type.KnownShape ('Torch.GraduallyTyped.Shape.Type.Shape '[])
 instance (Torch.GraduallyTyped.Shape.Type.KnownShape ('Torch.GraduallyTyped.Shape.Type.Shape dims), Torch.GraduallyTyped.Shape.Type.KnownDim dim) => Torch.GraduallyTyped.Shape.Type.KnownShape ('Torch.GraduallyTyped.Shape.Type.Shape (dim : dims))
 instance Data.Singletons.SingI dims => Data.Singletons.SingI ('Torch.GraduallyTyped.Shape.Type.Shape dims)
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.Shape.Type.Shape [Torch.GraduallyTyped.Shape.Type.Dim (Torch.GraduallyTyped.Shape.Type.Name GHC.Types.Symbol) (Torch.GraduallyTyped.Shape.Type.Size GHC.Types.Nat)])
+instance Data.Singletons.SingKind (Torch.GraduallyTyped.Shape.Type.Shape [Torch.GraduallyTyped.Shape.Type.Dim (Torch.GraduallyTyped.Shape.Type.Name GHC.Types.Symbol) (Torch.GraduallyTyped.Shape.Type.Size GHC.TypeNats.Nat)])
 instance Torch.GraduallyTyped.Shape.Type.KnownSelectDims 'Torch.GraduallyTyped.Shape.Type.UncheckedSelectDims
 instance Torch.GraduallyTyped.Shape.Type.KnownSelectDims ('Torch.GraduallyTyped.Shape.Type.SelectDims '[])
 instance (Torch.GraduallyTyped.Shape.Type.KnownBy by, Torch.GraduallyTyped.Shape.Type.KnownSelectDims ('Torch.GraduallyTyped.Shape.Type.SelectDims bys)) => Torch.GraduallyTyped.Shape.Type.KnownSelectDims ('Torch.GraduallyTyped.Shape.Type.SelectDims (by : bys))
 instance Data.Singletons.SingI bys => Data.Singletons.SingI ('Torch.GraduallyTyped.Shape.Type.SelectDims bys)
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.Shape.Type.SelectDims [Torch.GraduallyTyped.Shape.Type.By GHC.Types.Symbol GHC.Types.Nat])
+instance Data.Singletons.SingKind (Torch.GraduallyTyped.Shape.Type.SelectDims [Torch.GraduallyTyped.Shape.Type.By GHC.Types.Symbol GHC.TypeNats.Nat])
 instance Torch.GraduallyTyped.Shape.Type.KnownSelectDim 'Torch.GraduallyTyped.Shape.Type.UncheckedSelectDim
 instance Torch.GraduallyTyped.Shape.Type.KnownBy by => Torch.GraduallyTyped.Shape.Type.KnownSelectDim ('Torch.GraduallyTyped.Shape.Type.SelectDim by)
 instance Data.Singletons.SingI by => Data.Singletons.SingI ('Torch.GraduallyTyped.Shape.Type.SelectDim by)
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.Shape.Type.SelectDim (Torch.GraduallyTyped.Shape.Type.By GHC.Types.Symbol GHC.Types.Nat))
+instance Data.Singletons.SingKind (Torch.GraduallyTyped.Shape.Type.SelectDim (Torch.GraduallyTyped.Shape.Type.By GHC.Types.Symbol GHC.TypeNats.Nat))
 instance GHC.TypeLits.KnownSymbol name => Torch.GraduallyTyped.Shape.Type.KnownBy ('Torch.GraduallyTyped.Shape.Type.ByName name)
 instance GHC.TypeNats.KnownNat index => Torch.GraduallyTyped.Shape.Type.KnownBy ('Torch.GraduallyTyped.Shape.Type.ByIndex index)
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.Shape.Type.By GHC.Types.Symbol GHC.Types.Nat)
+instance Data.Singletons.SingKind (Torch.GraduallyTyped.Shape.Type.By GHC.Types.Symbol GHC.TypeNats.Nat)
 instance GHC.TypeLits.KnownSymbol name => Data.Singletons.SingI ('Torch.GraduallyTyped.Shape.Type.ByName name)
 instance GHC.TypeNats.KnownNat index => Data.Singletons.SingI ('Torch.GraduallyTyped.Shape.Type.ByIndex index)
 instance (Torch.GraduallyTyped.Shape.Type.KnownName name, Torch.GraduallyTyped.Shape.Type.KnownSize size) => Torch.GraduallyTyped.Shape.Type.KnownDim ('Torch.GraduallyTyped.Shape.Type.Dim name size)
 instance (GHC.TypeLits.KnownSymbol name, GHC.TypeNats.KnownNat size) => Data.Singletons.SingI ('Torch.GraduallyTyped.Shape.Type.Dim ('Torch.GraduallyTyped.Shape.Type.Name name) ('Torch.GraduallyTyped.Shape.Type.Size size))
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.Shape.Type.Dim (Torch.GraduallyTyped.Shape.Type.Name GHC.Types.Symbol) (Torch.GraduallyTyped.Shape.Type.Size GHC.Types.Nat))
+instance Data.Singletons.SingKind (Torch.GraduallyTyped.Shape.Type.Dim (Torch.GraduallyTyped.Shape.Type.Name GHC.Types.Symbol) (Torch.GraduallyTyped.Shape.Type.Size GHC.TypeNats.Nat))
 instance Data.Bifunctor.Bifunctor Torch.GraduallyTyped.Shape.Type.Dim
 instance Torch.GraduallyTyped.Shape.Type.KnownName 'Torch.GraduallyTyped.Shape.Type.UncheckedName
 instance GHC.TypeLits.KnownSymbol name => Torch.GraduallyTyped.Shape.Type.KnownName ('Torch.GraduallyTyped.Shape.Type.Name name)
@@ -988,7 +991,7 @@ instance Data.Singletons.SingKind (Torch.GraduallyTyped.Shape.Type.Name GHC.Type
 instance GHC.TypeLits.KnownSymbol name => Data.Singletons.SingI ('Torch.GraduallyTyped.Shape.Type.Name name)
 instance Torch.GraduallyTyped.Shape.Type.KnownSize 'Torch.GraduallyTyped.Shape.Type.UncheckedSize
 instance GHC.TypeNats.KnownNat size => Torch.GraduallyTyped.Shape.Type.KnownSize ('Torch.GraduallyTyped.Shape.Type.Size size)
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.Shape.Type.Size GHC.Types.Nat)
+instance Data.Singletons.SingKind (Torch.GraduallyTyped.Shape.Type.Size GHC.TypeNats.Nat)
 instance GHC.TypeNats.KnownNat size => Data.Singletons.SingI ('Torch.GraduallyTyped.Shape.Type.Size size)
 instance Torch.Internal.Class.Castable GHC.Base.String (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Dimname)
 instance Torch.Internal.Class.Castable [GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.Dimname] (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.DimnameList)
@@ -1244,7 +1247,7 @@ module Torch.GraduallyTyped.Tensor.Type
 --                            │               │
 --   Tensor gradient layout device dataType shape
 --             │       │              │
---             │       │              └─► Data type, e.g. `'DataType <a>Float</a>
+--             │       │              └─► Data type, e.g. `'DataType <a>DType</a>
 --             │       │
 --             │       └─► Memory layout, e.g. `'Layout <a>Dense</a>
 --             │
@@ -1256,7 +1259,7 @@ newtype Tensor (gradient :: Gradient RequiresGradient) (layout :: Layout LayoutT
 --   use smart constructors like <tt>ones</tt> or <tt>randn</tt> instead.
 [UnsafeTensor] :: forall gradient layout device dataType shape. ForeignPtr Tensor -> Tensor gradient layout device dataType shape
 data TensorSpec (gradient :: Gradient RequiresGradient) (layout :: Layout LayoutType) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (shape :: Shape [Dim (Name Symbol) (Size Nat)])
-[TensorSpec] :: forall gradient layout device dataType shape. {tsGradient :: SGradient gradient, tsLayout :: SLayout layout, tsDevice :: SDevice device, tsDataType :: SDataType dataType, tsShape :: SShape shape} -> TensorSpec gradient layout device dataType shape
+[TensorSpec] :: forall gradient layout device dataType shape. SGradient gradient -> SLayout layout -> SDevice device -> SDataType dataType -> SShape shape -> TensorSpec gradient layout device dataType shape
 
 -- | Alias for an untyped tensor without gradients.
 type UncheckedTensor = Tensor 'UncheckedGradient 'UncheckedLayout 'UncheckedDevice 'UncheckedDataType 'UncheckedShape
@@ -1566,7 +1569,7 @@ checkedDevice :: forall device' m gradient layout device dataType shape. (SingI 
 --   </pre>
 uncheckedDevice :: forall gradient layout device dataType shape. Tensor gradient layout device dataType shape -> Tensor gradient layout 'UncheckedDevice dataType shape
 
--- | Returns a copy of the tensor converted to <a>Bool</a>.
+-- | Returns a copy of the tensor converted to <a>DType</a>.
 bool :: forall m gradient layout device dataType shape. MonadThrow m => Tensor gradient layout device dataType shape -> m (Tensor ('Gradient 'WithoutGradient) layout device ('DataType 'Bool) shape)
 
 -- | Returns a copy of the tensor converted to <a>UInt8</a>.
@@ -1575,7 +1578,7 @@ byte :: forall m gradient layout device dataType shape. MonadThrow m => Tensor g
 -- | Returns a copy of the tensor converted to <a>Int8</a>.
 char :: forall m gradient layout device dataType shape. MonadThrow m => Tensor gradient layout device dataType shape -> m (Tensor ('Gradient 'WithoutGradient) layout device ('DataType 'Int8) shape)
 
--- | Returns a copy of the tensor converted to <a>Int16</a>.
+-- | Returns a copy of the tensor converted to <a>DType</a>.
 short :: forall m gradient layout device dataType shape. MonadThrow m => Tensor gradient layout device dataType shape -> m (Tensor ('Gradient 'WithoutGradient) layout device ('DataType 'Int16) shape)
 
 -- | Returns a copy of the tensor converted to <a>Int32</a>.
@@ -1589,11 +1592,11 @@ long :: forall m gradient layout device dataType shape. MonadThrow m => Tensor g
 half :: forall m gradient layout device dataType shape. MonadThrow m => Tensor gradient layout device dataType shape -> m (Tensor gradient layout device ('DataType 'Half) shape)
 
 -- | Returns a copy of the tensor converted to the 32-bit floating point
---   format <a>Float</a>.
+--   format <a>DType</a>.
 float :: forall m gradient layout device dataType shape. MonadThrow m => Tensor gradient layout device dataType shape -> m (Tensor gradient layout device ('DataType 'Float) shape)
 
 -- | Returns a copy of the tensor converted to the 32-bit floating point
---   format <a>Double</a>.
+--   format <a>DType</a>.
 double :: forall m gradient layout device dataType shape. MonadThrow m => Tensor gradient layout device dataType shape -> m (Tensor gradient layout device ('DataType 'Double) shape)
 
 -- | Set the data type of a tensor to the specified data type.
@@ -2244,7 +2247,7 @@ data Order
 Ascending :: Order
 Descending :: Order
 data Sorted gradient layout device dataType shape
-[Sorted] :: forall gradient layout device dataType shape. {sorted :: Tensor gradient layout device dataType shape, indices :: Tensor ('Gradient 'WithoutGradient) layout device ('DataType 'Int64) shape} -> Sorted gradient layout device dataType shape
+[Sorted] :: forall gradient layout device dataType shape. Tensor gradient layout device dataType shape -> Tensor ('Gradient 'WithoutGradient) layout device ('DataType 'Int64) shape -> Sorted gradient layout device dataType shape
 type SortErrorMessage (by :: By Symbol Nat) (dims :: [Dim (Name Symbol) (Size Nat)]) = "Cannot apply sort on the dimension matching" % "" % "    '" <> by <> "'" % "" % "in the shape" % "" % "    '" <> dims <> "'." % ""
 type family SortCheckF (by :: By Symbol Nat) (dims :: [Dim (Name Symbol) (Size Nat)]) (result :: Maybe (Dim (Name Symbol) (Size Nat))) :: [Dim (Name Symbol) (Size Nat)]
 type family SortF (selectDim :: SelectDim (By Symbol Nat)) (shape :: Shape [Dim (Name Symbol) (Size Nat)]) :: Shape [Dim (Name Symbol) (Size Nat)]
@@ -2259,7 +2262,7 @@ instance GHC.Show.Show (Torch.GraduallyTyped.Tensor.MathOperations.Comparison.So
 
 module Torch.GraduallyTyped.Tensor.IndexingSlicingJoining
 class HasCat (selectDim :: SelectDim (By Symbol Nat)) k (c :: k -> Type) (a :: k) where {
-    type family CatF selectDim a c :: Type;
+    type CatF selectDim a c :: Type;
 }
 
 -- | Concatenates the given sequence of seq tensors in the given dimension.
@@ -2412,7 +2415,7 @@ type TransposeBy1Message by1 dims = "Cannot transpose the tensor with the dimens
 --   
 --   &gt;&gt;&gt; :kind! TransposeF SelectBatch SelectFeature ('Shape Dims)
 --   TransposeF SelectBatch SelectFeature ('Shape Dims) :: Shape
---                                                           [Dim (Name Symbol) (Size Nat)]
+--                                                           [Dim (Name Symbol) (Size Natural)]
 --   = 'Shape
 --       '[ 'Dim ('Name "feature") ('Size 8),
 --          'Dim ('Name "batch") ('Size 10),
@@ -2420,7 +2423,7 @@ type TransposeBy1Message by1 dims = "Cannot transpose the tensor with the dimens
 --   
 --   &gt;&gt;&gt; :kind! TransposeF SelectFeature SelectBatch ('Shape Dims)
 --   TransposeF SelectFeature SelectBatch ('Shape Dims) :: Shape
---                                                           [Dim (Name Symbol) (Size Nat)]
+--                                                           [Dim (Name Symbol) (Size Natural)]
 --   = 'Shape
 --       '[ 'Dim ('Name "feature") ('Size 8),
 --          'Dim ('Name "batch") ('Size 10),
@@ -2708,19 +2711,19 @@ SliceFromUpTo :: a -> a -> IndexType a
 SliceFromWithStep :: a -> a -> IndexType a
 SliceUpToWithStep :: a -> a -> IndexType a
 SliceFromUpToWithStep :: a -> a -> a -> IndexType a
-data SIndexType :: forall (a_a1s7F :: Type). IndexType a_a1s7F -> Type
-[SNewAxis] :: forall (a_a1s7F :: Type). () => SIndexType ('NewAxis :: IndexType (a_a1s7F :: Type))
-[SEllipsis] :: forall (a_a1s7F :: Type). () => SIndexType ('Ellipsis :: IndexType (a_a1s7F :: Type))
-[SSliceAll] :: forall (a_a1s7F :: Type). () => SIndexType ('SliceAll :: IndexType (a_a1s7F :: Type))
-[SSliceAt] :: forall (a_a1s7F :: Type) (n_a1ssm :: a_a1s7F). () => Sing n_a1ssm -> SIndexType ('SliceAt n_a1ssm :: IndexType (a_a1s7F :: Type))
-[SSliceBool] :: forall (a_a1s7F :: Type) (n_a1sso :: Bool). () => Sing n_a1sso -> SIndexType ('SliceBool n_a1sso :: IndexType (a_a1s7F :: Type))
-[SSliceFrom] :: forall (a_a1s7F :: Type) (n_a1ssq :: a_a1s7F). () => Sing n_a1ssq -> SIndexType ('SliceFrom n_a1ssq :: IndexType (a_a1s7F :: Type))
-[SSliceUpTo] :: forall (a_a1s7F :: Type) (n_a1sss :: a_a1s7F). () => Sing n_a1sss -> SIndexType ('SliceUpTo n_a1sss :: IndexType (a_a1s7F :: Type))
-[SSliceWithStep] :: forall (a_a1s7F :: Type) (n_a1ssu :: a_a1s7F). () => Sing n_a1ssu -> SIndexType ('SliceWithStep n_a1ssu :: IndexType (a_a1s7F :: Type))
-[SSliceFromUpTo] :: forall (a_a1s7F :: Type) (n_a1ssw :: a_a1s7F) (n_a1ssx :: a_a1s7F). () => Sing n_a1ssw -> Sing n_a1ssx -> SIndexType ('SliceFromUpTo n_a1ssw n_a1ssx :: IndexType (a_a1s7F :: Type))
-[SSliceFromWithStep] :: forall (a_a1s7F :: Type) (n_a1ssA :: a_a1s7F) (n_a1ssB :: a_a1s7F). () => Sing n_a1ssA -> Sing n_a1ssB -> SIndexType ('SliceFromWithStep n_a1ssA n_a1ssB :: IndexType (a_a1s7F :: Type))
-[SSliceUpToWithStep] :: forall (a_a1s7F :: Type) (n_a1ssE :: a_a1s7F) (n_a1ssF :: a_a1s7F). () => Sing n_a1ssE -> Sing n_a1ssF -> SIndexType ('SliceUpToWithStep n_a1ssE n_a1ssF :: IndexType (a_a1s7F :: Type))
-[SSliceFromUpToWithStep] :: forall (a_a1s7F :: Type) (n_a1ssI :: a_a1s7F) (n_a1ssJ :: a_a1s7F) (n_a1ssK :: a_a1s7F). () => Sing n_a1ssI -> Sing n_a1ssJ -> Sing n_a1ssK -> SIndexType ('SliceFromUpToWithStep n_a1ssI n_a1ssJ n_a1ssK :: IndexType (a_a1s7F :: Type))
+data SIndexType :: forall (a_a1qq9 :: Type). IndexType a_a1qq9 -> Type
+[SNewAxis] :: forall (a_a1qq9 :: Type). () => SIndexType ('NewAxis :: IndexType (a_a1qq9 :: Type))
+[SEllipsis] :: forall (a_a1qq9 :: Type). () => SIndexType ('Ellipsis :: IndexType (a_a1qq9 :: Type))
+[SSliceAll] :: forall (a_a1qq9 :: Type). () => SIndexType ('SliceAll :: IndexType (a_a1qq9 :: Type))
+[SSliceAt] :: forall (a_a1qq9 :: Type) (n_a1qKM :: a_a1qq9). () => Sing n_a1qKM -> SIndexType ('SliceAt n_a1qKM :: IndexType (a_a1qq9 :: Type))
+[SSliceBool] :: forall (a_a1qq9 :: Type) (n_a1qKO :: Bool). () => Sing n_a1qKO -> SIndexType ('SliceBool n_a1qKO :: IndexType (a_a1qq9 :: Type))
+[SSliceFrom] :: forall (a_a1qq9 :: Type) (n_a1qKQ :: a_a1qq9). () => Sing n_a1qKQ -> SIndexType ('SliceFrom n_a1qKQ :: IndexType (a_a1qq9 :: Type))
+[SSliceUpTo] :: forall (a_a1qq9 :: Type) (n_a1qKS :: a_a1qq9). () => Sing n_a1qKS -> SIndexType ('SliceUpTo n_a1qKS :: IndexType (a_a1qq9 :: Type))
+[SSliceWithStep] :: forall (a_a1qq9 :: Type) (n_a1qKU :: a_a1qq9). () => Sing n_a1qKU -> SIndexType ('SliceWithStep n_a1qKU :: IndexType (a_a1qq9 :: Type))
+[SSliceFromUpTo] :: forall (a_a1qq9 :: Type) (n_a1qKW :: a_a1qq9) (n_a1qKX :: a_a1qq9). () => Sing n_a1qKW -> Sing n_a1qKX -> SIndexType ('SliceFromUpTo n_a1qKW n_a1qKX :: IndexType (a_a1qq9 :: Type))
+[SSliceFromWithStep] :: forall (a_a1qq9 :: Type) (n_a1qL1 :: a_a1qq9) (n_a1qL2 :: a_a1qq9). () => Sing n_a1qL1 -> Sing n_a1qL2 -> SIndexType ('SliceFromWithStep n_a1qL1 n_a1qL2 :: IndexType (a_a1qq9 :: Type))
+[SSliceUpToWithStep] :: forall (a_a1qq9 :: Type) (n_a1qL6 :: a_a1qq9) (n_a1qL7 :: a_a1qq9). () => Sing n_a1qL6 -> Sing n_a1qL7 -> SIndexType ('SliceUpToWithStep n_a1qL6 n_a1qL7 :: IndexType (a_a1qq9 :: Type))
+[SSliceFromUpToWithStep] :: forall (a_a1qq9 :: Type) (n_a1qLb :: a_a1qq9) (n_a1qLc :: a_a1qq9) (n_a1qLd :: a_a1qq9). () => Sing n_a1qLb -> Sing n_a1qLc -> Sing n_a1qLd -> SIndexType ('SliceFromUpToWithStep n_a1qLb n_a1qLc n_a1qLd :: IndexType (a_a1qq9 :: Type))
 data Indices (indexTypes :: Type)
 [UncheckedIndices] :: forall indexTypes. Indices indexTypes
 [Indices] :: forall indexTypes. indexTypes -> Indices indexTypes
@@ -2735,43 +2738,62 @@ type family IndexDims indices shape
 --   python, you can write `tensor ! [slice|1::2|]` in hasktorch.
 slice :: QuasiQuoter
 instance Data.Singletons.SingI indexTypes => Data.Singletons.SingI ('Torch.GraduallyTyped.Tensor.Indexing.Indices indexTypes)
-instance Data.Singletons.SingKind (Torch.GraduallyTyped.Tensor.Indexing.Indices [Torch.GraduallyTyped.Tensor.Indexing.IndexType (Torch.GraduallyTyped.Index.Type.Index GHC.Types.Nat)])
+instance Data.Singletons.SingKind (Torch.GraduallyTyped.Tensor.Indexing.Indices [Torch.GraduallyTyped.Tensor.Indexing.IndexType (Torch.GraduallyTyped.Index.Type.Index GHC.TypeNats.Nat)])
 instance Data.Singletons.SingKind a => Data.Singletons.SingKind (Torch.GraduallyTyped.Tensor.Indexing.IndexType a)
 instance Data.Singletons.SingI 'Torch.GraduallyTyped.Tensor.Indexing.NewAxis
 instance Data.Singletons.SingI 'Torch.GraduallyTyped.Tensor.Indexing.Ellipsis
 instance Data.Singletons.SingI 'Torch.GraduallyTyped.Tensor.Indexing.SliceAll
 instance forall a (n :: a). Data.Singletons.SingI n => Data.Singletons.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceAt n)
+instance Data.Singletons.SingI1 'Torch.GraduallyTyped.Tensor.Indexing.SliceAt
 instance Data.Singletons.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceAtSym0
 instance Data.Singletons.SingI n => Data.Singletons.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceBool n)
+instance Data.Singletons.SingI1 'Torch.GraduallyTyped.Tensor.Indexing.SliceBool
 instance Data.Singletons.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceBoolSym0
 instance forall a (n :: a). Data.Singletons.SingI n => Data.Singletons.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceFrom n)
+instance Data.Singletons.SingI1 'Torch.GraduallyTyped.Tensor.Indexing.SliceFrom
 instance Data.Singletons.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceFromSym0
 instance forall a (n :: a). Data.Singletons.SingI n => Data.Singletons.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceUpTo n)
+instance Data.Singletons.SingI1 'Torch.GraduallyTyped.Tensor.Indexing.SliceUpTo
 instance Data.Singletons.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceUpToSym0
 instance forall a (n :: a). Data.Singletons.SingI n => Data.Singletons.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceWithStep n)
+instance Data.Singletons.SingI1 'Torch.GraduallyTyped.Tensor.Indexing.SliceWithStep
 instance Data.Singletons.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceWithStepSym0
 instance forall a (n1 :: a) (n2 :: a). (Data.Singletons.SingI n1, Data.Singletons.SingI n2) => Data.Singletons.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpTo n1 n2)
+instance forall a (n :: a). Data.Singletons.SingI n => Data.Singletons.SingI1 ('Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpTo n)
+instance Data.Singletons.SingI2 'Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpTo
 instance Data.Singletons.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym0
 instance forall a (d :: a). Data.Singletons.SingI d => Data.Singletons.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym1 d)
+instance Data.Singletons.SingI1 Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym1
 instance forall a (n1 :: a) (n2 :: a). (Data.Singletons.SingI n1, Data.Singletons.SingI n2) => Data.Singletons.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStep n1 n2)
+instance forall a (n :: a). Data.Singletons.SingI n => Data.Singletons.SingI1 ('Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStep n)
+instance Data.Singletons.SingI2 'Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStep
 instance Data.Singletons.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStepSym0
 instance forall a (d :: a). Data.Singletons.SingI d => Data.Singletons.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStepSym1 d)
+instance Data.Singletons.SingI1 Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStepSym1
 instance forall a (n1 :: a) (n2 :: a). (Data.Singletons.SingI n1, Data.Singletons.SingI n2) => Data.Singletons.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStep n1 n2)
+instance forall a (n :: a). Data.Singletons.SingI n => Data.Singletons.SingI1 ('Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStep n)
+instance Data.Singletons.SingI2 'Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStep
 instance Data.Singletons.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStepSym0
 instance forall a (d :: a). Data.Singletons.SingI d => Data.Singletons.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStepSym1 d)
+instance Data.Singletons.SingI1 Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStepSym1
 instance forall a (n1 :: a) (n2 :: a) (n3 :: a). (Data.Singletons.SingI n1, Data.Singletons.SingI n2, Data.Singletons.SingI n3) => Data.Singletons.SingI ('Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStep n1 n2 n3)
+instance forall a (n1 :: a) (n2 :: a). (Data.Singletons.SingI n1, Data.Singletons.SingI n2) => Data.Singletons.SingI1 ('Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStep n1 n2)
+instance forall a (n :: a). Data.Singletons.SingI n => Data.Singletons.SingI2 ('Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStep n)
 instance Data.Singletons.SingI Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym0
 instance forall a (d :: a). Data.Singletons.SingI d => Data.Singletons.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym1 d)
+instance Data.Singletons.SingI1 Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym1
 instance forall a (d1 :: a) (d2 :: a). (Data.Singletons.SingI d1, Data.Singletons.SingI d2) => Data.Singletons.SingI (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym2 d1 d2)
+instance forall a (d :: a). Data.Singletons.SingI d => Data.Singletons.SingI1 (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym2 d)
+instance Data.Singletons.SingI2 Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym2
 instance Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym0
-instance forall a (a6989586621679357507 :: a). Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym1 a6989586621679357507)
-instance forall a (a6989586621679357507 :: a) (a6989586621679357508 :: a). Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym2 a6989586621679357507 a6989586621679357508)
+instance forall a (a6989586621679350961 :: a). Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym1 a6989586621679350961)
+instance forall a (a6989586621679350961 :: a) (a6989586621679350962 :: a). Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToWithStepSym2 a6989586621679350961 a6989586621679350962)
 instance Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStepSym0
-instance forall a (a6989586621679357504 :: a). Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStepSym1 a6989586621679357504)
+instance forall a (a6989586621679350958 :: a). Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceUpToWithStepSym1 a6989586621679350958)
 instance Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStepSym0
-instance forall a (a6989586621679357501 :: a). Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStepSym1 a6989586621679357501)
+instance forall a (a6989586621679350955 :: a). Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromWithStepSym1 a6989586621679350955)
 instance Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym0
-instance forall a (a6989586621679357498 :: a). Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym1 a6989586621679357498)
+instance forall a (a6989586621679350952 :: a). Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings (Torch.GraduallyTyped.Tensor.Indexing.SliceFromUpToSym1 a6989586621679350952)
 instance Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceWithStepSym0
 instance Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceUpToSym0
 instance Data.Singletons.TH.SuppressUnusedWarnings.SuppressUnusedWarnings Torch.GraduallyTyped.Tensor.Indexing.SliceFromSym0
@@ -2850,7 +2872,7 @@ addScalar :: forall other gradient layout device dataType shape m. (Scalar other
 --   <tt>tensor1</tt> and <tt>tensor2</tt> are multiplied rather than
 --   divided.
 --   
---   Note further that for inputs of type <a>Float</a> or <a>Double</a>,
+--   Note further that for inputs of type <a>DType</a> or <a>DType</a>,
 --   <tt>value</tt> must be a real number, otherwise it must be an integer.
 addcdiv :: forall value gradient layout device dataType shape gradient' layout' device' dataType' shape' gradient'' layout'' device'' dataType'' shape'' m. (Scalar value, MonadThrow m) => value -> Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor gradient'' layout'' device'' dataType'' shape'' -> m (Tensor (gradient <|> (gradient' <|> gradient'')) (layout <+> (layout' <+> layout'')) (device <+> (device' <+> device'')) (dataType <+> (dataType' <+> dataType'')) (shape <+> (shape' <+> shape'')))
 
@@ -2862,7 +2884,7 @@ addcdiv :: forall value gradient layout device dataType shape gradient' layout' 
 --   <tt>tensor1</tt> and <tt>tensor2</tt> are divided rather than
 --   multiplied.
 --   
---   Note further that for inputs of type <a>Float</a> or <a>Double</a>,
+--   Note further that for inputs of type <a>DType</a> or <a>DType</a>,
 --   <tt>value</tt> must be a real number, otherwise it must be an integer.
 addcmul :: forall scalar gradient layout device dataType shape gradient' layout' device' dataType' shape' gradient'' layout'' device'' dataType'' shape'' m. (Scalar scalar, MonadThrow m) => scalar -> Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> Tensor gradient'' layout'' device'' dataType'' shape'' -> m (Tensor (gradient <|> (gradient' <|> gradient'')) (layout <+> (layout' <+> layout'')) (device <+> (device' <+> device'')) (dataType <+> (dataType' <+> dataType'')) (shape <+> (shape' <+> shape'')))
 
@@ -2900,60 +2922,60 @@ atanh :: forall gradient layout device dataType shape. Tensor gradient layout de
 atan2 :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape' shape'' m. (MonadThrow m, shape'' ~ BroadcastShapesF shape shape', Catch shape'') => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> m (Tensor (gradient <|> gradient') (layout <+> layout') (device <+> device') (dataType <+> dataType') shape'')
 
 -- | Computes the bitwise NOT of the given <tt>input</tt> tensor. The data
---   type of the <tt>input</tt> tensor must be <a>Bool</a> or an integral
---   data type. For <a>Bool</a> tensors, the function computes the logical
+--   type of the <tt>input</tt> tensor must be <a>DType</a> or an integral
+--   data type. For <a>DType</a> tensors, the function computes the logical
 --   NOT.
 bitwiseNot :: forall gradient layout device dataType shape m. MonadThrow m => Tensor gradient layout device dataType shape -> m (Tensor gradient layout device ('DataType 'Bool) shape)
 
 -- | Computes the bitwise AND of the <tt>input</tt> and the <tt>other</tt>
---   tensor. The data type of the tensors must be <a>Bool</a> or an
---   integral data type. For <a>Bool</a> tensors, the function computes the
---   logical AND.
+--   tensor. The data type of the tensors must be <a>DType</a> or an
+--   integral data type. For <a>DType</a> tensors, the function computes
+--   the logical AND.
 --   
 --   See <a>bitwiseAndScalar</a> for a version of this function where
 --   <tt>other</tt> is a scalar.
 bitwiseAnd :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape' m. MonadThrow m => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> m (Tensor (gradient <|> gradient') (layout <+> layout') (device <+> device') (dataType <+> dataType') (shape <+> shape'))
 
 -- | Computes the bitwise AND of the tensor <tt>input</tt> and the scalar
---   <tt>other</tt>. The data type of the inputs must be <a>Bool</a> or an
---   integral data type. If the data type is <a>Bool</a>, then the function
---   computes the logical AND.
+--   <tt>other</tt>. The data type of the inputs must be <a>DType</a> or an
+--   integral data type. If the data type is <a>DType</a>, then the
+--   function computes the logical AND.
 --   
 --   See <a>bitwiseAnd</a> for a version of this function where
 --   <tt>other</tt> is a tensor.
 bitwiseAndScalar :: forall other gradient layout device dataType shape. Scalar other => Tensor gradient layout device dataType shape -> other -> Tensor gradient layout device dataType shape
 
 -- | Computes the bitwise OR of the <tt>input</tt> and the <tt>other</tt>
---   tensor. The data type of the tensors must be <a>Bool</a> or an
---   integral data type. For <a>Bool</a> tensors, the function computes the
---   logical OR.
+--   tensor. The data type of the tensors must be <a>DType</a> or an
+--   integral data type. For <a>DType</a> tensors, the function computes
+--   the logical OR.
 --   
 --   See <a>bitwiseOrScalar</a> for a version of this function where
 --   <tt>other</tt> is a scalar.
 bitwiseOr :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape' m. MonadThrow m => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> m (Tensor (gradient <|> gradient') (layout <+> layout') (device <+> device') (dataType <+> dataType') (shape <+> shape'))
 
 -- | Computes the bitwise OR of the tensor <tt>input</tt> and the scalar
---   <tt>other</tt>. The data type of the inputs must be <a>Bool</a> or an
---   integral data type. If the data type is <a>Bool</a>, then the function
---   computes the logical OR.
+--   <tt>other</tt>. The data type of the inputs must be <a>DType</a> or an
+--   integral data type. If the data type is <a>DType</a>, then the
+--   function computes the logical OR.
 --   
 --   See <a>bitwiseOr</a> for a version of this function where
 --   <tt>other</tt> is a tensor.
 bitwiseOrScalar :: forall other gradient layout device dataType shape. Scalar other => Tensor gradient layout device dataType shape -> other -> Tensor gradient layout device dataType shape
 
 -- | Computes the bitwise XOR of the <tt>input</tt> and the <tt>other</tt>
---   tensor. The data type of the tensors must be <a>Bool</a> or an
---   integral data type. For <a>Bool</a> tensors, the function computes the
---   logical XOR.
+--   tensor. The data type of the tensors must be <a>DType</a> or an
+--   integral data type. For <a>DType</a> tensors, the function computes
+--   the logical XOR.
 --   
 --   See <a>bitwiseXorScalar</a> for a version of this function where
 --   <tt>other</tt> is a scalar.
 bitwiseXor :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape' m. MonadThrow m => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> m (Tensor (gradient <|> gradient') (layout <+> layout') (device <+> device') (dataType <+> dataType') (shape <+> shape'))
 
 -- | Computes the bitwise XOR of the tensor <tt>input</tt> and the scalar
---   <tt>other</tt>. The data type of the inputs must be <a>Bool</a> or an
---   integral data type. If the data type is <a>Bool</a>, then the function
---   computes the logical XOR.
+--   <tt>other</tt>. The data type of the inputs must be <a>DType</a> or an
+--   integral data type. If the data type is <a>DType</a>, then the
+--   function computes the logical XOR.
 --   
 --   See <a>bitwiseXor</a> for a version of this function where
 --   <tt>other</tt> is a tensor.
@@ -2982,7 +3004,7 @@ deg2rad :: forall gradient layout device dataType shape. Tensor gradient layout 
 --   Note further that "true divisions" can be computed with
 --   <a>trueDivide</a> or <a>trueDivideScalar</a> which can come in handy
 --   when both the <tt>dividend</tt> and the <tt>divisor</tt> have
---   <a>Bool</a> or integer data types.
+--   <a>DType</a> or integer data types.
 div :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape' shape'' m. (MonadThrow m, shape'' ~ BroadcastShapesF shape shape', Catch shape'') => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> m (Tensor (gradient <|> gradient') (layout <+> layout') (device <+> device') (dataType <+> dataType') shape'')
 
 -- | Element-wise division of the first input, the <tt>dividend</tt>
@@ -2994,7 +3016,7 @@ div :: forall gradient layout device dataType shape gradient' layout' device' da
 --   
 --   Note further that "true divisions" can be computed with
 --   <a>trueDivide</a> or <a>trueDivideScalar</a> which can come in handy
---   when both the dividend and the divisor have <a>Bool</a> or integer
+--   when both the dividend and the divisor have <a>DType</a> or integer
 --   data types.
 divScalar :: forall divisor gradient layout device dataType shape. Scalar divisor => Tensor gradient layout device dataType shape -> divisor -> Tensor gradient layout device dataType shape
 
@@ -3147,25 +3169,25 @@ logaddexp :: forall gradient layout device dataType shape gradient' layout' devi
 logaddexp2 :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape' shape'' m. (MonadThrow m, shape'' ~ BroadcastShapesF shape shape', Catch shape'') => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> m (Tensor (gradient <|> gradient') (layout <+> layout') (device <+> device') (dataType <+> dataType') shape'')
 
 -- | Computes the element-wise logical AND of the given input tensors. The
---   output tensor will have the <a>Bool</a> data type. If the input
+--   output tensor will have the <a>DType</a> data type. If the input
 --   tensors are not a bool tensors, then zeros are treated as <a>False</a>
 --   and nonzeros are treated as <a>True</a>.
 logicalAnd :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape' shape'' m. (MonadThrow m, shape'' ~ BroadcastShapesF shape shape', Catch shape'') => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> m (Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') ('DataType 'Bool) shape'')
 
 -- | Computes the element-wise logical NOT of the given input tensor. The
---   output tensor will have the <a>Bool</a> data type. If the input tensor
---   is not a bool tensor, zeros are treated as <a>False</a> and non-zeros
---   are treated as <a>True</a>.
+--   output tensor will have the <a>DType</a> data type. If the input
+--   tensor is not a bool tensor, zeros are treated as <a>False</a> and
+--   non-zeros are treated as <a>True</a>.
 logicalNot :: forall gradient layout device dataType shape. Tensor gradient layout device dataType shape -> Tensor ('Gradient 'WithoutGradient) layout device ('DataType 'Bool) shape
 
 -- | Computes the element-wise logical OR of the given input tensors. The
---   output tensor will have the <a>Bool</a> data type. If the input
+--   output tensor will have the <a>DType</a> data type. If the input
 --   tensors are not a bool tensors, then zeros are treated as <a>False</a>
 --   and nonzeros are treated as <a>True</a>.
 logicalOr :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape' shape'' m. (MonadThrow m, shape'' ~ BroadcastShapesF shape shape', Catch shape'') => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> m (Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') ('DataType 'Bool) shape'')
 
 -- | Computes the element-wise logical XOR of the given input tensors. The
---   output tensor will have the <a>Bool</a> data type. If the input
+--   output tensor will have the <a>DType</a> data type. If the input
 --   tensors are not a bool tensors, then zeros are treated as <a>False</a>
 --   and nonzeros are treated as <a>True</a>.
 logicalXor :: forall gradient layout device dataType shape gradient' layout' device' dataType' shape' shape'' m. (MonadThrow m, shape'' ~ BroadcastShapesF shape shape', Catch shape'') => Tensor gradient layout device dataType shape -> Tensor gradient' layout' device' dataType' shape' -> m (Tensor ('Gradient 'WithoutGradient) (layout <+> layout') (device <+> device') ('DataType 'Bool) shape'')
@@ -3309,7 +3331,7 @@ tanh :: forall gradient layout device dataType shape. Tensor gradient layout dev
 --   point: &lt;math&gt;
 --   
 --   <a>trueDivide</a> is completely equivalent to division using
---   <a>div</a> except when both inputs have <a>Bool</a> or integer data
+--   <a>div</a> except when both inputs have <a>DType</a> or integer data
 --   types, in which case the inputs are converted to floating data types
 --   before performing the division.
 --   
@@ -3321,7 +3343,7 @@ trueDivide :: forall gradient layout device dataType shape gradient' layout' dev
 --   point: &lt;math&gt;
 --   
 --   <a>trueDivideScalar</a> is completely equivalent to division using
---   <a>divScalar</a> except when both inputs have <a>Bool</a> or integer
+--   <a>divScalar</a> except when both inputs have <a>DType</a> or integer
 --   data types, in which case the inputs are converted to floating data
 --   types before performing the division.
 --   
@@ -3749,8 +3771,8 @@ module Torch.GraduallyTyped.Tensor
 
 module Torch.GraduallyTyped.Autograd
 class HasGrad parameters where {
-    type family Gradients parameters :: Type;
-    type family Loss parameters :: Type;
+    type Gradients parameters :: Type;
+    type Loss parameters :: Type;
 }
 
 -- | calculate gradients of a zero-dimensional tensor with respect to a
@@ -3899,11 +3921,11 @@ module Torch.GraduallyTyped.NN.Activation
 
 -- | <a>Softmax</a> is a non-linear activation function.
 data Softmax (selectDim :: SelectDim (By Symbol Nat))
-[Softmax] :: forall selectDim. {softmaxSelectDim :: SSelectDim selectDim} -> Softmax selectDim
+[Softmax] :: forall selectDim. SSelectDim selectDim -> Softmax selectDim
 
 -- | <a>LogSoftmax</a> is a non-linear activation function.
 data LogSoftmax (selectDim :: SelectDim (By Symbol Nat))
-[LogSoftmax] :: forall selectDim. {logSoftmaxSelectDim :: SSelectDim selectDim} -> LogSoftmax selectDim
+[LogSoftmax] :: forall selectDim. SSelectDim selectDim -> LogSoftmax selectDim
 
 -- | <a>Relu</a> is a step-wise linear activation function.
 data Relu
@@ -3987,7 +4009,7 @@ defaultAdamOptions :: AdamOptions
 
 -- | Optimizer data type.
 data Optimizer model
-[UnsafeOptimizer] :: forall model. {optimizerStateDictKeys :: [StateDictKey], optimizerPtr :: ForeignPtr Optimizer} -> Optimizer model
+[UnsafeOptimizer] :: forall model. [StateDictKey] -> ForeignPtr Optimizer -> Optimizer model
 
 -- | Get the model state dictionary from an optimizer.
 getStateDict :: forall model. Optimizer model -> IO StateDict
@@ -4114,8 +4136,8 @@ mkDecoderRelPos' :: Int -> Int -> Int -> Int -> [[Int]]
 --   seqSize]</tt>.
 mkDecoderRelPos :: forall m gradient layout device dataType shape relPosEncBucketDim seqDim seqName seqSize output. (MonadThrow m, MkRelPosC device shape seqDim seqName seqSize output) => SDim relPosEncBucketDim -> Int -> Tensor gradient layout device dataType shape -> m output
 data MkRelPos (relPosEncBucketDim :: Dim (Name Symbol) (Size Nat))
-[MkRelPos] :: forall relPosEncBucketDim. {relPosEncBucketDim :: SDim relPosEncBucketDim, relPosMaxDistance :: Int} -> MkRelPos relPosEncBucketDim
-[MkDecoderRelPos] :: forall relPosEncBucketDim. {decoderRelPosEncBucketDim :: SDim relPosEncBucketDim, decoderRelPosMaxDistance :: Int} -> MkRelPos relPosEncBucketDim
+[MkRelPos] :: forall relPosEncBucketDim. SDim relPosEncBucketDim -> Int -> MkRelPos relPosEncBucketDim
+[MkDecoderRelPos] :: forall relPosEncBucketDim. SDim relPosEncBucketDim -> Int -> MkRelPos relPosEncBucketDim
 type MkTransformerPaddingMaskC layout device dataType shape output = (SGetDevice device, Catch (dataType <+> 'DataType 'Int64), Catch (BroadcastShapesF shape ('Shape '[])), output ~ Tensor ('Gradient 'WithoutGradient) (layout <+> 'Layout 'Dense) device ('DataType 'Bool) (BroadcastShapesF shape ('Shape '[])))
 
 -- | Computes the padding mask for a transformer. Given an input tensor of
@@ -4132,7 +4154,7 @@ type MkTransformerAttentionMaskC transformerDataType gradient layout device data
 --   shape <tt>[batchDim, seqDim, seqDim]</tt>.
 mkTransformerAttentionMask :: forall m transformerDataType gradient layout device dataType shape seqDim output. (MonadThrow m, MkTransformerAttentionMaskC transformerDataType gradient layout device dataType shape seqDim output) => SDataType transformerDataType -> Double -> Tensor gradient layout device dataType shape -> m output
 data MkTransformerAttentionMask (dataType :: DataType DType)
-[MkTransformerAttentionMask] :: forall dataType. {attentionMaskDataType :: SDataType dataType, attentionMaskBias :: Double} -> MkTransformerAttentionMask dataType
+[MkTransformerAttentionMask] :: forall dataType. SDataType dataType -> Double -> MkTransformerAttentionMask dataType
 type MkTransformerDecoderAttentionMaskC transformerDataType layout device shape seqDim output = (SGetLayout layout, SGetDevice device, SGetShape shape, seqDim ~ (shape ! 1), Catch seqDim, Catch (UnsqueezeF ('SelectDim ('ByIndex 1)) shape), Catch (BroadcastShapesF ('Shape '[ 'Dim ('Name "*") ('Size 1), seqDim, seqDim]) (UnsqueezeF ('SelectDim ('ByIndex 1)) shape)), Catch (BroadcastShapesF (BroadcastShapesF ('Shape '[ 'Dim ('Name "*") ('Size 1), seqDim, seqDim]) (UnsqueezeF ('SelectDim ('ByIndex 1)) shape)) ('Shape '[ 'Dim ('Name "*") ('Size 1), seqDim, seqDim])), output ~ Tensor ('Gradient 'WithoutGradient) (layout <+> 'Layout 'Dense) device transformerDataType (BroadcastShapesF (BroadcastShapesF ('Shape '[ 'Dim ('Name "*") ('Size 1), seqDim, seqDim]) (UnsqueezeF ('SelectDim ('ByIndex 1)) shape)) ('Shape '[ 'Dim ('Name "*") ('Size 1), seqDim, seqDim])))
 
 -- | Creates a causal attention mask for a transformer decoder. Given a
@@ -4140,7 +4162,7 @@ type MkTransformerDecoderAttentionMaskC transformerDataType layout device shape 
 --   shape <tt>[batchDim, seqDim, seqDim]</tt>.
 mkTransformerDecoderAttentionMask :: forall m transformerDataType gradient layout device dataType shape seqDim output. (MonadThrow m, MkTransformerDecoderAttentionMaskC transformerDataType layout device shape seqDim output) => SDataType transformerDataType -> Double -> Tensor gradient layout device dataType shape -> m output
 data MkTransformerDecoderAttentionMask (dataType :: DataType DType)
-[MkTransformerDecoderAttentionMask] :: forall dataType. {decoderAttentionMaskDataType :: SDataType dataType, decoderAttentionMaskBias :: Double} -> MkTransformerDecoderAttentionMask dataType
+[MkTransformerDecoderAttentionMask] :: forall dataType. SDataType dataType -> Double -> MkTransformerDecoderAttentionMask dataType
 type MkTransformerCrossAttentionMaskC transformerDataType decoderInputShape decoderInputSeqDim gradient layout device dataType shape seqDim output = (SGetLayout layout, SGetDevice device, SGetShape shape, seqDim ~ (shape ! 1), SGetShape decoderInputShape, decoderInputSeqDim ~ (decoderInputShape ! 1), Catch (gradient <+> 'Gradient 'WithoutGradient), Catch (dataType <+> 'DataType 'Bool), Catch (UnsqueezeF ('SelectDim ('ByIndex 1)) shape), Catch (BroadcastShapesF (UnsqueezeF ('SelectDim ('ByIndex 1)) shape) ('Shape '[ 'Dim ('Name "*") ('Size 1), decoderInputSeqDim, seqDim])), output ~ Tensor ('Gradient 'WithoutGradient) (layout <+> 'Layout 'Dense) device transformerDataType (BroadcastShapesF (UnsqueezeF ('SelectDim ('ByIndex 1)) shape) ('Shape '[ 'Dim ('Name "*") ('Size 1), decoderInputSeqDim, seqDim])))
 
 -- | Creates a cross-attention mask for an encoder-decoder transformer.
@@ -4150,7 +4172,7 @@ type MkTransformerCrossAttentionMaskC transformerDataType decoderInputShape deco
 --   seqDim]</tt>.
 mkTransformerCrossAttentionMask :: forall m transformerDataType decoderInputShape decoderInputSeqDim gradient layout device dataType shape seqDim output. (MonadThrow m, MkTransformerCrossAttentionMaskC transformerDataType decoderInputShape decoderInputSeqDim gradient layout device dataType shape seqDim output) => SDataType transformerDataType -> SShape decoderInputShape -> Double -> Tensor gradient layout device dataType shape -> m output
 data MkTransformerCrossAttentionMask (dataType :: DataType DType)
-[MkTransformerCrossAttentionMask] :: forall dataType. {crossAttentionMaskDataType :: SDataType dataType, crossAttentionMaskBias :: Double} -> MkTransformerCrossAttentionMask dataType
+[MkTransformerCrossAttentionMask] :: forall dataType. SDataType dataType -> Double -> MkTransformerCrossAttentionMask dataType
 data ShiftRight fillValue
 [ShiftRight] :: forall fillValue. fillValue -> ShiftRight fillValue
 instance GHC.Generics.Generic Torch.GraduallyTyped.NN.Transformer.Type.MkAbsPos
@@ -4266,7 +4288,7 @@ embedding :: forall gradient layout device dataType shape gradient' layout' devi
 
 module Torch.GraduallyTyped.NN.Sparse
 data Embedding (gradient :: Gradient RequiresGradient) (layout :: Layout LayoutType) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (embedNumDim :: Dim (Name Symbol) (Size Nat)) (embedDim :: Dim (Name Symbol) (Size Nat)) (paddingIdx :: Maybe Nat)
-[Embedding] :: forall gradient layout device dataType embedNumDim embedDim paddingIdx. {embeddingWeight :: Tensor gradient layout device dataType ('Shape '[embedNumDim, embedDim])} -> Embedding gradient layout device dataType embedNumDim embedDim paddingIdx
+[Embedding] :: forall gradient layout device dataType embedNumDim embedDim paddingIdx. Tensor gradient layout device dataType ('Shape '[embedNumDim, embedDim]) -> Embedding gradient layout device dataType embedNumDim embedDim paddingIdx
 data EmbeddingSpec (gradient :: Gradient RequiresGradient) (layout :: Layout LayoutType) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (embedNumDim :: Dim (Name Symbol) (Size Nat)) (embedDim :: Dim (Name Symbol) (Size Nat)) (paddingIdx :: Maybe Nat)
 [EmbeddingSpec] :: forall gradient layout device dataType embedNumDim embedDim paddingIdx. SGradient gradient -> SLayout layout -> SDevice device -> SDataType dataType -> SDim embedNumDim -> SDim embedDim -> SMaybe paddingIdx -> EmbeddingSpec gradient layout device dataType embedNumDim embedDim paddingIdx
 instance GHC.Generics.Generic (Torch.GraduallyTyped.NN.Sparse.Embedding gradient layout device dataType embedNumDim embedDim paddingIdx)
@@ -4292,8 +4314,8 @@ layerNormWithoutBias :: forall gradient layout device dataType shape gradient' l
 
 module Torch.GraduallyTyped.NN.Normalization
 data LayerNorm (hasBias :: HasBias) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (normalizedShape :: Shape [Dim (Name Symbol) (Size Nat)])
-[LayerNormWithBias] :: forall gradient device dataType normalizedShape. {layerNormWithBiasWeight :: Tensor gradient ('Layout 'Dense) device dataType normalizedShape, layerNormBias :: Tensor gradient ('Layout 'Dense) device dataType normalizedShape, layerNormWithBiasEps :: Double} -> LayerNorm 'WithBias gradient device dataType normalizedShape
-[LayerNormWithoutBias] :: forall gradient device dataType normalizedShape. {layerNormWithoutBiasWeight :: Tensor gradient ('Layout 'Dense) device dataType normalizedShape, layerNormWithoutBiasEps :: Double} -> LayerNorm 'WithoutBias gradient device dataType normalizedShape
+[LayerNormWithBias] :: forall gradient device dataType normalizedShape. Tensor gradient ('Layout 'Dense) device dataType normalizedShape -> Tensor gradient ('Layout 'Dense) device dataType normalizedShape -> Double -> LayerNorm 'WithBias gradient device dataType normalizedShape
+[LayerNormWithoutBias] :: forall gradient device dataType normalizedShape. Tensor gradient ('Layout 'Dense) device dataType normalizedShape -> Double -> LayerNorm 'WithoutBias gradient device dataType normalizedShape
 data LayerNormSpec (hasBias :: HasBias) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (normalizedShape :: Shape [Dim (Name Symbol) (Size Nat)])
 [LayerNormSpec] :: forall hasBias gradient device dataType normalizedShape. SHasBias hasBias -> SGradient gradient -> SDevice device -> SDataType dataType -> SShape normalizedShape -> Double -> LayerNormSpec hasBias gradient device dataType normalizedShape
 instance GHC.Generics.Generic (Torch.GraduallyTyped.NN.Normalization.LayerNormSpec hasBias gradient device dataType normalizedShape)
@@ -4338,7 +4360,7 @@ module Torch.GraduallyTyped.NN.Functional.Linear
 --   
 --   &gt;&gt;&gt; :kind! LinearWithBiasF WeightShape BiasShape InputShape
 --   LinearWithBiasF WeightShape BiasShape InputShape :: Shape
---                                                         [Dim (Name Symbol) (Size Nat)]
+--                                                         [Dim (Name Symbol) (Size Natural)]
 --   = 'Shape
 --       '[ 'Dim ('Name "batch") ('Size 20),
 --          'Dim ('Name "output") ('Size 10)]
@@ -4411,7 +4433,7 @@ module Torch.GraduallyTyped.NN.Linear
 
 -- | Generic linear model with weight and optional bias.
 data GLinear (weight :: Type) (bias :: Type)
-[GLinear] :: forall weight bias. {linearWeight :: weight " Linear weight", linearBias :: bias " Linear bias"} -> GLinear weight bias
+[GLinear] :: forall weight bias. weight -> bias -> GLinear weight bias
 type family GLinearF (hasBias :: HasBias) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (inputDim :: Dim (Name Symbol) (Size Nat)) (outputDim :: Dim (Name Symbol) (Size Nat)) :: Type
 type family LinearWeightF (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (inputDim :: Dim (Name Symbol) (Size Nat)) (outputDim :: Dim (Name Symbol) (Size Nat)) :: Type
 type family LinearBiasF (hasBias :: HasBias) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (outputDim :: Dim (Name Symbol) (Size Nat)) :: Type
@@ -4430,7 +4452,7 @@ instance Torch.GraduallyTyped.NN.Class.HasForward (Torch.GraduallyTyped.NN.Linea
 
 module Torch.GraduallyTyped.NN.Transformer.GPooler
 data GPooler (dense :: Type) (activation :: Type)
-[GPooler] :: forall dense activation. {poolerDense :: dense, poolerActivation :: activation} -> GPooler dense activation
+[GPooler] :: forall dense activation. dense -> activation -> GPooler dense activation
 poolerSpec :: forall style gradient device dataType inputEmbedDim. STransformerStyle style -> SGradient gradient -> SDevice device -> SDataType dataType -> SDim inputEmbedDim -> GPooler (PoolerDenseF style gradient device dataType inputEmbedDim) (PoolerActivationF style)
 type family PoolerDenseF (style :: TransformerStyle) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (inputEmbedDim :: Dim (Name Symbol) (Size Nat)) :: Type
 type family PoolerActivationF (style :: TransformerStyle) :: Type
@@ -4456,7 +4478,7 @@ LMHeadWithoutScaling :: LMHeadHasScaling
 --   <li><tt>bias</tt> is a bias layer.</li>
 --   </ul>
 data GLMHead (inputEmbedDim :: Dim (Name Symbol) (Size Nat)) (dense :: Type) (activation :: Type) (layerNorm :: Type) (decoder :: Type) (bias :: Type)
-[GLMHead] :: forall inputEmbedDim dense activation layerNorm decoder bias. {lmHeadInputEmbedDim :: SDim inputEmbedDim " the dimension of the input embedding.", lmHeadDense :: dense " the dense layer.", lmHeadActivation :: activation " the activation function.", lmHeadLayerNorm :: layerNorm " the layer normalization layer.", lmHeadDecoder :: decoder " the decoder layer.", lmHeadBias :: bias " the bias layer.", lmHeadHasScaling :: LMHeadHasScaling " whether or not the head has a scaled decoder output."} -> GLMHead inputEmbedDim dense activation layerNorm decoder bias
+[GLMHead] :: forall inputEmbedDim dense activation layerNorm decoder bias. SDim inputEmbedDim -> dense -> activation -> layerNorm -> decoder -> bias -> LMHeadHasScaling -> GLMHead inputEmbedDim dense activation layerNorm decoder bias
 
 -- | Generic data type for biasing the language model head.
 data GBias (bias :: Type)
@@ -4557,7 +4579,7 @@ MultiHeadAttentionWithWeightScaling :: MultiHeadAttentionHasScaling
 --   <li><tt>dropout</tt> is the type of the dropout layer.</li>
 --   </ul>
 data GMultiHeadAttention (headDim :: Dim (Name Symbol) (Size Nat)) (headEmbedDim :: Dim (Name Symbol) (Size Nat)) (embedDim :: Dim (Name Symbol) (Size Nat)) (qInProj :: Type) (kInProj :: Type) (vInProj :: Type) (outProj :: Type) (dropout :: Type)
-[GMultiHeadAttention] :: forall headDim headEmbedDim embedDim qInProj kInProj vInProj outProj dropout. {mhaHeadDim :: SDim headDim " head dim", mhaHeadEmbedDim :: SDim headEmbedDim " head embed dim", mhaEmbedDim :: SDim embedDim " embed dim", mhaQInProj :: qInProj " in-projection for query", mhaKInProj :: kInProj " in-projection for key", mhaVInProj :: vInProj " in-projection for value", mhaOutProj :: outProj " out-projection", mhaDropout :: dropout " dropout", mhaScaling :: MultiHeadAttentionHasScaling " scaling"} -> GMultiHeadAttention headDim headEmbedDim embedDim qInProj kInProj vInProj outProj dropout
+[GMultiHeadAttention] :: forall headDim headEmbedDim embedDim qInProj kInProj vInProj outProj dropout. SDim headDim -> SDim headEmbedDim -> SDim embedDim -> qInProj -> kInProj -> vInProj -> outProj -> dropout -> MultiHeadAttentionHasScaling -> GMultiHeadAttention headDim headEmbedDim embedDim qInProj kInProj vInProj outProj dropout
 type family GMultiHeadAttentionF (style :: TransformerStyle) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (headDim :: Dim (Name Symbol) (Size Nat)) (headEmbedDim :: Dim (Name Symbol) (Size Nat)) (embedDim :: Dim (Name Symbol) (Size Nat)) (queryEmbedDim :: Dim (Name Symbol) (Size Nat)) (keyEmbedDim :: Dim (Name Symbol) (Size Nat)) (valueEmbedDim :: Dim (Name Symbol) (Size Nat)) (hasDropout :: HasDropout) :: Type
 
 -- | Specifies the linear transformation of the query.
@@ -4626,7 +4648,7 @@ module Torch.GraduallyTyped.NN.Transformer.GSelfAttention
 --   <li><tt>finalLayerNorm</tt>: the final layer normalization</li>
 --   </ul>
 data GSelfAttention (initialLayerNorm :: Type) (mha :: Type) (dropout :: Type) (finalLayerNorm :: Type)
-[GSelfAttention] :: forall initialLayerNorm mha dropout finalLayerNorm. {saInitialLayerNorm :: initialLayerNorm " initial layer normalization of the self-attention layer.", saMultiHeadAttention :: mha " multi-headed attention layer specialized for self-attention.", saDropout :: dropout " dropout", saFinalLayerNorm :: finalLayerNorm " final layer normalization of the self-attention layer."} -> GSelfAttention initialLayerNorm mha dropout finalLayerNorm
+[GSelfAttention] :: forall initialLayerNorm mha dropout finalLayerNorm. initialLayerNorm -> mha -> dropout -> finalLayerNorm -> GSelfAttention initialLayerNorm mha dropout finalLayerNorm
 type family GSelfAttentionF (style :: TransformerStyle) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (headDim :: Dim (Name Symbol) (Size Nat)) (headEmbedDim :: Dim (Name Symbol) (Size Nat)) (embedDim :: Dim (Name Symbol) (Size Nat)) (queryEmbedDim :: Dim (Name Symbol) (Size Nat)) (hasDropout :: HasDropout) :: Type
 
 -- | Specifies the initial layer normalization of the self-attention layer.
@@ -4683,7 +4705,7 @@ module Torch.GraduallyTyped.NN.Transformer.GFeedForwardNetwork
 --   <li><tt>layer1</tt> is the second layer.</li>
 --   </ul>
 data GGate (layer0 :: Type) (activation :: Type) (layer1 :: Type)
-[GGate] :: forall layer0 activation layer1. {gateLayer0 :: layer0 " first gate layer", gateActivation :: activation " gate activation", gateLayer1 :: layer1 " second gate layer"} -> GGate layer0 activation layer1
+[GGate] :: forall layer0 activation layer1. layer0 -> activation -> layer1 -> GGate layer0 activation layer1
 
 -- | Generic transformer feed-forward network.
 --   
@@ -4699,7 +4721,7 @@ data GGate (layer0 :: Type) (activation :: Type) (layer1 :: Type)
 --   output.</li>
 --   </ul>
 data GTransformerFeedForwardNetwork (inputLayerNorm :: Type) (inputTransformation :: Type) (activation :: Type) (activationDropout :: Type) (outputProjection :: Type) (outputDropout :: Type) (outputLayerNorm :: Type)
-[GTransformerFeedForwardNetwork] :: forall inputLayerNorm inputTransformation activation activationDropout outputProjection outputDropout outputLayerNorm. {ffnInputLayerNorm :: inputLayerNorm " input layer norm", ffnInputTransformation :: inputTransformation " input transformation", ffnActivation :: activation " activation", ffnActivationDropout :: activationDropout " activation dropout", ffnOutputProjection :: outputProjection " output projection", ffnOutputDropout :: outputDropout " output dropout", ffnOutputLayerNorm :: outputLayerNorm " output layer norm"} -> GTransformerFeedForwardNetwork inputLayerNorm inputTransformation activation activationDropout outputProjection outputDropout outputLayerNorm
+[GTransformerFeedForwardNetwork] :: forall inputLayerNorm inputTransformation activation activationDropout outputProjection outputDropout outputLayerNorm. inputLayerNorm -> inputTransformation -> activation -> activationDropout -> outputProjection -> outputDropout -> outputLayerNorm -> GTransformerFeedForwardNetwork inputLayerNorm inputTransformation activation activationDropout outputProjection outputDropout outputLayerNorm
 type family GTransformerFeedForwardNetworkF (style :: TransformerStyle) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (queryEmbedDim :: Dim (Name Symbol) (Size Nat)) (ffnDim :: Dim (Name Symbol) (Size Nat)) (hasDropout :: HasDropout) :: Type
 
 -- | Specifies the layer normalization for the input.
@@ -4767,7 +4789,7 @@ module Torch.GraduallyTyped.NN.Transformer.GCrossAttention
 --   <li><tt>finalLayerNorm</tt>: the final layer normalization</li>
 --   </ul>
 data GCrossAttention (initialLayerNorm :: Type) (mha :: Type) (dropout :: Type) (finalLayerNorm :: Type)
-[GCrossAttention] :: forall initialLayerNorm mha dropout finalLayerNorm. {caInitialLayerNorm :: initialLayerNorm " initial layer normalization of the cross-attention layer.", caMultiHeadAttention :: mha " multi-headed attention layer specialized for cross-attention.", caDropout :: dropout " dropout", caFinalLayerNorm :: finalLayerNorm " final layer normalization of the cross-attention layer."} -> GCrossAttention initialLayerNorm mha dropout finalLayerNorm
+[GCrossAttention] :: forall initialLayerNorm mha dropout finalLayerNorm. initialLayerNorm -> mha -> dropout -> finalLayerNorm -> GCrossAttention initialLayerNorm mha dropout finalLayerNorm
 type family GCrossAttentionF (style :: TransformerStyle) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (headDim :: Dim (Name Symbol) (Size Nat)) (headEmbedDim :: Dim (Name Symbol) (Size Nat)) (embedDim :: Dim (Name Symbol) (Size Nat)) (queryEmbedDim :: Dim (Name Symbol) (Size Nat)) (keyEmbedDim :: Dim (Name Symbol) (Size Nat)) (hasDropout :: HasDropout) :: Type
 
 -- | Specifies the initial layer normalization of the cross-attention
@@ -4834,7 +4856,7 @@ module Torch.GraduallyTyped.NN.Transformer.GBlock
 --   function or the wrapped layer based on a uniformly random draw from a
 --   supplied generator.
 data GTransformerBlock (selfAttention :: Type) (crossAttention :: Type) (feedForwardNetwork :: Type)
-[GTransformerBlock] :: forall selfAttention crossAttention feedForwardNetwork. {tbSelfAttention :: selfAttention " self-attention layer", tbCrossAttention :: crossAttention " cross-attention layer", tbFeedForwardNetwork :: feedForwardNetwork " feed-forward network"} -> GTransformerBlock selfAttention crossAttention feedForwardNetwork
+[GTransformerBlock] :: forall selfAttention crossAttention feedForwardNetwork. selfAttention -> crossAttention -> feedForwardNetwork -> GTransformerBlock selfAttention crossAttention feedForwardNetwork
 type family EncoderBlockF (style :: TransformerStyle) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (headDim :: Dim (Name Symbol) (Size Nat)) (headEmbedDim :: Dim (Name Symbol) (Size Nat)) (embedDim :: Dim (Name Symbol) (Size Nat)) (queryEmbedDim :: Dim (Name Symbol) (Size Nat)) (ffnDim :: Dim (Name Symbol) (Size Nat)) (hasDropout :: HasDropout)
 encoderBlockSpec :: forall style gradient device dataType headDim headEmbedDim embedDim queryEmbedDim ffnDim hasDropout. STransformerStyle style -> SGradient gradient -> SDevice device -> SDataType dataType -> SDim headDim -> SDim headEmbedDim -> SDim embedDim -> SDim queryEmbedDim -> SDim ffnDim -> SHasDropout hasDropout -> Double -> Double -> ModelSpec (EncoderBlockF style gradient device dataType headDim headEmbedDim embedDim queryEmbedDim ffnDim hasDropout)
 type family DecoderBlockF (style :: TransformerStyle) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (headDim :: Dim (Name Symbol) (Size Nat)) (headEmbedDim :: Dim (Name Symbol) (Size Nat)) (embedDim :: Dim (Name Symbol) (Size Nat)) (queryEmbedDim :: Dim (Name Symbol) (Size Nat)) (keyEmbedDim :: Dim (Name Symbol) (Size Nat)) (ffnDim :: Dim (Name Symbol) (Size Nat)) (hasDropout :: HasDropout)
@@ -4943,7 +4965,7 @@ module Torch.GraduallyTyped.NN.Transformer.GTransformer
 --   <li><tt>finalDropout</tt>: the final dropout layer.</li>
 --   </ul>
 data GTransformer (posEnc :: Type) (relPosEnc :: Type) (initialLayerNorm :: Type) (initialDropout :: Type) (stack :: Type) (finalLayerNorm :: Type) (finalDropout :: Type)
-[GTransformer] :: forall posEnc relPosEnc initialLayerNorm initialDropout stack finalLayerNorm finalDropout. {tPosEnc :: posEnc " absolute positional encoding", tRelPosEnc :: relPosEnc " relative positional encoding", tInitialLayerNorm :: initialLayerNorm " initial layer norm", tInitialDropout :: initialDropout " initial dropout", tStack :: stack " transformer block stack", tFinalLayerNorm :: finalLayerNorm " final layer norm", tFinalDropout :: finalDropout " final dropout"} -> GTransformer posEnc relPosEnc initialLayerNorm initialDropout stack finalLayerNorm finalDropout
+[GTransformer] :: forall posEnc relPosEnc initialLayerNorm initialDropout stack finalLayerNorm finalDropout. posEnc -> relPosEnc -> initialLayerNorm -> initialDropout -> stack -> finalLayerNorm -> finalDropout -> GTransformer posEnc relPosEnc initialLayerNorm initialDropout stack finalLayerNorm finalDropout
 type family TransformerEncoderF (style :: TransformerStyle) (numLayers :: Nat) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (headDim :: Dim (Name Symbol) (Size Nat)) (headEmbedDim :: Dim (Name Symbol) (Size Nat)) (embedDim :: Dim (Name Symbol) (Size Nat)) (inputEmbedDim :: Dim (Name Symbol) (Size Nat)) (ffnDim :: Dim (Name Symbol) (Size Nat)) (posEncDim :: Dim (Name Symbol) (Size Nat)) (hasDropout :: HasDropout) :: Type
 
 -- | Specifies the absolute positional encoding layer of a transformer
@@ -5081,7 +5103,7 @@ EncoderOnlyTransformerWithoutEmbedScaling :: EncoderOnlyTransformerHasEmbedScali
 --   <li><tt>head</tt>: a head layer for the output.</li>
 --   </ul>
 data GEncoderOnlyTransformer (inputEmbedDim :: Dim (Name Symbol) (Size Nat)) (encoder :: Type) (encoderEmbedding :: Type) (encoderTypeEmbedding :: Type) (head :: Type)
-[GEncoderOnlyTransformer] :: forall inputEmbedDim encoder encoderEmbedding encoderTypeEmbedding head. {eotInputEmbedDim :: SDim inputEmbedDim " input embedding dim for scaling", eotEncoder :: encoder " encoder", eotEmbedding :: encoderEmbedding " encoder embedding", eotTypeEmbedding :: encoderTypeEmbedding " encoder type embedding", eotHead :: head " encoder head", eotEmbedScaling :: EncoderOnlyTransformerHasEmbedScaling " encoder embedding scaling"} -> GEncoderOnlyTransformer inputEmbedDim encoder encoderEmbedding encoderTypeEmbedding head
+[GEncoderOnlyTransformer] :: forall inputEmbedDim encoder encoderEmbedding encoderTypeEmbedding head. SDim inputEmbedDim -> encoder -> encoderEmbedding -> encoderTypeEmbedding -> head -> EncoderOnlyTransformerHasEmbedScaling -> GEncoderOnlyTransformer inputEmbedDim encoder encoderEmbedding encoderTypeEmbedding head
 type family GEncoderOnlyTransformerF (style :: TransformerStyle) (transformerHead :: TransformerHead) (numLayers :: Nat) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (headDim :: Dim (Name Symbol) (Size Nat)) (headEmbedDim :: Dim (Name Symbol) (Size Nat)) (embedDim :: Dim (Name Symbol) (Size Nat)) (inputEmbedDim :: Dim (Name Symbol) (Size Nat)) (ffnDim :: Dim (Name Symbol) (Size Nat)) (posEncDim :: Dim (Name Symbol) (Size Nat)) (vocabDim :: Dim (Name Symbol) (Size Nat)) (typeVocabDim :: Dim (Name Symbol) (Size Nat)) (hasDropout :: HasDropout) :: Type
 
 -- | Specifies the embedding layer of the encoder-only transformer model.
@@ -5127,19 +5149,19 @@ type family EOTHeadF (style :: TransformerStyle) (transformerHead :: Transformer
 --   </ul>
 encoderOnlyTransformerSpec :: forall style transformerHead numLayers gradient device dataType headDim headEmbedDim embedDim inputEmbedDim ffnDim posEncDim vocabDim typeVocabDim hasDropout. STransformerStyle style -> STransformerHead transformerHead -> SNat numLayers -> SGradient gradient -> SDevice device -> SDataType dataType -> SDim headDim -> SDim headEmbedDim -> SDim embedDim -> SDim inputEmbedDim -> SDim ffnDim -> SDim posEncDim -> SDim vocabDim -> SDim typeVocabDim -> SHasDropout hasDropout -> Double -> Double -> ModelSpec (GEncoderOnlyTransformerF style transformerHead numLayers gradient device dataType headDim headEmbedDim embedDim inputEmbedDim ffnDim posEncDim vocabDim typeVocabDim hasDropout)
 data GSimplifiedEncoderOnlyTransformer (model :: Type) (mkPos :: Type) (mkPaddingMask :: Type) (mkAttentionMask :: Type)
-[GSimplifiedEncoderOnlyTransformer] :: forall model mkPos mkPaddingMask mkAttentionMask. {seotModel :: model " encoder-only model", seotMkPos :: mkPos " make input positions", seotMkPaddingMask :: mkPaddingMask " make padding mask", seotMkAttentionMask :: mkAttentionMask " make attention mask"} -> GSimplifiedEncoderOnlyTransformer model mkPos mkPaddingMask mkAttentionMask
+[GSimplifiedEncoderOnlyTransformer] :: forall model mkPos mkPaddingMask mkAttentionMask. model -> mkPos -> mkPaddingMask -> mkAttentionMask -> GSimplifiedEncoderOnlyTransformer model mkPos mkPaddingMask mkAttentionMask
 
 -- | Input data type for use with an encoder-only transformer.
 data EncoderOnlyTransformerInput input inputType pos attentionMask
-[EncoderOnlyTransformerInput] :: forall input inputType pos attentionMask. {eotInput :: input, eotInputType :: inputType, eotPos :: pos, eotAttentionMask :: attentionMask} -> EncoderOnlyTransformerInput input inputType pos attentionMask
+[EncoderOnlyTransformerInput] :: forall input inputType pos attentionMask. input -> inputType -> pos -> attentionMask -> EncoderOnlyTransformerInput input inputType pos attentionMask
 data SimplifiedEncoderOnlyTransformerInput input inputType
-[SimplifiedEncoderOnlyTransformerInput] :: forall input inputType. {seotInput :: input, seotInputType :: inputType} -> SimplifiedEncoderOnlyTransformerInput input inputType
+[SimplifiedEncoderOnlyTransformerInput] :: forall input inputType. input -> inputType -> SimplifiedEncoderOnlyTransformerInput input inputType
 
 -- | Output data type for use with an encoder-only transformer.
 data EncoderOnlyTransformerOutput output
-[EncoderOnlyTransformerOutput] :: forall output. {eotOutput :: output} -> EncoderOnlyTransformerOutput output
+[EncoderOnlyTransformerOutput] :: forall output. output -> EncoderOnlyTransformerOutput output
 data SimplifiedEncoderOnlyTransformerOutput output paddingMask
-[SimplifiedEncoderOnlyTransformerOutput] :: forall output paddingMask. {seotOutput :: output, sedtPaddingMask :: paddingMask} -> SimplifiedEncoderOnlyTransformerOutput output paddingMask
+[SimplifiedEncoderOnlyTransformerOutput] :: forall output paddingMask. output -> paddingMask -> SimplifiedEncoderOnlyTransformerOutput output paddingMask
 instance GHC.Generics.Generic Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.EncoderOnlyTransformerHasEmbedScaling
 instance GHC.Show.Show Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.EncoderOnlyTransformerHasEmbedScaling
 instance GHC.Classes.Ord Torch.GraduallyTyped.NN.Transformer.GEncoderOnly.EncoderOnlyTransformerHasEmbedScaling
@@ -5409,7 +5431,7 @@ EncoderDecoderTransformerWithoutEmbedScaling :: EncoderDecoderTransformerHasEmbe
 --   <li><tt>head</tt>: a head layer for the output.</li>
 --   </ul>
 data GEncoderDecoderTransformer (inputEmbedDim :: Dim (Name Symbol) (Size Nat)) (encoder :: Type) (decoder :: Type) (sharedEmbedding :: Type) (head :: Type)
-[GEncoderDecoderTransformer] :: forall inputEmbedDim encoder decoder sharedEmbedding head. {edtInputEmbedDim :: SDim inputEmbedDim " input embedding dim for scaling", edtEncoder :: encoder " encoder", edtDecoder :: decoder " decoder", edtSharedEmbedding :: sharedEmbedding " embedding shared between encoder and decoder", edtHead :: head " transformer head", edtEmbedScaling :: EncoderDecoderTransformerHasEmbedScaling " embedding scaling"} -> GEncoderDecoderTransformer inputEmbedDim encoder decoder sharedEmbedding head
+[GEncoderDecoderTransformer] :: forall inputEmbedDim encoder decoder sharedEmbedding head. SDim inputEmbedDim -> encoder -> decoder -> sharedEmbedding -> head -> EncoderDecoderTransformerHasEmbedScaling -> GEncoderDecoderTransformer inputEmbedDim encoder decoder sharedEmbedding head
 type family GEncoderDecoderTransformerF (style :: TransformerStyle) (transformerHead :: TransformerHead) (numEncoderLayers :: Nat) (numDecoderLayers :: Nat) (gradient :: Gradient RequiresGradient) (device :: Device (DeviceType Nat)) (dataType :: DataType DType) (headDim :: Dim (Name Symbol) (Size Nat)) (headEmbedDim :: Dim (Name Symbol) (Size Nat)) (embedDim :: Dim (Name Symbol) (Size Nat)) (inputEmbedDim :: Dim (Name Symbol) (Size Nat)) (ffnDim :: Dim (Name Symbol) (Size Nat)) (posEncDim :: Dim (Name Symbol) (Size Nat)) (vocabDim :: Dim (Name Symbol) (Size Nat)) (hasDropout :: HasDropout) :: Type
 
 -- | Specifies the encoder of the encoder-decoder transformer model.
@@ -5428,39 +5450,39 @@ type family EDTHeadF (style :: TransformerStyle) (transformerHead :: Transformer
 -- | Specifies the parameters of an encoder-decoder transformer model.
 encoderDecoderTransformerSpec :: forall style transformerHead numEncoderLayers numDecoderLayers gradient device dataType headDim headEmbedDim embedDim inputEmbedDim ffnDim posEncDim vocabDim hasDropout. STransformerStyle style -> STransformerHead transformerHead -> SNat numEncoderLayers -> SNat numDecoderLayers -> SGradient gradient -> SDevice device -> SDataType dataType -> SDim headDim -> SDim headEmbedDim -> SDim embedDim -> SDim inputEmbedDim -> SDim ffnDim -> SDim posEncDim -> SDim vocabDim -> SHasDropout hasDropout -> Double -> Double -> ModelSpec (GEncoderDecoderTransformerF style transformerHead numEncoderLayers numDecoderLayers gradient device dataType headDim headEmbedDim embedDim inputEmbedDim ffnDim posEncDim vocabDim hasDropout)
 data GSimplifiedEncoderDecoderTransformer (model :: Type) (mkPos :: Type) (mkDecoderPos :: Type) (mkPaddingMask :: Type) (mkAttentionMask :: Type) (mkCrossAttentionMask :: Type) (mkDecoderAttentionMask :: Type)
-[GSimplifiedEncoderDecoderTransformer] :: forall model mkPos mkDecoderPos mkPaddingMask mkAttentionMask mkCrossAttentionMask mkDecoderAttentionMask. {sedtModel :: model " encoder-decoder model", sedtDecoderInputShift :: ShiftRight Int " shift for decoder input", sedtPaddingMaskShift :: ShiftRight Int " shift for padding mask", sedtMkPos :: mkPos " make encoder input positions", sedtMkDecoderPos :: mkDecoderPos " make decoder input position", sedtMkPaddingMask :: mkPaddingMask " make padding mask", sedtMkAttentionMask :: mkAttentionMask " make attention mask", sedtMkCrossAttentionMask :: mkCrossAttentionMask " make cross-attention mask", sedtMkDecoderAttentionMask :: mkDecoderAttentionMask " make decoder attention mask"} -> GSimplifiedEncoderDecoderTransformer model mkPos mkDecoderPos mkPaddingMask mkAttentionMask mkCrossAttentionMask mkDecoderAttentionMask
+[GSimplifiedEncoderDecoderTransformer] :: forall model mkPos mkDecoderPos mkPaddingMask mkAttentionMask mkCrossAttentionMask mkDecoderAttentionMask. model -> ShiftRight Int -> ShiftRight Int -> mkPos -> mkDecoderPos -> mkPaddingMask -> mkAttentionMask -> mkCrossAttentionMask -> mkDecoderAttentionMask -> GSimplifiedEncoderDecoderTransformer model mkPos mkDecoderPos mkPaddingMask mkAttentionMask mkCrossAttentionMask mkDecoderAttentionMask
 
 -- | Input data type for use with an encoder-decoder transformer. Use this
 --   for training.
 data EncoderDecoderTransformerInput input decoderInput pos decoderPos attentionMask decoderAttentionMask crossAttentionMask
-[EncoderDecoderTransformerInput] :: forall input decoderInput pos decoderPos attentionMask decoderAttentionMask crossAttentionMask. {edtInput :: input, edtDecoderInput :: decoderInput, edtPos :: pos, edtDecoderPos :: decoderPos, edtAttentionMask :: attentionMask, edtDecoderAttentionMask :: decoderAttentionMask, edtCrossAttentionMask :: crossAttentionMask} -> EncoderDecoderTransformerInput input decoderInput pos decoderPos attentionMask decoderAttentionMask crossAttentionMask
+[EncoderDecoderTransformerInput] :: forall input decoderInput pos decoderPos attentionMask decoderAttentionMask crossAttentionMask. input -> decoderInput -> pos -> decoderPos -> attentionMask -> decoderAttentionMask -> crossAttentionMask -> EncoderDecoderTransformerInput input decoderInput pos decoderPos attentionMask decoderAttentionMask crossAttentionMask
 data EncoderDecoderTransformerInput' input pos attentionMask
-[EncoderDecoderTransformerInput'] :: forall input pos attentionMask. {edtInput' :: input, edtPos' :: pos, edtAttentionMask' :: attentionMask} -> EncoderDecoderTransformerInput' input pos attentionMask
+[EncoderDecoderTransformerInput'] :: forall input pos attentionMask. input -> pos -> attentionMask -> EncoderDecoderTransformerInput' input pos attentionMask
 data SimplifiedEncoderDecoderTransformerInput input decoderInput
-[SimplifiedEncoderDecoderTransformerInput] :: forall input decoderInput. {sedtInput :: input, sedtDecoderInput :: decoderInput} -> SimplifiedEncoderDecoderTransformerInput input decoderInput
+[SimplifiedEncoderDecoderTransformerInput] :: forall input decoderInput. input -> decoderInput -> SimplifiedEncoderDecoderTransformerInput input decoderInput
 data SimplifiedEncoderDecoderTransformerInput' input
-[SimplifiedEncoderDecoderTransformerInput'] :: forall input. {sedtInput' :: input} -> SimplifiedEncoderDecoderTransformerInput' input
+[SimplifiedEncoderDecoderTransformerInput'] :: forall input. input -> SimplifiedEncoderDecoderTransformerInput' input
 data SimplifiedEncoderDecoderTransformerTrainingInput input target
-[SimplifiedEncoderDecoderTransformerTrainingInput] :: forall input target. {sedtTrainingInput :: input, sedtTarget :: target} -> SimplifiedEncoderDecoderTransformerTrainingInput input target
+[SimplifiedEncoderDecoderTransformerTrainingInput] :: forall input target. input -> target -> SimplifiedEncoderDecoderTransformerTrainingInput input target
 
 -- | Output data type for use with an encoder-decoder transformer.
 data EncoderDecoderTransformerOutput decoderOutput encoderOutput
-[EncoderDecoderTransformerOutput] :: forall decoderOutput encoderOutput. {edtDecoderOutput :: decoderOutput, edtEncoderOutput :: encoderOutput} -> EncoderDecoderTransformerOutput decoderOutput encoderOutput
+[EncoderDecoderTransformerOutput] :: forall decoderOutput encoderOutput. decoderOutput -> encoderOutput -> EncoderDecoderTransformerOutput decoderOutput encoderOutput
 data EncoderDecoderTransformerOutput' encoderOutput
-[EncoderDecoderTransformerOutput'] :: forall encoderOutput. {edtEncoderOutput' :: encoderOutput} -> EncoderDecoderTransformerOutput' encoderOutput
+[EncoderDecoderTransformerOutput'] :: forall encoderOutput. encoderOutput -> EncoderDecoderTransformerOutput' encoderOutput
 data SimplifiedEncoderDecoderTransformerOutput decoderOutput encoderOutput decoderInput inputPaddingMask
-[SimplifiedEncoderDecoderTransformerOutput] :: forall decoderOutput encoderOutput decoderInput inputPaddingMask. {sedtDecoderOutput :: decoderOutput, sedtEncoderOutput :: encoderOutput, sedtOriginalDecoderInput :: decoderInput, sedtInputPaddingMask :: inputPaddingMask} -> SimplifiedEncoderDecoderTransformerOutput decoderOutput encoderOutput decoderInput inputPaddingMask
+[SimplifiedEncoderDecoderTransformerOutput] :: forall decoderOutput encoderOutput decoderInput inputPaddingMask. decoderOutput -> encoderOutput -> decoderInput -> inputPaddingMask -> SimplifiedEncoderDecoderTransformerOutput decoderOutput encoderOutput decoderInput inputPaddingMask
 data SimplifiedEncoderDecoderTransformerOutput' encoderOutput inputPaddingMask
-[SimplifiedEncoderDecoderTransformerOutput'] :: forall encoderOutput inputPaddingMask. {sedtEncoderOutput' :: encoderOutput, sedtInputPaddingMask' :: inputPaddingMask} -> SimplifiedEncoderDecoderTransformerOutput' encoderOutput inputPaddingMask
+[SimplifiedEncoderDecoderTransformerOutput'] :: forall encoderOutput inputPaddingMask. encoderOutput -> inputPaddingMask -> SimplifiedEncoderDecoderTransformerOutput' encoderOutput inputPaddingMask
 data SimplifiedEncoderDecoderTransformerTrainingOutput loss
-[SimplifiedEncoderDecoderTransformerTrainingOutput] :: forall loss. {sedtLoss :: loss} -> SimplifiedEncoderDecoderTransformerTrainingOutput loss
+[SimplifiedEncoderDecoderTransformerTrainingOutput] :: forall loss. loss -> SimplifiedEncoderDecoderTransformerTrainingOutput loss
 
 -- | Input data type for use with an encoder-decoder transformer. Use this
 --   for inference.
 data EncoderDecoderTransformerGenerationInput decoderInput encoderOutput decoderPos decoderAttentionMask crossAttentionMask
-[EncoderDecoderTransformerGenerationInput] :: forall decoderInput encoderOutput decoderPos decoderAttentionMask crossAttentionMask. {edtGenerationDecoderInput :: decoderInput, edtGenerationEncoderOutput :: encoderOutput, edtGenerationDecoderPos :: decoderPos, edtGenerationDecoderAttentionMask :: decoderAttentionMask, edtGenerationCrossAttentionMask :: crossAttentionMask} -> EncoderDecoderTransformerGenerationInput decoderInput encoderOutput decoderPos decoderAttentionMask crossAttentionMask
+[EncoderDecoderTransformerGenerationInput] :: forall decoderInput encoderOutput decoderPos decoderAttentionMask crossAttentionMask. decoderInput -> encoderOutput -> decoderPos -> decoderAttentionMask -> crossAttentionMask -> EncoderDecoderTransformerGenerationInput decoderInput encoderOutput decoderPos decoderAttentionMask crossAttentionMask
 data SimplifiedEncoderDecoderTransformerGenerationInput decoderInput encoderOutput inputPaddingMask
-[SimplifiedEncoderDecoderTransformerGenerationInput] :: forall decoderInput encoderOutput inputPaddingMask. {sedtGenerationDecoderInput :: decoderInput, sedtGenerationEncoderOutput :: encoderOutput, sedtGenerationInputPaddingMask :: inputPaddingMask} -> SimplifiedEncoderDecoderTransformerGenerationInput decoderInput encoderOutput inputPaddingMask
+[SimplifiedEncoderDecoderTransformerGenerationInput] :: forall decoderInput encoderOutput inputPaddingMask. decoderInput -> encoderOutput -> inputPaddingMask -> SimplifiedEncoderDecoderTransformerGenerationInput decoderInput encoderOutput inputPaddingMask
 instance GHC.Generics.Generic Torch.GraduallyTyped.NN.Transformer.GEncoderDecoder.EncoderDecoderTransformerHasEmbedScaling
 instance GHC.Show.Show Torch.GraduallyTyped.NN.Transformer.GEncoderDecoder.EncoderDecoderTransformerHasEmbedScaling
 instance GHC.Classes.Ord Torch.GraduallyTyped.NN.Transformer.GEncoderDecoder.EncoderDecoderTransformerHasEmbedScaling
@@ -6441,11 +6463,11 @@ data IsFinished
 Finished :: IsFinished
 Unfinished :: IsFinished
 data Beams a b
-[Beams] :: forall a b. {finished :: [Hypothesis 'Finished a b], unfinished :: [Hypothesis 'Unfinished a b]} -> Beams a b
+[Beams] :: forall a b. [Hypothesis 'Finished a b] -> [Hypothesis 'Unfinished a b] -> Beams a b
 data Hypothesis (isFinished :: IsFinished) a b
 [InitialHypothesis] :: forall a b. Hypothesis 'Unfinished a b
-[UnfinishedHypothesis] :: forall a b. {currentToken :: a, currentScore :: Float, previousHypothesis :: Hypothesis 'Unfinished a b} -> Hypothesis 'Unfinished a b
-[FinishedHypothesis] :: forall a b. {finalToken :: a, finalScore :: Float, penultimateHypothesis :: Hypothesis 'Unfinished a b, finalValue :: b} -> Hypothesis 'Finished a b
+[UnfinishedHypothesis] :: forall a b. a -> Float -> Hypothesis 'Unfinished a b -> Hypothesis 'Unfinished a b
+[FinishedHypothesis] :: forall a b. a -> Float -> Hypothesis 'Unfinished a b -> b -> Hypothesis 'Finished a b
 getTokens :: forall a b. Hypothesis 'Unfinished a b -> [a]
 getScore :: forall a b. Hypothesis 'Unfinished a b -> Float
 data SomeHypothesis a b
@@ -6495,8 +6517,8 @@ module Torch.GraduallyTyped.NN
 
 module Torch.GraduallyTyped
 class HasGrad parameters where {
-    type family Gradients parameters :: Type;
-    type family Loss parameters :: Type;
+    type Gradients parameters :: Type;
+    type Loss parameters :: Type;
 }
 
 -- | calculate gradients of a zero-dimensional tensor with respect to a
