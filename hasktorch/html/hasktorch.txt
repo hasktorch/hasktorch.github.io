@@ -720,6 +720,10 @@ module Torch.Tensor
 type ATenTensor = ForeignPtr Tensor
 newtype Tensor
 Unsafe :: ATenTensor -> Tensor
+newtype MutableTensor
+MutableTensor :: Tensor -> MutableTensor
+newMutableTensor :: Tensor -> IO MutableTensor
+toImmutable :: MutableTensor -> IO Tensor
 
 -- | Returns the total number of elements in the input tensor.
 numel :: Tensor -> Int
@@ -732,6 +736,12 @@ shape :: Tensor -> [Int]
 
 -- | Returns the dimensions of the input tensor
 dim :: Tensor -> Int
+
+-- | Returns the dimensions of the input tensor
+dimUnsafe :: Tensor -> Int
+
+-- | Returns the dimensions of the input tensor
+dimCUnsafe :: Tensor -> Int
 
 -- | Returns the device on which the tensor is currently allocated
 device :: Tensor -> Device
@@ -749,6 +759,7 @@ toDevice :: forall a. HasTypes a Tensor => Device -> a -> a
 
 -- | Casts the input tensor to given device
 _toDevice :: Device -> Tensor -> Tensor
+toDeviceWithTensor :: Tensor -> Tensor -> Tensor
 
 -- | Slices the input tensor along the selected dimension at the given
 --   index.
@@ -773,7 +784,6 @@ toDense :: Tensor -> Tensor
 toMKLDNN :: Tensor -> Tensor
 toCPU :: Tensor -> Tensor
 toCUDA :: Tensor -> Tensor
-withTensorOptions :: Tensor -> TensorOptions -> Tensor
 newtype RawTensorIndexList
 RawTensorIndexList :: ForeignPtr (StdVector TensorIndex) -> RawTensorIndexList
 newtype RawTensorIndex
@@ -791,8 +801,10 @@ pushIndex :: TensorIndex a => [RawTensorIndex] -> a -> [RawTensorIndex]
 toLens :: (TensorIndex a, TensorLike b) => a -> Lens' Tensor b
 toLens :: (TensorIndex a, TensorLike b) => a -> Lens' Tensor b
 asValue :: TensorLike a => Tensor -> a
+class TensorOptionLike a
+withTensorOptions :: TensorOptionLike a => Tensor -> a -> Tensor
 class TensorLike a
-asTensor' :: TensorLike a => a -> TensorOptions -> Tensor
+asTensor' :: (TensorLike a, TensorOptionLike opt) => a -> opt -> Tensor
 asTensor :: TensorLike a => a -> Tensor
 _asValue :: TensorLike a => Tensor -> a
 _dtype :: TensorLike a => DType
@@ -806,11 +818,16 @@ int64_opts :: TensorOptions
 float_opts :: TensorOptions
 double_opts :: TensorOptions
 withTensor :: Tensor -> (Ptr () -> IO a) -> IO a
+
+-- | The internal function of withTensor. It does not check contiguous
+--   memory-layout.
+_withTensor :: Tensor -> (Ptr () -> IO a) -> IO a
 class AsTensors as
 toTensors :: AsTensors as => as -> Vector Tensor
 toTensors :: (AsTensors as, Generic as, GAsTensors (Rep as)) => as -> Vector Tensor
 class GAsTensors record
 gToTensors :: GAsTensors record => record as -> Vector Tensor
+instance GHC.Show.Show Torch.Tensor.MutableTensor
 instance GHC.Classes.Eq Torch.Tensor.None
 instance GHC.Show.Show Torch.Tensor.None
 instance GHC.Classes.Eq Torch.Tensor.Ellipsis
@@ -847,6 +864,8 @@ instance Torch.Tensor.TensorLike GHC.Types.Bool
 instance Torch.Tensor.TensorLike Torch.Tensor.Tensor
 instance Torch.Tensor.TensorLike a => Torch.Tensor.TensorLike (a, a)
 instance Torch.Tensor.TensorLike a => Torch.Tensor.TensorLike [a]
+instance Torch.Tensor.TensorOptionLike Torch.TensorOptions.TensorOptions
+instance Torch.Tensor.TensorOptionLike Torch.Tensor.Tensor
 instance Torch.Internal.Class.Castable Torch.Tensor.RawTensorIndex (GHC.ForeignPtr.ForeignPtr Torch.Internal.Type.TensorIndex)
 instance Torch.Internal.Class.Castable Torch.Tensor.Tensor Torch.Tensor.ATenTensor
 instance Torch.Lens.HasTypes Torch.Tensor.Tensor Torch.Tensor.Tensor
@@ -2705,8 +2724,8 @@ view :: [Int] -> Tensor -> Tensor
 
 -- | Repeats this tensor along the specified dimensions.
 repeat :: [Int] -> Tensor -> Tensor
-batchNorm :: Tensor -> Tensor -> Tensor -> Tensor -> Bool -> Double -> Double -> Tensor -> Tensor
-instanceNorm :: Tensor -> Tensor -> Tensor -> Tensor -> Bool -> Double -> Double -> Tensor -> Tensor
+batchNormIO :: Tensor -> Tensor -> MutableTensor -> MutableTensor -> Bool -> Double -> Double -> Tensor -> IO Tensor
+instanceNormIO :: Tensor -> Tensor -> MutableTensor -> MutableTensor -> Bool -> Double -> Double -> Tensor -> IO Tensor
 repeatInterleaveRange :: Tensor -> Tensor
 repeatInterleave :: Tensor -> Tensor -> Int -> Tensor
 repeatInterleaveScalar :: Tensor -> Int -> Int -> Tensor
@@ -2911,107 +2930,107 @@ class Randomizable spec f | spec -> f
 sample :: Randomizable spec f => spec -> IO f
 data LinearSpec
 LinearSpec :: Int -> Int -> LinearSpec
-[in_features] :: LinearSpec -> Int
-[out_features] :: LinearSpec -> Int
+[$sel:in_features:LinearSpec] :: LinearSpec -> Int
+[$sel:out_features:LinearSpec] :: LinearSpec -> Int
 data Linear
 Linear :: Parameter -> Parameter -> Linear
-[weight] :: Linear -> Parameter
-[bias] :: Linear -> Parameter
+[$sel:weight:Linear] :: Linear -> Parameter
+[$sel:bias:Linear] :: Linear -> Parameter
 linear :: Linear -> Tensor -> Tensor
 linearForward :: Linear -> Tensor -> Tensor
 data Conv1dSpec
 Conv1dSpec :: Int -> Int -> Int -> Conv1dSpec
-[inputChannelSize1d] :: Conv1dSpec -> Int
-[outputChannelSize1d] :: Conv1dSpec -> Int
-[kernelSize] :: Conv1dSpec -> Int
+[$sel:inputChannelSize1d:Conv1dSpec] :: Conv1dSpec -> Int
+[$sel:outputChannelSize1d:Conv1dSpec] :: Conv1dSpec -> Int
+[$sel:kernelSize:Conv1dSpec] :: Conv1dSpec -> Int
 data Conv1d
 Conv1d :: Parameter -> Parameter -> Conv1d
-[conv1dWeight] :: Conv1d -> Parameter
-[conv1dBias] :: Conv1d -> Parameter
+[$sel:weight:Conv1d] :: Conv1d -> Parameter
+[$sel:bias:Conv1d] :: Conv1d -> Parameter
 conv1dForward :: Conv1d -> Int -> Int -> Tensor -> Tensor
 data Conv2dSpec
 Conv2dSpec :: Int -> Int -> Int -> Int -> Conv2dSpec
-[inputChannelSize2d] :: Conv2dSpec -> Int
-[outputChannelSize2d] :: Conv2dSpec -> Int
-[kernelHeight2d] :: Conv2dSpec -> Int
-[kernelWidth2d] :: Conv2dSpec -> Int
+[$sel:inputChannelSize2d:Conv2dSpec] :: Conv2dSpec -> Int
+[$sel:outputChannelSize2d:Conv2dSpec] :: Conv2dSpec -> Int
+[$sel:kernelHeight2d:Conv2dSpec] :: Conv2dSpec -> Int
+[$sel:kernelWidth2d:Conv2dSpec] :: Conv2dSpec -> Int
 data Conv2d
 Conv2d :: Parameter -> Parameter -> Conv2d
-[conv2dWeight] :: Conv2d -> Parameter
-[conv2dBias] :: Conv2d -> Parameter
+[$sel:weight:Conv2d] :: Conv2d -> Parameter
+[$sel:bias:Conv2d] :: Conv2d -> Parameter
 conv2dForward :: Conv2d -> (Int, Int) -> (Int, Int) -> Tensor -> Tensor
 data Conv3dSpec
 Conv3dSpec :: Int -> Int -> Int -> Int -> Int -> Conv3dSpec
-[inputChannelSize3d] :: Conv3dSpec -> Int
-[outputChannelSize3d] :: Conv3dSpec -> Int
-[kernelHeight3d] :: Conv3dSpec -> Int
-[kernelWidth3d] :: Conv3dSpec -> Int
-[kernelDepth3d] :: Conv3dSpec -> Int
+[$sel:inputChannelSize3d:Conv3dSpec] :: Conv3dSpec -> Int
+[$sel:outputChannelSize3d:Conv3dSpec] :: Conv3dSpec -> Int
+[$sel:kernelHeight3d:Conv3dSpec] :: Conv3dSpec -> Int
+[$sel:kernelWidth3d:Conv3dSpec] :: Conv3dSpec -> Int
+[$sel:kernelDepth3d:Conv3dSpec] :: Conv3dSpec -> Int
 data Conv3d
 Conv3d :: Parameter -> Parameter -> Conv3d
-[conv3dWeight] :: Conv3d -> Parameter
-[conv3dBias] :: Conv3d -> Parameter
+[$sel:weight:Conv3d] :: Conv3d -> Parameter
+[$sel:bias:Conv3d] :: Conv3d -> Parameter
 conv3dForward :: Conv3d -> (Int, Int, Int) -> (Int, Int, Int) -> Tensor -> Tensor
 data ConvTranspose1dSpec
 ConvTranspose1dSpec :: Int -> Int -> Int -> ConvTranspose1dSpec
-[trInputChannelSize1d] :: ConvTranspose1dSpec -> Int
-[trOutputChannelSize1d] :: ConvTranspose1dSpec -> Int
-[trKernelSize] :: ConvTranspose1dSpec -> Int
+[$sel:trInputChannelSize1d:ConvTranspose1dSpec] :: ConvTranspose1dSpec -> Int
+[$sel:trOutputChannelSize1d:ConvTranspose1dSpec] :: ConvTranspose1dSpec -> Int
+[$sel:trKernelSize:ConvTranspose1dSpec] :: ConvTranspose1dSpec -> Int
 data ConvTranspose1d
 ConvTranspose1d :: Parameter -> Parameter -> ConvTranspose1d
-[convTranspose1dWeight] :: ConvTranspose1d -> Parameter
-[convTranspose1dBias] :: ConvTranspose1d -> Parameter
+[$sel:weight:ConvTranspose1d] :: ConvTranspose1d -> Parameter
+[$sel:bias:ConvTranspose1d] :: ConvTranspose1d -> Parameter
 convTranspose1dForward :: ConvTranspose1d -> Int -> Int -> Tensor -> Tensor
 data ConvTranspose2dSpec
 ConvTranspose2dSpec :: Int -> Int -> Int -> Int -> ConvTranspose2dSpec
-[trInputChannelSize2d] :: ConvTranspose2dSpec -> Int
-[trOutputChannelSize2d] :: ConvTranspose2dSpec -> Int
-[trKernelHeight2d] :: ConvTranspose2dSpec -> Int
-[trKernelWidth2d] :: ConvTranspose2dSpec -> Int
+[$sel:trInputChannelSize2d:ConvTranspose2dSpec] :: ConvTranspose2dSpec -> Int
+[$sel:trOutputChannelSize2d:ConvTranspose2dSpec] :: ConvTranspose2dSpec -> Int
+[$sel:trKernelHeight2d:ConvTranspose2dSpec] :: ConvTranspose2dSpec -> Int
+[$sel:trKernelWidth2d:ConvTranspose2dSpec] :: ConvTranspose2dSpec -> Int
 data ConvTranspose2d
 ConvTranspose2d :: Parameter -> Parameter -> ConvTranspose2d
-[convTranspose2dWeight] :: ConvTranspose2d -> Parameter
-[convTranspose2dBias] :: ConvTranspose2d -> Parameter
+[$sel:weight:ConvTranspose2d] :: ConvTranspose2d -> Parameter
+[$sel:bias:ConvTranspose2d] :: ConvTranspose2d -> Parameter
 convTranspose2dForward :: ConvTranspose2d -> (Int, Int) -> (Int, Int) -> Tensor -> Tensor
 data ConvTranspose3dSpec
 ConvTranspose3dSpec :: Int -> Int -> Int -> Int -> Int -> ConvTranspose3dSpec
-[trInputChannelSize3d] :: ConvTranspose3dSpec -> Int
-[trOutputChannelSize3d] :: ConvTranspose3dSpec -> Int
-[trKernelHeight3d] :: ConvTranspose3dSpec -> Int
-[trKernelWidth3d] :: ConvTranspose3dSpec -> Int
-[trKernelDepth3d] :: ConvTranspose3dSpec -> Int
+[$sel:trInputChannelSize3d:ConvTranspose3dSpec] :: ConvTranspose3dSpec -> Int
+[$sel:trOutputChannelSize3d:ConvTranspose3dSpec] :: ConvTranspose3dSpec -> Int
+[$sel:trKernelHeight3d:ConvTranspose3dSpec] :: ConvTranspose3dSpec -> Int
+[$sel:trKernelWidth3d:ConvTranspose3dSpec] :: ConvTranspose3dSpec -> Int
+[$sel:trKernelDepth3d:ConvTranspose3dSpec] :: ConvTranspose3dSpec -> Int
 data ConvTranspose3d
 ConvTranspose3d :: Parameter -> Parameter -> ConvTranspose3d
-[convTranspose3dWeight] :: ConvTranspose3d -> Parameter
-[convTranspose3dBias] :: ConvTranspose3d -> Parameter
+[$sel:weight:ConvTranspose3d] :: ConvTranspose3d -> Parameter
+[$sel:bias:ConvTranspose3d] :: ConvTranspose3d -> Parameter
 convTranspose3dForward :: ConvTranspose3d -> (Int, Int, Int) -> (Int, Int, Int) -> Tensor -> Tensor
 data BatchNormSpec
 BatchNormSpec :: Int -> BatchNormSpec
-[numFeatures] :: BatchNormSpec -> Int
+[$sel:numFeatures:BatchNormSpec] :: BatchNormSpec -> Int
 data BatchNorm
-BatchNorm :: Parameter -> Parameter -> Tensor -> Tensor -> BatchNorm
-[batchNormWeight] :: BatchNorm -> Parameter
-[batchNormBias] :: BatchNorm -> Parameter
-[runningMean] :: BatchNorm -> Tensor
-[runningVar] :: BatchNorm -> Tensor
-batchNormForward :: BatchNorm -> Bool -> Double -> Double -> Tensor -> Tensor
+BatchNorm :: Parameter -> Parameter -> MutableTensor -> MutableTensor -> BatchNorm
+[$sel:weight:BatchNorm] :: BatchNorm -> Parameter
+[$sel:bias:BatchNorm] :: BatchNorm -> Parameter
+[$sel:runningMean:BatchNorm] :: BatchNorm -> MutableTensor
+[$sel:runningVar:BatchNorm] :: BatchNorm -> MutableTensor
+batchNormForwardIO :: BatchNorm -> Bool -> Double -> Double -> Tensor -> IO Tensor
 data InstanceNormSpec
 InstanceNormSpec :: Int -> InstanceNormSpec
-[iNumFeatures] :: InstanceNormSpec -> Int
+[$sel:numFeatures:InstanceNormSpec] :: InstanceNormSpec -> Int
 data InstanceNorm
-InstanceNorm :: Parameter -> Parameter -> Tensor -> Tensor -> InstanceNorm
-[instanceNormWeight] :: InstanceNorm -> Parameter
-[instanceNormBias] :: InstanceNorm -> Parameter
-[iRunningMean] :: InstanceNorm -> Tensor
-[iRunningVar] :: InstanceNorm -> Tensor
-instanceNormForward :: InstanceNorm -> Bool -> Double -> Double -> Tensor -> Tensor
+InstanceNorm :: Parameter -> Parameter -> MutableTensor -> MutableTensor -> InstanceNorm
+[$sel:weight:InstanceNorm] :: InstanceNorm -> Parameter
+[$sel:bias:InstanceNorm] :: InstanceNorm -> Parameter
+[$sel:runningMean:InstanceNorm] :: InstanceNorm -> MutableTensor
+[$sel:runningVar:InstanceNorm] :: InstanceNorm -> MutableTensor
+instanceNormForwardIO :: InstanceNorm -> Bool -> Double -> Double -> Tensor -> IO Tensor
 data UpSampleSpec
 UpSampleSpec :: Int -> Int -> UpSampleSpec
-[upsampleInputFilters] :: UpSampleSpec -> Int
-[upsampleStride] :: UpSampleSpec -> Int
+[$sel:upsampleInputFilters:UpSampleSpec] :: UpSampleSpec -> Int
+[$sel:upsampleStride:UpSampleSpec] :: UpSampleSpec -> Int
 data UpSample
 UpSample :: UpSampleSpec -> UpSample
-[upsampleSpec] :: UpSample -> UpSampleSpec
+[$sel:upsampleSpec:UpSample] :: UpSample -> UpSampleSpec
 instance GHC.Classes.Eq Torch.NN.LinearSpec
 instance GHC.Show.Show Torch.NN.LinearSpec
 instance Torch.NN.Parameterized Torch.NN.Linear

@@ -14,6 +14,7 @@ cast :: Castable a b => a -> (b -> IO r) -> IO r
 uncast :: Castable a b => b -> (a -> IO r) -> IO r
 class CppObject a
 fromPtr :: CppObject a => Ptr a -> IO (ForeignPtr a)
+deletePtr :: CppObject a => Ptr a -> IO ()
 class CppTuple2 m where {
     type A m;
     type B m;
@@ -83,6 +84,26 @@ cast16 :: (Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable x3 cx3, Cas
 cast17 :: (Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable x3 cx3, Castable x4 cx4, Castable x5 cx5, Castable x6 cx6, Castable x7 cx7, Castable x8 cx8, Castable x9 cx9, Castable x10 cx10, Castable x11 cx11, Castable x12 cx12, Castable x13 cx13, Castable x14 cx14, Castable x15 cx15, Castable x16 cx16, Castable y cy) => (ca -> cx1 -> cx2 -> cx3 -> cx4 -> cx5 -> cx6 -> cx7 -> cx8 -> cx9 -> cx10 -> cx11 -> cx12 -> cx13 -> cx14 -> cx15 -> cx16 -> IO cy) -> a -> x1 -> x2 -> x3 -> x4 -> x5 -> x6 -> x7 -> x8 -> x9 -> x10 -> x11 -> x12 -> x13 -> x14 -> x15 -> x16 -> IO y
 cast21 :: (Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable x3 cx3, Castable x4 cx4, Castable x5 cx5, Castable x6 cx6, Castable x7 cx7, Castable x8 cx8, Castable x9 cx9, Castable x10 cx10, Castable x11 cx11, Castable x12 cx12, Castable x13 cx13, Castable x14 cx14, Castable x15 cx15, Castable x16 cx16, Castable x17 cx17, Castable x18 cx18, Castable x19 cx19, Castable x20 cx20, Castable y cy) => (ca -> cx1 -> cx2 -> cx3 -> cx4 -> cx5 -> cx6 -> cx7 -> cx8 -> cx9 -> cx10 -> cx11 -> cx12 -> cx13 -> cx14 -> cx15 -> cx16 -> cx17 -> cx18 -> cx19 -> cx20 -> IO cy) -> a -> x1 -> x2 -> x3 -> x4 -> x5 -> x6 -> x7 -> x8 -> x9 -> x10 -> x11 -> x12 -> x13 -> x14 -> x15 -> x16 -> x17 -> x18 -> x19 -> x20 -> IO y
 cast22 :: (Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable x3 cx3, Castable x4 cx4, Castable x5 cx5, Castable x6 cx6, Castable x7 cx7, Castable x8 cx8, Castable x9 cx9, Castable x10 cx10, Castable x11 cx11, Castable x12 cx12, Castable x13 cx13, Castable x14 cx14, Castable x15 cx15, Castable x16 cx16, Castable x17 cx17, Castable x18 cx18, Castable x19 cx19, Castable x20 cx20, Castable x21 cx21, Castable y cy) => (ca -> cx1 -> cx2 -> cx3 -> cx4 -> cx5 -> cx6 -> cx7 -> cx8 -> cx9 -> cx10 -> cx11 -> cx12 -> cx13 -> cx14 -> cx15 -> cx16 -> cx17 -> cx18 -> cx19 -> cx20 -> cx21 -> IO cy) -> a -> x1 -> x2 -> x3 -> x4 -> x5 -> x6 -> x7 -> x8 -> x9 -> x10 -> x11 -> x12 -> x13 -> x14 -> x15 -> x16 -> x17 -> x18 -> x19 -> x20 -> x21 -> IO y
+_cast0 :: Castable a ca => IO ca -> IO a
+_cast1 :: (Castable a ca, Castable y cy) => (ca -> IO cy) -> a -> IO y
+_cast2 :: (Castable a ca, Castable x1 cx1, Castable y cy) => (ca -> cx1 -> IO cy) -> a -> x1 -> IO y
+_cast3 :: (Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable y cy) => (ca -> cx1 -> cx2 -> IO cy) -> a -> x1 -> x2 -> IO y
+_cast4 :: (Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable x3 cx3, Castable y cy) => (ca -> cx1 -> cx2 -> cx3 -> IO cy) -> a -> x1 -> x2 -> x3 -> IO y
+_cast5 :: (Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable x3 cx3, Castable x4 cx4, Castable y cy) => (ca -> cx1 -> cx2 -> cx3 -> cx4 -> IO cy) -> a -> x1 -> x2 -> x3 -> x4 -> IO y
+_cast6 :: (Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable x3 cx3, Castable x4 cx4, Castable x5 cx5, Castable y cy) => (ca -> cx1 -> cx2 -> cx3 -> cx4 -> cx5 -> IO cy) -> a -> x1 -> x2 -> x3 -> x4 -> x5 -> IO y
+_cast7 :: (Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable x3 cx3, Castable x4 cx4, Castable x5 cx5, Castable x6 cx6, Castable y cy) => (ca -> cx1 -> cx2 -> cx3 -> cx4 -> cx5 -> cx6 -> IO cy) -> a -> x1 -> x2 -> x3 -> x4 -> x5 -> x6 -> IO y
+_cast8 :: (Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable x3 cx3, Castable x4 cx4, Castable x5 cx5, Castable x6 cx6, Castable x7 cx7, Castable y cy) => (ca -> cx1 -> cx2 -> cx3 -> cx4 -> cx5 -> cx6 -> cx7 -> IO cy) -> a -> x1 -> x2 -> x3 -> x4 -> x5 -> x6 -> x7 -> IO y
+_cast9 :: (Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable x3 cx3, Castable x4 cx4, Castable x5 cx5, Castable x6 cx6, Castable x7 cx7, Castable x8 cx8, Castable y cy) => (ca -> cx1 -> cx2 -> cx3 -> cx4 -> cx5 -> cx6 -> cx7 -> cx8 -> IO cy) -> a -> x1 -> x2 -> x3 -> x4 -> x5 -> x6 -> x7 -> x8 -> IO y
+_cast10 :: (Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable x3 cx3, Castable x4 cx4, Castable x5 cx5, Castable x6 cx6, Castable x7 cx7, Castable x8 cx8, Castable x9 cx9, Castable y cy) => (ca -> cx1 -> cx2 -> cx3 -> cx4 -> cx5 -> cx6 -> cx7 -> cx8 -> cx9 -> IO cy) -> a -> x1 -> x2 -> x3 -> x4 -> x5 -> x6 -> x7 -> x8 -> x9 -> IO y
+_cast11 :: (Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable x3 cx3, Castable x4 cx4, Castable x5 cx5, Castable x6 cx6, Castable x7 cx7, Castable x8 cx8, Castable x9 cx9, Castable x10 cx10, Castable y cy) => (ca -> cx1 -> cx2 -> cx3 -> cx4 -> cx5 -> cx6 -> cx7 -> cx8 -> cx9 -> cx10 -> IO cy) -> a -> x1 -> x2 -> x3 -> x4 -> x5 -> x6 -> x7 -> x8 -> x9 -> x10 -> IO y
+_cast12 :: (Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable x3 cx3, Castable x4 cx4, Castable x5 cx5, Castable x6 cx6, Castable x7 cx7, Castable x8 cx8, Castable x9 cx9, Castable x10 cx10, Castable x11 cx11, Castable y cy) => (ca -> cx1 -> cx2 -> cx3 -> cx4 -> cx5 -> cx6 -> cx7 -> cx8 -> cx9 -> cx10 -> cx11 -> IO cy) -> a -> x1 -> x2 -> x3 -> x4 -> x5 -> x6 -> x7 -> x8 -> x9 -> x10 -> x11 -> IO y
+_cast13 :: (Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable x3 cx3, Castable x4 cx4, Castable x5 cx5, Castable x6 cx6, Castable x7 cx7, Castable x8 cx8, Castable x9 cx9, Castable x10 cx10, Castable x11 cx11, Castable x12 cx12, Castable y cy) => (ca -> cx1 -> cx2 -> cx3 -> cx4 -> cx5 -> cx6 -> cx7 -> cx8 -> cx9 -> cx10 -> cx11 -> cx12 -> IO cy) -> a -> x1 -> x2 -> x3 -> x4 -> x5 -> x6 -> x7 -> x8 -> x9 -> x10 -> x11 -> x12 -> IO y
+_cast14 :: (Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable x3 cx3, Castable x4 cx4, Castable x5 cx5, Castable x6 cx6, Castable x7 cx7, Castable x8 cx8, Castable x9 cx9, Castable x10 cx10, Castable x11 cx11, Castable x12 cx12, Castable x13 cx13, Castable y cy) => (ca -> cx1 -> cx2 -> cx3 -> cx4 -> cx5 -> cx6 -> cx7 -> cx8 -> cx9 -> cx10 -> cx11 -> cx12 -> cx13 -> IO cy) -> a -> x1 -> x2 -> x3 -> x4 -> x5 -> x6 -> x7 -> x8 -> x9 -> x10 -> x11 -> x12 -> x13 -> IO y
+_cast15 :: (Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable x3 cx3, Castable x4 cx4, Castable x5 cx5, Castable x6 cx6, Castable x7 cx7, Castable x8 cx8, Castable x9 cx9, Castable x10 cx10, Castable x11 cx11, Castable x12 cx12, Castable x13 cx13, Castable x14 cx14, Castable y cy) => (ca -> cx1 -> cx2 -> cx3 -> cx4 -> cx5 -> cx6 -> cx7 -> cx8 -> cx9 -> cx10 -> cx11 -> cx12 -> cx13 -> cx14 -> IO cy) -> a -> x1 -> x2 -> x3 -> x4 -> x5 -> x6 -> x7 -> x8 -> x9 -> x10 -> x11 -> x12 -> x13 -> x14 -> IO y
+_cast16 :: (Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable x3 cx3, Castable x4 cx4, Castable x5 cx5, Castable x6 cx6, Castable x7 cx7, Castable x8 cx8, Castable x9 cx9, Castable x10 cx10, Castable x11 cx11, Castable x12 cx12, Castable x13 cx13, Castable x14 cx14, Castable x15 cx15, Castable y cy) => (ca -> cx1 -> cx2 -> cx3 -> cx4 -> cx5 -> cx6 -> cx7 -> cx8 -> cx9 -> cx10 -> cx11 -> cx12 -> cx13 -> cx14 -> cx15 -> IO cy) -> a -> x1 -> x2 -> x3 -> x4 -> x5 -> x6 -> x7 -> x8 -> x9 -> x10 -> x11 -> x12 -> x13 -> x14 -> x15 -> IO y
+_cast17 :: (Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable x3 cx3, Castable x4 cx4, Castable x5 cx5, Castable x6 cx6, Castable x7 cx7, Castable x8 cx8, Castable x9 cx9, Castable x10 cx10, Castable x11 cx11, Castable x12 cx12, Castable x13 cx13, Castable x14 cx14, Castable x15 cx15, Castable x16 cx16, Castable y cy) => (ca -> cx1 -> cx2 -> cx3 -> cx4 -> cx5 -> cx6 -> cx7 -> cx8 -> cx9 -> cx10 -> cx11 -> cx12 -> cx13 -> cx14 -> cx15 -> cx16 -> IO cy) -> a -> x1 -> x2 -> x3 -> x4 -> x5 -> x6 -> x7 -> x8 -> x9 -> x10 -> x11 -> x12 -> x13 -> x14 -> x15 -> x16 -> IO y
+_cast21 :: (Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable x3 cx3, Castable x4 cx4, Castable x5 cx5, Castable x6 cx6, Castable x7 cx7, Castable x8 cx8, Castable x9 cx9, Castable x10 cx10, Castable x11 cx11, Castable x12 cx12, Castable x13 cx13, Castable x14 cx14, Castable x15 cx15, Castable x16 cx16, Castable x17 cx17, Castable x18 cx18, Castable x19 cx19, Castable x20 cx20, Castable y cy) => (ca -> cx1 -> cx2 -> cx3 -> cx4 -> cx5 -> cx6 -> cx7 -> cx8 -> cx9 -> cx10 -> cx11 -> cx12 -> cx13 -> cx14 -> cx15 -> cx16 -> cx17 -> cx18 -> cx19 -> cx20 -> IO cy) -> a -> x1 -> x2 -> x3 -> x4 -> x5 -> x6 -> x7 -> x8 -> x9 -> x10 -> x11 -> x12 -> x13 -> x14 -> x15 -> x16 -> x17 -> x18 -> x19 -> x20 -> IO y
+_cast22 :: (Castable a ca, Castable x1 cx1, Castable x2 cx2, Castable x3 cx3, Castable x4 cx4, Castable x5 cx5, Castable x6 cx6, Castable x7 cx7, Castable x8 cx8, Castable x9 cx9, Castable x10 cx10, Castable x11 cx11, Castable x12 cx12, Castable x13 cx13, Castable x14 cx14, Castable x15 cx15, Castable x16 cx16, Castable x17 cx17, Castable x18 cx18, Castable x19 cx19, Castable x20 cx20, Castable x21 cx21, Castable y cy) => (ca -> cx1 -> cx2 -> cx3 -> cx4 -> cx5 -> cx6 -> cx7 -> cx8 -> cx9 -> cx10 -> cx11 -> cx12 -> cx13 -> cx14 -> cx15 -> cx16 -> cx17 -> cx18 -> cx19 -> cx20 -> cx21 -> IO cy) -> a -> x1 -> x2 -> x3 -> x4 -> x5 -> x6 -> x7 -> x8 -> x9 -> x10 -> x11 -> x12 -> x13 -> x14 -> x15 -> x16 -> x17 -> x18 -> x19 -> x20 -> x21 -> IO y
 instance Torch.Internal.Class.Castable a a
 instance Torch.Internal.Class.Castable GHC.Types.Bool Foreign.C.Types.CBool
 instance Torch.Internal.Class.Castable GHC.Types.Int Foreign.C.Types.CInt
@@ -162,53 +183,101 @@ typeTable :: Map TypeSpecifier TypeQ
 
 module Torch.Internal.Objects
 c_delete_c10dict :: FunPtr (Ptr (C10Dict '(IValue, IValue)) -> IO ())
+c_delete_c10dict' :: Ptr (C10Dict '(IValue, IValue)) -> IO ()
 c_delete_c10listivalue :: FunPtr (Ptr (C10List IValue) -> IO ())
+c_delete_c10listivalue' :: Ptr (C10List IValue) -> IO ()
 c_delete_c10listtensor :: FunPtr (Ptr (C10List Tensor) -> IO ())
+c_delete_c10listtensor' :: Ptr (C10List Tensor) -> IO ()
 c_delete_c10listoptionaltensor :: FunPtr (Ptr (C10List (C10Optional Tensor)) -> IO ())
+c_delete_c10listoptionaltensor' :: Ptr (C10List (C10Optional Tensor)) -> IO ()
 c_delete_c10listdouble :: FunPtr (Ptr (C10List CDouble) -> IO ())
+c_delete_c10listdouble' :: Ptr (C10List CDouble) -> IO ()
 c_delete_c10listint :: FunPtr (Ptr (C10List Int64) -> IO ())
+c_delete_c10listint' :: Ptr (C10List Int64) -> IO ()
 c_delete_c10listbool :: FunPtr (Ptr (C10List CBool) -> IO ())
+c_delete_c10listbool' :: Ptr (C10List CBool) -> IO ()
 c_delete_c10tuple :: FunPtr (Ptr (C10Ptr IVTuple) -> IO ())
+c_delete_c10tuple' :: Ptr (C10Ptr IVTuple) -> IO ()
 c_delete_context :: FunPtr (Ptr Context -> IO ())
+c_delete_context' :: Ptr Context -> IO ()
 c_delete_dimname :: FunPtr (Ptr Dimname -> IO ())
+c_delete_dimname' :: Ptr Dimname -> IO ()
 c_delete_dimnamelist :: FunPtr (Ptr DimnameList -> IO ())
+c_delete_dimnamelist' :: Ptr DimnameList -> IO ()
 c_delete_generator :: FunPtr (Ptr Generator -> IO ())
+c_delete_generator' :: Ptr Generator -> IO ()
 c_delete_ivalue :: FunPtr (Ptr IValue -> IO ())
+c_delete_ivalue' :: Ptr IValue -> IO ()
 c_delete_ivaluelist :: FunPtr (Ptr IValueList -> IO ())
+c_delete_ivaluelist' :: Ptr IValueList -> IO ()
 c_delete_intarray :: FunPtr (Ptr IntArray -> IO ())
+c_delete_intarray' :: Ptr IntArray -> IO ()
 c_delete_module :: FunPtr (Ptr Module -> IO ())
+c_delete_module' :: Ptr Module -> IO ()
 c_delete_jitgraph :: FunPtr (Ptr (SharedPtr JitGraph) -> IO ())
+c_delete_jitgraph' :: Ptr (SharedPtr JitGraph) -> IO ()
 c_delete_jitnode :: FunPtr (Ptr JitNode -> IO ())
+c_delete_jitnode' :: Ptr JitNode -> IO ()
 c_delete_jitvalue :: FunPtr (Ptr JitValue -> IO ())
+c_delete_jitvalue' :: Ptr JitValue -> IO ()
 c_delete_scalar :: FunPtr (Ptr Scalar -> IO ())
+c_delete_scalar' :: Ptr Scalar -> IO ()
 c_delete_stdarraybool2 :: FunPtr (Ptr (StdArray '(CBool, 2)) -> IO ())
+c_delete_stdarraybool2' :: Ptr (StdArray '(CBool, 2)) -> IO ()
 c_delete_stdarraybool3 :: FunPtr (Ptr (StdArray '(CBool, 3)) -> IO ())
+c_delete_stdarraybool3' :: Ptr (StdArray '(CBool, 3)) -> IO ()
 c_delete_stdarraybool4 :: FunPtr (Ptr (StdArray '(CBool, 4)) -> IO ())
+c_delete_stdarraybool4' :: Ptr (StdArray '(CBool, 4)) -> IO ()
 c_delete_stdstring :: FunPtr (Ptr StdString -> IO ())
+c_delete_stdstring' :: Ptr StdString -> IO ()
 c_delete_storage :: FunPtr (Ptr Storage -> IO ())
+c_delete_storage' :: Ptr Storage -> IO ()
 c_delete_symbol :: FunPtr (Ptr Symbol -> IO ())
+c_delete_symbol' :: Ptr Symbol -> IO ()
 c_delete_tensor :: FunPtr (Ptr Tensor -> IO ())
+c_delete_tensor' :: Ptr Tensor -> IO ()
 c_delete_tensorindex :: FunPtr (Ptr TensorIndex -> IO ())
+c_delete_tensorindex' :: Ptr TensorIndex -> IO ()
 c_delete_tensorindexlist :: FunPtr (Ptr (StdVector TensorIndex) -> IO ())
+c_delete_tensorindexlist' :: Ptr (StdVector TensorIndex) -> IO ()
 c_delete_tensorlist :: FunPtr (Ptr TensorList -> IO ())
+c_delete_tensorlist' :: Ptr TensorList -> IO ()
 c_delete_tensoroptions :: FunPtr (Ptr TensorOptions -> IO ())
+c_delete_tensoroptions' :: Ptr TensorOptions -> IO ()
 c_delete_tensortensor :: FunPtr (Ptr (StdTuple '(Tensor, Tensor)) -> IO ())
+c_delete_tensortensor' :: Ptr (StdTuple '(Tensor, Tensor)) -> IO ()
 c_delete_tensortensortensortensortensor :: FunPtr (Ptr (StdTuple '(Tensor, Tensor, Tensor, Tensor, Tensor)) -> IO ())
+c_delete_tensortensortensortensortensor' :: Ptr (StdTuple '(Tensor, Tensor, Tensor, Tensor, Tensor)) -> IO ()
 c_delete_tensortensortensortensorlist :: FunPtr (Ptr (StdTuple '(Tensor, Tensor, Tensor, TensorList)) -> IO ())
+c_delete_tensortensortensortensorlist' :: Ptr (StdTuple '(Tensor, Tensor, Tensor, TensorList)) -> IO ()
 c_delete_tensortensortensortensorint64 :: FunPtr (Ptr (StdTuple '(Tensor, Tensor, Tensor, Tensor, Int64)) -> IO ())
+c_delete_tensortensortensortensorint64' :: Ptr (StdTuple '(Tensor, Tensor, Tensor, Tensor, Int64)) -> IO ()
 c_delete_tensortensortensor :: FunPtr (Ptr (StdTuple '(Tensor, Tensor, Tensor)) -> IO ())
+c_delete_tensortensortensor' :: Ptr (StdTuple '(Tensor, Tensor, Tensor)) -> IO ()
 c_delete_tensortensortensortensor :: FunPtr (Ptr (StdTuple '(Tensor, Tensor, Tensor, Tensor)) -> IO ())
+c_delete_tensortensortensortensor' :: Ptr (StdTuple '(Tensor, Tensor, Tensor, Tensor)) -> IO ()
 c_delete_cdoubleint64 :: FunPtr (Ptr (StdTuple '(CDouble, Int64)) -> IO ())
+c_delete_cdoubleint64' :: Ptr (StdTuple '(CDouble, Int64)) -> IO ()
 c_delete_cdoublecdouble :: FunPtr (Ptr (StdTuple '(CDouble, CDouble)) -> IO ())
+c_delete_cdoublecdouble' :: Ptr (StdTuple '(CDouble, CDouble)) -> IO ()
 c_delete_tensorgenerator :: FunPtr (Ptr (StdTuple '(Tensor, Generator)) -> IO ())
+c_delete_tensorgenerator' :: Ptr (StdTuple '(Tensor, Generator)) -> IO ()
 c_delete_tensortensorcdoubleint64 :: FunPtr (Ptr (StdTuple '(Tensor, Tensor, CDouble, Int64)) -> IO ())
+c_delete_tensortensorcdoubleint64' :: Ptr (StdTuple '(Tensor, Tensor, CDouble, Int64)) -> IO ()
 c_delete_optimizer :: FunPtr (Ptr Optimizer -> IO ())
+c_delete_optimizer' :: Ptr Optimizer -> IO ()
 c_delete_stdvectordouble :: FunPtr (Ptr (StdVector CDouble) -> IO ())
+c_delete_stdvectordouble' :: Ptr (StdVector CDouble) -> IO ()
 c_delete_stdvectorint :: FunPtr (Ptr (StdVector CInt) -> IO ())
+c_delete_stdvectorint' :: Ptr (StdVector CInt) -> IO ()
 c_delete_stdvectorbool :: FunPtr (Ptr (StdVector CBool) -> IO ())
+c_delete_stdvectorbool' :: Ptr (StdVector CBool) -> IO ()
 c_delete_stream :: FunPtr (Ptr Stream -> IO ())
+c_delete_stream' :: Ptr Stream -> IO ()
 c_delete_arrayrefscalar :: FunPtr (Ptr (ArrayRef Scalar) -> IO ())
+c_delete_arrayrefscalar' :: Ptr (ArrayRef Scalar) -> IO ()
 c_delete_vectorscalar :: FunPtr (Ptr (StdVector Scalar) -> IO ())
+c_delete_vectorscalar' :: Ptr (StdVector Scalar) -> IO ()
 instance Torch.Internal.Class.CppObject (Torch.Internal.Type.C10Dict '(Torch.Internal.Type.IValue, Torch.Internal.Type.IValue))
 instance Torch.Internal.Class.CppObject (Torch.Internal.Type.C10List Torch.Internal.Type.IValue)
 instance Torch.Internal.Class.CppObject (Torch.Internal.Type.C10List Torch.Internal.Type.Tensor)
@@ -7516,6 +7585,8 @@ tensor_assign2_d :: Ptr Tensor -> Int64 -> Int64 -> CDouble -> IO ()
 tensor_assign1_t :: Ptr Tensor -> Int64 -> Ptr Tensor -> IO ()
 tensor_assign2_t :: Ptr Tensor -> Int64 -> Int64 -> Ptr Tensor -> IO ()
 tensor_names :: Ptr Tensor -> IO (Ptr DimnameList)
+tensor_to_device :: Ptr Tensor -> Ptr Tensor -> IO (Ptr Tensor)
+new_empty_tensor :: [Int] -> Ptr TensorOptions -> IO (Ptr Tensor)
 
 module Torch.Internal.Managed.Type.Extra
 tensor_assign1_l :: ForeignPtr Tensor -> Int64 -> Int64 -> IO ()
@@ -7525,6 +7596,8 @@ tensor_assign2_d :: ForeignPtr Tensor -> Int64 -> Int64 -> CDouble -> IO ()
 tensor_assign1_t :: ForeignPtr Tensor -> Int64 -> ForeignPtr Tensor -> IO ()
 tensor_assign2_t :: ForeignPtr Tensor -> Int64 -> Int64 -> ForeignPtr Tensor -> IO ()
 tensor_names :: ForeignPtr Tensor -> IO (ForeignPtr DimnameList)
+tensor_to_device :: ForeignPtr Tensor -> ForeignPtr Tensor -> IO (ForeignPtr Tensor)
+new_empty_tensor :: [Int] -> ForeignPtr TensorOptions -> IO (ForeignPtr Tensor)
 
 module Torch.Internal.Unmanaged.Type.Generator
 newCUDAGenerator :: Word16 -> IO (Ptr Generator)
@@ -7682,6 +7755,8 @@ intArray_empty :: Ptr IntArray -> IO CBool
 intArray_size :: Ptr IntArray -> IO CSize
 intArray_at_s :: Ptr IntArray -> CSize -> IO Int64
 intArray_push_back_l :: Ptr IntArray -> Int64 -> IO ()
+intArray_fromList :: Ptr IntArray -> [Int64] -> IO ()
+intArray_toList :: Ptr IntArray -> IO [Int64]
 
 module Torch.Internal.Managed.Type.IntArray
 newIntArray :: IO (ForeignPtr IntArray)
@@ -7689,6 +7764,8 @@ intArray_empty :: ForeignPtr IntArray -> IO CBool
 intArray_size :: ForeignPtr IntArray -> IO CSize
 intArray_at_s :: ForeignPtr IntArray -> CSize -> IO Int64
 intArray_push_back_l :: ForeignPtr IntArray -> Int64 -> IO ()
+intArray_fromList :: ForeignPtr IntArray -> [Int64] -> IO ()
+intArray_toList :: ForeignPtr IntArray -> IO [Int64]
 
 module Torch.Internal.Unmanaged.Type.Module
 newModule :: Ptr StdString -> IO (Ptr Module)
@@ -7899,6 +7976,8 @@ tensor_cuda :: Ptr Tensor -> IO (Ptr Tensor)
 tensor_data_ptr :: Ptr Tensor -> IO (Ptr ())
 tensor_defined :: Ptr Tensor -> IO CBool
 tensor_dim :: Ptr Tensor -> IO Int64
+tensor_dim_unsafe :: Ptr Tensor -> IO Int64
+tensor_dim_c_unsafe :: Ptr Tensor -> IO Int64
 tensor_element_size :: Ptr Tensor -> IO Int64
 tensor_get_device :: Ptr Tensor -> IO Int64
 tensor_has_names :: Ptr Tensor -> IO CBool
@@ -8101,6 +8180,8 @@ tensor_cuda :: ForeignPtr Tensor -> IO (ForeignPtr Tensor)
 tensor_data_ptr :: ForeignPtr Tensor -> IO (Ptr ())
 tensor_defined :: ForeignPtr Tensor -> IO CBool
 tensor_dim :: ForeignPtr Tensor -> IO Int64
+tensor_dim_unsafe :: ForeignPtr Tensor -> IO Int64
+tensor_dim_c_unsafe :: ForeignPtr Tensor -> IO Int64
 tensor_element_size :: ForeignPtr Tensor -> IO Int64
 tensor_get_device :: ForeignPtr Tensor -> IO Int64
 tensor_has_names :: ForeignPtr Tensor -> IO CBool
