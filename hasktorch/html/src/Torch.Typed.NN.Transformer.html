@@ -446,10 +446,10 @@ MultiheadAttention
 -&gt; IO
      (Tensor device dtype '[batchSize, seqLen', embedDim],
       Tensor device dtype '[batchSize, seqLen', seqLen])
-</span><a href="Torch.Typed.NN.Transformer.html#multiheadAttention"><span class="hs-identifier hs-var hs-var">multiheadAttention</span></a></span></span><span> </span><span class="annot"><a href="Torch.Typed.NN.Transformer.html#MultiheadAttention"><span class="hs-identifier hs-type">MultiheadAttention</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679743678"><span id="local-6989586621679743679"><span id="local-6989586621679743680"><span id="local-6989586621679743681"><span id="local-6989586621679743682"><span class="annot"><span class="annottext">Dropout
-Linear embedDim embedDim dtype device
+</span><a href="Torch.Typed.NN.Transformer.html#multiheadAttention"><span class="hs-identifier hs-var hs-var">multiheadAttention</span></a></span></span><span> </span><span class="annot"><a href="Torch.Typed.NN.Transformer.html#MultiheadAttention"><span class="hs-identifier hs-type">MultiheadAttention</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679743678"><span id="local-6989586621679743679"><span id="local-6989586621679743680"><span id="local-6989586621679743681"><span id="local-6989586621679743682"><span class="annot"><span class="annottext">Linear embedDim embedDim dtype device
 Linear kEmbedDim embedDim dtype device
 Linear vEmbedDim embedDim dtype device
+Dropout
 mhaDropout :: Dropout
 mhaOutProj :: Linear embedDim embedDim dtype device
 mhaVInProj :: Linear vEmbedDim embedDim dtype device
@@ -1643,10 +1643,10 @@ TransformerMLP embedDim ffnDim dtype device
 -&gt; Bool
 -&gt; Tensor device dtype '[seqLen, batchSize, embedDim]
 -&gt; IO (Tensor device dtype '[seqLen, batchSize, embedDim])
-</span><a href="Torch.Typed.NN.Transformer.html#transformerMLP"><span class="hs-identifier hs-var hs-var">transformerMLP</span></a></span></span><span> </span><span class="annot"><a href="Torch.Typed.NN.Transformer.html#TransformerMLP"><span class="hs-identifier hs-type">TransformerMLP</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679743493"><span id="local-6989586621679743494"><span id="local-6989586621679743495"><span id="local-6989586621679743496"><span id="local-6989586621679743497"><span class="annot"><span class="annottext">Dropout
-LayerNorm '[embedDim] dtype device
+</span><a href="Torch.Typed.NN.Transformer.html#transformerMLP"><span class="hs-identifier hs-var hs-var">transformerMLP</span></a></span></span><span> </span><span class="annot"><a href="Torch.Typed.NN.Transformer.html#TransformerMLP"><span class="hs-identifier hs-type">TransformerMLP</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679743493"><span id="local-6989586621679743494"><span id="local-6989586621679743495"><span id="local-6989586621679743496"><span id="local-6989586621679743497"><span class="annot"><span class="annottext">LayerNorm '[embedDim] dtype device
 Linear embedDim ffnDim dtype device
 Linear ffnDim embedDim dtype device
+Dropout
 ln :: LayerNorm '[embedDim] dtype device
 dropout1 :: Dropout
 dropout0 :: Dropout
@@ -2286,8 +2286,8 @@ TransformerLayer
 -&gt; Tensor device dtype '[batchSize, seqLen, kEmbedDim]
 -&gt; Tensor device dtype '[batchSize, seqLen, vEmbedDim]
 -&gt; IO (Tensor device dtype '[batchSize, seqLen', embedDim])
-</span><a href="Torch.Typed.NN.Transformer.html#transformerLayer"><span class="hs-identifier hs-var hs-var">transformerLayer</span></a></span></span><span> </span><span class="annot"><a href="Torch.Typed.NN.Transformer.html#TransformerLayer"><span class="hs-identifier hs-type">TransformerLayer</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679743349"><span id="local-6989586621679743350"><span id="local-6989586621679743351"><span id="local-6989586621679743352"><span class="annot"><span class="annottext">Dropout
-LayerNorm '[embedDim] dtype device
+</span><a href="Torch.Typed.NN.Transformer.html#transformerLayer"><span class="hs-identifier hs-var hs-var">transformerLayer</span></a></span></span><span> </span><span class="annot"><a href="Torch.Typed.NN.Transformer.html#TransformerLayer"><span class="hs-identifier hs-type">TransformerLayer</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679743349"><span id="local-6989586621679743350"><span id="local-6989586621679743351"><span id="local-6989586621679743352"><span class="annot"><span class="annottext">LayerNorm '[embedDim] dtype device
+Dropout
 TransformerMLP embedDim ffnDim dtype device
 MultiheadAttention
   embedDim kEmbedDim vEmbedDim numHeads dtype device
@@ -3238,11 +3238,11 @@ TransformerLM
      numAttnLayers
      (TransformerLayer
         embedDim embedDim embedDim numHeads ffnDim dtype device))
-Dropout
-Linear embedDim numEmbeds dtype device
 Embedding 'Nothing 2048 embedDim 'Constant dtype device
 Embedding
   ('Just paddingIdx) numEmbeds embedDim 'Learned dtype device
+Linear embedDim numEmbeds dtype device
+Dropout
 tProj :: Linear embedDim numEmbeds dtype device
 tLayers :: HList
   (HReplicateR
