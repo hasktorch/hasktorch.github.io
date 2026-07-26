@@ -1,0 +1,58 @@
+name: deploy-pages
+
+# Branchless GitHub Pages deployment: assembles the site from this
+# repository (haddock API docs, landing pages) plus the `tutorial`
+# artifact rendered by hasktorch/hasktorch's cabal-linux workflow.
+# Replaces the old deploy-key push to the `tutorial` branch, which
+# additionally needed a manual merge into master to become visible.
+#
+# Requires Pages to be configured with Source: "GitHub Actions".
+# No secrets: the default token reads the public artifact, and
+# deploy-pages authenticates via OIDC.
+
+on:
+  push:
+    branches: [master]
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assemble site
+        run: |
+          mkdir -p /tmp/site
+          rsync -a --exclude .git --exclude .github ./ /tmp/site/
+
+      - name: Fetch the latest tutorial from hasktorch CI
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          repo: hasktorch/hasktorch
+          workflow: cabal-linux.yml
+          branch: master
+          workflow_conclusion: success
+          name: tutorial
+          path: /tmp/site/tutorial
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: /tmp/site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
